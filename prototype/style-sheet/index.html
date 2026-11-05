@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gain Control — Style Sheet 01</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #000; --frame: #26243a; --txt: #9c99b8; }
+  html, body { margin: 0; background: var(--bg); color: #e9e6ff; font-family: "Space Mono", ui-monospace, Menlo, monospace; }
+  .wrap { max-width: 1500px; margin: 0 auto; padding: 28px 24px 60px; }
+  header { display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items: start; margin-bottom: 26px; }
+  header svg.title { width: 100%; height: auto; display: block; }
+  .rules { font-size: 12.5px; line-height: 1.55; color: var(--txt); margin: 0; padding: 0; list-style: none; counter-reset: r; }
+  .rules li { counter-increment: r; padding-left: 26px; position: relative; margin-bottom: 5px; }
+  .rules li::before { content: counter(r); position: absolute; left: 0; color: #e9e6ff; font-weight: 700; }
+  .rules b { color: #e9e6ff; font-weight: 700; }
+  .controls { display: flex; gap: 10px; margin-top: 12px; }
+  button { font: inherit; font-size: 12px; letter-spacing: .12em; background: #000; color: #e9e6ff; border: 1.5px solid #e9e6ff;
+           border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+  button[aria-pressed="false"] { color: #7b7890; border-color: #7b7890; }
+  .sec { margin: 26px 0 10px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } header { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+  figure { margin: 0; border: 1.5px solid var(--frame); border-radius: 10px; overflow: hidden; background: #000; }
+  figure svg { display: block; width: 100%; height: auto; }
+  figcaption { font-size: 11.5px; color: var(--txt); padding: 8px 12px 11px; border-top: 1.5px solid var(--frame); line-height: 1.45; }
+  figcaption b { color: #e9e6ff; letter-spacing: .08em; }
+  .palette { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .sw { font-size: 10.5px; color: var(--txt); text-align: center; }
+  .sw i { display: block; width: 46px; height: 22px; border: 1.5px solid currentColor; border-radius: 4px; margin-bottom: 3px; }
+
+  /* the line language */
+  svg.t path, svg.t line, svg.t circle, svg.t rect, svg.t ellipse, svg.t polyline, svg.t polygon {
+    stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; vector-effect: none;
+  }
+  svg.t { fill: none; }
+  svg.t .k { fill: #000; }
+  svg.t .f { stroke: none; }
+  svg.t .mech { stroke-linecap: butt; stroke-linejoin: miter; }
+  svg.t .dash { stroke-dasharray: 2 4; }
+  /* Game & Watch pose switching */
+  .pose { opacity: 0; }
+  .pose.on { opacity: 1; }
+  body.ghosts .pose:not(.on) { opacity: .075; }
+</style>
+</head>
+<body class="ghosts">
+<div class="wrap">
+  <header>
+    <div>
+      <svg class="title t" id="titleSvg" viewBox="0 0 640 120"></svg>
+      <div class="palette" id="palette"></div>
+      <div class="controls">
+        <button id="bGhost" aria-pressed="true">LCD GHOSTS</button>
+        <button id="bPlay" aria-pressed="true">ANIMATE</button>
+      </div>
+    </div>
+    <ol class="rules">
+      <li><b>One line weight.</b> Everything is drawn at a native 320×200 with a 1.5 px stroke, then scaled up. Big screen, small-screen drawing.</li>
+      <li><b>No fill.</b> Closed shapes are filled black only so lines can overlap cleanly. Color fills are reserved for things that are <i>on</i>: an LED, the insignia, the canister, a lit cube, a pupil.</li>
+      <li><b>Color = material.</b> Hair, cloth, skin, metal and wood each get one color. Skin is a pink line, never a filled face.</li>
+      <li><b>Open contours.</b> Faces are a jaw, a hairline and a few marks. Lines don't have to close.</li>
+      <li><b>Poses, not tweens.</b> Game &amp; Watch / Pocket Operator logic: every frame is a pre-drawn pose that switches on and off in place. Toggle LCD GHOSTS to see the unlit segments.</li>
+      <li><b>Motion as glyphs.</b> Vibration <span style="color:#00e39a">((( )))</span>, speed dashes, sparks and drips are drawn marks, not effects.</li>
+      <li><b>Places go isometric.</b> Q*bert-era cube geometry for maps and spaces, but crisp.</li>
+      <li><b>Segment type.</b> Every label is drawn in one stroke alphabet on the same grid.</li>
+    </ol>
+  </header>
+
+  <div class="sec"><svg class="t" id="secChars" viewBox="0 0 640 22" style="width:100%;height:auto;display:block"></svg></div>
+  <div class="grid" id="chars"></div>
+  <div class="sec"><svg class="t" id="secObjs" viewBox="0 0 640 22" style="width:100%;height:auto;display:block"></svg></div>
+  <div class="grid" id="objs"></div>
+</div>
+
+<script>
+(() => {
+"use strict";
+/* ---------------- palette (Gain Control, OP-1-adjacent) ---------------- */
+const W = "#e9e6ff", R = "#ff3b5c", B = "#6b8cff", G = "#00e39a", K = "#ff95ae", A = "#ffb547",
+      V = "#9c7bff", N = "#36346e", D = "#3a3842", M = "#7b7890";
+const PAL = [["INK", W], ["SIGNAL", R], ["COOL", B], ["ON", G], ["SKIN", K], ["BRASS", A], ["ROBE", V], ["DEEP", N], ["STRUCT", D], ["DIM", M]];
+
+/* ---------------- segment stroke alphabet: 4×6 grid ---------------- */
+const GL = {
+  A:[[0,6,0,1,1,0,3,0,4,1,4,6],[0,3,4,3]], B:[[0,0,0,6,3,6,4,5,4,4,3,3,0,3],[0,0,3,0,4,1,4,2,3,3]],
+  C:[[4,0,0,0,0,6,4,6]], D:[[0,0,0,6,3,6,4,5,4,1,3,0,0,0]], E:[[4,0,0,0,0,6,4,6],[0,3,3,3]], F:[[4,0,0,0,0,6],[0,3,3,3]],
+  G:[[4,0,0,0,0,6,4,6,4,3,2,3]], H:[[0,0,0,6],[4,0,4,6],[0,3,4,3]], I:[[1,0,3,0],[2,0,2,6],[1,6,3,6]], J:[[4,0,4,6,0,6,0,4]],
+  K:[[0,0,0,6],[4,0,0,3,4,6]], L:[[0,0,0,6,4,6]], M:[[0,6,0,0,2,3,4,0,4,6]], N:[[0,6,0,0,4,6,4,0]],
+  O:[[0,0,4,0,4,6,0,6,0,0]], P:[[0,6,0,0,4,0,4,3,0,3]], Q:[[0,0,4,0,4,6,0,6,0,0],[2,4,4,6]], R:[[0,6,0,0,4,0,4,3,0,3,4,6]],
+  S:[[4,0,0,0,0,3,4,3,4,6,0,6]], T:[[0,0,4,0],[2,0,2,6]], U:[[0,0,0,6,4,6,4,0]], V:[[0,0,2,6,4,0]],
+  W:[[0,0,1,6,2,3,3,6,4,0]], X:[[0,0,4,6],[4,0,0,6]], Y:[[0,0,2,3,4,0],[2,3,2,6]], Z:[[0,0,4,0,0,6,4,6]],
+  "0":[[0,0,4,0,4,6,0,6,0,0]], "1":[[1,1,2,0,2,6]], "2":[[0,0,4,0,4,3,0,3,0,6,4,6]], "3":[[0,0,4,0,4,6,0,6],[1,3,4,3]],
+  "4":[[0,0,0,3,4,3],[4,0,4,6]], "5":[[4,0,0,0,0,3,4,3,4,6,0,6]], "6":[[4,0,0,0,0,6,4,6,4,3,0,3]], "7":[[0,0,4,0,4,6]],
+  "8":[[0,0,4,0,4,6,0,6,0,0],[0,3,4,3]], "9":[[4,3,0,3,0,0,4,0,4,6,0,6]], "-":[[1,3,3,3]], ".":[[2,6,2,5.6]],
+  ":":[[2,1.5,2,1.9],[2,4.5,2,4.9]], "/":[[0,6,4,0]], "!":[[2,0,2,4],[2,5.8,2,6]], "?":[[0,0,4,0,4,3,2,3,2,4],[2,5.8,2,6]],
+  "@":[[4,6,0,6,0,0,4,0,4,4,2,4,2,2,4,2]], "#":[[1,0,1,6],[3,0,3,6],[0,2,4,2],[0,4,4,4]], ">":[[0,0,4,3,0,6]], "'":[[2,0,2,1.5]],
+  "*":[[2,1,2,5],[0,2,4,4],[0,4,4,2]], "(":[[3,0,1,2,1,4,3,6]], ")":[[1,0,3,2,3,4,1,6]], "&":[[4,6,0,2,0,0,2,0,2,2,0,4,0,6,2,6,4,4]], "+":[[2,1,2,5],[0,3,4,3]],
+};
+function seg(str, x, y, h, col, sw = 1.5) {
+  const u = h / 6; let out = "", cx = x;
+  for (const ch of str.toUpperCase()) {
+    if (ch === " ") { cx += u * 3.4; continue; }
+    const g = GL[ch]; if (!g) { cx += u * 5.4; continue; }
+    for (const pl of g) {
+      let d = "";
+      for (let i = 0; i < pl.length; i += 2) d += (i ? "L" : "M") + (cx + pl[i] * u).toFixed(2) + "," + (y + pl[i + 1] * u).toFixed(2);
+      out += `<path d="${d}" stroke="${col}" style="stroke-width:${sw}" class="mech"/>`;
+    }
+    cx += u * 5.6;
+  }
+  return out;
+}
+const segW = (str, h) => { const u = h / 6; let w = 0; for (const ch of str) w += ch === " " ? u * 3.4 : u * 5.6; return w - u * 1.6; };
+
+/* ---------------- shared drawing bits ---------------- */
+const P = (cls, body) => `<g class="pose ${cls}">${body}</g>`;
+const arcs = (x, y, dir, col, n = 3, s = 1) => {   // ((( vibration marks
+  let o = ""; for (let i = 0; i < n; i++) { const r = (5 + i * 4) * s, xx = x + dir * i * 4 * s;
+    o += `<path stroke="${col}" d="M${xx},${y - r} C${xx + dir * r * .6},${y - r * .4} ${xx + dir * r * .6},${y + r * .4} ${xx},${y + r}"/>`; }
+  return o;
+};
+const spark = (x, y, r, col) => `<path stroke="${col}" d="M${x},${y - r}L${x},${y - r * .35}M${x},${y + r}L${x},${y + r * .35}M${x - r},${y}L${x - r * .35},${y}M${x + r},${y}L${x + r * .35},${y}M${x - r * .6},${y - r * .6}L${x - r * .25},${y - r * .25}M${x + r * .6},${y + r * .6}L${x + r * .25},${y + r * .25}M${x + r * .6},${y - r * .6}L${x + r * .25},${y - r * .25}M${x - r * .6},${y + r * .6}L${x - r * .25},${y + r * .25}"/>`;
+const star4 = (x, y, r, col) => `<path stroke="${col}" d="M${x},${y - r}C${x + 1},${y - 1} ${x + 1},${y - 1} ${x + r},${y}C${x + 1},${y + 1} ${x + 1},${y + 1} ${x},${y + r}C${x - 1},${y + 1} ${x - 1},${y + 1} ${x - r},${y}C${x - 1},${y - 1} ${x - 1},${y - 1} ${x},${y - r}Z"/>`;
+const floor = (y = 190, col = D) => `<path class="mech" stroke="${col}" d="M14,${y}L306,${y}"/>`;
+const tag = (txt, col = M) => seg(txt, 14, 12, 7, col);
+
+/* ================================================================ *
+ *  CHARACTERS
+ * ================================================================ */
+
+/* ---- NED NULL ---- */
+const ned = () => {
+  const head = `
+    <path class="k" stroke="${K}" d="M139,54 C138,72 149,82 161,82 C174,82 183,72 183,56"/>
+    <path stroke="${K}" d="M140,58 C134,57 133,67 140,68"/>
+    <path class="k" stroke="${R}" d="M137,60 C132,41 143,30 156,31 L153,21 L162,28 L166,17 L172,28 L181,22 L180,33 C189,38 189,51 184,59 C180,49 172,45 164,47 C156,43 145,47 137,60 Z"/>
+    <path stroke="${R}" d="M149,38 L155,45 M164,33 L166,42 M174,36 L172,44"/>
+    <rect stroke="${W}" x="146.5" y="56" width="13" height="10" rx="3"/><rect stroke="${W}" x="166" y="56" width="13" height="10" rx="3"/>
+    <path stroke="${W}" d="M159.5,60 L166,60 M146.5,59 L141,58"/>
+    <circle class="f" fill="${W}" cx="155" cy="61.5" r="1.6"/><circle class="f" fill="${W}" cx="174.5" cy="61.5" r="1.6"/>
+    <path stroke="${K}" d="M168,66 C165,71 168,73 171,72"/>
+    <path stroke="${K}" d="M154,80 L154,87 M167,80 L167,87"/>`;
+  const torso = `
+    <path class="k" stroke="${G}" d="M136,92 C140,87 148,85 153,86 L160,92 L167,86 C172,85 180,87 184,92 L187,128 L133,128 Z"/>
+    <path stroke="${G}" d="M153,86 C156,91 164,91 167,86"/>
+    <circle stroke="${G}" cx="170" cy="106" r="5"/><path stroke="${G}" d="M168,104 L172,108"/>`;
+  const shoe = (x, y, d = 1) => `<path class="k" stroke="${W}" d="M${x},${y} L${x + 18 * d},${y} C${x + 22 * d},${y} ${x + 22 * d},${y + 5} ${x + 18 * d},${y + 5} L${x},${y + 5} Z"/>`;
+  const stand = `
+    <path class="k" stroke="${B}" d="M134,128 L137,182 L156,182 L159,136 L161,136 L164,182 L183,182 L186,128 Z"/>
+    ${shoe(136, 182)}${shoe(164, 182)}
+    <path stroke="${G}" d="M136,93 L128,114"/><path stroke="${K}" d="M128,114 L125,124"/><circle stroke="${K}" cx="124.5" cy="127" r="3"/>
+    <path stroke="${G}" d="M184,93 L192,114"/><path stroke="${K}" d="M192,114 L195,124"/><circle stroke="${K}" cx="195.5" cy="127" r="3"/>`;
+  const walkA = `
+    <path class="k" stroke="${B}" d="M137,128 L120,176 L137,182 L158,134 Z"/>
+    <path class="k" stroke="${B}" d="M162,132 L178,182 L196,178 L184,128 Z"/>
+    ${shoe(118, 177)}${shoe(180, 179)}
+    <path stroke="${G}" d="M136,93 L142,114"/><path stroke="${K}" d="M142,114 L148,123"/><circle stroke="${K}" cx="150" cy="126" r="3"/>
+    <path stroke="${G}" d="M184,93 L178,112"/><path stroke="${K}" d="M178,112 L170,120"/><circle stroke="${K}" cx="168" cy="123" r="3"/>`;
+  const walkB = `
+    <path class="k" stroke="${B}" d="M134,128 L146,180 L162,182 L157,130 Z"/>
+    <path class="k" stroke="${B}" d="M163,130 L160,182 L177,180 L186,128 Z"/>
+    ${shoe(146, 181)}${shoe(160, 181)}
+    <path stroke="${G}" d="M136,93 L124,110"/><path stroke="${K}" d="M124,110 L116,118"/><circle stroke="${K}" cx="114" cy="121" r="3"/>
+    <path stroke="${G}" d="M184,93 L196,110"/><path stroke="${K}" d="M196,110 L204,117"/><circle stroke="${K}" cx="206" cy="120" r="3"/>`;
+  const shrug = `
+    <path class="k" stroke="${B}" d="M134,128 L137,182 L156,182 L159,136 L161,136 L164,182 L183,182 L186,128 Z"/>
+    ${shoe(136, 182)}${shoe(164, 182)}
+    <path stroke="${G}" d="M136,93 L120,100"/><path stroke="${K}" d="M120,100 L112,88"/><path stroke="${K}" d="M110,86 L106,80 M112,85 L112,78 M114,86 L118,80"/>
+    <path stroke="${G}" d="M184,93 L200,100"/><path stroke="${K}" d="M200,100 L208,88"/><path stroke="${K}" d="M210,86 L214,80 M208,85 L208,78 M206,86 L202,80"/>
+    ${seg("?", 214, 40, 12, W)}`;
+  return `${tag("NED NULL", W)}${floor()}
+    ${P("p0", stand)}${P("p1", walkA)}${P("p2", walkB)}${P("p3", shrug)}
+    ${torso}${head}`;
+};
+
+/* ---- PRESTON at the lectern ---- */
+const preston = () => {
+  const base = `
+    <path class="k" stroke="${R}" d="M116,130 C116,106 126,95 150,92 L160,106 L170,92 C194,95 204,106 204,130 Z"/>
+    <path stroke="${R}" d="M150,92 L155,114 M170,92 L165,114"/><path stroke="${W}" d="M154,94 L160,104 L166,94"/>
+    <path stroke="${K}" d="M152,84 L152,92 M168,84 L168,92"/>
+    <path class="k" stroke="${K}" d="M132,50 C131,72 145,86 160,86 C175,86 189,72 188,50"/>
+    <path stroke="${K}" d="M133,56 C127,55 127,66 133,66 M187,56 C193,55 193,66 187,66"/>
+    <path class="k" stroke="${A}" d="M129,56 C124,34 138,19 158,17 C179,15 196,26 193,46 C192,50 190,54 188,56 C184,45 176,41 167,43 C173,36 168,30 159,33 C148,37 139,45 129,56 Z"/>
+    <path stroke="${A}" d="M141,30 C151,23 166,21 179,25 M137,42 C143,37 150,34 156,33"/>
+    <path stroke="${K}" d="M160,61 C157,68 160,70 163,69"/>
+    <path class="k mech" stroke="${B}" d="M114,124 L206,124 L202,131 L118,131 Z"/>
+    <path class="k mech" stroke="${B}" d="M118,131 L202,131 L196,190 L124,190 Z"/>
+    <path stroke="${N}" class="mech" d="M132,140 L188,140 L184,180 L136,180 Z"/>
+    <path stroke="${M}" d="M194,124 C197,112 192,104 186,102"/><circle class="f" fill="${G}" cx="185" cy="101" r="2.2"/>`;
+  const faceOn = `
+    <path class="k" stroke="${W}" d="M143,60 C146,56 152,56 156,60 C152,64 147,64 143,60 Z"/><circle class="f" fill="${B}" cx="150.5" cy="60" r="2"/>
+    <path class="k" stroke="${W}" d="M164,60 C168,56 174,56 177,60 C173,64 168,64 164,60 Z"/><circle class="f" fill="${B}" cx="171.5" cy="60" r="2"/>
+    <path stroke="${A}" d="M142,53 C146,49 152,49 157,51 M163,51 C168,49 174,49 178,53"/>
+    <path class="k" stroke="${W}" d="M146,72 C152,81 168,81 174,72 C166,75 154,75 146,72 Z"/><path stroke="${W}" d="M154,74 L154,77.5 M160,75 L160,79 M166,74 L166,77.5"/>
+    <circle stroke="${W}" cx="129.5" cy="62" r="2.5"/><circle stroke="${W}" cx="190.5" cy="62" r="2.5"/>`;
+  const faceBlank = `
+    <circle class="k" stroke="${W}" cx="150" cy="60" r="4.2"/><circle class="f" fill="${W}" cx="150" cy="60" r=".9"/>
+    <circle class="k" stroke="${W}" cx="170" cy="60" r="4.2"/><circle class="f" fill="${W}" cx="170" cy="60" r=".9"/>
+    <path stroke="${A}" d="M143,52 L157,52 M163,52 L177,52"/><path stroke="${K}" d="M150,75 L170,75"/>
+    <circle class="f" fill="${G}" cx="129.5" cy="62" r="3"/><circle class="f" fill="${G}" cx="190.5" cy="62" r="3"/>
+    ${arcs(124, 62, -1, G)}${arcs(196, 62, 1, G)}`;
+  const armUp = `<path stroke="${R}" d="M200,108 L213,85"/><circle stroke="${K}" cx="215" cy="81" r="4"/><path stroke="${K}" d="M217,77 L221,69"/>`;
+  const armDown = `<path stroke="${R}" d="M201,110 L208,121"/><path class="k" stroke="${K}" d="M204,122 C204,118 214,118 214,122 C214,125 204,125 204,122 Z"/>`;
+  return `${tag("PRESTON P. VALU", R)}${base}
+    ${P("p0", faceOn + armUp)}${P("p1", faceOn + armDown + seg("SYNERGY", 216, 40, 7, A))}${P("p2", faceBlank + armDown)}`;
+};
+
+/* ---- GUS with the mop ---- */
+const gus = () => {
+  const body = `
+    <path class="k" stroke="${M}" d="M134,128 L136,182 L157,182 L159,138 L161,138 L163,182 L184,182 L186,128 Z"/>
+    <path class="k" stroke="${W}" d="M134,182 L158,182 L158,188 L130,188 C130,184 131,182 134,182 Z M162,182 L186,182 C189,182 190,184 190,188 L162,188 Z"/>
+    <path class="k" stroke="${V}" d="M134,86 C140,80 150,80 160,84 C170,80 180,80 186,86 L189,130 L131,130 Z"/>
+    <ellipse class="k" stroke="${R}" cx="173" cy="99" rx="9" ry="5.5"/>${seg("GUS", 166.6, 97, 4, R, 1)}
+    <circle stroke="${A}" cx="140" cy="122" r="4"/><path stroke="${A}" d="M138,126 L136,132 M141,126 L141,133"/>
+    <path stroke="${K}" d="M154,76 L154,83 M166,76 L166,83"/>
+    <path class="k" stroke="${K}" d="M137,47 C136,66 148,77 160,77 C172,77 184,66 183,47"/>
+    <path stroke="${W}" d="M137,50 C134,54 135,60 138,62 M183,50 C186,54 185,60 182,62"/>
+    <path class="k" stroke="${B}" d="M136,46 C135,30 147,22 160,22 C173,22 185,30 184,46 Z"/>
+    <path class="k" stroke="${B}" d="M156,46 L204,46 C206,48 204,51 200,51 L156,51 Z"/>
+    <path stroke="${B}" d="M160,22 L160,30"/>
+    <path stroke="${W}" d="M146,52 L154,51 M166,51 L174,52"/>
+    <circle class="f" fill="${W}" cx="150.5" cy="56" r="1.5"/><circle class="f" fill="${W}" cx="169.5" cy="56" r="1.5"/>
+    <path stroke="${K}" d="M160,57 C156,64 159,67 164,65"/>
+    <path class="k" stroke="${W}" d="M144,68 C150,62 157,65 160,67 C163,65 170,62 176,68 C170,72 163,70 160,70 C157,70 150,72 144,68 Z"/>`;
+  const mop = (hx, hy, mx, my, ang) => `
+    <path stroke="${A}" class="mech" d="M${hx},${hy} L${mx},${my}"/>
+    <g transform="translate(${mx},${my}) rotate(${ang})">
+      <path class="k" stroke="${W}" d="M-12,0 L12,0 L14,4 L-14,4 Z"/>
+      ${[-12, -7, -2, 3, 8, 12].map(x => `<path stroke="${W}" d="M${x},4 L${x + (ang > 0 ? 2 : -2)},11"/>`).join("")}
+    </g>`;
+  const arms = (lx, ly, rx, ry) => `
+    <path stroke="${V}" d="M135,88 L${lx},${ly}"/><circle stroke="${K}" cx="${lx}" cy="${ly + 3}" r="3.2"/>
+    <path stroke="${V}" d="M185,88 L${rx},${ry}"/><circle stroke="${K}" cx="${rx}" cy="${ry + 3}" r="3.2"/>`;
+  return `${tag("GUS MOPLEY", B)}${floor()}
+    ${P("p0", mop(150, 70, 102, 178, -14) + arms(136, 108, 146, 104) + `<path class="dash" stroke="${D}" d="M80,190 L120,190"/>`)}
+    ${P("p1", mop(160, 66, 160, 178, 0) + arms(152, 110, 166, 100))}
+    ${P("p2", mop(170, 70, 218, 178, 14) + arms(176, 104, 186, 108) + `<path class="dash" stroke="${D}" d="M200,190 L240,190"/>`)}
+    ${body}`;
+};
+
+/* ---- MORRIS (Q*bert proportions) ---- */
+const morrisSym = (id, col = W) => `<symbol id="${id}" viewBox="0 0 120 110" overflow="visible">
+    <path stroke="${K}" d="M24,88 C-4,96 -10,62 10,58 C22,56 22,74 12,72"/>
+    <circle class="k" stroke="${col}" cx="30" cy="20" r="14"/><circle stroke="${K}" cx="30" cy="21" r="7.5"/>
+    <circle class="k" stroke="${col}" cx="72" cy="14" r="14"/><circle stroke="${K}" cx="72" cy="15" r="7.5"/>
+    <path class="k" stroke="${col}" d="M28,98 C14,98 12,66 24,52 C18,36 30,18 52,18 C78,16 92,34 88,54 C104,56 112,64 112,70 C108,78 94,80 86,78 C92,92 82,98 72,98 Z"/>
+    <circle class="f" fill="${K}" cx="111" cy="69" r="3.2"/>
+    <path stroke="${col}" d="M100,74 L118,70 M100,77 L118,80 M98,80 L112,88"/>
+    <circle class="k" stroke="${col}" cx="52" cy="44" r="10"/><circle class="k" stroke="${col}" cx="74" cy="42" r="9"/>
+    <circle class="f" fill="${col}" cx="55" cy="45" r="3.4"/><circle class="f" fill="${col}" cx="77" cy="43" r="3.2"/>
+    <path class="k" stroke="${col}" d="M90,79 L95,79 L95,85 L90,85 Z"/>
+    <path stroke="${col}" d="M40,22 L58,20 M44,18 L44,25 M50,17 L50,24 M56,17 L56,23"/>
+    <circle class="f implant" fill="${G}" cx="62" cy="20" r="2.6"/>
+    <path class="k" stroke="${col}" d="M26,98 C26,93 40,93 40,98 Z M62,98 C62,93 76,93 76,98 Z"/>
+  </symbol>`;
+const morris = () => `${tag("MORRIS", K)}${floor()}
+    ${P("p0", `<use href="#mor" x="100" y="80" width="120" height="110"/>`)}
+    ${P("p1", `<use href="#mor" x="108" y="54" width="120" height="110"/>
+       <path stroke="${D}" class="mech" d="M126,176 L136,176 M146,180 L162,180 M174,176 L184,176"/>`)}
+    ${P("p2", `<use href="#mor" x="100" y="80" width="120" height="110"/>
+       ${arcs(156, 98, -1, G, 3, .8)}${arcs(172, 98, 1, G, 3, .8)}${seg("!", 206, 70, 14, A)}
+       <path stroke="${D}" d="M120,96 L112,92 M118,104 L110,104"/>`)}`;
+
+/* ---- IRIS CANDOR ---- */
+const iris = () => {
+  const base = `
+    <path class="k" stroke="${V}" d="M116,190 L118,128 C118,104 132,94 150,92 L160,104 L170,92 C188,94 202,104 202,128 L204,190 Z"/>
+    <path stroke="${V}" d="M160,104 L160,190"/>${[116, 132, 148, 164].map(y => `<circle stroke="${V}" cx="165" cy="${y}" r="1.6"/>`).join("")}
+    ${[150, 155, 160, 165, 170].map((x, i) => `<circle stroke="${W}" cx="${x}" cy="${97 + Math.abs(i - 2) * -1.2 + 2}" r="1.5"/>`).join("")}
+    <path stroke="${K}" d="M153,84 L153,92 M167,84 L167,92"/>
+    <path class="k" stroke="${K}" d="M139,50 C138,71 148,84 160,84 C172,84 182,71 181,50"/>
+    <path class="k" stroke="${W}" d="M137,56 C134,37 146,29 160,29 C174,29 186,37 183,56 C178,46 168,42 160,42 C152,42 142,46 137,56 Z"/>
+    <circle class="k" stroke="${W}" cx="160" cy="22" r="8"/><path stroke="${W}" d="M154,20 C158,18 162,18 166,20 M150,36 C154,33 158,32 162,32"/>
+    <path class="k" stroke="${A}" d="M143,57 L157,56 L156,63 L145,64 Z M163,56 L177,57 L175,64 L164,63 Z"/><path stroke="${A}" d="M157,58 L163,58"/>
+    <path stroke="${A}" class="dash" d="M143,60 C134,72 136,88 146,96"/>
+    <circle class="f" fill="${W}" cx="151" cy="60" r="1.4"/><circle class="f" fill="${W}" cx="169" cy="60" r="1.4"/>
+    <path stroke="${K}" d="M160,63 C157,69 160,71 163,70 M146,70 L149,72.5 M174,70 L171,72.5"/>`;
+  const hands = `<path stroke="${V}" d="M124,110 L138,128 L150,128 M196,110 L182,128 L170,128"/>
+    <path class="k" stroke="${K}" d="M148,124 C150,120 170,120 172,124 C172,130 148,130 148,124 Z"/>`;
+  const gun = (fire) => `
+    <path stroke="${V}" d="M196,108 L212,92"/>
+    <path class="k mech" stroke="${R}" d="M204,70 L236,70 L238,78 L216,78 L214,90 L206,90 Z"/>
+    <path stroke="${R}" class="mech" d="M209,70 L212,64 L230,64 L233,70"/>
+    <circle stroke="${K}" cx="211" cy="92" r="3.5"/>
+    ${fire ? spark(248, 76, 7, A) + seg("KA-CHUNK", 222, 44, 7, A) : ""}
+    <path stroke="${V}" d="M124,110 L138,128 L150,128"/>`;
+  return `${tag("IRIS CANDOR", V)}${base}
+    ${P("p0", hands + `<path stroke="${K}" d="M153,75 C157,77 163,77 167,74"/>`)}
+    ${P("p1", gun(false) + `<path stroke="${K}" d="M153,76 L167,76"/>`)}
+    ${P("p2", gun(true) + `<path stroke="${K}" d="M152,74 C157,79 164,79 168,73"/>`)}`;
+};
+
+/* ---- THE CORRESPONDING AUTHOR (hooded) ---- */
+const author = () => {
+  const skull = (x, y, r = 0) => `<g transform="translate(${x},${y}) rotate(${r})">
+      <path class="k" stroke="${W}" d="M-7,2 C-8,-7 -3,-10 0,-10 C3,-10 8,-7 7,2 L4,3 L4,7 L-4,7 L-4,3 Z"/>
+      <circle class="f" fill="${W}" cx="-3" cy="-2" r="1.6"/><circle class="f" fill="${W}" cx="3" cy="-2" r="1.6"/>
+      <path stroke="${W}" d="M-2,5 L-2,7 M0,5 L0,7 M2,5 L2,7"/></g>`;
+  const base = `
+    <path class="k" stroke="${V}" d="M118,190 L131,112 C134,80 146,56 160,54 C174,56 186,80 189,112 L202,190 Z"/>
+    <path class="k" stroke="${V}" d="M144,98 C143,78 151,68 160,68 C169,68 177,78 176,98 C169,103 151,103 144,98 Z"/>
+    <path stroke="${V}" d="M140,120 C144,150 142,172 136,190 M180,120 C176,150 178,172 184,190 M160,140 L160,190"/>
+    <circle stroke="${R}" cx="160" cy="124" r="8"/><circle class="f" fill="${R}" cx="160" cy="124" r="3.6"/>
+    <path class="k mech" stroke="${N}" d="M214,168 L262,168 L262,178 L214,178 Z"/>`;
+  const eyes = (c) => `<circle class="f" fill="${c}" cx="155" cy="88" r="1.6"/><circle class="f" fill="${c}" cx="165" cy="88" r="1.6"/>`;
+  return `${tag("THE CORRESPONDING AUTHOR", V)}${floor()}${base}
+    ${P("p0", eyes(W) + `<path stroke="${V}" d="M186,112 L202,96"/><circle stroke="${K}" cx="204" cy="94" r="3"/>
+       <path stroke="${A}" class="mech" d="M204,94 L214,64"/>${skull(216, 58, 18)}`)}
+    ${P("p1", eyes(R) + `<path stroke="${V}" d="M186,114 L210,138"/><circle stroke="${K}" cx="212" cy="140" r="3"/>
+       <path stroke="${A}" class="mech" d="M212,140 L236,152"/>${skull(240, 158, 116)}
+       <path stroke="${R}" d="M226,166 L220,160 M242,172 L250,170 M254,162 L260,156"/>${seg("TOK", 246, 134, 8, R)}`)}
+    ${P("p2", eyes(W) + `<path stroke="${V}" d="M186,112 L196,102"/><circle stroke="${K}" cx="198" cy="100" r="3"/>
+       <path stroke="${A}" class="mech" d="M198,100 L224,84"/>${skull(230, 80, 60)}${seg("THE AUTHORS SHOULD", 196, 22, 6, M, 1.2)}${seg("CONSIDER...", 214, 32, 6, M, 1.2)}`)}`;
+};
+
+/* ================================================================ *
+ *  OBJECTS
+ * ================================================================ */
+
+/* ---- 3T scanner + thermos (G&W projectile) ---- */
+const mri = () => {
+  const thermos = (x, y, r) => `<g transform="translate(${x},${y}) rotate(${r})">
+     <path class="k" stroke="${A}" d="M-6,-14 L6,-14 L7,14 C7,17 -7,17 -7,14 Z"/><path class="k" stroke="${A}" d="M-5,-14 L-5,-19 L5,-19 L5,-14"/>
+     ${seg("NED", -5.2, -5, 4, A, 1)}</g>`;
+  return `${tag("THE BIG DONUT  3T", W)}${floor(182)}
+    <ellipse class="dash" stroke="${N}" cx="150" cy="100" rx="104" ry="80"/><ellipse class="dash" stroke="${N}" cx="150" cy="100" rx="128" ry="96"/>
+    <path class="k" stroke="${W}" d="M110,30 L196,30 C208,30 214,36 214,48 L214,170 L86,170 L86,48 C86,36 94,30 110,30 Z"/>
+    <path stroke="${W}" d="M214,44 L222,48 L222,166 L214,170"/>
+    <circle class="k" stroke="${W}" cx="150" cy="96" r="38"/><circle class="k" stroke="${M}" cx="150" cy="96" r="29"/>
+    <circle class="dash" stroke="${N}" cx="150" cy="96" r="22"/>
+    ${seg("3T", 98, 40, 12, R)}<circle class="f" fill="${G}" cx="202" cy="44" r="2.4"/>
+    <path class="k mech" stroke="${B}" d="M150,110 L282,110 L282,117 L150,117 Z"/>
+    <path stroke="${B}" class="mech" d="M248,117 L254,182 M272,117 L266,182"/>
+    <path stroke="${M}" class="mech" d="M100,150 L200,150 M100,158 L170,158"/>
+    ${P("p0", thermos(40, 160, 0))}
+    ${P("p1", thermos(54, 120, 28) + `<path stroke="${D}" class="mech" d="M36,150 L42,140 M30,146 L34,138"/>`)}
+    ${P("p2", thermos(86, 92, 62) + `<path stroke="${A}" class="mech" d="M58,100 L70,98 M56,108 L68,106 M60,92 L72,90"/>`)}
+    ${P("p3", `<path stroke="${R}" d="M136,84 L130,76 M150,80 L150,70 M164,84 L170,76 M196,80 L222,70"/>` + seg("CLANG", 226, 62, 9, R) + spark(150, 96, 9, A))}`;
+};
+
+/* ---- the brain, the layers, and real vs too-clean data ---- */
+const brain = () => `${tag("SIX LAYERS / TWO DATASETS", W)}
+    <path class="k" stroke="${W}" d="M22,104 C14,76 32,48 64,44 C86,34 116,42 128,60 C144,66 148,92 138,106 C130,122 112,128 98,122 C88,132 68,132 60,122 C46,126 28,118 22,104 Z"/>
+    <path stroke="${M}" d="M40,72 C52,64 60,74 72,66 M58,54 C66,62 80,56 88,62 M96,52 C100,62 112,62 118,70 M34,96 C46,88 60,96 70,88 C80,82 92,90 104,84 M76,104 C88,98 100,108 114,100 M48,110 C56,104 62,112 70,108"/>
+    <path class="k" stroke="${W}" d="M96,122 C102,138 124,138 128,124"/><path stroke="${M}" d="M102,128 L122,128 M104,133 L120,132"/>
+    <path stroke="${W}" d="M94,124 L90,146"/>
+    <path stroke="${R}" d="M70,72 L182,40"/><circle class="f" fill="${R}" cx="70" cy="72" r="2.2"/>
+    <rect class="k mech" stroke="${N}" x="182" y="24" width="122" height="66"/>
+    ${[R, A, G, B, V, K].map((c, i) => `<path stroke="${c}" d="M190,${33 + i * 10} C206,${29 + i * 10} 220,${37 + i * 10} 236,${33 + i * 10} C252,${29 + i * 10} 266,${37 + i * 10} 282,${33 + i * 10} C288,${31 + i * 10} 292,${33 + i * 10} 296,${33 + i * 10}"/>`).join("")}
+    <rect class="k mech" stroke="${D}" x="16" y="152" width="140" height="38"/><rect class="k mech" stroke="${D}" x="164" y="152" width="140" height="38"/>
+    ${seg("NED", 20, 156, 5, W, 1.2)}${seg("P. VALU", 168, 156, 5, A, 1.2)}
+    <polyline id="noisy" stroke="${W}" points=""/>
+    <path stroke="${A}" d="M172,182 C200,182 210,166 234,166 C258,166 268,182 298,182"/>`;
+
+/* ---- pneumatic tube station + canister ---- */
+const tube = () => {
+  const can = (y) => `<g transform="translate(120,${y})"><rect class="f" fill="${A}" x="-4.5" y="-10" width="9" height="20" rx="4.5"/></g>`;
+  return `${tag("TUBE STATION", W)}
+    <path stroke="${W}" class="mech" d="M114,0 L114,64 M126,0 L126,64 M114,124 L114,200 M126,124 L126,200"/>
+    ${[18, 46, 150, 178].map(y => `<path stroke="${W}" class="mech" d="M110,${y} L130,${y} M110,${y + 3} L130,${y + 3}"/>`).join("")}
+    <path class="k" stroke="${W}" d="M88,64 L152,64 C156,64 158,66 158,70 L158,118 C158,122 156,124 152,124 L88,124 C84,124 82,122 82,118 L82,70 C82,66 84,64 88,64 Z"/>
+    <path class="k mech" stroke="${M}" d="M96,74 L124,74 L124,114 L96,114 Z"/><path stroke="${M}" d="M120,94 L124,94"/>
+    <circle class="k" stroke="${W}" cx="142" cy="84" r="9"/><circle class="f" fill="${W}" cx="142" cy="84" r="1.8"/>
+    <path stroke="${W}" d="M136,90 L138,88 M148,90 L146,88 M142,75 L142,77"/>
+    <path id="needle" stroke="${R}" d="M142,84 L148,79"/>
+    <circle class="f" fill="${G}" cx="142" cy="108" r="2.4"/>
+    <path stroke="${D}" class="mech" d="M158,96 L232,96 C240,96 244,100 244,108 L244,200 M158,108 L224,108 C230,108 232,110 232,116 L232,200"/>
+    ${seg("B3", 252, 150, 14, R)}<path stroke="${R}" class="mech" d="M262,172 L262,190 M256,184 L262,190 L268,184"/>
+    ${P("p0", can(20))}${P("p1", can(44))}
+    ${P("p2", `<path stroke="${G}" d="M98,60 C100,56 104,56 106,60 M134,60 C136,56 140,56 142,60"/>` + seg("THUNK", 168, 64, 7, G))}
+    ${P("p3", can(150))}${P("p4", can(182) + `<path stroke="${A}" d="M108,196 L104,192 M132,196 L136,192"/>`)}`;
+};
+
+/* ---- the espresso machine (broken) ---- */
+const espresso = () => `${tag("ESPRESSO  (BROKEN)", W)}${floor(182)}
+    <path class="k mech" stroke="${W}" d="M104,48 L216,48 L216,182 L104,182 Z"/><path class="mech" stroke="${W}" d="M104,62 L216,62"/>
+    ${[112, 124, 136, 148, 160, 172, 184, 196, 208].map(x => `<path class="mech" stroke="${M}" d="M${x},38 L${x},48"/>`).join("")}
+    <path class="mech" stroke="${M}" d="M108,38 L212,38"/>
+    <circle class="k" stroke="${W}" cx="190" cy="84" r="12"/><path stroke="${W}" d="M182,92 L184,90 M198,92 L196,90 M190,73 L190,75"/>
+    <path stroke="${R}" d="M190,84 L198,78"/><circle class="f" fill="${R}" cx="190" cy="84" r="1.8"/>
+    <path class="k mech" stroke="${W}" d="M128,96 L160,96 L156,108 L132,108 Z"/>
+    <path class="mech" stroke="${B}" d="M160,100 L194,104"/><circle stroke="${B}" cx="196" cy="104" r="2.5"/>
+    <path class="mech" stroke="${M}" d="M112,168 L208,168"/>
+    <path class="k" stroke="${W}" d="M134,148 L154,148 L152,166 L136,166 Z"/><path stroke="${W}" d="M154,152 C160,152 160,160 153,160"/>
+    <g transform="rotate(-8 64 108)"><path class="k mech" stroke="${R}" d="M30,90 L98,90 L98,128 L30,128 Z"/>
+      ${seg("OUT OF", 38, 98, 7, R)}${seg("ORDER", 40, 112, 7, R)}</g>
+    <path stroke="${M}" class="mech" d="M96,92 L104,96"/>
+    ${P("p0", `<circle class="f" fill="${K}" cx="144" cy="118" r="1.6"/><path stroke="${W}" d="M220,40 C226,34 218,28 224,22"/>`)}
+    ${P("p1", `<circle class="f" fill="${K}" cx="144" cy="130" r="1.6"/><path stroke="${W}" d="M226,40 C232,34 224,28 230,22 M216,34 C220,30 214,26 218,20"/>`)}
+    ${P("p2", `<circle class="f" fill="${K}" cx="144" cy="142" r="1.6"/>`)}
+    ${P("p3", `<path stroke="${K}" d="M140,148 C142,145 146,145 148,148"/>${arcs(100, 70, -1, R, 2, .8)}${arcs(220, 70, 1, R, 2, .8)}`)}`;
+
+/* ---- the -80 freezer ---- */
+const freezer = () => `${tag("THE -80", W)}${floor(186)}
+    <path class="k mech" stroke="${W}" d="M112,22 L208,22 L208,186 L112,186 Z"/>
+    <path class="mech" stroke="${W}" d="M112,36 L208,36"/>
+    <rect class="k mech" stroke="${N}" x="124" y="26" width="38" height="8"/>
+    ${seg("-80", 128, 27.5, 5, G, 1.1)}<circle class="f" fill="${G}" cx="196" cy="30" r="2"/>
+    <rect class="k mech" stroke="${R}" x="124" y="150" width="56" height="16"/>${seg("DO NOT THAW", 127, 155, 4.2, R, 1)}
+    ${P("p0", `<path class="mech" stroke="${B}" d="M198,90 L198,130"/><path class="mech" stroke="${M}" d="M112,40 L208,40"/>
+       ${star4(124, 60, 5, W)}${star4(186, 112, 4, W)}${star4(146, 132, 3, W)}`)}
+    ${P("p1", `<path class="mech" stroke="${B}" d="M198,90 L198,130"/>${star4(178, 52, 4, W)}${star4(134, 96, 5, W)}${star4(192, 176, 3, W)}`)}
+    ${P("p2", `<path class="k mech" stroke="${W}" d="M208,36 L250,44 L250,178 L208,186 Z"/><path class="mech" stroke="${B}" d="M242,96 L242,128"/>
+       <path class="dash" stroke="${B}" d="M206,170 C220,176 232,172 240,180 M204,150 C226,152 238,146 262,156 M208,128 C230,124 252,132 276,124"/>
+       <path class="k" stroke="${K}" d="M196,140 L210,140 L212,148 L196,148 Z"/><path stroke="${K}" d="M200,144 L210,144"/>`)}`;
+
+/* ---- Q*bert homage: the steps to B3 ---- */
+const qsteps = () => {
+  const cubes = []; const S = 22, H = 11, DEP = 22;
+  const top = (x, y) => `M${x},${y}L${x + S},${y + H}L${x},${y + 2 * H}L${x - S},${y + H}Z`;
+  const rows = [[160], [138, 182], [116, 160, 204], [94, 138, 182, 226]];
+  let s = "", tops = {};
+  rows.forEach((r, ri) => r.forEach((x, ci) => {
+    const y = 40 + ri * (H + DEP);
+    s += `<path class="k" stroke="${N}" d="M${x - S},${y + H}L${x},${y + 2 * H}L${x},${y + 2 * H + DEP}L${x - S},${y + H + DEP}Z"/>
+          <path class="k" stroke="${V}" d="M${x + S},${y + H}L${x},${y + 2 * H}L${x},${y + 2 * H + DEP}L${x + S},${y + H + DEP}Z"/>
+          <path stroke="${V}" class="dash" d="M${x + 6},${y + 2 * H + 8} L${x + S - 4},${y + H + 8}"/>
+          <path class="k" stroke="${B}" d="${top(x, y)}"/>`;
+    tops[ri + "-" + ci] = [x, y];
+  }));
+  const mini = (x, y) => `<use href="#mor2" x="${x - 13}" y="${y - 12}" width="28" height="26"/>`;
+  const lit = (k) => { const [x, y] = tops[k]; return `<path class="f" fill="${A}" d="${top(x, y)}" opacity=".9"/>`; };
+  return `${tag("THE STEPS TO B3", W)}${s}
+    ${P("p0", lit("0-0") + mini(160, 40))}
+    ${P("p1", lit("1-1") + mini(182, 73))}
+    ${P("p2", lit("2-1") + mini(160, 106))}
+    ${P("p3", lit("3-2") + mini(182, 139) + `<path class="k" stroke="${W}" d="M200,118 L262,118 L262,138 L214,138 L206,146 L208,138 L200,138 Z"/>${seg("#@!?@!", 207, 124.5, 8, W)}`)}
+    ${seg("B3", 270, 176, 10, R)}<path stroke="${R}" class="mech" d="M262,181 L252,181 M256,177 L252,181 L256,185"/>
+    <path class="dash" stroke="${D}" d="M30,186 L240,186"/>`;
+};
+
+/* ================================================================ *
+ *  BUILD
+ * ================================================================ */
+const defs = `<defs>${morrisSym("mor")}${morrisSym("mor2", W)}</defs>`;
+const CHARS = [
+  ["ned", ned, "<b>NED NULL</b> — stand, walk, walk, shrug. Ginger hair in signal red, glasses in ink, skin as a pink line, T-shirt green."],
+  ["preston", preston, "<b>PRESTON</b> — the grin, the pitch, then the blank: pupils to pinpoints, earbuds switch <i>on</i> (the only fill) with ((( ))) marks."],
+  ["gus", gus, "<b>GUS</b> — three mop positions, pure Game &amp; Watch. Cap in cool blue, uniform in robe-violet, name patch in signal red."],
+  ["morris", morris, "<b>MORRIS</b> — Q*bert proportions: big head, bigger eyes, snout. Sit, hop, itch (the implant is lit)."],
+  ["iris", iris, "<b>IRIS CANDOR</b> — pearls, cat-eye glasses on a chain, and a staple gun. Folded hands, aim, KA-CHUNK."],
+  ["author", author, "<b>THE CORRESPONDING AUTHOR</b> — a hood, two eyes, and the insignia lit red. The skull gavel calls the Table to order."],
+];
+const OBJS = [
+  ["mri", mri, "<b>THE BIG DONUT</b> — the thermos flies in four fixed positions, then CLANG. Field lines are dotted deep-blue."],
+  ["brain", brain, "<b>THE THEME, DRAWN</b> — Ned's data wobbles every frame; Preston's curve never moves. Six too-perfect layers in the inset."],
+  ["tube", tube, "<b>THE TUBE STATION</b> — a canister steps down the pipe the way a Game &amp; Watch ball falls. Double-line pipes, a gauge with a lit hub."],
+  ["espresso", espresso, "<b>THE ESPRESSO MACHINE</b> — the drip falls in three positions; the gauge sits in the red. Steam is a drawn squiggle."],
+  ["freezer", freezer, "<b>THE -80</b> — frost sparkles blink in place; then the door opens on fog and something that shouldn't be in there."],
+  ["qsteps", qsteps, "<b>THE STEPS TO B3</b> — the Q*bert homage: isometric cubes, tops light up as Morris lands, and he swears in segments."],
+];
+const timers = [];
+function build(list, host) {
+  const el = document.getElementById(host);
+  list.forEach(([id, fn, cap]) => {
+    const fig = document.createElement("figure");
+    fig.innerHTML = `<svg class="t" id="t-${id}" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">${defs}${fn()}</svg><figcaption>${cap}</figcaption>`;
+    el.appendChild(fig);
+  });
+}
+build(CHARS, "chars"); build(OBJS, "objs");
+
+// titles
+document.getElementById("titleSvg").innerHTML = seg("GAIN CONTROL", 0, 8, 46, W, 2.2) + seg("STYLE SHEET 01  -  LINE  POSE  SEGMENT", 2, 76, 11, M, 1.4)
+  + `<circle class="f" fill="${G}" cx="626" cy="16" r="5"/>`;
+document.getElementById("secChars").innerHTML = seg("CHARACTERS", 0, 4, 14, W, 1.6) + `<path stroke="${D}" class="mech" d="M140,11 L640,11"/>`;
+document.getElementById("secObjs").innerHTML = seg("OBJECTS + PLACES", 0, 4, 14, W, 1.6) + `<path stroke="${D}" class="mech" d="M206,11 L640,11"/>`;
+document.getElementById("palette").innerHTML = PAL.map(([n, c]) => `<div class="sw" style="color:${c}"><i></i>${n}</div>`).join("");
+
+/* ---------------- Game & Watch pose clock ---------------- */
+let playing = true;
+const SEQ = {
+  ned: [0, 1, 2, 1, 2, 1, 2, 0, 3, 3, 0], preston: [0, 0, 1, 1, 0, 2, 2, 1], gus: [0, 1, 2, 1], morris: [0, 0, 1, 0, 2, 2, 0],
+  iris: [0, 0, 1, 1, 2, 2], author: [2, 0, 1, 1, 0], mri: [0, 1, 2, 3, 3], tube: [0, 1, 2, 3, 4],
+  espresso: [0, 1, 2, 3, 3], freezer: [0, 1, 0, 1, 2, 2, 2], qsteps: [0, 1, 2, 3, 3, 3],
+};
+const RATE = { ned: 260, preston: 520, gus: 320, morris: 420, iris: 560, author: 520, mri: 380, tube: 300, espresso: 420, freezer: 520, qsteps: 460 };
+Object.keys(SEQ).forEach(id => {
+  const svg = document.getElementById("t-" + id); if (!svg) return;
+  const poses = svg.querySelectorAll(".pose"); let i = 0;
+  const show = () => { const p = SEQ[id][i % SEQ[id].length]; poses.forEach((g, k) => g.classList.toggle("on", k === p)); };
+  show();
+  timers.push(setInterval(() => { if (!playing) return; i++; show(); }, RATE[id]));
+});
+// Ned's data: re-roll the noise each tick; Preston's never changes.
+const noisy = document.getElementById("noisy");
+function roll() { let pts = []; for (let x = 0; x <= 128; x += 4) { const base = 176 - 10 * Math.exp(-((x - 64) ** 2) / 600); pts.push(`${22 + x},${(base + (Math.random() - .5) * 9).toFixed(1)}`); } noisy.setAttribute("points", pts.join(" ")); }
+roll(); setInterval(() => playing && roll(), 300);
+// gauge needle twitch
+const needle = document.getElementById("needle");
+setInterval(() => { if (!playing) return; const a = Math.random() * 1.4 - .7; needle.setAttribute("d", `M142,84 L${(142 + 7 * Math.cos(a - .7)).toFixed(1)},${(84 + 7 * Math.sin(a - .7)).toFixed(1)}`); }, 300);
+
+document.getElementById("bGhost").onclick = (e) => { const on = document.body.classList.toggle("ghosts"); e.currentTarget.setAttribute("aria-pressed", on); };
+document.getElementById("bPlay").onclick = (e) => { playing = !playing; e.currentTarget.setAttribute("aria-pressed", playing); };
+})();
+</script>
+</body>
+</html>
