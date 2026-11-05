@@ -38,6 +38,12 @@
   #frame * { transition: stroke .6s, fill .6s; }
   #frame.night .day-only, #frame:not(.night) .night-only { display: none; }
   [data-hs] { cursor: pointer; }
+  .opt { cursor: pointer; }
+  .opt:hover .bg { fill: var(--W); }
+  .opt:hover .g path, .opt:hover .g circle { stroke: #000; }
+  .opt:hover .g .fW, .opt:hover .g .fR { fill: #000; }
+  .opt:hover .lbl path { stroke: var(--A); }
+  #chooser .pz { display: none; } #chooser .pz.on { display: inline; }
 
   /* pose switching (Game & Watch) */
   .pz { display: none; } .pz.on { display: inline; }
@@ -346,7 +352,7 @@ const SEATS = [90, 170, 250, 390, 470, 550];
 function rowGroup(ri) {
   const k = ROWS[ri], y = P(0, FY, k)[1], X = (Xf) => P(Xf, FY, k)[0];
   let people = "", chairs = "";
-  SEATS.forEach(Xf => chairs += chairBack(X(Xf), y, k));
+  SEATS.forEach(Xf => { if (ri === 2 && Xf === 550) return; chairs += chairBack(X(Xf), y, k); });  // gap by the snack table
   if (ri === 0) {
     people += sitter(X(390), y, k, { hs: "quorum", cls: "day-only", body: "sN", head: "sK",
       extra: (x, y, q) => `<path class="sW" d="M${x - 16 * q},${y - 80 * q} Q${x},${y - 70 * q} ${x + 16 * q},${y - 80 * q}"/><circle class="fA" cx="${x + 27 * q}" cy="${y - 44 * q}" r="1.8"/>` });
@@ -595,15 +601,17 @@ const ITEMS = {
   tag: { name: "lost & found tag", look: "A lost-and-found tag. Gus has filled out four hundred of these for hooded robes. He's never asked.",
     g: (x, y) => `<path class="sW" d="M${x - 7},${y - 8} L${x + 4},${y - 8} L${x + 8},${y} L${x + 4},${y + 8} L${x - 7},${y + 8} Z"/><circle class="fW" cx="${x + 3}" cy="${y}" r="1.5"/>` },
 };
-const VERBS = ["walk", "look", "use", "talk"];
+ICON.play = (x, y, c) => `<path class="${c}" d="M${x - 4},${y - 6} L${x + 6},${y} L${x - 4},${y + 6} Z"/>`;
 function hud() {
   const night = state.mode === "night";
   let s = `<rect x="0" y="291" width="640" height="69" fill="#000"/><path class="hl sD" d="M0,292 L640,292 M152,302 L152,350 M276,302 L276,350 M510,302 L510,350"/>`;
-  VERBS.forEach((v, i) => {
-    const x = 26 + i * 33, y = 318, on = state.verb === v;
-    s += `<g data-verb="${v}" style="cursor:pointer">${on ? `<rect class="fW" x="${x - 14}" y="${y - 13}" width="28" height="26"/>` : `<rect class="hl sD" x="${x - 14}" y="${y - 13}" width="28" height="26"/>`}
-      ${ICON[v](x, y, on ? "s0" : "sW")}${seg(v, x - segW(v, 4.2) / 2, 338, 4.2, on ? "sW" : "sM", .8)}<rect x="${x - 15}" y="${y - 14}" width="30" height="34" fill="transparent"/></g>`;
-  });
+  s += chip(night ? "GUS MOPLEY" : "NED NULL", 14, 300, 6.5, night ? "fB" : "fG");
+  if (state.using) {
+    s += chip("USE " + ITEMS[state.using].name.toUpperCase() + " ON", 14, 318, 4.6, "fA") + seg("RIGHT-CLICK TO CANCEL", 14, 334, 3.6, "sM", .7);
+  } else {
+    s += seg("CLICK FLOOR", 14, 320, 4.2, "sW", .8) + seg("WALK", 92, 320, 4.2, "sM", .8);
+    s += seg("CLICK THINGS", 14, 331, 4.2, "sW", .8) + seg("CHOOSE", 92, 331, 4.2, "sM", .8);
+  }
   const items = night ? ["keys", "flashlight", "tag"] : ["recorder", "notebook", "thermos"];
   s += seg("INVENTORY", 164, 300, 4.2, "sM", .8);
   items.forEach((id, i) => { const x = 176 + i * 34, y = 326; s += `<g data-item="${id}" style="cursor:pointer">${ITEMS[id].g(x, y)}<rect x="${x - 14}" y="${y - 16}" width="28" height="32" fill="transparent"/></g>`; });
@@ -621,7 +629,7 @@ function hud() {
 /* ================================================================ *
  *  STATE + BUILD
  * ================================================================ */
-const state = { mode: "day", verb: "walk", score: 0, scored: new Set(), busy: false, taken: new Set(), status: "",
+const state = { mode: "day", score: 0, chooser: null, using: null, recorded: false, scored: new Set(), busy: false, taken: new Set(), status: "",
   actor: { x: 320, y: 280, dir: 1, tx: 320, ty: 280, walking: false, step: 0, cb: null } };
 
 svg.innerHTML = room() + `<g id="sortables">
@@ -631,13 +639,12 @@ svg.innerHTML = room() + `<g id="sortables">
     <g data-depth="${P(0, FY, 0.82)[1] - 1}">${tableGroup()}</g>
     <g data-depth="${P(0, FY, ROWS[2])[1]}">${rowGroup(2)}</g>
     <g data-depth="actor" id="actorWrap"><g id="actor" data-pose="0"></g></g>
-  </g><g id="hud"></g>`;
+  </g><g id="hud"></g><g id="chooser"></g>`;
 const sortables = $("#sortables"), actorWrap = $("#actorWrap"), actorEl = $("#actor");
 function drawActor() { actorEl.innerHTML = state.mode === "night" ? gusFigure() : nedFigure(); }
 
 /* ---------------- helpers ---------------- */
 const hover = $("#hover"), msg = $("#msg");
-function setVerb(v) { state.verb = v; hud(); }
 let actx;
 function blip() { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); const t = actx.currentTime;
   [880, 1320].forEach((f, i) => { const o = actx.createOscillator(), g = actx.createGain(); o.type = "square"; o.frequency.value = f;
@@ -699,7 +706,7 @@ async function runConvo(key) {
   blinkTimers.forEach(clearTimeout); blinkTimers = [];
   convo.classList.remove("show");
   if (c.score) addScore(...c.score);
-  if (key === "cPreston") { state.status = "RECORDING"; hud(); setTimeout(() => { state.status = ""; hud(); }, 3500); }
+  if (key === "cPreston") { state.recorded = true; state.status = "RECORDING"; hud(); setTimeout(() => { state.status = ""; hud(); }, 3500); }
   state.busy = false;
 }
 
@@ -707,33 +714,102 @@ async function runConvo(key) {
 function svgPoint(e) { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
 function hsFrom(t) { const el = t.closest && t.closest("[data-hs]"); if (!el) return null; const id = el.dataset.hs, h = HS[id];
   if (!h || !h[state.mode] || state.taken.has(id)) return null; return id; }
-const VL = { walk: "Walk to", look: "Look at", use: "Use", talk: "Talk to" };
+
+// object-specific labels for the chooser buttons
+const LABELS = {
+  day: { pizza: { use: "TAKE SLICE" }, door: { use: "OPEN" }, tube: { use: "OPEN HATCH" }, screen: { use: "TOUCH" }, lectern: { use: "TAP MIC" },
+         coffee: { use: "SIP" }, quorum: { use: "TAP SHOULDER" }, iris: { use: "TAP SHOULDER" }, preston: { use: "SHAKE HAND" },
+         faculty: { use: "WAVE" }, exit: { use: "TAP" }, morris: { use: "REACH" } },
+  night: { pizza: { use: "FOLD BOX" }, door: { use: "OPEN" }, tube: { use: "LISTEN" }, screen: { use: "WIPE" }, lectern: { use: "TAKE CARD" },
+           robe: { use: "TAG IT" }, exit: { use: "TAP" }, morris: { use: "REACH" } },
+};
+// using an inventory item on something
+const WITH = {
+  preston: { recorder: "You hold up the recorder. Preston leans into it like it's a press junket.", thermos: "You offer Preston your thermos. He only drinks 'adaptogenic oat synergy.'" },
+  iris: { recorder: "THE OLD WOMAN|\"Every subject?\" She snorts. \"Ask him how many subjects. Then ask him where.\"" },
+  tube: { thermos: "It almost fits. Something tells you not to send anything metal anywhere near the basement.", keys: "Gus opens the hatch. Empty. It smells faintly of incense. That's new." },
+  morris: { notebook: "Morris sniffs the notebook and declines to be documented.", flashlight: "The beam lands on the rat. The rat stares back, unbothered, like it's been interrogated before." },
+  pizza: { thermos: "You are not putting pizza in the thermos. You have standards. Barely." },
+  door: { keys: "Gus tries key 17. Then 18. Then notices the door was never locked." },
+  screen: { notebook: "You sketch the six layers. They're even too clean to draw." },
+  robe: { tag: "use" },
+};
+
+const chooserEl = $("#chooser");
+function optionsFor(t) {
+  if (t.type === "item") { const o = [["look", "LOOK"], ["use", "USE ON"]]; if (t.id === "recorder" && state.recorded) o.push(["play", "PLAY"]); return o; }
+  const h = HS[t.id][state.mode], L = (LABELS[state.mode][t.id]) || {}, o = [];
+  if (h.look) o.push(["look", L.look || "LOOK"]);
+  if (h.talk) o.push(["talk", L.talk || "TALK"]);
+  if (h.use) o.push(["use", L.use || "USE"]);
+  return o;
+}
+function openChooser(t, x, y) {
+  const opts = optionsFor(t); if (!opts.length) return;
+  const name = (t.type === "item" ? ITEMS[t.id].name : HS[t.id].label).toUpperCase();
+  const R = 34, up = y > 110;
+  x = Math.max(56, Math.min(584, x));
+  const spreads = { 1: [-90], 2: [-128, -52], 3: [-150, -90, -30], 4: [-165, -115, -65, -15] };
+  const angles = spreads[opts.length].map(a => (up ? a : -a) * Math.PI / 180);
+  const ch = 7, cw = segW(name, ch) + ch * .9, cy = up ? y - R - 42 : y + R + 26;
+  let full = `<g class="pz" data-g="ch" data-i="1"><rect class="k" x="${x - cw / 2 - 2}" y="${cy - 2}" width="${cw + 4}" height="${ch * 1.7 + 4}"/>${chip(name, x - cw / 2, cy, ch, "fW")}`;
+  opts.forEach(([v, lbl], i) => {
+    const bx = x + R * Math.cos(angles[i]), by = y + R * Math.sin(angles[i]);
+    full += `<path class="hl sW" d="M${x + 8 * Math.cos(angles[i])},${y + 8 * Math.sin(angles[i])} L${bx - 11 * Math.cos(angles[i])},${by - 11 * Math.sin(angles[i])}"/>
+      <g class="opt" data-opt="${v}"><circle class="k sW bg" cx="${bx}" cy="${by}" r="12"/>
+        <g class="g" transform="translate(${bx},${by}) scale(.78)">${ICON[v](0, 0, "sW")}</g>
+        <g class="lbl"><rect class="k" x="${bx - segW(lbl, 4.8) / 2 - 2}" y="${(up ? by - 23 : by + 15) - 1.5}" width="${segW(lbl, 4.8) + 4}" height="7.8"/>${seg(lbl, bx - segW(lbl, 4.8) / 2, up ? by - 23 : by + 15, 4.8, "sW", .8)}</g>
+        <circle cx="${bx}" cy="${by}" r="14" fill="transparent"/></g>`;
+  });
+  full += `</g>`;
+  const ret = `<circle class="hl sW" cx="${x}" cy="${y}" r="5"/><path class="hl sW" d="M${x - 9},${y} L${x - 6},${y} M${x + 6},${y} L${x + 9},${y} M${x},${y - 9} L${x},${y - 6} M${x},${y + 6} L${x},${y + 9}"/>`;
+  const pop = `<g class="pz on" data-g="ch" data-i="0"><circle class="hl dash sW" cx="${x}" cy="${y}" r="${R - 12}"/></g>`;
+  chooserEl.innerHTML = ret + pop + full;
+  state.chooser = { t };
+  setTimeout(() => { if (state.chooser) chooserEl.querySelectorAll('[data-g="ch"]').forEach(el => el.classList.toggle("on", el.dataset.i === "1")); }, 70);
+  hover.classList.remove("show");
+}
+function closeChooser() { chooserEl.innerHTML = ""; state.chooser = null; }
+function cancelAll() { closeChooser(); if (state.using) { state.using = null; hud(); } }
+
 frame.addEventListener("pointermove", (e) => {
-  if (state.busy) { hover.classList.remove("show"); return; }
+  if (state.busy || state.chooser) { hover.classList.remove("show"); return; }
   const id = hsFrom(e.target), item = e.target.closest && e.target.closest("[data-item]");
-  const label = id ? `${VL[state.verb]} ${HS[id].label}` : item ? `Look at ${ITEMS[item.dataset.item].name}` : "";
+  let label = "";
+  if (state.using) label = `Use ${ITEMS[state.using].name} on ${id ? HS[id].label : item ? ITEMS[item.dataset.item].name : "…"}`;
+  else label = id ? HS[id].label : item ? ITEMS[item.dataset.item].name : "";
   if (!label) { hover.classList.remove("show"); return; }
   const r = frame.getBoundingClientRect();
   hover.textContent = label; hover.classList.add("show");
-  hover.style.left = (e.clientX - r.left + 14) + "px"; hover.style.top = (e.clientY - r.top + 16) + "px";
+  let lx = e.clientX - r.left + 14; const w = hover.offsetWidth;
+  if (lx + w > r.width - 6) lx = e.clientX - r.left - w - 14;
+  hover.style.left = lx + "px"; hover.style.top = (e.clientY - r.top + 16) + "px";
 });
-frame.addEventListener("contextmenu", (e) => { e.preventDefault(); if (!state.busy) setVerb(VERBS[(VERBS.indexOf(state.verb) + 1) % 4]); });
-window.addEventListener("keydown", (e) => { const n = +e.key; if (n >= 1 && n <= 4 && !state.busy) setVerb(VERBS[n - 1]); });
+frame.addEventListener("contextmenu", (e) => { e.preventDefault(); if (!state.busy) cancelAll(); });
+window.addEventListener("keydown", (e) => { if (e.key === "Escape" && !state.busy) cancelAll(); });
+
 svg.addEventListener("click", (e) => {
   if (state.busy) return;
-  const v = e.target.closest("[data-verb]"); if (v) { setVerb(v.dataset.verb); return; }
+  const opt = e.target.closest(".opt");
+  if (opt) { const t = state.chooser.t; closeChooser(); t.type === "item" ? itemAct(t.id, opt.dataset.opt) : act(t.id, opt.dataset.opt); return; }
+  if (state.chooser) closeChooser();                       // a click anywhere else dismisses it, then counts as a normal click
   if (e.target.closest("#toggle")) { toggleMode(); return; }
-  const it = e.target.closest("[data-item]"); if (it) { say(ITEMS[it.dataset.item].look); return; }
+  const it = e.target.closest("[data-item]");
+  if (it) {
+    if (state.using && state.using !== it.dataset.item) { say("You hold them together. Nothing. They don't even seem to like each other."); state.using = null; hud(); return; }
+    const i = [...it.parentNode.querySelectorAll("[data-item]")].indexOf(it); openChooser({ type: "item", id: it.dataset.item }, 176 + i * 34, 326); return;
+  }
   const p = svgPoint(e); if (p.y > 290) return;
-  const id = hsFrom(e.target); if (id) { act(id); return; }
-  if (state.verb !== "walk") setVerb("walk");
+  const id = hsFrom(e.target);
+  if (state.using) { const item = state.using; state.using = null; hud(); if (id) useItemOn(item, id); else walkTo(p.x, p.y); return; }
+  if (id) { openChooser({ type: "hs", id }, p.x, p.y); return; }
   walkTo(p.x, p.y);
 });
-function act(id) {
-  const h = HS[id][state.mode], v = state.verb;
-  if (v === "walk") { const s = STAND[id]; if (s) walkTo(s[0], s[1]); return; }
-  if (v === "look") { if (h.look) { say(h.look); if (h.score) addScore(...h.score); } return; }
-  const resp = h[v] || (v === "talk" ? "No answer. Not even a squeak." : "Nothing happens. Academia in a nutshell.");
+
+function act(id, v) {
+  const h = HS[id][state.mode];
+  if (v === "look") { say(h.look); if (h.score) addScore(...h.score); return; }
+  const resp = h[v];
   const go = () => {
     if (CONVOS[resp]) { runConvo(resp); return; }
     say(resp);
@@ -741,6 +817,18 @@ function act(id) {
     if (v === "use" && h.take) { state.taken.add(id); const el = document.getElementById(id); if (el) el.style.display = "none"; }
   };
   const s = STAND[id]; if (s) walkTo(s[0], s[1], go); else go();
+}
+function itemAct(id, v) {
+  if (v === "look") { say(id === "recorder" && state.recorded ? ITEMS[id].look + "\n\nOne memo saved: PRESTON, JOURNAL CLUB." : ITEMS[id].look); return; }
+  if (v === "play") { say("PRESTON (RECORDED)|\"…Anyway! I ran every subject myself. Gotta network. Ciao!\""); return; }
+  if (v === "use") { state.using = id; hud(); }
+}
+function useItemOn(item, id) {
+  if (item === "recorder" && !state.recorded) { say("Your recorder is empty. Talk to someone worth recording first."); return; }
+  const r = WITH[id] && WITH[id][item];
+  if (r === "use") { act(id, "use"); return; }
+  const line = r || ["That doesn't work. Not even in theory.", "You try. Physics declines.", "No. Peer review would reject that too."][Math.floor(Math.random() * 3)];
+  const s = STAND[id]; if (s) walkTo(s[0], s[1], () => say(line)); else say(line);
 }
 
 /* ---------------- stepped (Game & Watch) movement ---------------- */
@@ -791,7 +879,7 @@ function showCard() {
   card.addEventListener("click", hide); setTimeout(hide, 2300);
 }
 function toggleMode() {
-  state.mode = state.mode === "day" ? "night" : "day"; state.status = "";
+  cancelAll(); state.mode = state.mode === "day" ? "night" : "day"; state.status = "";
   frame.classList.toggle("night", state.mode === "night");
   const a = state.actor; Object.assign(a, state.mode === "night" ? { x: 140, y: 278, dir: 1 } : { x: 320, y: 280, dir: 1 }, { walking: false, cb: null });
   drawActor(); render(); hud(); showCard();

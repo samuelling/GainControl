@@ -267,6 +267,9 @@ Every death gets an Al Lowe narrator joke, but the death screen has two buttons:
 
 This way you get Sierra's death jokes without its punishment.
 
+### 1b. The chooser (our take on Gabriel Knight's context interface)
+Clicking the floor walks. Clicking anything interactive opens a **chooser** right there: a reticle, the object's name chip, and an arc of glyph buttons showing only the actions that make sense, with object-specific labels (TAKE SLICE, TAG IT, SHAKE HAND, OPEN HATCH). Inventory items get the same chooser (LOOK, USE ON, and item verbs like PLAY on the voice memo recorder). Walking stays effortless, and every interactive thing feels deliberate.
+
 ### 2. Three-character switching (the Day of the Tentacle engine)
 Day of the Tentacle split its heroes across time. Here they split across **day and night**.
 

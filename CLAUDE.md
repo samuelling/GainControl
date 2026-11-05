@@ -33,6 +33,13 @@ Don't introduce other looks: no gradients, glows on everything, filled shapes, t
 - Every portrait needs `eyes-open` / `eyes-closed` and `mouth-a` / `mouth-b` poses. Preston also needs `normal-only` / `blank-only` (the Gain Controller blank-out: pinpoint pupils, earbuds lit ON-green with `((( )))`, faint scanlines).
 - A character isn't named on screen until Ned has learned who they are (Iris is "THE OLD WOMAN" in Act I).
 
+### Interaction: the chooser (no verb bar)
+- **Click the floor: walk.** There is no verb bar and no verb cycling.
+- **Click a hotspot:** a reticle lands on the spot, the object's name appears as a solid INK chip, and an arc of round glyph buttons fans out (above the click, or below near the top of the screen). It pops in as two poses.
+- **Only the verbs that apply appear**, with object-specific labels (pizza: LOOK / TAKE SLICE; robe: LOOK / TAG IT; Preston: LOOK / TALK / SHAKE HAND). Define them per hotspot and per shift (`HS[id][mode]` plus `LABELS[mode][id]`).
+- **Inventory items** use the same chooser: LOOK, USE ON (the cursor then carries the item; the HUD shows a USE X ON chip; responses live in `WITH[hotspot][item]`), plus item-specific verbs like PLAY on the recorder once it has caught something.
+- Look happens from where you stand; talk and use walk to the hotspot's stand point first. Right-click or Esc cancels.
+
 ### Science on screen
 Real neuroscience, drawn correctly and simply. Laminar fMRI is shown as a close-up of folded cortex: the pial surface, six layer lines following the gyrus/sulcus, the white-matter boundary, and a depth probe. Never as concentric rings.
 
