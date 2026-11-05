@@ -70,7 +70,7 @@ And a plot of the run, like a real one: fog level by landing, a zigzag settling 
 
 ## Building it
 
-**The stairwell is built** as a test scene: `game/stairwell.html` + `game/js/minigames/stairwell.js` (playable at `/game/stairwell.html`). The mark's contrast is rendered for real in sRGB, using bit-stealing (small per-channel offsets around neutral gray) for luminance steps finer than 8-bit grays, so the threshold is the player's own. A simulated observer with a known psychometric function recovers its 71%-correct point in about 33 landings.
+**The stairwell is built** as a test scene, tuned short and fast: about a minute, 15–25 landings, ending at 6 reversals (threshold = mean of the last 4). It's a chase: Preston is on the flight above, closing in when you hesitate (one step per 2.2 s) or pick wrong (two steps), and falling back when you pick right. If he catches you, REVISE & RESUBMIT (−100) puts you back in the run with your data intact. Points grow with the fog and the streak, with a bonus for quick answers, and the end screen gives a rank by threshold (PHOTON COUNTER … FOG NEURO MATERIAL). Built `game/stairwell.html` + `game/js/minigames/stairwell.js` (playable at `/game/stairwell.html`). The mark's contrast is rendered for real in sRGB, using bit-stealing (small per-channel offsets around neutral gray) for luminance steps finer than 8-bit grays, so the threshold is the player's own. A simulated observer with a known psychometric function recovers its 71%-correct point in about 33 landings.
 
 Still to build (corridors 1–4):
 
