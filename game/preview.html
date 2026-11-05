@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gain Control — room preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/game.css">
+<style>
+  /* preview only: outline every hotspot so the hit areas are visible */
+  body.hs [data-hs] > rect[fill="transparent"] { stroke: var(--A); stroke-width: .5; stroke-dasharray: 2 2; }
+  #ctl { position: fixed; top: 4px; left: 4px; z-index: 9; font: 12px monospace; color: #ccc; background: #000a; padding: 4px; }
+</style>
+</head>
+<body>
+<!-- Draws one room from state, with its stand points and entries marked. No engine.
+     preview.html?room=kitchen&mode=day&act=3&char=nell&flags=descaled,gotMug&hs=1  -->
+<div id="ctl"></div>
+<div id="stage"><div id="frame">
+  <svg class="t" id="game" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg>
+</div></div>
+<script type="module">
+const q = new URLSearchParams(location.search);
+const id = q.get("room") || "lab";
+const file = { hall: "hallway" }[id] || id;
+const mod = await import(`./js/rooms/${file}.js`);
+const R = mod.default || Object.values(mod).find(v => v && v.draw);
+const G = { act: +(q.get("act") || 3), mode: q.get("mode") || "day", char: q.get("char") || "nell", room: id,
+  flags: Object.fromEntries((q.get("flags") || "").split(",").filter(Boolean).map(f => [f, true])), extras: [] };
+document.getElementById("frame").classList.toggle("night", G.mode === "night");
+if (q.get("hs")) document.body.classList.add("hs");
+const d = R.draw(G);
+const mark = (x, y, c, t) => `<circle cx="${x}" cy="${y}" r="2" fill="var(--${c})"/><text x="${x + 3}" y="${y - 2}" font-size="5" fill="var(--${c})" font-family="monospace">${t}</text>`;
+const marks = q.get("hs") ? Object.entries(R.stand || {}).map(([k, [x, y]]) => mark(x, y, "G", k)).join("")
+  + Object.entries(R.entries || {}).map(([k, [x, y]]) => mark(x, y, "B", k)).join("") : "";
+document.getElementById("game").innerHTML = `<g>${d.back}</g><g>${d.sortables.filter(o => o.svg).sort((a, b) => a.depth - b.depth).map(o => o.svg).join("")}</g>${marks}`;
+document.getElementById("ctl").textContent = `${R.name} · ${G.mode} · act ${G.act} · flags ${Object.keys(G.flags).join(",") || "-"} · hotspots: ${[...new Set([...document.querySelectorAll("[data-hs]")].map(e => e.dataset.hs))].join(" ")}`;
+// run the ambient pose clocks so animated groups can be checked
+const clocks = { nod: 800, alarm: 380, wave: 520, type: 260, jam: 700, blink: 300, drip: 600, tube: 450, chant: 700, hum: 420 };
+for (const [g, ms] of Object.entries(clocks)) { let i = 0; setInterval(() => { i ^= 1; document.querySelectorAll(`[data-g="${g}"]`).forEach(e => e.classList.toggle("on", +e.dataset.i === i)); }, ms); }
+</script>
+</body>
+</html>
