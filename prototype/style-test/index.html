@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gain Control — Style Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  body { font-family: "Space Mono", ui-monospace, Menlo, Consolas, monospace; color: #f4f1ea; -webkit-font-smoothing: antialiased; }
+  #stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  #frame {
+    position: relative; width: min(100vw, calc(100vh * 16 / 9)); aspect-ratio: 16 / 9;
+    container-type: inline-size; user-select: none; -webkit-user-select: none; cursor: crosshair;
+    /* DAY palette */
+    --dim: #262a36; --dim2: #1b1e28; --line: #5d6378; --white: #f4f1ea;
+    --floor: #10172e; --floorline: #1c2547; --wallside: #05070c; --backwall: #07080d;
+    --screen: #e9f0ff; --screenglow: #9fc0ff;
+    --orange: #ff6b35; --yellow: #ffd23f; --green: #2ee6a8; --blue: #3d8bff; --pink: #ff4d8d; --violet: #9b6bff;
+    --exit: #7a2028; --sel: #161b2c; --beam: rgba(200,220,255,.06);
+  }
+  #frame.night {
+    --dim: #121836; --dim2: #0c1028; --line: #2b3a8f; --white: #9db0ff;
+    --floor: #03050d; --floorline: #0b1130; --wallside: #000; --backwall: #010208;
+    --screen: #04060e; --screenglow: #000;
+    --orange: #2b5fb8; --yellow: #29d3c0; --green: #29d3c0; --blue: #3355ff; --pink: #5a4bd1; --violet: #4b47c9;
+    --exit: #ff3344; --sel: #0b0f24; --beam: rgba(0,0,0,0);
+  }
+  #game { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #game * { transition: fill .7s ease, stroke .7s ease, opacity .7s ease; }
+  #game .noanim, #game .noanim * { transition: none; }
+
+  .day-only, .night-only { transition: opacity .7s; }
+  #frame.night .day-only { display: none; }
+  #frame:not(.night) .night-only { display: none; }
+
+  /* animations */
+  @keyframes nod { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+  .nod { animation: nod 1.6s ease-in-out infinite; }
+  @keyframes sway { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(10deg); } }
+  .tail { transform-box: fill-box; transform-origin: 50% 0%; animation: sway 2.4s ease-in-out infinite; }
+  @keyframes blinkEyes { 0%, 92%, 100% { opacity: 1; } 95% { opacity: .1; } }
+  .ratEyes { animation: blinkEyes 5s infinite; }
+  @keyframes budPulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+  .bud-glow { animation: budPulse 2.2s ease-in-out infinite; }
+  .pulsing .bud-glow { animation: none; opacity: 1; stroke-width: 7; }
+  @keyframes implant { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
+  .implant { animation: implant 1.4s ease-in-out infinite; }
+
+  /* portrait state switches (also used by in-scene Preston) */
+  .pt .mouth-b { display: none; }
+  .pt.mo .mouth-b { display: inline; }
+  .pt.mo .mouth-a { display: none; }
+  .pt .eyes-closed { display: none; }
+  .pt.bl .eyes-closed { display: inline; }
+  .pt.bl .eyes-open { display: none; }
+  .pt .blank-only { display: none; }
+  .pt.blank .blank-only { display: inline; }
+  .pt.blank .normal-only { display: none; }
+
+  /* hotspots */
+  [data-hs] { cursor: pointer; }
+
+  /* OLED pixel grid */
+  #grid {
+    position: absolute; inset: 0; pointer-events: none; opacity: .16; mix-blend-mode: multiply;
+    background-image:
+      linear-gradient(rgba(0,0,0,.9) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,.9) 1px, transparent 1px);
+    background-size: 3px 3px;
+  }
+  #flash { position: absolute; inset: 0; pointer-events: none; opacity: 0; background:
+      repeating-linear-gradient(0deg, rgba(157,176,255,.18) 0 2px, transparent 2px 5px); }
+  #flash.go { animation: flash .9s ease-out; }
+  @keyframes flash { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+  /* hover label */
+  #hover {
+    position: absolute; pointer-events: none; font-size: 1.05cqw; letter-spacing: .04em;
+    color: var(--white); background: rgba(0,0,0,.75); border: 1px solid var(--line);
+    padding: .25cqw .55cqw; border-radius: .3cqw; white-space: nowrap; opacity: 0; transition: opacity .12s;
+  }
+  #hover.show { opacity: 1; }
+
+  /* narrator / message box */
+  #msg {
+    position: absolute; left: 50%; top: 7%; transform: translateX(-50%); width: 52%;
+    background: #000; border: .18cqw solid var(--white); border-radius: .5cqw;
+    padding: 1.2cqw 1.5cqw; font-size: 1.35cqw; line-height: 1.5; display: none;
+    box-shadow: 0 0 1.4cqw rgba(157,176,255,.25);
+  }
+  #msg.show { display: block; }
+  #msg .who { font-weight: 700; letter-spacing: .06em; }
+  #msg .more { position: absolute; right: .8cqw; bottom: .4cqw; font-size: .9cqw; color: var(--line); }
+  #frame.night #msg { color: #b9c6ff; border-color: #3a4bb0; font-size: 1.25cqw; }
+  em { color: var(--line); }
+
+  /* conversation overlay */
+  #convo { position: absolute; inset: 0; display: none; background: rgba(0,0,0,.82); }
+  #convo.show { display: block; }
+  .pframe { position: absolute; top: 4%; width: 31%; height: 70%; }
+  .pframe.left { left: 3%; } .pframe.right { right: 3%; }
+  .pframe .pv { position: absolute; inset: 0; background: #000; border-radius: 1.4cqw; overflow: hidden; }
+  .pframe svg { position: absolute; inset: 0; width: 100%; height: 100%; transition: filter .25s; }
+  .pframe .plate {
+    position: absolute; left: 50%; bottom: -1.2cqw; transform: translateX(-50%);
+    background: #000; border: .15cqw solid var(--white); border-radius: .4cqw;
+    padding: .2cqw 1cqw; font-weight: 700; letter-spacing: .14em; font-size: 1.1cqw; white-space: nowrap;
+  }
+  .pframe .ring { position: absolute; inset: 0; border: .18cqw solid var(--line); border-radius: 1.4cqw; }
+  .pframe.speaking .ring { border-color: var(--white); box-shadow: 0 0 1.6cqw rgba(157,176,255,.35); }
+  .pframe:not(.speaking) svg { filter: brightness(.5) saturate(.8); }
+  #frame.night .pframe svg { filter: saturate(.55) hue-rotate(-8deg) brightness(.92); }
+  #frame.night .pframe:not(.speaking) svg { filter: saturate(.45) hue-rotate(-8deg) brightness(.45); }
+  .pframe .ring { z-index: 2; pointer-events: none; }
+  #dlg {
+    position: absolute; left: 20%; right: 20%; bottom: 3.5%; min-height: 12%;
+    background: #000; border: .18cqw solid var(--white); border-radius: .6cqw;
+    padding: 1.1cqw 1.4cqw; font-size: 1.35cqw; line-height: 1.5;
+  }
+  #dlg .who { font-weight: 700; letter-spacing: .08em; display: block; margin-bottom: .2cqw; font-size: 1.05cqw; }
+  #dlg .more { position: absolute; right: .9cqw; bottom: .5cqw; font-size: .9cqw; color: var(--line); }
+
+  /* title card */
+  #card {
+    position: absolute; inset: 0; background: #000; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 1cqw; opacity: 0; pointer-events: none; transition: opacity .8s;
+  }
+  #card.show { opacity: 1; pointer-events: auto; }
+  #card .day { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 6.4cqw; letter-spacing: .12em; }
+  #card .act { font-size: 1.5cqw; letter-spacing: .3em; color: var(--yellow); }
+  #card .sub { font-size: 1.1cqw; letter-spacing: .2em; color: var(--line); }
+  #card .rule { width: 18cqw; height: .18cqw; background: var(--white); opacity: .6; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="frame">
+    <svg id="game" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="grid"></div>
+    <div id="flash"></div>
+    <div id="hover"></div>
+    <div id="msg"></div>
+    <div id="convo">
+      <div class="pframe left"><div class="ring"></div><div class="pv"></div><div class="plate"></div></div>
+      <div class="pframe right"><div class="ring"></div><div class="pv"></div><div class="plate"></div></div>
+      <div id="dlg"><span class="who"></span><span class="txt"></span><span class="more">click ▸</span></div>
+    </div>
+    <div id="card"><div class="day"></div><div class="rule"></div><div class="act"></div><div class="sub"></div></div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const SVGNS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("game");
+const frame = document.getElementById("frame");
+const $ = (s, r = document) => r.querySelector(s);
+
+/* ------------------------------------------------------------------ *
+ *  Geometry: one-point perspective. Vanishing point (800,220).
+ *  k = depth factor: 0.44 at back wall, 1.0 at the picture plane.
+ * ------------------------------------------------------------------ */
+const VP = [800, 220], KB = 0.44;
+const P = (X, Y, k) => [VP[0] + (X - VP[0]) * k, VP[1] + (Y - VP[1]) * k];
+const pt = (a) => a[0].toFixed(1) + "," + a[1].toFixed(1);
+const poly = (...pts) => pts.map(pt).join(" ");
+const kAtY = (y) => (y - VP[1]) / (760 - VP[1]);   // floor depth from screen y
+
+/* ------------------------------------------------------------------ *
+ *  ROOM
+ * ------------------------------------------------------------------ */
+function room() {
+  const BL = P(0, 760, KB), BR = P(1600, 760, KB), TL = P(0, 0, KB), TR = P(1600, 0, KB);
+  let s = "";
+  s += `<defs>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glowBig" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="12" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="bloom" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="22"/></filter>
+    <clipPath id="screenClip"><rect x="560" y="150" width="490" height="222" rx="4"/></clipPath>
+  </defs>`;
+  // walls, floor, ceiling
+  s += `<rect width="1600" height="760" style="fill:#000"/>`;
+  s += `<polygon points="${poly([0,0],TL,BL,[0,760])}" style="fill:var(--wallside)"/>`;
+  s += `<polygon points="${poly([1600,0],TR,BR,[1600,760])}" style="fill:var(--wallside)"/>`;
+  s += `<polygon points="${poly(TL,TR,BR,BL)}" style="fill:var(--backwall)"/>`;
+  s += `<polygon points="${poly(BL,BR,[1600,760],[0,760])}" style="fill:var(--floor)"/>`;
+  // floor seams (atmosphere layer)
+  for (let X = 0; X <= 1600; X += 200) s += `<line x1="${X}" y1="760" x2="${P(X,760,KB)[0]}" y2="${P(X,760,KB)[1]}" style="stroke:var(--floorline)" stroke-width="2"/>`;
+  [0.55, 0.68, 0.83].forEach(k => { const a = P(0,760,k), b = P(1600,760,k); s += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" style="stroke:var(--floorline)" stroke-width="2"/>`; });
+  // ceiling tiles
+  for (let X = 0; X <= 1600; X += 160) { const b = P(X,0,KB); s += `<line x1="${X}" y1="0" x2="${b[0]}" y2="${b[1]}" style="stroke:var(--dim)" stroke-width="2"/>`; }
+  [0.52, 0.62, 0.74, 0.88].forEach(k => { const a = P(0,0,k), b = P(1600,0,k); s += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" style="stroke:var(--dim)" stroke-width="2"/>`; });
+  // room edges
+  s += `<polyline points="${poly([0,0],TL,TR,[1600,0])}" fill="none" style="stroke:var(--line)" stroke-width="2.5"/>`;
+  s += `<polyline points="${poly([0,760],BL,BR,[1600,760])}" fill="none" style="stroke:var(--line)" stroke-width="2.5"/>`;
+  s += `<line x1="${TL[0]}" y1="${TL[1]}" x2="${BL[0]}" y2="${BL[1]}" style="stroke:var(--line)" stroke-width="2.5"/>`;
+  s += `<line x1="${TR[0]}" y1="${TR[1]}" x2="${BR[0]}" y2="${BR[1]}" style="stroke:var(--line)" stroke-width="2.5"/>`;
+  // chair rail along back wall (atmosphere)
+  s += `<line x1="${TL[0]}" y1="410" x2="${TR[0]}" y2="410" style="stroke:var(--dim)" stroke-width="2"/>`;
+
+  // projector on ceiling + beam (day)
+  s += `<g class="day-only"><polygon points="790,58 810,58 1050,150 1050,372 560,372 560,150" style="fill:var(--beam)"/></g>`;
+  s += `<rect x="772" y="40" width="56" height="20" rx="4" style="fill:#000;stroke:var(--line)" stroke-width="2.5"/>
+        <circle cx="800" cy="58" r="5" style="fill:var(--white)" class="day-only" filter="url(#glow)"/>
+        <line x1="800" y1="0" x2="800" y2="40" style="stroke:var(--line)" stroke-width="2.5"/>`;
+
+  // SCREEN (big color field by day)
+  s += `<rect x="560" y="150" width="490" height="222" rx="4" style="fill:var(--screenglow)" filter="url(#bloom)" opacity=".55" class="day-only"/>`;
+  s += `<g data-hs="screen">
+    <rect x="560" y="150" width="490" height="222" rx="4" style="fill:var(--screen);stroke:var(--white)" stroke-width="3"/>
+    <g clip-path="url(#screenClip)" class="day-only">${slide()}</g>
+    <g class="night-only" opacity=".09">${brainBlob(700, 280, 1, "none", "#9db0ff", 3)}</g>
+  </g>`;
+  s += `<line x1="560" y1="378" x2="1050" y2="378" style="stroke:var(--line)" stroke-width="3"/>`;
+
+  // clock
+  s += `<g data-hs="clock"><circle cx="1104" cy="200" r="22" style="fill:#000;stroke:var(--line)" stroke-width="3"/>
+        <line class="day-only" x1="1104" y1="200" x2="1104" y2="186" style="stroke:var(--white)" stroke-width="3" stroke-linecap="round"/>
+        <line class="day-only" x1="1104" y1="200" x2="1116" y2="204" style="stroke:var(--white)" stroke-width="3" stroke-linecap="round"/>
+        <line class="night-only" x1="1104" y1="200" x2="1112" y2="190" style="stroke:var(--white)" stroke-width="3" stroke-linecap="round"/>
+        <line class="night-only" x1="1104" y1="200" x2="1106" y2="216" style="stroke:var(--white)" stroke-width="3" stroke-linecap="round"/></g>`;
+
+  // DOOR on left wall + EXIT sign
+  const d1 = P(0,300,0.62), d2 = P(0,300,0.80), d3 = P(0,760,0.80), d4 = P(0,760,0.62);
+  s += `<g data-hs="door"><polygon points="${poly(d1,d2,d3,d4)}" style="fill:#000;stroke:var(--line)" stroke-width="3"/>
+        <line x1="${P(0,520,0.77)[0]}" y1="${P(0,520,0.77)[1]}" x2="${P(0,520,0.77)[0]}" y2="${P(0,520,0.77)[1]+18}" style="stroke:var(--white)" stroke-width="4" stroke-linecap="round"/></g>`;
+  const e1 = P(0,232,0.64), e2 = P(0,232,0.78), e3 = P(0,272,0.78), e4 = P(0,272,0.64);
+  s += `<g data-hs="exit"><polygon points="${poly(e1,e2,e3,e4)}" style="fill:var(--exit)" class="exitsign"/>
+        <text x="${(e1[0]+e2[0])/2}" y="${(e1[1]+e4[1]+e2[1]+e3[1])/4 + 5}" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="17" fill="#000" transform="rotate(-6 ${(e1[0]+e2[0])/2} ${(e1[1]+e3[1])/2})">EXIT</text></g>`;
+
+  // PNEUMATIC TUBE on right wall
+  const tx = P(1600,0,0.85)[0];
+  const ty0 = P(1600,0,0.85)[1], ty1 = P(1600,760,0.85)[1];
+  const b1 = P(1600,330,0.80), b2 = P(1600,330,0.90), b3 = P(1600,480,0.90), b4 = P(1600,480,0.80);
+  s += `<g data-hs="tube">
+    <line x1="${tx-9}" y1="${ty0}" x2="${tx-9}" y2="${ty1}" style="stroke:var(--line)" stroke-width="3"/>
+    <line x1="${tx+9}" y1="${ty0}" x2="${tx+9}" y2="${ty1}" style="stroke:var(--line)" stroke-width="3"/>
+    ${[0.12,0.3,0.7,0.88].map(f => { const y = ty0 + (ty1-ty0)*f; return `<line x1="${tx-14}" y1="${y}" x2="${tx+14}" y2="${y}" style="stroke:var(--line)" stroke-width="5"/>`; }).join("")}
+    <polygon points="${poly(b1,b2,b3,b4)}" style="fill:#000;stroke:var(--orange)" stroke-width="3"/>
+    <polygon points="${poly(P(1600,360,0.82),P(1600,360,0.88),P(1600,440,0.88),P(1600,440,0.82))}" style="fill:var(--sel);stroke:var(--line)" stroke-width="2"/>
+    <circle cx="${P(1600,345,0.85)[0]}" cy="${P(1600,345,0.85)[1]}" r="5" style="fill:var(--green)" filter="url(#glow)"/>
+    <rect x="${tx-30}" y="${ty0}" width="60" height="${ty1-ty0}" fill="transparent"/>
+  </g>`;
+  s += `<g id="canister" class="noanim" opacity="0"><rect x="${tx-8}" y="-32" width="16" height="32" rx="7" style="fill:var(--yellow)" filter="url(#glow)"/>
+        <text x="${tx+16}" y="-10" font-family="Space Mono, monospace" font-weight="700" font-size="16" style="fill:var(--yellow)">B3</text></g>`;
+
+  // MORRIS in ajar ceiling tile
+  const m1 = P(1120,0,0.62), m2 = P(1280,0,0.62), m3 = P(1280,0,0.74), m4 = P(1120,0,0.74);
+  s += `<g data-hs="morris">
+    <polygon points="${poly(m4,m3,m2,m1)}" style="fill:#000;stroke:var(--line)" stroke-width="2.5"/>
+    <polygon points="${poly(m4,m3,[m3[0]+8,m3[1]-14],[m4[0]+8,m4[1]-14])}" style="fill:var(--dim2);stroke:var(--line)" stroke-width="2"/>
+    <g class="ratEyes"><circle cx="1058" cy="72" r="5" style="fill:var(--yellow)" filter="url(#glow)"/><circle cx="1076" cy="72" r="5" style="fill:var(--yellow)" filter="url(#glow)"/></g>
+    <path class="tail" d="M1090,84 C1094,104 1080,118 1092,138 C1100,152 1094,160 1098,168" fill="none" style="stroke:var(--pink)" stroke-width="4" stroke-linecap="round"/>
+    <rect x="1030" y="50" width="90" height="125" fill="transparent"/>
+  </g>`;
+  return s;
+}
+
+function brainBlob(cx, cy, sc, fill, stroke, sw) {
+  const d = "M-95,10 C-100,-40 -55,-70 -10,-62 C20,-80 70,-66 88,-30 C112,-6 100,40 70,52 C40,72 -20,70 -50,58 C-85,52 -98,34 -95,10 Z";
+  return `<path d="${d}" transform="translate(${cx},${cy}) scale(${sc})" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+}
+function slide() {
+  const layerCols = ["#ff6b35", "#ffd23f", "#2ee6a8", "#3d8bff", "#9b6bff", "#ff4d8d"];
+  let s = `<text x="582" y="186" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="24" fill="#0b0d14">LAMINAR fMRI AT 7T</text>
+    <text x="582" y="206" font-family="Space Mono, monospace" font-size="11" fill="#4b5068">six layers · zero noise · one author who "ran every subject"</text>
+    <circle cx="1018" cy="180" r="18" fill="#ff6b35"/><text x="1018" y="186" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="15" fill="#fff">7T</text>`;
+  layerCols.forEach((c, i) => { s += brainBlob(690, 290, 0.78 - i * 0.12, c, "#0b0d14", 2); });
+  // bar chart with absurdly tiny error bars
+  s += `<line x1="830" y1="350" x2="1030" y2="350" stroke="#0b0d14" stroke-width="2"/><line x1="830" y1="350" x2="830" y2="232" stroke="#0b0d14" stroke-width="2"/>`;
+  [[850,70,"#5d6378"],[905,104,"#ff6b35"],[960,40,"#5d6378"]].forEach(([x,h,c]) => {
+    s += `<rect x="${x}" y="${350-h}" width="38" height="${h}" fill="${c}"/><line x1="${x+19}" y1="${350-h-3}" x2="${x+19}" y2="${350-h+3}" stroke="#0b0d14" stroke-width="2"/>`;
+  });
+  s += `<text x="905" y="236" font-family="Space Mono, monospace" font-size="11" fill="#0b0d14">p &lt; .0000001</text>
+    <text x="582" y="364" font-family="Space Mono, monospace" font-size="10" fill="#4b5068">Valu P., Impact M. (2026) Nurture Neuroscience</text>`;
+  return s;
+}
+
+/* ------------------------------------------------------------------ *
+ *  FURNITURE ROWS (sortable by depth)
+ * ------------------------------------------------------------------ */
+const ROWS = [0.62, 0.76, 0.92];
+const SEATS_L = [630, 480, 330], SEATS_R = [970, 1120, 1270];
+function chair(x, y, k) {
+  const w = 76 * k, h = 50 * k;
+  return `<g style="stroke:var(--dim)" stroke-width="${2.5}">
+    <rect x="${x - w/2}" y="${y - 72*k}" width="${w}" height="${h}" rx="${10*k}" style="fill:#000;stroke:var(--line)" stroke-width="2.5"/>
+    <line x1="${x - w/2 + 6*k}" y1="${y - 22*k}" x2="${x - w/2 + 4*k}" y2="${y}" />
+    <line x1="${x + w/2 - 6*k}" y1="${y - 22*k}" x2="${x + w/2 - 4*k}" y2="${y}" />
+  </g>`;
+}
+// seated person seen from behind: shoulders + head, chair back drawn after (occludes)
+function sitter(x, y, k, o = {}) {
+  const head = o.head || "var(--dim)", body = o.body || "var(--dim2)";
+  let s = `<g ${o.hs ? `data-hs="${o.hs}"` : ""} class="${o.cls || ""}">
+    <g class="${o.nod ? "nod" : ""}">
+      <path d="M${x-36*k},${y-40*k} Q${x-38*k},${y-92*k} ${x},${y-96*k} Q${x+38*k},${y-92*k} ${x+36*k},${y-40*k} Z" style="fill:${body}"/>
+      <circle cx="${x}" cy="${y-118*k}" r="${24*k}" style="fill:${head}"/>
+      ${o.extra ? o.extra(x, y, k) : ""}
+    </g>
+    ${o.hs ? `<rect x="${x-42*k}" y="${y-148*k}" width="${84*k}" height="${150*k}" fill="transparent"/>` : ""}
+  </g>`;
+  return s;
+}
+function rowGroup(ri) {
+  const k = ROWS[ri], y = P(0, 760, k)[1];
+  const X = (Xf) => P(Xf, 760, k)[0];
+  let people = "", chairs = "";
+  [...SEATS_L, ...SEATS_R].forEach(Xf => { chairs += chair(X(Xf), y, k); });
+  if (ri === 0) {
+    people += sitter(X(970), y, k, { hs: "quorum", cls: "day-only", head: "#e7c09a", body: "#2c3352",
+      extra: (x, y, k) => `<path d="M${x-22*k},${y-112*k} Q${x},${y-98*k} ${x+22*k},${y-112*k}" style="fill:none;stroke:#c9ccd6" stroke-width="${6*k}"/>
+        <circle cx="${x+33*k}" cy="${y-50*k}" r="${4*k}" style="fill:var(--yellow)" filter="url(#glow)"/>` });
+    people += sitter(X(480), y, k, { cls: "day-only" });
+  }
+  if (ri === 1) {
+    [630, 480, 330].forEach(Xf => { people += sitter(X(Xf), y, k, { hs: "faculty", cls: "day-only", nod: true }); });
+    people += sitter(X(1120), y, k, { cls: "day-only", extra: (x, y, k) => `<rect x="${x-20*k}" y="${y-70*k}" width="${40*k}" height="${6*k}" style="fill:var(--blue)" opacity=".5"/>` });
+  }
+  if (ri === 2) {
+    people += sitter(X(330), y, k, { hs: "iris", cls: "day-only", head: "#e8c7a8", body: "var(--violet)",
+      extra: (x, y, k) => `<circle cx="${x}" cy="${y-144*k}" r="${13*k}" style="fill:#d9dce6"/><path d="M${x-25*k},${y-122*k} Q${x},${y-150*k} ${x+25*k},${y-122*k}" style="fill:#d9dce6"/>` });
+    people += sitter(X(1120), y, k, { cls: "day-only" });
+    // night: a forgotten robe on a chair
+    people += `<g class="night-only" data-hs="robe" id="robe">
+      <path d="M${X(970)-34*k},${y-30*k} L${X(970)-28*k},${y-118*k} Q${X(970)},${y-150*k} ${X(970)+28*k},${y-118*k} L${X(970)+34*k},${y-30*k} Z" style="fill:#1a1d3a;stroke:var(--violet)" stroke-width="2.5"/>
+      <path d="M${X(970)-16*k},${y-118*k} Q${X(970)},${y-134*k} ${X(970)+16*k},${y-118*k} Q${X(970)},${y-104*k} ${X(970)-16*k},${y-118*k}Z" style="fill:#000"/>
+      <circle cx="${X(970)}" cy="${y-88*k}" r="${7*k}" style="fill:none;stroke:var(--yellow)" stroke-width="2"/><circle cx="${X(970)}" cy="${y-88*k}" r="${3*k}" style="fill:var(--yellow)"/>
+      <rect x="${X(970)-40*k}" y="${y-150*k}" width="${80*k}" height="${150*k}" fill="transparent"/></g>`;
+  }
+  return `<g>${people}${chairs}</g>`;
+}
+function tableGroup() {
+  const k = 0.80, y = P(0, 760, k)[1], x = P(1440, 760, k)[0];
+  const w = 210 * k;
+  return `<g>
+    <line x1="${x-w/2+10}" y1="${y-60*k}" x2="${x-w/2+6}" y2="${y}" style="stroke:var(--line)" stroke-width="3"/>
+    <line x1="${x+w/2-10}" y1="${y-60*k}" x2="${x+w/2-6}" y2="${y}" style="stroke:var(--line)" stroke-width="3"/>
+    <polygon points="${x-w/2},${y-60*k} ${x+w/2},${y-60*k} ${x+w/2-14},${y-86*k} ${x-w/2+14},${y-86*k}" style="fill:#000;stroke:var(--line)" stroke-width="3"/>
+    <g data-hs="pizza">
+      <polygon points="${x-80*k},${y-66*k} ${x+20*k},${y-66*k} ${x+12*k},${y-82*k} ${x-72*k},${y-82*k}" style="fill:var(--dim2);stroke:var(--orange)" stroke-width="2.5"/>
+      <polygon points="${x-72*k},${y-82*k} ${x+12*k},${y-82*k} ${x+20*k},${y-150*k} ${x-80*k},${y-150*k}" style="fill:#000;stroke:var(--orange)" stroke-width="2.5"/>
+      <g class="day-only"><ellipse cx="${x-30*k}" cy="${y-74*k}" rx="${40*k}" ry="${7*k}" style="fill:var(--yellow)"/>
+        <circle cx="${x-46*k}" cy="${y-74*k}" r="${4*k}" style="fill:var(--orange)"/><circle cx="${x-22*k}" cy="${y-72*k}" r="${4*k}" style="fill:var(--orange)"/><circle cx="${x-8*k}" cy="${y-76*k}" r="${4*k}" style="fill:var(--orange)"/></g>
+      <text x="${x-30*k}" y="${y-110*k}" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="${16*k}" style="fill:var(--orange)">PIZZA</text>
+      <rect x="${x-86*k}" y="${y-156*k}" width="${112*k}" height="${96*k}" fill="transparent"/>
+    </g>
+    <g data-hs="coffee" class="day-only">
+      <path d="M${x+50*k},${y-66*k} L${x+46*k},${y-100*k} L${x+76*k},${y-100*k} L${x+72*k},${y-66*k} Z" style="fill:var(--pink)"/>
+      <rect x="${x+40*k}" y="${y-106*k}" width="${42*k}" height="${44*k}" fill="transparent"/>
+    </g>
+  </g>`;
+}
+function lecternAndPreston() {
+  const k = 0.50, y = P(0, 760, k)[1], x = P(300, 760, k)[0];
+  return `<g>
+    <g class="day-only pt" id="preston" data-hs="preston">
+      <g transform="translate(${x},${y}) scale(${k})">
+        <path d="M-58,-170 Q-60,-232 0,-238 Q60,-232 58,-170 L60,-120 L-60,-120 Z" style="fill:#ff4d8d"/>
+        <path d="M-14,-236 L0,-200 L14,-236 Z" style="fill:#f4f1ea"/>
+        <line id="prestonArm" x1="48" y1="-222" x2="96" y2="-262" style="stroke:#ff4d8d" stroke-width="18" stroke-linecap="round"/>
+        <rect x="-14" y="-262" width="28" height="30" style="fill:#e8bf98"/>
+        <circle cx="0" cy="-296" r="44" style="fill:#f6d7b8"/>
+        <path d="M-46,-300 Q-50,-352 0,-354 Q50,-354 48,-306 Q36,-332 8,-330 Q18,-342 2,-344 Q-20,-326 -46,-300Z" style="fill:#ffd23f"/>
+        <g class="normal-only"><circle cx="-15" cy="-298" r="5" style="fill:#0b0d14"/><circle cx="17" cy="-298" r="5" style="fill:#0b0d14"/>
+          <path d="M-20,-276 Q0,-260 22,-276" style="fill:#fff;stroke:#a8325a" stroke-width="3"/></g>
+        <g class="blank-only"><circle cx="-15" cy="-298" r="2" style="fill:#0b0d14"/><circle cx="17" cy="-298" r="2" style="fill:#0b0d14"/>
+          <line x1="-16" y1="-272" x2="18" y2="-272" style="stroke:#a8325a" stroke-width="3"/></g>
+        <circle cx="44" cy="-292" r="6" style="fill:#f4f1ea"/>
+        <circle class="bud-glow" cx="44" cy="-292" r="11" style="fill:none;stroke:#b6ff3b" stroke-width="4" filter="url(#glow)"/>
+      </g>
+      <rect x="${x-40}" y="${y-190}" width="100" height="130" fill="transparent"/>
+    </g>
+    <g data-hs="lectern">
+      <polygon points="${x-40},${y-110*k*1.0} ${x+40},${y-110*k*1.0} ${x+34},${y} ${x-34},${y}" style="fill:#000;stroke:var(--line)" stroke-width="3"/>
+      <polygon points="${x-46},${y-118*k} ${x+46},${y-118*k} ${x+40},${y-104*k} ${x-40},${y-104*k}" style="fill:var(--dim2);stroke:var(--line)" stroke-width="2.5"/>
+      <path d="M${x+20},${y-118*k} Q${x+26},${y-150*k} ${x+12},${y-166*k}" fill="none" style="stroke:var(--line)" stroke-width="3"/>
+      <circle cx="${x+12}" cy="${y-168*k}" r="4" style="fill:var(--green)" filter="url(#glow)"/>
+      <rect x="${x-46}" y="${y-120*k}" width="92" height="${120*k}" fill="transparent"/>
+    </g>
+  </g>`;
+}
+
+/* ------------------------------------------------------------------ *
+ *  CHARACTERS (standing, drawn facing right; feet at 0,0)
+ * ------------------------------------------------------------------ */
+function nedBody() {
+  return `
+    <ellipse cx="0" cy="2" rx="46" ry="9" fill="#000" opacity=".55"/>
+    <g class="legs"><line class="legL" x1="-14" y1="-120" x2="-16" y2="-4" style="stroke:#5b74e0" stroke-width="22" stroke-linecap="round"/>
+      <line class="legR" x1="14" y1="-120" x2="16" y2="-4" style="stroke:#4a61c4" stroke-width="22" stroke-linecap="round"/></g>
+    <g class="bob">
+      <line class="armB" x1="-38" y1="-196" x2="-48" y2="-128" style="stroke:#22c28d" stroke-width="18" stroke-linecap="round"/>
+      <path d="M-46,-206 Q0,-222 46,-206 L52,-112 L-52,-112 Z" style="fill:#2ee6a8"/>
+      <path d="M8,-206 Q30,-212 46,-206 L52,-112 L18,-112 Z" style="fill:#25cf97"/>
+      <circle cx="4" cy="-168" r="12" style="fill:none;stroke:#0b3d30" stroke-width="4"/>
+      <line class="armF" x1="38" y1="-196" x2="48" y2="-128" style="stroke:#2ee6a8" stroke-width="18" stroke-linecap="round"/>
+      <circle class="handF" cx="49" cy="-122" r="9" style="fill:#f2cfa8"/>
+      <rect x="-12" y="-226" width="24" height="24" style="fill:#e9c29b"/>
+      <circle cx="0" cy="-262" r="44" style="fill:#f2cfa8"/>
+      <path d="M-46,-262 Q-50,-312 -10,-318 L-14,-332 L6,-318 L14,-336 L24,-316 L40,-326 L38,-306 Q52,-290 46,-262 Q40,-290 18,-294 Q-6,-282 -30,-292 Q-42,-282 -46,-262Z" style="fill:#c8642e"/>
+      <circle cx="-2" cy="-260" r="13" style="fill:none;stroke:#f4f1ea" stroke-width="4"/>
+      <circle cx="28" cy="-260" r="13" style="fill:none;stroke:#f4f1ea" stroke-width="4"/>
+      <line x1="11" y1="-262" x2="15" y2="-262" style="stroke:#f4f1ea" stroke-width="4"/>
+      <circle cx="1" cy="-259" r="4" style="fill:#0b0d14"/><circle cx="31" cy="-259" r="4" style="fill:#0b0d14"/>
+      <path d="M14,-236 Q24,-232 32,-238" style="fill:none;stroke:#9c4b3b" stroke-width="3" stroke-linecap="round"/>
+    </g>`;
+}
+function gusBody() {
+  return `
+    <ellipse cx="0" cy="2" rx="50" ry="9" fill="#000" opacity=".55"/>
+    <g class="legs"><line class="legL" x1="-14" y1="-120" x2="-16" y2="-4" style="stroke:#3a4277" stroke-width="22" stroke-linecap="round"/>
+      <line class="legR" x1="14" y1="-120" x2="16" y2="-4" style="stroke:#323a6a" stroke-width="22" stroke-linecap="round"/></g>
+    <g class="bob">
+      <line x1="70" y1="-300" x2="40" y2="-6" style="stroke:#c9a46a" stroke-width="7" stroke-linecap="round"/>
+      <path d="M14,-10 Q40,-24 66,-10 L74,4 L6,4 Z" style="fill:#d9dce6"/>
+      ${[16,28,40,52,64].map(x => `<line x1="${x}" y1="-6" x2="${x-2}" y2="6" style="stroke:#9aa1b5" stroke-width="3"/>`).join("")}
+      <line class="armB" x1="-40" y1="-196" x2="-50" y2="-128" style="stroke:#6f7aa6" stroke-width="18" stroke-linecap="round"/>
+      <path d="M-50,-206 Q0,-222 50,-206 L54,-112 L-54,-112 Z" style="fill:#7f8bb5"/>
+      <path d="M10,-208 Q32,-212 50,-206 L54,-112 L20,-112 Z" style="fill:#7180aa"/>
+      <ellipse cx="-20" cy="-170" rx="14" ry="8" style="fill:#f4f1ea;stroke:#ff3344" stroke-width="2.5"/>
+      <circle cx="30" cy="-150" r="8" style="fill:none;stroke:#ffd23f" stroke-width="3"/>
+      <line class="armF" x1="40" y1="-196" x2="58" y2="-150" style="stroke:#7f8bb5" stroke-width="18" stroke-linecap="round"/>
+      <circle cx="60" cy="-148" r="10" style="fill:#e6b98f"/>
+      <rect x="-12" y="-226" width="24" height="24" style="fill:#d9aa80"/>
+      <circle cx="0" cy="-262" r="44" style="fill:#e6b98f"/>
+      <path d="M-44,-262 Q-46,-240 -36,-232 L-40,-262Z" style="fill:#c9ccd6"/>
+      <path d="M-44,-276 Q-44,-316 0,-318 Q44,-316 44,-276 Z" style="fill:#3d8bff"/>
+      <path d="M-6,-280 Q30,-286 64,-276 Q60,-266 34,-268 Q10,-270 -6,-272Z" style="fill:#2b6fd6"/>
+      <circle cx="8" cy="-258" r="4" style="fill:#0b0d14"/><circle cx="32" cy="-258" r="4" style="fill:#0b0d14"/>
+      <path d="M2,-238 Q20,-248 42,-238 Q32,-230 20,-234 Q10,-230 2,-238Z" style="fill:#c9ccd6"/>
+    </g>`;
+}
+function actorGroup() {
+  return `<g id="actor" class="noanim"><g id="actorInner"></g></g>`;
+}
+
+/* ------------------------------------------------------------------ *
+ *  VERB BAR (y 760–900)
+ * ------------------------------------------------------------------ */
+const VERBS = ["walk", "look", "use", "talk"];
+const GLYPH = {
+  walk: `<g transform="translate(0,-10)"><ellipse cx="-10" cy="6" rx="8" ry="13" style="fill:var(--white)"/><ellipse cx="10" cy="-8" rx="8" ry="13" style="fill:var(--white)"/>
+         <circle cx="-10" cy="-11" r="3" style="fill:var(--white)"/><circle cx="10" cy="-25" r="3" style="fill:var(--white)"/></g>`,
+  look: `<g transform="translate(0,-10)"><path d="M-26,0 Q0,-24 26,0 Q0,24 -26,0Z" style="fill:none;stroke:var(--white)" stroke-width="4"/><circle cx="0" cy="0" r="8" style="fill:var(--white)"/></g>`,
+  use: `<g transform="translate(0,-10)"><rect x="-14" y="-6" width="28" height="26" rx="8" style="fill:var(--white)"/>
+        ${[-11,-4,3,10].map((x,i) => `<rect x="${x-2.5}" y="${-24 + (i===0||i===3?6:0)}" width="6" height="22" rx="3" style="fill:var(--white)"/>`).join("")}
+        <rect x="-24" y="2" width="14" height="6" rx="3" transform="rotate(-30 -17 5)" style="fill:var(--white)"/></g>`,
+  talk: `<g transform="translate(0,-10)"><path d="M-26,-18 H26 Q30,-18 30,-14 V8 Q30,12 26,12 H-4 L-16,24 L-14,12 H-26 Q-30,12 -30,8 V-14 Q-30,-18 -26,-18Z" style="fill:none;stroke:var(--white)" stroke-width="4"/>
+         <circle cx="-12" cy="-3" r="3.5" style="fill:var(--white)"/><circle cx="0" cy="-3" r="3.5" style="fill:var(--white)"/><circle cx="12" cy="-3" r="3.5" style="fill:var(--white)"/></g>`,
+};
+const ITEMS = {
+  recorder: { name: "voice memo recorder", look: "Your voice memo recorder. Gabriel Knight had a tape recorder; you have an app that crashes. Record what people say, play it back to someone else.",
+    g: `<rect x="-14" y="-24" width="28" height="48" rx="6" style="fill:none;stroke:var(--white)" stroke-width="3"/><circle cx="0" cy="12" r="6" style="fill:#ff3344"/>${[-14,-8,-2].map(y=>`<line x1="-7" y1="${y}" x2="7" y2="${y}" style="stroke:var(--white)" stroke-width="2"/>`).join("")}` },
+  notebook: { name: "lab notebook", look: "Your lab notebook. For tracing figures, signatures and suspicious shapes. Mostly it contains null results.",
+    g: `<rect x="-18" y="-24" width="36" height="48" rx="3" style="fill:none;stroke:var(--white)" stroke-width="3"/>${[-16,-6,4,14].map(y=>`<circle cx="-18" cy="${y}" r="3" style="fill:var(--white)"/>`).join("")}<line x1="-8" y1="-8" x2="10" y2="-8" style="stroke:var(--line)" stroke-width="2"/><line x1="-8" y1="0" x2="10" y2="0" style="stroke:var(--line)" stroke-width="2"/>` },
+  thermos: { name: "thermos", look: "Your trusty steel thermos, with NED written on it in permanent marker. Keep it away from the MRI. (Foreshadowing.)",
+    g: `<rect x="-11" y="-26" width="22" height="52" rx="9" style="fill:none;stroke:var(--orange)" stroke-width="3"/><text x="0" y="5" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="10" style="fill:var(--orange)">NED</text>` },
+  keys: { name: "keys", look: "Every key in Fechner Hall. Forty-one of them. Nobody suspects the janitor.",
+    g: `<circle cx="0" cy="-10" r="12" style="fill:none;stroke:var(--white)" stroke-width="3"/>${[-12,0,12].map(x=>`<line x1="${x}" y1="0" x2="${x*1.2}" y2="22" style="stroke:var(--yellow)" stroke-width="5" stroke-linecap="round"/>`).join("")}` },
+  flashlight: { name: "flashlight", look: "A flashlight with exactly one working battery. It's enough. Barely.",
+    g: `<rect x="-8" y="-6" width="16" height="30" rx="3" style="fill:none;stroke:var(--white)" stroke-width="3"/><path d="M-13,-22 H13 L8,-6 H-8Z" style="fill:none;stroke:var(--white)" stroke-width="3"/><circle cx="0" cy="-22" r="5" style="fill:var(--yellow)" filter="url(#glow)"/>` },
+  tag: { name: "lost & found tag", look: "A lost-and-found tag. Gus has filled out four hundred of these for hooded robes. He's never asked.",
+    g: `<path d="M-16,-20 H10 L20,0 L10,20 H-16Z" style="fill:none;stroke:var(--white)" stroke-width="3"/><circle cx="8" cy="0" r="4" style="fill:var(--white)"/>` },
+};
+function verbBar() {
+  let s = `<g id="bar">
+    <rect x="0" y="760" width="1600" height="140" style="fill:#000"/>
+    <line x1="0" y1="762" x2="1600" y2="762" style="stroke:var(--line)" stroke-width="2.5"/>
+    <g id="badge"></g>`;
+  VERBS.forEach((v, i) => {
+    const x = 200 + i * 108;
+    s += `<g class="verb" data-verb="${v}" transform="translate(${x},830)" style="cursor:pointer">
+      <rect x="-46" y="-48" width="92" height="96" rx="16" class="vbox" style="fill:#000;stroke:var(--line)" stroke-width="2.5"/>
+      ${GLYPH[v]}
+      <text x="0" y="36" text-anchor="middle" font-family="Space Mono, monospace" font-size="13" font-weight="700" style="fill:var(--white)" letter-spacing="2">${v.toUpperCase()}</text>
+    </g>`;
+  });
+  s += `<text x="652" y="790" font-family="Space Mono, monospace" font-size="12" letter-spacing="3" style="fill:var(--line)">INVENTORY</text>
+    <g id="inv"></g>
+    <text x="1230" y="800" font-family="Space Mono, monospace" font-size="12" letter-spacing="3" style="fill:var(--line)">h-INDEX</text>
+    <text id="score" x="1230" y="856" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="52" style="fill:var(--white)">0</text>
+    <text x="1300" y="856" font-family="Space Mono, monospace" font-size="20" style="fill:var(--line)">/ 50</text>
+    <g id="toggle" style="cursor:pointer" transform="translate(1490,830)">
+      <rect x="-92" y="-40" width="184" height="80" rx="14" style="fill:var(--sel);stroke:var(--white)" stroke-width="2.5"/>
+      <text id="toggleTxt" x="0" y="-4" text-anchor="middle" font-family="Space Mono, monospace" font-weight="700" font-size="16" letter-spacing="2" style="fill:var(--white)">NIGHT SHIFT</text>
+      <text id="toggleSub" x="0" y="20" text-anchor="middle" font-family="Space Mono, monospace" font-size="11" letter-spacing="2" style="fill:var(--line)">switch to Gus ▸</text>
+    </g>
+  </g>`;
+  return s;
+}
+function drawBadge() {
+  const night = state.mode === "night";
+  $("#badge").innerHTML = `<g transform="translate(80,822)">
+    <circle r="50" style="fill:var(--sel);stroke:var(--white)" stroke-width="3"/>
+    ${night
+      ? `<circle cx="0" cy="8" r="28" fill="#e6b98f"/><path d="M-28,2 Q-28,-30 0,-32 Q28,-30 28,2Z" fill="#3d8bff"/><path d="M-2,0 Q20,-4 40,2 Q36,8 20,8 Q8,8 -2,6Z" fill="#2b6fd6"/>
+         <path d="M-14,24 Q0,16 14,24 Q6,30 0,27 Q-6,30 -14,24Z" fill="#c9ccd6"/><circle cx="-8" cy="10" r="3" fill="#0b0d14"/><circle cx="10" cy="10" r="3" fill="#0b0d14"/>`
+      : `<circle cx="0" cy="8" r="28" fill="#f2cfa8"/><path d="M-30,6 Q-32,-26 0,-30 L6,-40 L12,-28 L26,-34 Q34,-14 30,6 Q24,-12 8,-12 Q-12,-6 -30,6Z" fill="#c8642e"/>
+         <circle cx="-10" cy="10" r="9" fill="none" stroke="#f4f1ea" stroke-width="3"/><circle cx="12" cy="10" r="9" fill="none" stroke="#f4f1ea" stroke-width="3"/><circle cx="-10" cy="10" r="2.5" fill="#0b0d14"/><circle cx="12" cy="10" r="2.5" fill="#0b0d14"/>`}
+    </g>
+    <text x="80" y="892" text-anchor="middle" font-family="Space Mono, monospace" font-weight="700" font-size="13" letter-spacing="3" style="fill:var(--white)">${night ? "GUS" : "NED"}</text>`;
+}
+function drawInv() {
+  const list = state.mode === "night" ? ["keys", "flashlight", "tag"] : ["recorder", "notebook", "thermos"];
+  let s = "";
+  for (let i = 0; i < 5; i++) {
+    const x = 692 + i * 100, id = list[i];
+    s += `<g transform="translate(${x},842)" ${id ? `data-item="${id}" style="cursor:pointer"` : ""}>
+      <rect x="-42" y="-38" width="84" height="76" rx="12" style="fill:#000;stroke:var(--dim)" stroke-width="2.5"/>
+      ${id ? ITEMS[id].g : ""}</g>`;
+  }
+  $("#inv").innerHTML = s;
+}
+
+/* ------------------------------------------------------------------ *
+ *  PORTRAITS (Gabriel Knight-style close-ups) — viewBox 0 0 400 460
+ * ------------------------------------------------------------------ */
+const PORTRAIT = {
+  ned: { name: "NED NULL", color: "#2ee6a8", svg: () => `
+    <path d="M30,460 Q50,365 140,345 L260,345 Q350,365 370,460Z" fill="#2ee6a8"/>
+    <path d="M220,345 L260,345 Q350,365 370,460 L250,460 Q262,400 220,345Z" fill="#22c28d"/>
+    <path d="M160,345 Q200,378 240,345" fill="none" stroke="#15936b" stroke-width="9"/>
+    <circle cx="200" cy="420" r="16" fill="none" stroke="#0b3d30" stroke-width="5"/><text x="200" y="455" text-anchor="middle" font-family="Space Mono, monospace" font-size="14" font-weight="700" fill="#0b3d30">NEUROCON '19</text>
+    <rect x="170" y="290" width="60" height="64" rx="22" fill="#e9c29b"/>
+    <ellipse cx="102" cy="215" rx="14" ry="24" fill="#e9c29b"/><ellipse cx="298" cy="215" rx="14" ry="24" fill="#e2b88d"/>
+    <ellipse cx="200" cy="205" rx="100" ry="120" fill="#f2cfa8"/>
+    <path d="M232,90 Q300,120 300,210 Q296,290 232,322 Q272,250 262,180 Q256,120 232,90Z" fill="#e6bf96"/>
+    <path d="M95,190 Q85,95 150,80 L140,56 L176,74 L182,42 L210,70 L236,44 L242,78 L282,58 L272,96 Q318,122 305,190 Q292,140 250,130 Q200,150 150,128 Q112,142 95,190Z" fill="#c8642e"/>
+    <path d="M120,120 Q160,100 200,108 M220,104 Q260,100 290,124" fill="none" stroke="#8e3f1a" stroke-width="6" stroke-linecap="round"/>
+    <path d="M128,166 Q150,150 180,160 M220,160 Q250,150 272,166" fill="none" stroke="#8e3f1a" stroke-width="7" stroke-linecap="round"/>
+    <g class="eyes-open"><circle cx="160" cy="207" r="8" fill="#0b0d14"/><circle cx="250" cy="207" r="8" fill="#0b0d14"/><circle cx="163" cy="204" r="2.5" fill="#fff"/><circle cx="253" cy="204" r="2.5" fill="#fff"/></g>
+    <g class="eyes-closed"><path d="M148,208 Q160,214 172,208 M238,208 Q250,214 262,208" fill="none" stroke="#0b0d14" stroke-width="5" stroke-linecap="round"/></g>
+    <path d="M136,234 Q156,244 176,234 M226,234 Q246,244 266,234" fill="none" stroke="#c99f7a" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="157" cy="207" r="36" fill="rgba(255,255,255,.07)" stroke="#f4f1ea" stroke-width="7"/>
+    <circle cx="247" cy="207" r="36" fill="rgba(255,255,255,.07)" stroke="#f4f1ea" stroke-width="7"/>
+    <path d="M193,204 Q202,195 211,204" fill="none" stroke="#f4f1ea" stroke-width="6"/>
+    <path d="M121,200 L104,196 M283,200 L298,196" stroke="#f4f1ea" stroke-width="6"/>
+    <path d="M200,218 Q186,252 206,256" fill="none" stroke="#d6a77f" stroke-width="5" stroke-linecap="round"/>
+    ${[[140,280],[150,296],[166,306],[234,306],[250,296],[260,280],[190,312],[210,312]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.2" fill="#b98a66"/>`).join("")}
+    <g class="mouth-a"><path d="M170,284 Q200,279 230,288" fill="none" stroke="#9c4b3b" stroke-width="6" stroke-linecap="round"/></g>
+    <g class="mouth-b"><ellipse cx="200" cy="287" rx="22" ry="14" fill="#5a1f1a"/><rect x="186" y="275" width="28" height="6" rx="2" fill="#fff"/></g>` },
+
+  preston: { name: "PRESTON VALU", color: "#ff4d8d", svg: () => `
+    <path d="M40,460 Q60,360 140,340 L260,340 Q340,360 360,460 Z" fill="#ff4d8d"/>
+    <path d="M240,342 L260,340 Q340,360 360,460 L250,460 Q270,390 240,342Z" fill="#d93a73"/>
+    <path d="M160,340 L200,420 L240,340 Z" fill="#f4f1ea"/>
+    <path d="M150,342 L188,404 L162,460 M250,342 L212,404 L238,460" fill="none" stroke="#a82a5a" stroke-width="6"/>
+    <rect x="172" y="290" width="56" height="60" rx="20" fill="#e8bf98"/>
+    <ellipse cx="98" cy="215" rx="14" ry="24" fill="#f0c9a5"/><ellipse cx="302" cy="215" rx="14" ry="24" fill="#e6bb94"/>
+    <ellipse cx="200" cy="200" rx="105" ry="125" fill="#f6d7b8"/>
+    <path d="M236,82 Q305,115 305,200 Q300,290 236,322 Q280,250 270,180 Q262,115 236,82Z" fill="#ebc39e"/>
+    <path d="M90,172 Q78,66 200,58 Q324,56 318,164 Q300,104 236,110 Q258,88 226,82 Q178,120 118,116 Q98,134 90,172Z" fill="#ffd23f"/>
+    <path d="M128,92 Q196,64 276,86" fill="none" stroke="#fff3a6" stroke-width="7" stroke-linecap="round"/>
+    <path d="M110,140 Q150,118 196,112" fill="none" stroke="#e0ae16" stroke-width="5" stroke-linecap="round"/>
+    <g class="normal-only">
+      <path d="M128,163 Q155,146 182,158 M218,158 Q245,146 272,163" fill="none" stroke="#c99a1a" stroke-width="8" stroke-linecap="round"/>
+      <g class="eyes-open">
+        <ellipse cx="155" cy="196" rx="23" ry="15" fill="#fff"/><ellipse cx="245" cy="196" rx="23" ry="15" fill="#fff"/>
+        <circle cx="159" cy="197" r="10" fill="#3d8bff"/><circle cx="249" cy="197" r="10" fill="#3d8bff"/>
+        <circle cx="159" cy="197" r="5" fill="#0b0d14"/><circle cx="249" cy="197" r="5" fill="#0b0d14"/>
+        <circle cx="162" cy="193" r="3" fill="#fff"/><circle cx="252" cy="193" r="3" fill="#fff"/></g>
+      <g class="eyes-closed"><path d="M134,198 Q155,208 176,198 M224,198 Q245,208 266,198" fill="none" stroke="#0b0d14" stroke-width="5" stroke-linecap="round"/></g>
+      <g class="mouth-a"><path d="M146,262 Q200,306 254,262 Q200,282 146,262Z" fill="#fff" stroke="#a8325a" stroke-width="6" stroke-linejoin="round"/>
+        <line x1="200" y1="272" x2="200" y2="286" stroke="#e8d7cf" stroke-width="2"/></g>
+      <g class="mouth-b"><path d="M146,258 Q200,326 254,258 Z" fill="#6b1636" stroke="#a8325a" stroke-width="6" stroke-linejoin="round"/>
+        <path d="M152,262 L248,262 L240,274 L160,274Z" fill="#fff"/></g>
+    </g>
+    <g class="blank-only">
+      <path d="M130,160 L182,160 M218,160 L270,160" stroke="#c99a1a" stroke-width="7" stroke-linecap="round"/>
+      <ellipse cx="155" cy="196" rx="24" ry="17" fill="#fff"/><ellipse cx="245" cy="196" rx="24" ry="17" fill="#fff"/>
+      <circle cx="155" cy="196" r="3" fill="#0b0d14"/><circle cx="245" cy="196" r="3" fill="#0b0d14"/>
+      <g class="mouth-a"><line x1="160" y1="276" x2="240" y2="276" stroke="#a8325a" stroke-width="6" stroke-linecap="round"/></g>
+      <g class="mouth-b"><rect x="164" y="270" width="72" height="12" fill="#6b1636" stroke="#a8325a" stroke-width="4"/></g>
+      <clipPath id="prestonFace"><ellipse cx="200" cy="200" rx="105" ry="125"/></clipPath>
+      <g opacity=".22" clip-path="url(#prestonFace)">${Array.from({length: 14}, (_, i) => `<line x1="100" y1="${92 + i * 16}" x2="300" y2="${92 + i * 16}" stroke="#b6ff3b" stroke-width="3"/>`).join("")}</g>
+    </g>
+    <path d="M200,212 Q188,240 206,246" fill="none" stroke="#d6a77f" stroke-width="5" stroke-linecap="round"/>
+    <g><circle cx="304" cy="222" r="11" fill="#f4f1ea"/><circle class="bud-glow" cx="304" cy="222" r="19" fill="none" stroke="#b6ff3b" stroke-width="5"/>
+       <circle cx="96" cy="222" r="11" fill="#f4f1ea"/><circle class="bud-glow" cx="96" cy="222" r="19" fill="none" stroke="#b6ff3b" stroke-width="5"/></g>` },
+
+  gus: { name: "GUS MOPLEY", color: "#3d8bff", svg: () => `
+    <path d="M30,460 Q50,362 140,342 L260,342 Q350,362 370,460Z" fill="#7f8bb5"/>
+    <path d="M226,342 L260,342 Q350,362 370,460 L256,460 Q270,394 226,342Z" fill="#6c79a3"/>
+    <path d="M150,344 L200,396 L250,344" fill="none" stroke="#56628c" stroke-width="10"/>
+    <ellipse cx="278" cy="414" rx="50" ry="26" fill="#f4f1ea" stroke="#ff3344" stroke-width="5"/>
+    <text x="278" y="424" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="28" fill="#ff3344">GUS</text>
+    <rect x="170" y="292" width="60" height="60" rx="22" fill="#d9aa80"/>
+    <ellipse cx="102" cy="222" rx="15" ry="25" fill="#ddb086"/><ellipse cx="298" cy="222" rx="15" ry="25" fill="#d3a67c"/>
+    <ellipse cx="200" cy="215" rx="100" ry="115" fill="#e6b98f"/>
+    <path d="M236,108 Q300,140 300,220 Q296,292 236,326 Q276,256 268,190 Q262,140 236,108Z" fill="#d8a97f"/>
+    <path d="M100,170 Q92,232 112,262 L102,178Z M300,170 Q308,232 288,262 L298,178Z" fill="#c9ccd6"/>
+    <path d="M94,162 Q98,58 200,52 Q302,58 306,162 Z" fill="#3d8bff"/>
+    <path d="M230,56 Q302,64 306,162 L262,162 Q270,100 230,56Z" fill="#2f74e0"/>
+    <path d="M86,160 Q200,186 334,150 Q350,168 322,180 Q200,208 82,180Z" fill="#2b62c4"/>
+    <circle cx="200" cy="112" r="20" fill="#f4f1ea"/><text x="200" y="119" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="17" fill="#2b62c4">FM</text>
+    <path d="M128,196 Q152,182 180,190 M220,190 Q248,182 272,196" fill="none" stroke="#c9ccd6" stroke-width="12" stroke-linecap="round"/>
+    <g class="eyes-open"><circle cx="156" cy="218" r="8" fill="#0b0d14"/><circle cx="244" cy="218" r="8" fill="#0b0d14"/><circle cx="159" cy="215" r="2.5" fill="#fff"/><circle cx="247" cy="215" r="2.5" fill="#fff"/></g>
+    <g class="eyes-closed"><path d="M144,219 Q156,225 168,219 M232,219 Q244,225 256,219" fill="none" stroke="#0b0d14" stroke-width="5" stroke-linecap="round"/></g>
+    <path d="M118,212 L130,206 M118,224 L130,222 M282,212 L270,206 M282,224 L270,222" stroke="#b98a66" stroke-width="3" stroke-linecap="round"/>
+    <path d="M200,212 Q178,262 208,268 Q226,262 216,244" fill="none" stroke="#c48e64" stroke-width="6" stroke-linecap="round"/>
+    <g class="mouth-a"><path d="M182,310 Q200,315 218,310" fill="none" stroke="#7a3b2e" stroke-width="5" stroke-linecap="round"/>
+      <path d="M126,290 Q160,264 200,278 Q240,264 274,290 Q252,306 200,298 Q148,306 126,290Z" fill="#c9ccd6"/></g>
+    <g class="mouth-b"><ellipse cx="200" cy="312" rx="20" ry="11" fill="#5a1f1a"/>
+      <path d="M126,284 Q160,258 200,272 Q240,258 274,284 Q252,300 200,292 Q148,300 126,284Z" fill="#c9ccd6"/></g>` },
+
+  morris: { name: "MORRIS", color: "#ff8fb1", svg: () => `
+    <path d="M60,460 Q90,352 200,340 Q310,352 340,460Z" fill="#9aa1b5"/>
+    <ellipse cx="200" cy="430" rx="70" ry="50" fill="#c3c8d6"/>
+    <circle cx="96" cy="128" r="64" fill="#9aa1b5"/><circle cx="96" cy="132" r="42" fill="#ff8fb1"/>
+    <circle cx="304" cy="128" r="64" fill="#8a91a6"/><circle cx="304" cy="132" r="42" fill="#f07aa0"/>
+    <ellipse cx="200" cy="232" rx="112" ry="102" fill="#9aa1b5"/>
+    <path d="M250,140 Q312,170 310,236 Q306,300 250,326 Q286,262 280,210 Q274,168 250,140Z" fill="#8a91a6"/>
+    <ellipse cx="200" cy="290" rx="62" ry="50" fill="#b3b9ca"/>
+    <path d="M176,140 L224,140" stroke="#5d6378" stroke-width="5" stroke-linecap="round"/>
+    ${[182,194,206,218].map(x => `<line x1="${x}" y1="132" x2="${x}" y2="148" stroke="#5d6378" stroke-width="3" stroke-linecap="round"/>`).join("")}
+    <circle class="implant" cx="234" cy="138" r="6" fill="#b6ff3b"/>
+    <g class="eyes-open"><ellipse cx="156" cy="214" rx="21" ry="25" fill="#0b0d14"/><ellipse cx="244" cy="214" rx="21" ry="25" fill="#0b0d14"/>
+      <circle cx="163" cy="205" r="7" fill="#fff"/><circle cx="251" cy="205" r="7" fill="#fff"/><circle cx="150" cy="224" r="3" fill="#fff"/><circle cx="238" cy="224" r="3" fill="#fff"/></g>
+    <g class="eyes-closed"><path d="M136,216 Q156,226 176,216 M224,216 Q244,226 264,216" fill="none" stroke="#0b0d14" stroke-width="6" stroke-linecap="round"/></g>
+    <ellipse cx="200" cy="266" rx="17" ry="12" fill="#ff8fb1"/>
+    <path d="M150,282 L70,262 M150,292 L66,294 M150,302 L74,326 M250,282 L330,262 M250,292 L334,294 M250,302 L326,326" stroke="#f4f1ea" stroke-width="3" stroke-linecap="round"/>
+    <g class="mouth-a"><path d="M182,300 Q200,310 218,300" fill="none" stroke="#5c4a5a" stroke-width="5" stroke-linecap="round"/><rect x="192" y="304" width="16" height="14" rx="2" fill="#fff8e0"/></g>
+    <g class="mouth-b"><ellipse cx="200" cy="314" rx="18" ry="14" fill="#3a1022"/><rect x="192" y="298" width="16" height="15" rx="2" fill="#fff8e0"/></g>` },
+};
+
+/* ------------------------------------------------------------------ *
+ *  HOTSPOTS
+ * ------------------------------------------------------------------ */
+const STAND = { preston: [640, 520], lectern: [640, 520], screen: [800, 520], iris: [300, 740], quorum: [860, 560],
+  faculty: [800, 640], pizza: [1220, 700], coffee: [1280, 700], tube: [1410, 690], morris: [1060, 520],
+  door: [260, 680], exit: [260, 680], clock: [1060, 520], robe: [900, 740] };
+const HS = {
+  screen: { label: "projector screen",
+    day: { look: "Preston's slide. Six perfect cortical layers. Error bars so small they'd embarrass a ruler. The methods say 7T.\n\nThe building has a 3T.", score: ["screen", 1],
+           use: "You cannot use a slide. You can only envy it." },
+    night: { look: "Dark. The ghost of a brain is burned faintly into the screen.", use: "Gus wipes the screen. The ghost stays." } },
+  preston: { label: "Preston", day: { look: "Preston \"P.\" Valu. Third-year. First author. Rising Star. Never takes his earbuds out, not even for pizza.",
+    talk: "convoPreston", use: "Hands off. He's networking." } },
+  lectern: { label: "lectern", day: { look: "The lectern. Its microphone has been on since 2009.", use: "Preston is using it. Aggressively." },
+    night: { look: "The lectern. Someone left a single index card: 'THE AUTHORS SHOULD CONSIDER…'", use: "Gus pockets the card. Thirty years, never asked." } },
+  quorum: { label: "Prof. Quorum", day: { look: "Prof. Quorum, the Department Chair. Front row, as always. Tasteful round cufflinks. Expensive.",
+    talk: "PROF. QUORUM|Not now, Mr. Null. We're about to lose quorum.", use: "Touching the Chair is a committee matter." } },
+  faculty: { label: "senior faculty", day: { look: "The senior faculty, nodding in perfect unison.\n\nTenure does that to a person.", talk: "They nod. In unison.", use: "They nod. In unison." } },
+  iris: { label: "old woman", day: { look: "An elderly woman in the back row. She has attended journal club since 1961. Nobody knows who she is.",
+    talk: "THE OLD WOMAN|Young man. Ask him who reviewed it.", use: "She swats your hand away with surprising speed." } },
+  pizza: { label: "pizza", day: { look: "Journal club pizza. Monday's is edible. By Thursday it is a biohazard.", use: "You take a slice. Priorities.", score: ["pizza", 1] },
+    night: { look: "Empty. Morris got here first.", use: "Gus folds the box flat. It's what he does." } },
+  coffee: { label: "coffee cup", day: { look: "Someone's abandoned coffee. Not a clue. Just sad.", use: "It's cold. Like the job market." } },
+  tube: { label: "pneumatic tube", day: { look: "The building's old pneumatic tube system. A canister just went by, marked \"B3.\"\n\nThere is no B3.", use: "You'd need a canister. And a reason.", score: ["tube", 1] },
+    night: { look: "The canisters are rattling. Going down. Past the basement.\n\nThere is no \"past the basement.\"", use: "Gus puts his ear to the pipe. Chanting? No. Probably the boiler.", score: ["tubeN", 1] } },
+  morris: { label: "ceiling tile", day: { look: "A ceiling tile is ajar. Two small eyes. A tail. Morris is attending journal club for the pizza.", talk: "convoMorrisDay", use: "You can't reach. Morris can reach you, though." },
+    night: { look: "Two small glowing eyes in the ceiling. The rat is back.", talk: "convoMorrisNight", use: "Gus can't reach. The rat seems fine with that." } },
+  door: { label: "door", day: { look: "The hallway to the rest of Fechner Hall. Not built yet. This is a style test.", use: "Locked by the narrator, for your own good." },
+    night: { look: "The hallway. The lights on motion sensors stay off for Gus. They always have.", use: "Not tonight. This is a style test." } },
+  exit: { label: "exit sign", day: { look: "EXIT.", use: "It's a sign, not a door. Though it may be a sign." },
+    night: { look: "EXIT. The only warm color on three floors.", use: "Gus taps it. It hums back." } },
+  clock: { label: "clock", day: { look: "4:07 PM. Journal club ends when the pizza does." }, night: { look: "2:13 AM. The canisters always start around two." } },
+  robe: { label: "hooded robe", night: { look: "A hooded robe, draped over a chair. A small round pin on the chest: a circle around a smaller circle.\n\nSomeone forgot it. Again.",
+    use: "Gus folds the robe and tags it for the lost and found. Number four hundred and twelve. He's never asked.", score: ["robe", 2], take: true } },
+};
+
+const CONVOS = {
+  convoPreston: { L: "ned", R: "preston", score: ["preston", 2], lines: [
+    ["L", "Great talk, Preston. Quick question. When did we get a 7T?"],
+    ["R", "Ned! Love the energy. Love it. Let's grab coffee sometime. Actually, let's grab synergy."],
+    ["L", "The building has a 3T."],
+    ["R", "The authors thank the reviewer for their insightful comment.", "blank"],
+    ["L", "…Preston?"],
+    ["R", "Anyway! I ran every subject myself. Gotta network. Ciao!"],
+    ["N", "You recorded that. Your recorder now contains one (1) suspicious non-answer."],
+  ]},
+  convoMorrisDay: { L: "ned", R: "morris", score: ["morrisD", 1], lines: [
+    ["R", "Psst. Pal. Up here."],
+    ["L", "Morris! You're supposed to stay in the drawer."],
+    ["R", "The drawer doesn't have pizza. Also, your boy Preston's giving me the itch again."],
+    ["L", "Fleas?"],
+    ["R", "Fleas don't pulse, pal."],
+  ]},
+  convoMorrisNight: { L: "gus", R: "morris", score: ["morrisN", 1], lines: [
+    ["L", "Evening, rat."],
+    ["R", "Squeak squeak. Squeak squeak squeak.|(The canisters are going down again. Six tonight.)"],
+    ["L", "Those canisters again. Going down past the basement. Every night this week."],
+    ["R", "SQUEAK.|(There IS something past the basement, you know.)"],
+    ["L", "Yeah. I don't like it either."],
+  ]},
+};
+
+/* ------------------------------------------------------------------ *
+ *  STATE + BUILD
+ * ------------------------------------------------------------------ */
+const state = { mode: "day", verb: "walk", score: 0, scored: new Set(), busy: false, taken: new Set(),
+  actor: { x: 800, y: 735, tx: 800, ty: 735, dir: 1, walking: false, t: 0, onArrive: null } };
+
+svg.innerHTML = room() +
+  `<g id="sortables">
+     <g data-depth="490">${lecternAndPreston()}</g>
+     <g data-depth="${P(0,760,ROWS[0])[1]}">${rowGroup(0)}</g>
+     <g data-depth="${P(0,760,ROWS[1])[1]}">${rowGroup(1)}</g>
+     <g data-depth="${P(0,760,0.80)[1] - 1}">${tableGroup()}</g>
+     <g data-depth="${P(0,760,ROWS[2])[1]}">${rowGroup(2)}</g>
+     <g data-depth="actor" id="actorWrap">${actorGroup()}</g>
+   </g>` + verbBar();
+
+const sortables = $("#sortables");
+const actorWrap = $("#actorWrap");
+const actorInner = $("#actorInner");
+function drawActor() { actorInner.innerHTML = state.mode === "night" ? gusBody() : nedBody(); }
+
+/* ------------------------------------------------------------------ *
+ *  UI helpers
+ * ------------------------------------------------------------------ */
+const hover = $("#hover"), msg = $("#msg");
+function setVerb(v) {
+  state.verb = v;
+  document.querySelectorAll(".verb").forEach(g => {
+    const on = g.dataset.verb === v;
+    g.querySelector(".vbox").style.stroke = on ? "var(--yellow)" : "var(--line)";
+    g.querySelector(".vbox").style.fill = on ? "var(--sel)" : "#000";
+    g.querySelector(".vbox").setAttribute("stroke-width", on ? 4 : 2.5);
+  });
+}
+function addScore(key, n) {
+  if (!key || state.scored.has(key)) return;
+  state.scored.add(key); state.score += n;
+  const el = $("#score"); el.textContent = state.score;
+  el.animate([{ transform: "translateY(-6px)", fill: "#ffd23f" }, { transform: "translateY(0)" }], { duration: 500 });
+  blip();
+}
+let actx = null;
+function blip() {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const t = actx.currentTime;
+    [660, 990].forEach((f, i) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = "square"; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t + i * .09);
+      g.gain.exponentialRampToValueAtTime(0.05, t + i * .09 + .01); g.gain.exponentialRampToValueAtTime(0.0001, t + i * .09 + .12);
+      o.connect(g).connect(actx.destination); o.start(t + i * .09); o.stop(t + i * .09 + .14);
+    });
+  } catch (e) {}
+}
+function fmt(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br>"); }
+
+// typewriter into an element; resolves when clicked after finishing
+function typeInto(el, html, speed, onTick) {
+  return new Promise(resolve => {
+    let i = 0, done = false; const plain = html;
+    el.innerHTML = "";
+    // tokenise so tags (<br>, <em>) appear whole
+    const tokens = plain.match(/<[^>]+>|&[a-z]+;|[\s\S]/g) || [];
+    const timer = setInterval(() => {
+      if (i >= tokens.length) { finish(); return; }
+      el.innerHTML += tokens[i++]; onTick && onTick(true);
+    }, speed);
+    function finish() { clearInterval(timer); el.innerHTML = plain; done = true; onTick && onTick(false); }
+    function click(e) {
+      e.stopPropagation();
+      if (!done) { finish(); return; }
+      cleanup(); resolve();
+    }
+    function cleanup() { frame.removeEventListener("pointerdown", click, true); }
+    frame.addEventListener("pointerdown", click, true);
+  });
+}
+async function say(text) {
+  state.busy = true;
+  let who = "", body = text;
+  if (text.includes("|")) { [who, body] = text.split("|"); }
+  msg.innerHTML = `${who ? `<span class="who" style="color:var(--yellow)">${fmt(who)}:</span> ` : ""}<span class="t"></span><span class="more">click ▸</span>`;
+  msg.classList.add("show");
+  await typeInto($(".t", msg), fmt(body), state.mode === "night" ? 30 : 18);
+  msg.classList.remove("show");
+  state.busy = false;
+}
+
+/* ------------------------------------------------------------------ *
+ *  CONVERSATIONS (portrait close-ups)
+ * ------------------------------------------------------------------ */
+const convo = $("#convo"), dlg = $("#dlg");
+const pf = { L: $(".pframe.left"), R: $(".pframe.right") };
+let blinkTimers = [];
+function mountPortrait(side, id) {
+  const p = PORTRAIT[id];
+  pf[side].querySelector(".pv").innerHTML = `<svg viewBox="0 0 400 460" class="pt" data-id="${id}">${p.svg()}</svg>`;
+  pf[side].querySelector(".plate").textContent = p.name;
+  pf[side].querySelector(".plate").style.color = p.color;
+  const el = pf[side].querySelector("svg");
+  const blink = () => { el.classList.add("bl"); setTimeout(() => el.classList.remove("bl"), 130); blinkTimers.push(setTimeout(blink, 1800 + Math.random() * 3200)); };
+  blinkTimers.push(setTimeout(blink, 900 + Math.random() * 1500));
+  return el;
+}
+async function runConvo(key) {
+  const c = CONVOS[key];
+  state.busy = true; hover.classList.remove("show");
+  const els = { L: mountPortrait("L", c.L), R: mountPortrait("R", c.R) };
+  convo.classList.add("show");
+  for (const [side, raw, fx] of c.lines) {
+    pf.L.classList.toggle("speaking", side === "L"); pf.R.classList.toggle("speaking", side === "R");
+    let text = raw, sub = "";
+    if (raw.includes("|")) [text, sub] = raw.split("|");
+    if (side === "N") {
+      pf.L.classList.remove("speaking"); pf.R.classList.remove("speaking");
+      dlg.querySelector(".who").textContent = "NARRATOR"; dlg.querySelector(".who").style.color = "var(--line)";
+    } else {
+      const p = PORTRAIT[c[side]];
+      dlg.querySelector(".who").textContent = p.name; dlg.querySelector(".who").style.color = p.color;
+    }
+    const sp = side === "N" ? null : els[side];
+    if (sp) sp.classList.toggle("blank", fx === "blank");
+    if (fx === "blank") { const ps = $("#preston"); ps && ps.classList.add("blank", "pulsing"); }
+    let flap = 0;
+    const html = fmt(text) + (sub ? `<br><em>${fmt(sub)}</em>` : "");
+    await typeInto(dlg.querySelector(".txt"), html, state.mode === "night" ? 30 : 20, (on) => {
+      if (!sp) return;
+      if (on) { if (++flap % 3 === 0) sp.classList.toggle("mo"); } else sp.classList.remove("mo");
+    });
+    if (sp) { sp.classList.remove("mo"); if (fx === "blank") sp.classList.remove("blank"); }
+    if (fx === "blank") { const ps = $("#preston"); ps && ps.classList.remove("blank", "pulsing"); }
+  }
+  blinkTimers.forEach(clearTimeout); blinkTimers = [];
+  convo.classList.remove("show");
+  if (c.score) addScore(...c.score);
+  state.busy = false;
+}
+
+/* ------------------------------------------------------------------ *
+ *  INPUT
+ * ------------------------------------------------------------------ */
+function svgPoint(evt) {
+  const p = svg.createSVGPoint(); p.x = evt.clientX; p.y = evt.clientY;
+  return p.matrixTransform(svg.getScreenCTM().inverse());
+}
+function hsFrom(target) {
+  const el = target.closest && target.closest("[data-hs]");
+  if (!el) return null;
+  const id = el.dataset.hs, h = HS[id];
+  if (!h || !h[state.mode] || state.taken.has(id)) return null;
+  return id;
+}
+const VERBLABEL = { walk: "Walk to", look: "Look at", use: "Use", talk: "Talk to" };
+frame.addEventListener("pointermove", (e) => {
+  if (state.busy) { hover.classList.remove("show"); return; }
+  const id = hsFrom(e.target), item = e.target.closest && e.target.closest("[data-item]");
+  let label = "";
+  if (id) label = `${VERBLABEL[state.verb]} ${HS[id].label}`;
+  else if (item) label = `Look at ${ITEMS[item.dataset.item].name}`;
+  else if (e.target.closest && e.target.closest(".verb")) label = "";
+  if (!label) { hover.classList.remove("show"); return; }
+  const r = frame.getBoundingClientRect();
+  hover.textContent = label; hover.classList.add("show");
+  hover.style.left = (e.clientX - r.left + 16) + "px"; hover.style.top = (e.clientY - r.top + 18) + "px";
+});
+frame.addEventListener("contextmenu", (e) => { e.preventDefault(); if (state.busy) return; setVerb(VERBS[(VERBS.indexOf(state.verb) + 1) % VERBS.length]); });
+window.addEventListener("keydown", (e) => { const n = parseInt(e.key, 10); if (n >= 1 && n <= 4 && !state.busy) setVerb(VERBS[n - 1]); });
+
+svg.addEventListener("click", (e) => {
+  if (state.busy) return;
+  const verbEl = e.target.closest(".verb");
+  if (verbEl) { setVerb(verbEl.dataset.verb); return; }
+  if (e.target.closest("#toggle")) { toggleMode(); return; }
+  const item = e.target.closest("[data-item]");
+  if (item) { say(ITEMS[item.dataset.item].look); return; }
+  const p = svgPoint(e);
+  if (p.y > 760) return;
+  const id = hsFrom(e.target);
+  if (id) { act(id); return; }
+  if (state.verb !== "walk") setVerb("walk");
+  walkTo(p.x, p.y);
+});
+
+function act(id) {
+  const h = HS[id][state.mode], v = state.verb;
+  if (v === "walk") { const s = STAND[id]; if (s) walkTo(s[0], s[1]); return; }
+  if (v === "look") { say(h.look); if (h.score && h.look) addScore(...h.score); return; }
+  const resp = h[v] || (v === "talk" ? "There's no answer. Not even a squeak." : "Nothing happens. Academia in a nutshell.");
+  const go = () => {
+    if (CONVOS[resp]) runConvo(resp);
+    else {
+      say(resp);
+      if (v === "use" && h.score) addScore(...h.score);
+      if (v === "use" && h.take) { state.taken.add(id); const el = document.getElementById(id); el && el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 500, fill: "forwards" }); }
+    }
+  };
+  const s = STAND[id];
+  if (s) walkTo(s[0], s[1], go); else go();
+}
+
+/* ------------------------------------------------------------------ *
+ *  MOVEMENT
+ * ------------------------------------------------------------------ */
+function clampFloor(x, y) {
+  y = Math.max(478, Math.min(752, y));
+  const k = kAtY(y), half = 800 * k - 30;
+  x = Math.max(800 - half, Math.min(800 + half, x));
+  return [x, y];
+}
+function walkTo(x, y, cb) {
+  const a = state.actor;
+  [a.tx, a.ty] = clampFloor(x, y);
+  a.onArrive = cb || null;
+  a.walking = true;
+}
+let last = performance.now();
+function tick(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  const a = state.actor;
+  if (a.walking) {
+    const dx = a.tx - a.x, dy = a.ty - a.y, dist = Math.hypot(dx, dy);
+    const k = kAtY(a.y), speed = 330 * k;
+    if (dist < 3) {
+      a.walking = false; a.x = a.tx; a.y = a.ty;
+      const cb = a.onArrive; a.onArrive = null; cb && cb();
+    } else {
+      const step = Math.min(dist, speed * dt);
+      a.x += dx / dist * step; a.y += dy / dist * step * 0.85 + (dy / dist) * step * 0.15;
+      if (Math.abs(dx) > 2) a.dir = dx > 0 ? 1 : -1;
+      a.t += dt;
+    }
+  }
+  renderActor();
+  requestAnimationFrame(tick);
+}
+let lastSortY = -1;
+function renderActor() {
+  const a = state.actor, k = kAtY(a.y);
+  $("#actor").setAttribute("transform", `translate(${a.x.toFixed(1)},${a.y.toFixed(1)}) scale(${(k * a.dir).toFixed(3)},${k.toFixed(3)})`);
+  const sw = a.walking ? Math.sin(a.t * 11) : 0;
+  const L = actorInner.querySelector(".legL"), R = actorInner.querySelector(".legR");
+  if (L) { L.setAttribute("x2", -16 + sw * 16); R.setAttribute("x2", 16 - sw * 16); }
+  const bob = actorInner.querySelector(".bob");
+  if (bob) bob.setAttribute("transform", `translate(0,${a.walking ? -Math.abs(Math.sin(a.t * 11)) * 5 : 0})`);
+  const af = actorInner.querySelector(".armF"), ab = actorInner.querySelector(".armB");
+  if (af && state.mode === "day") { af.setAttribute("x2", 48 - sw * 14); actorInner.querySelector(".handF").setAttribute("cx", 49 - sw * 14); }
+  if (ab) ab.setAttribute("x2", -48 + sw * 14);
+  // depth sort
+  if (Math.abs(a.y - lastSortY) > 1) {
+    lastSortY = a.y;
+    const kids = [...sortables.children].filter(c => c !== actorWrap);
+    const after = kids.find(c => parseFloat(c.dataset.depth) > a.y);
+    sortables.insertBefore(actorWrap, after || null);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ *  AMBIENT: canister, Preston's earbud pulse
+ * ------------------------------------------------------------------ */
+const can = $("#canister");
+function dropCanister() {
+  const y0 = 30, y1 = 690;
+  can.setAttribute("opacity", 1);
+  can.animate([{ transform: `translateY(${y0}px)` }, { transform: `translateY(${y1}px)` }], { duration: 1100, easing: "cubic-bezier(.5,0,1,1)" })
+    .onfinish = () => can.setAttribute("opacity", 0);
+  setTimeout(dropCanister, state.mode === "night" ? 3500 + Math.random() * 2500 : 9000 + Math.random() * 5000);
+}
+setTimeout(dropCanister, 2500);
+function prestonPulse() {
+  const p = $("#preston");
+  if (p && state.mode === "day" && !state.busy) {
+    p.classList.add("pulsing", "blank");
+    setTimeout(() => p.classList.remove("pulsing", "blank"), 650);
+  }
+  const arm = $("#prestonArm");
+  if (arm) arm.setAttribute("y2", Math.random() < .5 ? -262 : -232);
+  setTimeout(prestonPulse, 5000 + Math.random() * 4000);
+}
+setTimeout(prestonPulse, 4000);
+
+/* ------------------------------------------------------------------ *
+ *  DAY / NIGHT
+ * ------------------------------------------------------------------ */
+const card = $("#card");
+function showCard() {
+  const night = state.mode === "night";
+  card.querySelector(".day").textContent = night ? "MONDAY NIGHT" : "MONDAY";
+  card.querySelector(".act").textContent = night ? "NIGHT SHIFT · GUS" : "ACT I · SUBMISSION";
+  card.querySelector(".sub").textContent = night ? "Seminar Room 101 · 2:13 AM" : "Journal Club · Seminar Room 101 · 4:07 PM";
+  card.querySelector(".act").style.color = night ? "#29d3c0" : "#ffd23f";
+  card.classList.add("show");
+  state.busy = true;
+  const hide = () => { card.classList.remove("show"); state.busy = false; card.removeEventListener("click", hide); };
+  card.addEventListener("click", hide);
+  setTimeout(hide, 2400);
+}
+function toggleMode() {
+  state.mode = state.mode === "day" ? "night" : "day";
+  frame.classList.toggle("night", state.mode === "night");
+  $("#flash").classList.remove("go"); void $("#flash").offsetWidth; $("#flash").classList.add("go");
+  $("#toggleTxt").textContent = state.mode === "night" ? "DAY SHIFT" : "NIGHT SHIFT";
+  $("#toggleSub").textContent = state.mode === "night" ? "◂ back to Ned" : "switch to Gus ▸";
+  const a = state.actor;
+  if (state.mode === "night") { a.x = 330; a.y = 720; a.dir = 1; } else { a.x = 800; a.y = 735; a.dir = 1; }
+  a.walking = false; a.onArrive = null; lastSortY = -1;
+  drawActor(); drawBadge(); drawInv(); showCard();
+}
+
+/* go */
+drawActor(); drawBadge(); drawInv(); setVerb("walk"); showCard();
+requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
