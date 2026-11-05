@@ -17,7 +17,7 @@ The puzzle is real visual psychophysics: fog lowers contrast, small fine detail 
 | **Near threshold is a coin flip** | At threshold you see something some of the time, not all or nothing (the psychometric function). | "If you only half see it, you're right at the edge. Get a step closer." |
 | **Light makes fog worse** | A light near your eyes lights up the fog in front of you and adds to the veil (backscatter: why you don't use high beams in fog). | "Like high beams in fog. Put the phone light down." |
 | **Hybrid images** | One sign can carry two messages: a coarse one you read from far away or in fog, and a fine one you only see up close. | "Read it up close. What it says from far away might not be what it says." |
-| **Staircases** | Thresholds are measured adaptively: make it harder after correct answers, easier after a mistake. A 2-down-1-up rule settles where you're right about 71% of the time. | (Nobody explains this one in advance. The vision scientists in the audience will get it.) |
+| **Forced choice and staircases** | Pick one of two even when you can't tell (2AFC): chance is 50%, so anything better means you saw it. Thresholds are measured adaptively: harder after correct answers, easier after a mistake. A 2-down-1-up rule settles where you're right about 71% of the time. | (Nobody explains this one in advance. The vision scientists in the audience will get it.) |
 
 ---
 
@@ -39,16 +39,25 @@ It's dark down here, and Nell's phone has a light. **USE PHONE LIGHT** makes the
 ### Corridor 4 — the decoys
 The NRT has re-signed some doors with **hybrid signs**. From the fog, a door reads **EXIT** in big coarse letters. Up close, the fine print over it says **−80 FREEZER**, the freezer Impact was found in. Players who trust the coarse message walk in (death below). Players who learned "walk up to it" read the fine print. One honest door's sign does the opposite: its coarse shape says nothing, but up close it's the stairwell.
 
-### Corridor 5 — the staircase (in the stairwell)
-The basement stairwell goes down past B2 toward B3, landing by landing. Each landing has two doors, and only one leads on. This stretch is **adaptive**:
-- Two correct doors in a row, and the NRT turns the fog up a notch. ("She's getting away. More atmosphere.")
-- One wrong door, and it opens onto the stairs back up a flight, where the fog is thinner.
-- The run ends after **eight reversals**, the way a real staircase does, and Nell reaches the bottom at a fog level pinned to her own threshold. A player who's good at it gets a harder final landing, and a struggling one gets an easier one. Everyone finishes; nobody is stuck.
+### Corridor 5 — the staircase (2AFC, in an actual stairwell)
+The basement stairwell goes down toward B3. Nell walks down it flight by flight, one step at a time in Game & Watch jumps, down the Q*bert-style steps from the style sheet. Every landing is one **trial**:
+
+- **Two doors, left and right.** On exactly one of them, the NRT insignia (a circle inside a circle) is scratched into the paint. That door leads on. The other is blank. Iris told her once: *"The way down is always marked. Faintly."*
+- **The fog sets the insignia's contrast.** Near threshold, its strokes flicker in and out (see "Drawing the fog"). Sometimes it's obvious; sometimes Nell would swear neither door has anything on it.
+- **She has to choose.** There's no going back up without opening a door, and no "I'm not sure." Click a door, or press ← / →, the way a real observer would. That's two-alternative forced choice: guessing gets you right half the time, so being right more often than that means you saw something, even when it felt like a guess.
+  > MORRIS: "I can't see anything, pal." / NELL: "Pick anyway. Your gut's better than you think."
+- **Right door:** it opens onto the next flight down. After **two right in a row**, someone below turns the fog up a notch. ("She's getting away. More atmosphere.")
+- **Wrong door:** it opens onto the stairs back **up** one flight, where the fog is thinner, and toward Preston, whose footsteps (`((( )))` on the stairwell rail) are coming down from above.
+- **The stairwell has more landings than the building has floors.** It goes on until the measurement converges. That's fog neuro: research that never ends until the numbers say so. In this case they finally do: after **eight reversals** (the run flips between getting harder and getting easier eight times), the next door opens onto B3's antechamber.
+
+A depth readout on the HUD shows the landing ("B2.7, B2.8…") and the fog level as big thin stroke-alphabet numbers. Everyone finishes: a sharp-eyed player meets thicker fog, and a struggling player meets thinner fog, and the run settles where each player is right about 71% of the time, which is exactly what a 2-down-1-up staircase does. Typical run: 25–35 landings, about two minutes.
 
 At the bottom, Nell's notebook (and the HUD) shows the readout, in the stroke alphabet:
-> **CONTRAST THRESHOLD 2.1%**  *(2-down-1-up, 8 reversals, ~71% correct)*
+> **CONTRAST THRESHOLD 2.1%**  *(2AFC, 2-down-1-up, 8 reversals, ~71% correct)*
 > NELL: "I just ran a staircase in a staircase."
 > MORRIS: "Is that a joke? It feels like a joke."
+
+And a plot of the run, like a real one: fog level by landing, a zigzag settling onto a line, drawn as the stairwell's own cross-section. Each landing Nell stood on is a dot, filled green for a right door and hollow for a wrong one. The staircase plot *is* the staircase.
 
 ---
 
@@ -63,7 +72,8 @@ At the bottom, Nell's notebook (and the HUD) shows the readout, in the stroke al
 
 - **Fog model:** each drawn element gets an apparent contrast C = C₀ · e^(−β·d) · V, where d is its distance from Nell along the corridor, β is that corridor's fog density, and V < 1 when the phone light is on (veil). Each element also has a size class (fine, medium, coarse) with its own threshold. Visibility per frame = a Weibull psychometric function of C / threshold. Strokes are shown or hidden per frame (poses), never faded with gradients.
 - **Colors:** fog moves stroke colors toward the fog gray through the CSS palette variables, so it works in both day and night palettes.
-- **Staircase:** a standard 2-down-1-up on β, with a step size that halves after the first two reversals, ending at eight reversals. The threshold readout averages the last six.
+- **Staircase:** a standard 2-down-1-up on β, 2AFC (target door randomized left/right each landing), with a step size that halves after the first two reversals, ending at eight reversals. The threshold readout averages the last six. Log every trial (landing, fog level, side, response, correct) for the end-of-run plot.
+- **Stairwell scene:** `game/js/rooms/stairwell.js`, a front-facing cutaway of one flight and landing with the two doors; each trial redraws the doors and markers, and Nell steps down the flight in poses.
 - **Rooms:** `game/js/rooms/basement.js`, a corridor generator (doors, markers, hybrid signs) driven by a per-corridor spec in `story.js`.
 
 ## Changes to the story
