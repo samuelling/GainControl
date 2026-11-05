@@ -109,7 +109,8 @@ function hud() {
   for (const c of G.cast) {
     const [nm, f] = CHIP[c], w = segW(nm, 6.5) + 6.5 * .9 + 2;
     s += c === G.char ? chip(nm, cx, 300, 6.5, f)
-      : `<g data-char="${c}" style="cursor:pointer"><rect class="hl sW" x="${cx - 1}" y="${298.5}" width="${w}" height="${6.5 * 1.7 + 3}"/>${seg(nm, cx + 2, 301, 6.5, "s" + f.slice(1), .9)}</g>`;
+      : `<g data-char="${c}" class="charchip" style="cursor:pointer"><rect class="hl sW" fill="#000" x="${cx - 1}" y="${298.5}" width="${w}" height="${6.5 * 1.7 + 3}"/>${seg(nm, cx + 2, 301, 6.5, "s" + f.slice(1), .9)}
+          <rect x="${cx - 6}" y="292" width="${w + 10}" height="${6.5 * 1.7 + 14}" fill="transparent"/></g>`;
     cx += w + 6;
   }
   if (G.using) {

@@ -133,3 +133,7 @@
   .glmwrap .coach .who { font-size: 1.2cqw; margin: 0 .5cqw 0 0; vertical-align: .15cqw; }
   /* death text never blocks its own buttons */
   #death .dtxt { pointer-events: none; bottom: 18%; overflow: hidden; }
+
+  /* switching characters: the inactive name chip is a real button */
+  #hud .charchip:hover rect.hl { fill: var(--W); stroke: var(--W); }
+  #hud .charchip:hover path { stroke: #000; }
