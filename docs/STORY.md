@@ -32,6 +32,17 @@ Ned Null is a fifth-year grad student whose dissertation keeps coming up null. A
 10. The NRT has met for decades in a sealed sub-basement under Fechner Hall, **B3**, around their "Round Table": a decommissioned 1960s research magnet, a giant iron ring. The building's pneumatic tube system was built for them. It's how they've passed reviews, grant scores and orders for sixty years.
 11. The leader, **the Corresponding Author**, is Prof. Quorum. His "death" at the faculty meeting was faked; nobody checked his pulse for 40 minutes. The society's under-40 rule is absolute, which is why Quorum has been officially 39 since 1979. His birth certificate is the oldest fabrication in the department.
 
+### How the NRT works
+*Loosely inspired by real accounts of mid-century academic secret societies (see Charles Gross's 1977 letter in* American Psychologist *about the Psychological Round Table in the 1960s), pushed much further toward the sinister. Nothing here depicts a real organization.*
+
+- **Secret, self-perpetuating rule.** Six inner members, **the Editorial Board**, choose their own successors and answer to no one. Quorum heads it as Corresponding Author. Ordinary members never vote on anything.
+- **Selection without consent.** You're never told you're a candidate. The Board watches you for years and then sets you a test: a single line to cross. **Preston's initiation test was Ned's paper.** The Board had Impact route the review to Preston, and stealing the data was how he proved himself.
+- **Retirement at 40.** It used to mean leaving the club. In the NRT it means your gain is turned to zero. Retired members stay on as faculty: they sit through meetings blank-eyed, nod at every motion and say nothing new for the rest of their careers. *That explains a lot of faculty meetings.* Impact turned 41, tried to talk instead of retiring quietly, and was "retired" permanently. Quorum dodged it by forging his age.
+- **The Hunt.** Every year the society chooses an outsider as its **quarry**: someone promising and unconnected. Then it closes ranks with Reviewer 2 reports, triaged grants and job searches that go cold. **This year's quarry is Ned Null.** His paper's rejection was the opening move, not bad luck.
+- **Brilliant on paper, banal in person.** For all the secrecy, their actual meetings are intellectually empty: rote boilerplate, recycled slides, juvenile after-dinner roasts (which Morris loves). The NRT doesn't produce discoveries. It produces *success* and hands it out to its own. That's the game's theme again: the too-clean results come from people with nothing real to show.
+- **The gavel.** The Board calls each induction to order with a brass gavel whose head is cast from the skull of the first member who turned 40 and refused to retire.
+- **Defectors.** A few people have walked out, but almost none got away. The one survivor is **Prof. Emerita Iris Candor** (see Cast).
+
 ## Theme
 
 Real data is noisy and fake data is too clean, and the same goes for alibis. Every clue in the game comes down to *noticing something too perfect*. Preston's alibis are spotless, his figures have no motion artifacts, and his participants never miss an appointment.
@@ -52,6 +63,7 @@ Real data is noisy and fake data is too clean, and the same goes for alibis. Eve
 | **Dr. Rex Jected** | Postdoc, year 9. | Bitter informant who works for coffee. So hardened by rejection that he survives his own murder. Applied to the NRT at 39 and 11 months and was rejected. He knows the legend and nobody believes him either. |
 | **Gus Mopley** | Night custodian. **Third playable character** (night shift). | Sees everything at 3am. Speaks in mop-bucket proverbs. Has keys to every door and nobody suspects the janitor. For 30 years he's been finding hooded robes in the lost and found and never asked. Knows the steam tunnels better than anyone alive. |
 | **Cody Credit** | Undergrad RA. | "Ran" Preston's participants for course credit and never questioned it. Victim. |
+| **Prof. Emerita Iris Candor** | Retired professor, 88, living in a forgotten emeritus office at the end of a 4th-floor hallway. The Gabriel Knight lore-keeper. | One of the first women to force her way into the old round table in the 1960s, and one of the few who walked out and survived. In 1977 she wrote a short, veiled letter to a journal warning about secret societies; nobody listened. Sharp, funny, unafraid. Keeps a loaded staple gun in her desk. |
 | **Dana Outlier** | Grad student, Preston's labmate. | Noticed Preston never comes in before noon. Victim, found in a recycling bin labeled EXCLUDED. |
 | **Prof. Quorum** | Department Chair, and secretly **the Corresponding Author**, leader of the NRT. | Rules everything by procedure. Apparently dies at the faculty meeting, and nobody notices for 40 minutes. ("We've lost Quorum.") Returns in the Act V finale. ("Quorum has been restored.") |
 | **The NRT** | The Neuroscientific Round Table. Hooded members, under 40 (officially). | Speak in grant-panel jargon and peer-review clichés. Their ritual responses are boilerplate from reviews ("The authors should consider…"). |
@@ -113,6 +125,8 @@ Ned is under suspicion and investigates around Small's interrogations. This is t
   - **Preston's blank moments.** Morris's head itches hard every time Preston's earbuds pulse, and Preston's face goes blank mid-sentence. Something is *talking* to him.
   - **The insignia.** The round-table symbol shows up everywhere once you look: Preston's earbud case, the killer's sticky notes, Quorum's cufflinks, a brass plate on the old pneumatic tube hub.
   - **Rex's legend,** bought with coffee: "There's a secret society. Under forty, invitation only. They review each other's papers. I applied at 39 and 11 months. They said my CV was *too old*."
+  - **The 1977 letter.** While hunting for the old 1980s brain atlas in the library, Ned finds a bound journal volume with a short letter bookmarked in it, from an author named I. Candor. It describes an unnamed young scientists' society as secret, self-electing, elitist, and "far duller than it is dangerous, until it isn't."
+  - **Iris Candor herself.** Ned tracks her to the forgotten emeritus office. She explains the Editorial Board, retirement at 40, and the Hunt. Then she looks at Ned and says: *"You're this year's quarry, dear. Your paper didn't get rejected. You got selected."*
   - **The old notes.** Some threat notes don't decode with the modern brain atlas. They're in an *older* coordinate system, so the code has been in use for decades. Ned needs the old 1980s atlas from the department library.
 - **Deaths:**
   - Dana Outlier, who told Ned about Preston's hours, is found "excluded."
@@ -144,7 +158,7 @@ The finale comes in two halves: Laura Bow's courtroom, then Gabriel Knight's lai
 - **Morris** goes through the pipes and the Tube Hub. He uses his own itch to track the broadcast to its source, the Gain Controller console, and the Archive.
 
 **The climax:**
-1. Quorum unhoods. He's not dead, he's 39, and he'd like Ned to consider joining: *"Think of your funding odds."* Saying yes is a valid (bad) ending.
+1. The Editorial Board calls the induction to order with the skull gavel. Quorum unhoods. He's not dead, he's 39, and he makes the Hunt's traditional final offer to its quarry: join instead of being destroyed. *"Think of your funding odds."* Saying yes is a valid (bad) ending.
 2. **The archive puzzle (required for the best ending):** before the magnet comes on, Morris has to send the most damning reels up the pneumatic tube to Ethel Bord's office. The tube system the NRT built becomes the thing that exposes them.
 3. **The magnet:** Gus throws the last breaker and the decommissioned Round Table ramps to full field. Every hood clasp, cufflink, earbud and gold medal in the room flies to the ring. The Gain Controller is ripped off its console and Preston's earbuds go with it, setting him free.
 4. **Quorum's end:** he's wearing sixty years of solid-gold awards. *"Forty years of honors. All of them ferromagnetic."* He finally rises to the top, straight into the ring.
