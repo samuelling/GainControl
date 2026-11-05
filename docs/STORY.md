@@ -205,7 +205,7 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 
 **Deaths:**
 - **Dana Outlier**, found "excluded" in the recycling.
-- **Prof. Quorum** "dies" at the faculty meeting. The meeting continues for 40 minutes; the senior faculty keep nodding. This is the comic-horror peak: the funniest scene in the game, and the most sinister on a second look.
+- **Prof. Quorum** "dies" at the faculty meeting. The meeting continues for 40 minutes; the senior faculty keep nodding. This is the comic-horror peak: the funniest scene in the game, and the most sinister on a second look. Before he dies, Nell and Gus crack *why* they nod: the faculty are answering the NRT's ritual, a 2-back over the motions (**THE NOD**; see [PUZZLE-NBACK.md](PUZZLE-NBACK.md)).
 
 **Day's last scene:** Nell finds Iris in her forgotten emeritus office (she never goes home). She explains the Secret Six, the rule of silence, retirement at 40 and the Hunt. Then:
 > *"You're this year's quarry, dear. Your paper didn't get rejected. You got selected."*
@@ -239,7 +239,7 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 
 **Death:** Gus Ian. Friday at dawn Nell finds him in the 3T. The scan is still running. His pupils are pinpoints, and he's wearing NRT earbuds instead of the scanner's headphones: the Board turned his gain to zero. Det. Small doesn't make a joke, and just takes off the hat. This is the Hot Fuzz turn at full strength: the world stays comic, and the loss is real.
 
-**Turn:** Preston is a puppet, and Nell decides to *save* him, not just expose him. Nell tells Iris the plan. She reaches for the staple gun.
+**Turn:** Preston is a puppet, and Nell decides to *save* him, not just expose him. Nell tells Iris the plan. She reaches for the staple gun, then drills Nell in the Echo, the ritual Nell will have to perform under a hood (**THE REHEARSAL**, [PUZZLE-NBACK.md](PUZZLE-NBACK.md)).
 
 ---
 
@@ -251,7 +251,7 @@ Day and night merge. The finale comes in two halves: Laura Bow's courtroom, then
 - **The turn:** the moment Nell names Preston, Preston's earbuds flare. He stands up mid-job-talk, says in a flat voice *"The authors thank the reviewers for their insightful comments,"* and walks out toward the basement. The committee is convinced of the fraud but not of a secret society ("Extraordinary claims, Ms. Null"). Nell needs proof, and the proof is underground.
 
 **Part 2, midnight: the Induction in B3.** Tonight Preston is to be made permanent: the Gain Controller fixed at full ambition, no conscience left. Three go in together, Day of the Tentacle style, each with a separate route. Gus's place is taken by the one person who has done this before:
-- **Nell** goes in the front in the robe Gus photographed in Act I and retrieved on his last night. She has to give the decoded passphrase, answer the ritual call-and-response (peer-review boilerplate, learned from the cipher all week), and survive a member noticing she looks older than 39.
+- **Nell** goes in the front in the robe Gus photographed in Act I and retrieved on his last night. She has to give the decoded passphrase, perform the Echo at the Round Table (a dual 2-back over peer-review phrases and speaking seats, which goes to 3-back if Quorum gets suspicious; [PUZZLE-NBACK.md](PUZZLE-NBACK.md)), and survive a member noticing she looks older than 39.
 - **Iris** (playable for this act only; Nell has to have told her the plan in Act IV, because with Gus gone nobody else can start the magnet) goes through the steam tunnels to the old power plant room and cold-starts the 1960s magnet supply: ancient breakers, and a manual with her own handwriting in the margins from 1968.
 - **Morris** goes through the pipes and the Tube Hub, following his itch to the Gain Controller console and the Archive.
 
@@ -343,6 +343,9 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 | Language models | "Autocomplete that read a whole library. It writes what *sounds* like the library, not what's true." | The paper mill (LTM) |
 | Metamers | "Two different lights your eye sees as the same color. His paper is a metamer of science: different parts, same look." | The metamer overlay |
 | Hallucinated citations | "AI writing invents sources that sound right. Look them up and the shelf is empty." | Phantom references in the library |
+| Working memory (n-back) | "Juggling: every new thing lands and the oldest one drops. You only keep the last two in the air." | The Echo: the faculty nod, Iris's drill, the induction |
+| Signal detection | "Count hits *and* false alarms. Saying 'now' all the time catches everything and proves nothing." | Nell's d′ after the faculty meeting |
+| Brain-training hype | "Getting better at the game doesn't make you smarter at everything else." | The Table's unreplicated 1979 Echo paper |
 | Real vs. fake noise | "Real measurements wobble. Fake ones are too smooth." | Comparing Preston's data to Nell's |
 | Brain stimulation (TMS) | "A strong magnetic pulse near your head can briefly switch a small patch of brain on or off. Really it just makes your thumb twitch. The NRT's version goes much further." | The Gain Controller; Morris's itch |
 | Neural gain | "Neurons have a volume knob. Turn it up and a signal gets louder; turn it down and it fades." | What the Gain Controller does (and the title) |
@@ -378,7 +381,7 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 | 17 | The insignia | Earbud case, notes, cufflinks, tube hub | Notebook: trace each one and match them |
 | 18 | Older cipher notes | Library | Find the 1980s atlas and decode the old coordinates |
 | 19 | B3 location | Gus's tunnel map + tube canister addresses | Combine the map with where the canisters go |
-| 20 | Passing as a member | B3 antechamber | Passphrase from the cipher, ritual responses from peer-review boilerplate, and a forged "age 39" ID card |
+| 20 | Passing as a member | B3 antechamber and Round Table | Passphrase from the cipher, a forged "age 39" ID card, and the Echo: the ritual n-back, discovered at the faculty meeting (THE NOD), rehearsed with Iris, performed at the induction. See [PUZZLE-NBACK.md](PUZZLE-NBACK.md) |
 | 21 | Magnet cold start | Old power plant room | Iris restarts the 1960s supply by the manual (her own 1968 margin notes), in the right breaker order |
 | 22 | The archive | Tube Hub | Morris sends the right reels up the tube to Ethel Bord before the magnet ramps |
 | 23 | The missing hours | Penny's expense reports, CVs | Find the shared Friday-night gap and the same feeder labs across members' CVs |
@@ -403,7 +406,7 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 13. Enter the animal facility without booties.
 14. Tell your PI you're thinking about industry.
 15. Let Morris drive the floor buffer.
-16. Give the wrong ritual response in B3. *"The authors have failed to address the reviewers' concerns."* The hoods close in.
+16. Fail the Echo in B3 (three hoods turn toward you). *"The authors have failed to address the reviewers' concerns."* The hoods close in.
 17. Admit you're 40 in B3.
 18. Stand near the Round Table, wearing your belt buckle, when Iris throws the switch.
 19. Ride the pneumatic tube yourself. *"Nell has been delivered to the Registrar."*
