@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gain Control — The Replication (GLM test)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/game.css">
+<style>
+  #intro { position: absolute; inset: 0; background: #000; z-index: 8; display: none; cursor: pointer; }
+  #intro.show { display: block; }
+  #intro .lines { position: absolute; left: 12%; right: 12%; top: 40%; font-size: 2.1cqw; line-height: 1.25; text-transform: uppercase; color: var(--W); }
+  #intro .lines p { margin: 0 0 1.1cqw; } #intro .b { color: var(--B); } #intro .g { color: var(--G); } #intro .m { color: var(--M); } #intro .a { color: var(--A); }
+  #death .dbtn { cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="frame">
+    <div id="glm" class="glmwrap"></div>
+    <div id="intro" class="show">
+      <svg class="t" viewBox="0 0 640 360" id="introSvg"></svg>
+      <div class="lines">
+        <p>Wednesday. Preston deposited his raw data with the journal: one subject, "sub-01." Morris got his run log out of the Impact Lab.</p>
+        <p class="b">Gus pulls up a chair at Nell's monitor. Time to replicate the Big Finding.</p>
+        <p class="a">Enter the blocks from his log, line them up, fit the model by hand, then look at what's left.</p>
+        <p class="m">About ten minutes. Click to begin.</p>
+      </div>
+    </div>
+    <div id="death"><svg class="t" viewBox="0 0 640 360"></svg><div class="dtxt"></div></div>
+  </div>
+</div>
+<script type="module">
+  import { segC, segW, chip, seg } from "./js/gfx.js";
+  import { glm } from "./js/minigames/glm.js";
+  const t = "TEST BUILD   ACT III   NELL'S MONITOR";
+  document.getElementById("introSvg").innerHTML = segC("THE REPLICATION", 320, 40, 34, "sW", 2) + chip(t, 320 - (segW(t, 6.5) + 6.5 * .9) / 2, 96, 6.5, "fV");
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br>");
+  // the game's death screen, with Revise & Resubmit
+  function die(text) {
+    return new Promise(resolve => {
+      const d = document.getElementById("death");
+      d.querySelector("svg").innerHTML = segC("DESK ACCEPTED", 320, 26, 26, "sR", 1.8)
+        + `<g class="dbtn" data-b="revise"><rect class="fW" x="150" y="300" width="160" height="26"/>${segC("REVISE & RESUBMIT", 230, 309, 7, "s0", 1.2)}</g>`
+        + `<g class="dbtn" data-b="withdraw"><rect class="k sW" x="330" y="300" width="160" height="26"/>${segC("WITHDRAW MANUSCRIPT", 410, 309, 7, "sW", 1.2)}</g>`;
+      d.querySelector(".dtxt").innerHTML = esc(text); d.classList.add("show");
+      d.onclick = (e) => { const b = e.target.closest(".dbtn"); if (!b) return; d.classList.remove("show"); d.onclick = null;
+        if (b.dataset.b === "withdraw") location.reload(); else resolve("revise"); };
+    });
+  }
+  async function run() {
+    document.getElementById("intro").classList.remove("show");
+    await glm(document.getElementById("glm"), { die });
+    location.reload();
+  }
+  document.getElementById("intro").addEventListener("click", run, { once: true });
+  window.addEventListener("keydown", (e) => { if (e.key === "Enter" && document.getElementById("intro").classList.contains("show")) run(); }, { once: true });
+</script>
+</body>
+</html>

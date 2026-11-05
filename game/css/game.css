@@ -120,3 +120,16 @@
 
   /* characters never block clicks on what's behind them */
   #actor, #extras, #game .idle { pointer-events: none; }
+
+  /* THE REPLICATION (GLM on Nell's monitor) */
+  .glmwrap { position: absolute; inset: 0; z-index: 7; background: #000; }
+  .glmwrap svg.glm { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .glmwrap svg.glm [data-b]:hover rect { stroke: var(--G); fill: var(--G); }
+  .glmwrap svg.glm [data-b]:hover path { stroke: #000; }
+  .glmwrap svg.glm [data-tell]:hover rect { stroke: var(--A); }
+  .glmwrap svg.glm [data-cell]:hover { stroke: var(--W); }
+  .glmwrap .coach { position: absolute; left: 2%; right: 2%; top: 86.5%; bottom: 1.4%; border-top: .12cqw solid var(--D); padding-top: .5cqw;
+    font-size: 1.75cqw; line-height: 1.18; text-transform: uppercase; color: var(--W); overflow: hidden; }
+  .glmwrap .coach .who { font-size: 1.2cqw; margin: 0 .5cqw 0 0; vertical-align: .15cqw; }
+  /* death text never blocks its own buttons */
+  #death .dtxt { pointer-events: none; bottom: 18%; overflow: hidden; }

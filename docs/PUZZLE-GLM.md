@@ -41,10 +41,10 @@
 ```
 RUN 1  sub-01   "attn synergy"
 TR 2s   blocks 16 on / 16 off
-ATT  @ 0:00   IGN @ 0:32   ATT @ 1:04  IGN @ 1:36 ...
+ATT @ 0:16   IGN @ 0:48   ATT @ 1:20   IGN @ 1:52   ...   IGN @ 4:00
 (note to self: dummies??  ask Nell)
 ```
-The onsets are timed from the *scanner start*, but the data start after the dummies. Copy them straight in and every block is 8 s early. That's the first trap and the first lesson: **check your timing.** "Ask Nell" is a line players reread after Act IV.
+The onsets are timed from the *scanner start*, but the data start after the dummies. Copy them straight in and every block is 8 s late: the signal visibly rises before each block starts. That's the first trap and the first lesson: **check your timing.** "Ask Nell" is a line players reread after Act IV.
 
 ---
 
@@ -82,6 +82,10 @@ Tell 3 is the one a laminar fMRI expert should nod at hardest.
 - **SOLVE** button label after you nail the fit by hand: "SOLVE (YOU DIDN'T NEED ME)."
 
 ---
+
+## Built
+
+Playable as a test scene: `game/glm.html` (module `game/js/minigames/glm.js`, which mounts into any container so Act III can put it on Nell's monitor). The data are computed for real: boxcars convolved with a canonical double-gamma HRF, AR(1) noise plus slow drift, ordinary least squares, and a t contrast. The seed is chosen so the attention effect is a genuine null (t ≈ 0). The fit lamp lights within 2% of the least-squares minimum.
 
 ## Under the hood (for implementation)
 
