@@ -21,10 +21,11 @@ wrapLook("notebook", (api) => {
   const f = api.G.flags, t = (k, s) => `- ${f[k] ? "(done) " : ""}${s}`;
   return "Your lab notebook. Today: prove Preston never ran the study. Find the paper trail.\n\n"
     + [t("clueCalendar", "Scanner calendar: Tess, MRI control, B1."), t("clueCoil", "Purchase orders: Penny, main office."),
-      t("clueIRB", "Ethics protocol: Ethel, 2nd floor."), t("clueClipboard", "Participant sign-in sheet: Cody, MRI control, B1.")].join("\n")
+      t("clueIRB", "Ethics protocol: Ethel, 2nd floor."), t("clueClipboard", "Participant sign-in sheet: Cody, MRI control, B1." + (f.clueClipboard ? "" : !f.codyTalked ? "" : !f.codyShaken ? " He'd have to hear Preston say it. (The recorder.)" : " He wants the credit slip Preston promised."))].join("\n")
     + (f.morrisJoined ? "\n\nMorris fits through vents. Click his name to switch." : "");
 });
-wrapLook("recorder", (api) => "Your voice memo recorder. " + (api.flag("pennyMemo") ? "Two memos: PRESTON, JOURNAL CLUB and PENNY, NOBODY ORDERED A COIL." : "One memo saved: PRESTON, JOURNAL CLUB."));
+wrapLook("recorder", (api) => "Your voice memo recorder. Memo 1, PRESTON, JOURNAL CLUB: \"I ran every subject myself.\" Anyone who worked on his study would want to hear that."
+  + (api.flag("pennyMemo") ? "\n\nMemo 2, PENNY: \"Nobody ordered a coil.\"" : ""));
 wrapLook("phone", (api) => "Texts from Nell, 11:40 PM:\n\nNELL: preston never booked the scanner. never bought a coil. ethics approved AFTER. his participants are H.M. and phineas gage\nNELL: he's in 116 every afternoon. what is IN there\n\nGus's list:\n- "
   + (api.flag("impactOpen") ? "(done) " : "") + "Get into 116. The keypad has to give something away.\n- Scan at 2:30.");
 wrapLook("thermos", () => "Your steel thermos, NELL in marker. Keep it away from the MRI.");
@@ -115,7 +116,10 @@ export const CONVOS = {
     ["R", "I checked them in! On the clipboard. Well. They checked themselves in. I was at the vending machine a lot."],
     ["L", "Can I see the clipboard?"],
     ["R", "It's confidential! I think? Preston said so. He also said he'd sign my credit slip. That was in March."],
-  ] },
+    ["L", "Cody, Preston says he ran every single subject himself."],
+    ["R", "Himself? He told ME I was running them. He wouldn't say that. I'd have to hear him say it."],
+    ["N", "Nell's voice memo recorder caught Preston saying exactly that, at journal club. Cody can hear it for himself: USE the recorder ON Cody."],
+  ], after: (api) => api.flag("codyTalked", true) },
 
   codyMemo: { L: "nell", R: "cody", score: ["codyMemo", 2], lines: [
     ["N", "PRESTON (RECORDED): \"…I ran every subject myself.\""],
@@ -277,7 +281,11 @@ export const HS = {
           return "Morris chews. A spark. Alarms: ((( HELIUM LOW )))\n\nTESS|MY HELIUM!\n\nTess sprints into the magnet room. The calendar sits unguarded. Now switch back to Nell."; } } },
     vent: ventHS,
     cody: { label: "Cody",
-      day: { look: (api) => "Cody Credit, undergrad RA. " + (api.flag("gotClipboard") ? "He's lighter without the clipboard. Spiritually." : "He's been waiting with the sign-in clipboard since March."), talk: "c:cody" },
+      day: { look: (api) => "Cody Credit, undergrad RA. " + (api.flag("gotClipboard") ? "He's lighter without the clipboard. Spiritually." : "He's been waiting with the sign-in clipboard since March."),
+        talk: (api) => !api.flag("codyTalked") ? "c:cody"
+          : api.flag("gotClipboard") ? "CODY|I'm going to go find a participant. Any participant. Just to see one."
+          : !api.flag("codyShaken") ? "CODY|Preston ran every subject himself? I'd have to hear him say it.\n\n(Your recorder has him saying it. USE the recorder ON Cody.)"
+          : "CODY|I'd trade the clipboard for my credit slip. Preston promised. In March. Credit slips print in the main office, if the printer ever works." },
       morris: { look: "Cody sees Morris and waves. Cody waves at everything." } },
     door: { label: "stairs up", day: { look: "Back up the stairs.", go: "hall@fromStairs" }, morris: { look: "Stairs. Vent." }, morning: { look: "The stairs.", go: "Det. Small would like you to stay." } },
     magnetdoor: { label: "magnet room door",
