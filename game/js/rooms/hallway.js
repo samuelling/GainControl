@@ -72,7 +72,7 @@ export default {
   labels: {
     day: { door101: { use: "GO IN" }, fountain: { use: "DRINK" }, stars: { use: "STRAIGHTEN" }, board: { use: "MOVE FLYER" }, impact: { use: "KEYPAD" },
       tube: { use: "OPEN HATCH" }, stairs: { use: "OPEN" }, office: { use: "KNOCK" }, lab: { use: "GO IN" }, exitH: { use: "TAP" } },
-    night: { door101: { use: "GO IN" }, fountain: { use: "DRINK" }, stars: { use: "STRAIGHTEN" }, board: { use: "TIDY" }, impact: { use: "TRY KEYS" },
+    night: { door101: { use: "GO IN" }, fountain: { use: "DRINK" }, stars: { use: "STRAIGHTEN" }, board: { use: "TIDY" }, impact: { use: "TRY BADGE" },
       tube: { use: "LISTEN" }, stairs: { use: "OPEN" }, office: { use: "OPEN" }, lab: { use: "GO IN" }, exitH: { use: "TAP" } },
   },
 };

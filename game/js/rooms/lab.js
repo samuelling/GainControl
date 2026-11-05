@@ -1,4 +1,4 @@
-// ADLINE LAB 114 — Ned's desk and drawer, the null-results whiteboard, Prof. Adline's door, the dark booth, Brett.
+// ADLINE LAB 114 — Nell's desk and drawer, the null-results whiteboard, Prof. Adline's door, the dark booth, Brett.
 import { seg, chip, perspective, shell, sideDoor, hit, arcs } from "../gfx.js";
 import { brettFigure, morrisPeek, AUD } from "../figures.js";
 
@@ -33,7 +33,7 @@ function back(G) {
   return s;
 }
 
-// Ned's desk, front left: monitor, keyboard, drawer (Morris), ramen cup, sticky note when it arrives
+// Nell's desk, front left: monitor, keyboard, drawer (Morris), ramen cup, sticky note when it arrives
 function desk(G) {
   const k = .82, y = P(0, FY, k)[1], x = P(170, FY, k)[0];
   const day = G.mode === "day", rat = (day && G.flags.morrisMoved) || !day;

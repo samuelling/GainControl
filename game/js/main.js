@@ -1,6 +1,6 @@
 // GAIN CONTROL — engine. Rooms draw themselves from state; story.js decides what everything means.
 import { seg, segW, chip, ICON } from "./gfx.js";
-import { nedFigure, gusFigure, AUD } from "./figures.js";
+import { nellFigure, gusFigure, AUD } from "./figures.js";
 import { PORTRAIT } from "./portraits.js";
 import { ITEMS, START_INV, CONVOS, HS, WITH, check, NOTE, NOTE_CAPTION } from "./story.js";
 import seminar from "./rooms/seminar.js";
@@ -42,7 +42,7 @@ function build() {
   svg.innerHTML = `<g id="roomBack">${d.back}</g><g id="sortables">
     ${d.sortables.filter(o => o.svg).map(o => `<g data-depth="${o.depth}">${o.svg}</g>`).join("")}
     <g data-depth="actor" id="actorWrap"><g id="actor" data-pose="0"></g></g></g><g id="hud"></g><g id="chooser"></g>`;
-  $("#actor").innerHTML = G.mode === "night" ? gusFigure() : nedFigure();
+  $("#actor").innerHTML = G.mode === "night" ? gusFigure() : nellFigure();
   render(); hud();
 }
 function loadRoom(id, entry, pos) {
@@ -65,7 +65,7 @@ function render() {
 function hud() {
   const night = G.mode === "night", h = $("#hud"); if (!h) return;
   let s = `<rect x="0" y="291" width="640" height="69" fill="#000"/><path class="hl sD" d="M0,292 L640,292 M152,302 L152,350 M276,302 L276,350 M510,302 L510,350"/>`;
-  s += chip(night ? "GUS MOPLEY" : "NED NULL", 14, 300, 6.5, night ? "fB" : "fG");
+  s += chip(night ? "GUS IAN" : "NELL NULL", 14, 300, 6.5, night ? "fB" : "fG");
   if (G.using) {
     const t = "USE " + ITEMS[G.using].name.toUpperCase() + " ON";
     const hh = segW(t, 4.6) + 4 > 132 ? 3.6 : 4.6;
@@ -108,7 +108,7 @@ function typeInto(el, html, speed, onTick) {
   });
 }
 // speaker colors for quoted one-liners ("WHO|text")
-const SPEAKER = [["MORRIS", "K"], ["PRESTON", "R"], ["BRETT", "B"], ["THE OLD WOMAN", "V"], ["GUS", "B"], ["NED", "G"]];
+const SPEAKER = [["MORRIS", "K"], ["PRESTON", "R"], ["BRETT", "B"], ["THE OLD WOMAN", "V"], ["GUS", "B"], ["NELL", "G"]];
 const colorOf = (who) => (SPEAKER.find(([k]) => who.startsWith(k)) || [0, "A"])[1];
 async function say(text) {
   if (!text) return;
@@ -220,7 +220,7 @@ async function nightfall() {
   G.mode = "night"; G.min = 2 * 60 + 13; G.using = null; G.status = "";
   frame.classList.add("night");
   loadRoom("hall", "start");
-  await say("Gus Mopley. Night custodian, Fechner Hall, thirty years. Nobody notices the janitor. The janitor notices everything.\n\nTonight's rounds: the lost and found in 101. And whatever has been rattling in the tube pipes all week.");
+  await say("Gus Ian. Fourth-year, Adline Lab, Nell's labmate. He scans at 2 AM because the 3T is cheapest when nobody sane wants it. Nobody notices a grad student at 2 AM. Grad students are furniture.\n\nNell has been texting him about journal club. And something has been rattling in the tube pipes all week.");
 }
 async function endAct() {
   await new Promise(r => setTimeout(r, 300));
@@ -426,6 +426,6 @@ async function start() {
   await showCard(`${centered("GAIN CONTROL", 112, 44, "sW", 2.2)}${cchip("A MURDER MYSTERY WITH ERROR BARS", 180, 7, "fR")}
     ${centered("ACT I  SUBMISSION", 222, 7, "sA", 1.1)}${centered("CLICK TO BEGIN", 290, 4.6, "sM", .8)}`, { auto: 0, hold: 300 });
   await showCard(dayCard("MONDAY", "ACT I  SUBMISSION", "JOURNAL CLUB  SEMINAR RM 101  16:07", "fA"), { auto: 2600 });
-  await say("Ned Null. Fifth-year, Adline Lab. Eleven months of null results. Thesis defense on Friday.\n\nToday at journal club, Preston Valu is presenting the paper of the decade.\n\nOn a scanner the building doesn't have.");
+  await say("Nell Null. Fifth-year, Adline Lab. Eleven months of null results. Thesis defense on Friday.\n\nToday at journal club, Preston Valu is presenting the paper of the decade.\n\nOn a scanner the building doesn't have.");
 }
 start();

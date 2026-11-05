@@ -73,7 +73,7 @@ function rowGroup(ri, G) {
   if (ri === 2) {
     people += sitter(X(170), y, k, { hs: "iris", cls: "day-only", head: "sW",
       extra: (x, y, q) => `<circle class="k sW" cx="${x}" cy="${y - 106 * q}" r="${8 * q}"/><path class="hl sW" d="M${x - 10 * q},${y - 96 * q} C${x - 4 * q},${y - 100 * q} ${x + 4 * q},${y - 100 * q} ${x + 10 * q},${y - 96 * q}"/><path class="sV" d="M${x - 24 * q},${y - 66 * q} Q${x},${y - 72 * q} ${x + 24 * q},${y - 66 * q}"/>` });
-    if (!G.flags.robeTagged) {
+    {
       const rx = X(390);
       robe = `<g class="night-only" data-hs="robe">
         <path class="k sV" d="M${rx - 22 * k},${y - 24 * k} L${rx - 18 * k},${y - 66 * k} Q${rx},${y - 90 * k} ${rx + 18 * k},${y - 66 * k} L${rx + 22 * k},${y - 24 * k} Z"/>
@@ -132,6 +132,6 @@ export default {
     day: { pizza: { use: "TAKE SLICE" }, door: { use: "GO OUT" }, tube: { use: "OPEN HATCH" }, screen: { use: "TOUCH" }, lectern: { use: "TAP MIC" },
       coffee: { use: "SIP" }, quorum: { use: "TAP SHOULDER" }, iris: { use: "TAP SHOULDER" }, preston: { use: "SHAKE HAND" }, faculty: { use: "WAVE" }, exit: { use: "TAP" }, morris: { use: "REACH" } },
     night: { pizza: { use: "FOLD BOX" }, door: { use: "GO OUT" }, tube: { use: "LISTEN" }, screen: { use: "WIPE" }, lectern: { use: "TAKE CARD" },
-      robe: { use: "TAG IT" }, exit: { use: "TAP" }, morris: { use: "REACH" } },
+      robe: { use: "PHOTOGRAPH" }, exit: { use: "TAP" }, morris: { use: "REACH" } },
   },
 };

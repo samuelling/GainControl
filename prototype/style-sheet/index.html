@@ -155,13 +155,13 @@ const tag = (txt, col = M) => seg(txt, 14, 12, 7, col);
  *  CHARACTERS
  * ================================================================ */
 
-/* ---- NED NULL ---- */
-const ned = () => {
+/* ---- NELL NULL ---- */
+const nell = () => {
   const head = `
     <path class="k" stroke="${K}" d="M139,54 C138,72 149,82 161,82 C174,82 183,72 183,56"/>
     <path stroke="${K}" d="M140,58 C134,57 133,67 140,68"/>
-    <path class="k" stroke="${R}" d="M137,60 C132,41 143,30 156,31 L153,21 L162,28 L166,17 L172,28 L181,22 L180,33 C189,38 189,51 184,59 C180,49 172,45 164,47 C156,43 145,47 137,60 Z"/>
-    <path stroke="${R}" d="M149,38 L155,45 M164,33 L166,42 M174,36 L172,44"/>
+    <path class="k" stroke="${R}" d="M137,62 C133,46 139,35 150,32 C148,24 153,16 161,16 C169,16 174,23 171,32 C181,35 188,44 185,60 C181,50 172,45 163,46 C155,44 146,50 137,62 Z"/>
+    <path stroke="${R}" d="M156,23 C158,20 164,20 166,25 M150,37 C154,40 157,43 159,46 M138,61 C135,67 136,74 139,79 M184,61 C187,67 186,74 183,79"/><path stroke="${A}" d="M145,13 L177,28"/>
     <rect stroke="${W}" x="146.5" y="56" width="13" height="10" rx="3"/><rect stroke="${W}" x="166" y="56" width="13" height="10" rx="3"/>
     <path stroke="${W}" d="M159.5,60 L166,60 M146.5,59 L141,58"/>
     <circle class="f" fill="${W}" cx="155" cy="61.5" r="1.6"/><circle class="f" fill="${W}" cx="174.5" cy="61.5" r="1.6"/>
@@ -197,7 +197,7 @@ const ned = () => {
     <path stroke="${G}" d="M136,93 L120,100"/><path stroke="${K}" d="M120,100 L112,88"/><path stroke="${K}" d="M110,86 L106,80 M112,85 L112,78 M114,86 L118,80"/>
     <path stroke="${G}" d="M184,93 L200,100"/><path stroke="${K}" d="M200,100 L208,88"/><path stroke="${K}" d="M210,86 L214,80 M208,85 L208,78 M206,86 L202,80"/>
     ${seg("?", 214, 40, 12, W)}`;
-  return `${tag("NED NULL", W)}${floor()}
+  return `${tag("NELL NULL", W)}${floor()}
     ${P("p0", stand)}${P("p1", walkA)}${P("p2", walkB)}${P("p3", shrug)}
     ${torso}${head}`;
 };
@@ -362,7 +362,7 @@ const author = () => {
 const mri = () => {
   const thermos = (x, y, r) => `<g transform="translate(${x},${y}) rotate(${r})">
      <path class="k" stroke="${A}" d="M-6,-14 L6,-14 L7,14 C7,17 -7,17 -7,14 Z"/><path class="k" stroke="${A}" d="M-5,-14 L-5,-19 L5,-19 L5,-14"/>
-     ${seg("NED", -5.2, -5, 4, A, 1)}</g>`;
+     ${seg("NELL", -5.2, -5, 4, A, 1)}</g>`;
   return `${tag("THE BIG DONUT  3T", W)}${floor(182)}
     <ellipse class="dash" stroke="${N}" cx="150" cy="100" rx="104" ry="80"/><ellipse class="dash" stroke="${N}" cx="150" cy="100" rx="128" ry="96"/>
     <path class="k" stroke="${W}" d="M110,30 L196,30 C208,30 214,36 214,48 L214,170 L86,170 L86,48 C86,36 94,30 110,30 Z"/>
@@ -389,7 +389,7 @@ const brain = () => `${tag("SIX LAYERS / TWO DATASETS", W)}
     <rect class="k mech" stroke="${N}" x="182" y="24" width="122" height="66"/>
     ${[R, A, G, B, V, K].map((c, i) => `<path stroke="${c}" d="M190,${33 + i * 10} C206,${29 + i * 10} 220,${37 + i * 10} 236,${33 + i * 10} C252,${29 + i * 10} 266,${37 + i * 10} 282,${33 + i * 10} C288,${31 + i * 10} 292,${33 + i * 10} 296,${33 + i * 10}"/>`).join("")}
     <rect class="k mech" stroke="${D}" x="16" y="152" width="140" height="38"/><rect class="k mech" stroke="${D}" x="164" y="152" width="140" height="38"/>
-    ${seg("NED", 20, 156, 5, W, 1.2)}${seg("P. VALU", 168, 156, 5, A, 1.2)}
+    ${seg("NELL", 20, 156, 5, W, 1.2)}${seg("P. VALU", 168, 156, 5, A, 1.2)}
     <polyline id="noisy" stroke="${W}" points=""/>
     <path stroke="${A}" d="M172,182 C200,182 210,166 234,166 C258,166 268,182 298,182"/>`;
 
@@ -547,7 +547,7 @@ const hud = () => {
  * ================================================================ */
 const defs = `<defs>${morrisSym("mor")}${morrisSym("mor2", W)}</defs>`;
 const CHARS = [
-  ["ned", ned, "<b>NED NULL</b> — stand, walk, walk, shrug. Ginger hair in signal red, glasses in ink, skin as a pink line, T-shirt green."],
+  ["nell", nell, "<b>NELL NULL</b> — stand, walk, walk, shrug. Ginger hair in signal red, glasses in ink, skin as a pink line, T-shirt green."],
   ["preston", preston, "<b>PRESTON</b> — the grin, the pitch, then the blank: pupils to pinpoints, earbuds switch <i>on</i> (the only fill) with ((( ))) marks."],
   ["gus", gus, "<b>GUS</b> — three mop positions, pure Game &amp; Watch. Cap in cool blue, uniform in robe-violet, name patch in signal red."],
   ["morris", morris, "<b>MORRIS</b> — Q*bert proportions: big head, bigger eyes, snout. Sit, hop, itch (the implant is lit)."],
@@ -556,7 +556,7 @@ const CHARS = [
 ];
 const OBJS = [
   ["mri", mri, "<b>THE BIG DONUT</b> — the thermos flies in four fixed positions, then CLANG. Field lines are dotted deep-blue."],
-  ["brain", brain, "<b>THE THEME, DRAWN</b> — Ned's data wobbles every frame; Preston's curve never moves. Six too-perfect layers in the inset."],
+  ["brain", brain, "<b>THE THEME, DRAWN</b> — Nell's data wobbles every frame; Preston's curve never moves. Six too-perfect layers in the inset."],
   ["tube", tube, "<b>THE TUBE STATION</b> — a canister steps down the pipe the way a Game &amp; Watch ball falls. Double-line pipes, a gauge with a lit hub."],
   ["espresso", espresso, "<b>THE ESPRESSO MACHINE</b> — the drip falls in three positions; the gauge sits in the red. Steam is a drawn squiggle."],
   ["freezer", freezer, "<b>THE -80</b> — frost sparkles blink in place; then the door opens on fog and something that shouldn't be in there."],
@@ -586,11 +586,11 @@ document.getElementById("palette").innerHTML = PAL.map(([n, c]) => `<div class="
 /* ---------------- Game & Watch pose clock ---------------- */
 let playing = true;
 const SEQ = {
-  ned: [0, 1, 2, 1, 2, 1, 2, 0, 3, 3, 0], preston: [0, 0, 1, 1, 0, 2, 2, 1], gus: [0, 1, 2, 1], morris: [0, 0, 1, 0, 2, 2, 0],
+  nell: [0, 1, 2, 1, 2, 1, 2, 0, 3, 3, 0], preston: [0, 0, 1, 1, 0, 2, 2, 1], gus: [0, 1, 2, 1], morris: [0, 0, 1, 0, 2, 2, 0],
   iris: [0, 0, 1, 1, 2, 2], author: [2, 0, 1, 1, 0], mri: [0, 1, 2, 3, 3], tube: [0, 1, 2, 3, 4],
   espresso: [0, 1, 2, 3, 3], freezer: [0, 1, 0, 1, 2, 2, 2], qsteps: [0, 1, 2, 3, 3, 3], earbud: [0, 0, 1, 1, 2, 2, 2], tunnel: [0, 1, 2], hud: [0, 0, 1, 1, 2, 2],
 };
-const RATE = { ned: 260, preston: 520, gus: 320, morris: 420, iris: 560, author: 520, mri: 380, tube: 300, espresso: 420, freezer: 520, qsteps: 460, earbud: 650, tunnel: 220, hud: 900 };
+const RATE = { nell: 260, preston: 520, gus: 320, morris: 420, iris: 560, author: 520, mri: 380, tube: 300, espresso: 420, freezer: 520, qsteps: 460, earbud: 650, tunnel: 220, hud: 900 };
 Object.keys(SEQ).forEach(id => {
   const svg = document.getElementById("t-" + id); if (!svg) return;
   const poses = svg.querySelectorAll(".pose"); let i = 0;
@@ -598,7 +598,7 @@ Object.keys(SEQ).forEach(id => {
   show();
   timers.push(setInterval(() => { if (!playing) return; i++; show(); }, RATE[id]));
 });
-// Ned's data: re-roll the noise each tick; Preston's never changes.
+// Nell's data: re-roll the noise each tick; Preston's never changes.
 const noisy = document.getElementById("noisy");
 function roll() { let pts = []; for (let x = 0; x <= 128; x += 4) { const base = 176 - 10 * Math.exp(-((x - 64) ** 2) / 600); pts.push(`${22 + x},${(base + (Math.random() - .5) * 9).toFixed(1)}`); } noisy.setAttribute("points", pts.join(" ")); }
 roll(); setInterval(() => playing && roll(), 300);

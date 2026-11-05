@@ -6,12 +6,12 @@ export const AUD = 0.72;   // scale factor shared by walking figures and everyth
 
 const shoe = (x, y) => `<path class="k sW" d="M${x},${y} L${x + 18},${y} C${x + 22},${y} ${x + 22},${y + 5} ${x + 18},${y + 5} L${x},${y + 5} Z"/>`;
 
-export function nedFigure() {
+export function nellFigure() {
   const head = `
     <path class="k sK" d="M139,54 C138,72 149,82 161,82 C174,82 183,72 183,56"/>
     <path class="sK" d="M140,58 C134,57 133,67 140,68"/>
-    <path class="k sR" d="M137,60 C132,41 143,30 156,31 L153,21 L162,28 L166,17 L172,28 L181,22 L180,33 C189,38 189,51 184,59 C180,49 172,45 164,47 C156,43 145,47 137,60 Z"/>
-    <path class="sR" d="M149,38 L155,45 M164,33 L166,42 M174,36 L172,44"/>
+    <path class="k sR" d="M137,62 C133,46 139,35 150,32 C148,24 153,16 161,16 C169,16 174,23 171,32 C181,35 188,44 185,60 C181,50 172,45 163,46 C155,44 146,50 137,62 Z"/>
+    <path class="sR" d="M156,23 C158,20 164,20 166,25 M150,37 C154,40 157,43 159,46 M138,61 C135,67 136,74 139,79 M184,61 C187,67 186,74 183,79"/><path class="sA" d="M145,13 L177,28"/><path class="sK" d="M145,13 L142,11.5"/>
     <rect class="sW" x="146.5" y="56" width="13" height="10" rx="3"/><rect class="sW" x="166" y="56" width="13" height="10" rx="3"/>
     <path class="sW" d="M159.5,60 L166,60 M146.5,59 L141,58"/>
     <circle class="fW" cx="155" cy="61.5" r="1.6"/><circle class="fW" cx="174.5" cy="61.5" r="1.6"/>
@@ -38,28 +38,31 @@ export function nedFigure() {
 }
 
 export function gusFigure() {
-  const mop = (hx, hy, mx, my, ang) => `<path class="sA mech" d="M${hx},${hy} L${mx},${my}"/>
-    <g transform="translate(${mx},${my}) rotate(${ang})"><path class="k sW" d="M-12,0 L12,0 L14,4 L-14,4 Z"/>
-    ${[-12, -7, -2, 3, 8, 12].map(x => `<path class="sW" d="M${x},4 L${x + (ang > 0 ? 2 : -2)},11"/>`).join("")}</g>`;
-  const arms = (lx, ly, rx, ry) => `<path class="sV" d="M135,88 L${lx},${ly}"/><circle class="sK" cx="${lx}" cy="${ly + 3}" r="3.2"/>
-    <path class="sV" d="M185,88 L${rx},${ry}"/><circle class="sK" cx="${rx}" cy="${ry + 3}" r="3.2"/>`;
+  // Gus Ian: Nell's labmate. Curly hair, mustache, headphones round the neck, cardigan, laptop under his arm.
+  const legs = (a, b) => `<path class="k sM" d="${a}"/><path class="k sM" d="${b}"/>`;
+  const stand = `<g class="ap0"><path class="k sM" d="M134,128 L137,182 L156,182 L159,136 L161,136 L164,182 L183,182 L186,128 Z"/>${shoe(136, 182)}${shoe(164, 182)}
+    <path class="hl sM" d="M147,140 L148,178 M173,140 L172,178"/>
+    <path class="sV" d="M184,92 L190,114"/><circle class="sK" cx="191" cy="118" r="3"/></g>`;
+  const walkA = `<g class="ap1">${legs("M137,128 L120,176 L137,182 L158,134 Z", "M162,132 L178,182 L196,178 L184,128 Z")}${shoe(118, 177)}${shoe(180, 179)}
+    <path class="sV" d="M184,92 L178,112"/><circle class="sK" cx="176" cy="116" r="3"/></g>`;
+  const walkB = `<g class="ap2">${legs("M134,128 L146,180 L162,182 L157,130 Z", "M163,130 L160,182 L177,180 L186,128 Z")}${shoe(146, 181)}${shoe(160, 181)}
+    <path class="sV" d="M184,92 L196,110"/><circle class="sK" cx="198" cy="114" r="3"/></g>`;
   const body = `
-    <path class="k sM" d="M134,128 L136,182 L157,182 L159,138 L161,138 L163,182 L184,182 L186,128 Z"/>
-    <path class="k sW" d="M134,182 L158,182 L158,188 L130,188 C130,184 131,182 134,182 Z M162,182 L186,182 C189,182 190,184 190,188 L162,188 Z"/>
-    <path class="k sV" d="M134,86 C140,80 150,80 160,84 C170,80 180,80 186,86 L189,130 L131,130 Z"/>
-    <path class="hl sV" d="M140,94 L152,94 L152,104 L140,104 Z M160,86 L160,130"/>
-    <ellipse class="k sR" cx="173" cy="99" rx="9" ry="5.5"/>${seg("GUS", 167.4, 97, 4, "sR", .9)}
-    <circle class="sA" cx="140" cy="122" r="4"/><path class="sA" d="M138,126 L136,132 M141,126 L141,133"/>
-    <path class="sK" d="M154,76 L154,83 M166,76 L166,83"/>
+    <path class="k sV" d="M135,88 C140,82 150,81 160,84 C170,81 180,82 185,88 L188,130 L132,130 Z"/>
+    <path class="sW" d="M151,84 L160,100 L169,84"/><path class="hl sV" d="M153,86 L156,130 M167,86 L164,130"/>
+    ${[108, 118].map(y => `<circle class="hl sV" cx="157" cy="${y}" r="1.4"/>`).join("")}
+    <path class="sV" d="M136,92 L128,112"/><circle class="sK" cx="127" cy="116" r="3"/>
+    <path class="k sW" d="M114,104 L136,98 L140,120 L118,126 Z"/><path class="hl sW" d="M118,108 L134,104"/>
+    <path class="sW" d="M143,84 C143,93 177,93 177,84"/><ellipse class="k sW" cx="141" cy="83" rx="4" ry="5.5"/><ellipse class="k sW" cx="179" cy="83" rx="4" ry="5.5"/>
+    <path class="sK" d="M154,76 L154,82 M166,76 L166,82"/>
     <path class="k sK" d="M137,47 C136,66 148,77 160,77 C172,77 184,66 183,47"/>
     <path class="sW" d="M137,50 C134,54 135,60 138,62 M183,50 C186,54 185,60 182,62"/>
-    <path class="k sB" d="M136,46 C135,30 147,22 160,22 C173,22 185,30 184,46 Z"/><path class="k sB" d="M156,46 L204,46 C206,48 204,51 200,51 L156,51 Z"/>
-    <path class="sW" d="M146,52 L154,51 M166,51 L174,52"/><circle class="fW" cx="150.5" cy="56" r="1.5"/><circle class="fW" cx="169.5" cy="56" r="1.5"/>
-    <path class="sK" d="M160,57 C156,64 159,67 164,65"/>
+    <path class="k sW" d="M136,50 C133,32 146,21 160,21 C175,21 187,32 184,50 C180,42 172,38 160,39 C150,38 141,42 136,50 Z"/>
+    <path class="hl sW" d="M144,28 C147,25 151,26 151,30 M156,24 C159,21 164,22 164,26 M168,25 C172,23 176,26 175,30 M140,38 C143,35 147,37 146,40 M174,35 C177,34 180,37 178,40"/>
+    <path class="sW" d="M146,50 L154,49 M166,49 L174,50"/><circle class="fW" cx="150.5" cy="55" r="1.5"/><circle class="fW" cx="169.5" cy="55" r="1.5"/>
+    <path class="sK" d="M160,56 C156,63 159,66 164,64"/>
     <path class="k sW" d="M144,68 C150,62 157,65 160,67 C163,65 170,62 176,68 C170,72 163,70 160,70 C157,70 150,72 144,68 Z"/>`;
-  return `<g class="ap1">${mop(150, 70, 102, 178, -14)}${arms(136, 108, 146, 104)}</g>
-    <g class="ap0">${mop(160, 66, 160, 178, 0)}${arms(152, 110, 166, 100)}</g>
-    <g class="ap2">${mop(170, 70, 218, 178, 14)}${arms(176, 104, 186, 108)}</g>${body}`;
+  return stand + walkA + walkB + body;
 }
 
 // Brett: the office-hours undergrad. Hoodie, fringe, backpack strap, phone. Two idle poses.

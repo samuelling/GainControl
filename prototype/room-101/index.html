@@ -255,13 +255,13 @@ function slide() {
 /* ================================================================ *
  *  PEOPLE (sheet coordinates: feet ≈ (160,187))
  * ================================================================ */
-function nedFigure() {
+function nellFigure() {
   const shoe = (x, y) => `<path class="k sW" d="M${x},${y} L${x + 18},${y} C${x + 22},${y} ${x + 22},${y + 5} ${x + 18},${y + 5} L${x},${y + 5} Z"/>`;
   const head = `
     <path class="k sK" d="M139,54 C138,72 149,82 161,82 C174,82 183,72 183,56"/>
     <path class="sK" d="M140,58 C134,57 133,67 140,68"/>
-    <path class="k sR" d="M137,60 C132,41 143,30 156,31 L153,21 L162,28 L166,17 L172,28 L181,22 L180,33 C189,38 189,51 184,59 C180,49 172,45 164,47 C156,43 145,47 137,60 Z"/>
-    <path class="sR" d="M149,38 L155,45 M164,33 L166,42 M174,36 L172,44"/>
+    <path class="k sR" d="M137,62 C133,46 139,35 150,32 C148,24 153,16 161,16 C169,16 174,23 171,32 C181,35 188,44 185,60 C181,50 172,45 163,46 C155,44 146,50 137,62 Z"/>
+    <path class="sR" d="M156,23 C158,20 164,20 166,25 M150,37 C154,40 157,43 159,46 M138,61 C135,67 136,74 139,79 M184,61 C187,67 186,74 183,79"/><path class="sA" d="M145,13 L177,28"/><path class="sK" d="M145,13 L142,11.5"/>
     <rect class="sW" x="146.5" y="56" width="13" height="10" rx="3"/><rect class="sW" x="166" y="56" width="13" height="10" rx="3"/>
     <path class="sW" d="M159.5,60 L166,60 M146.5,59 L141,58"/>
     <circle class="fW" cx="155" cy="61.5" r="1.6"/><circle class="fW" cx="174.5" cy="61.5" r="1.6"/>
@@ -412,15 +412,15 @@ function lecternGroup() {
  *  PORTRAITS (same drawings, larger, with blink / mouth / blank)
  * ================================================================ */
 const PORTRAIT = {
-  ned: { name: "NED NULL", chip: "fG", vb: "112 12 96 118", svg: () => `
+  nell: { name: "NELL NULL", chip: "fG", vb: "112 12 96 118", svg: () => `
     <path class="k sG" d="M108,140 C112,104 124,94 140,90 C146,88 150,86 153,86 L160,92 L167,86 C170,86 174,88 180,90 C196,94 208,104 212,140 Z"/>
     <path class="sG" d="M153,86 C156,91 164,91 167,86"/><circle class="sG" cx="180" cy="112" r="6"/><path class="sG" d="M177.5,109.5 L182.5,114.5"/>
     <path class="hl sG" d="M126,104 C130,114 130,126 127,136 M196,104 C192,114 193,126 196,136 M146,96 C150,98 154,98 158,97"/>
     <path class="sK" d="M154,80 L154,87 M167,80 L167,87"/>
     <path class="k sK" d="M139,54 C138,72 149,82 161,82 C174,82 183,72 183,56"/>
     <path class="sK" d="M140,58 C134,57 133,67 140,68"/><path class="hl sK" d="M137,61 C136,63 137,65 139,65"/>
-    <path class="k sR" d="M137,60 C132,41 143,30 156,31 L153,21 L162,28 L166,17 L172,28 L181,22 L180,33 C189,38 189,51 184,59 C180,49 172,45 164,47 C156,43 145,47 137,60 Z"/>
-    <path class="sR" d="M149,38 L155,45 M164,33 L166,42 M174,36 L172,44"/><path class="hl sR" d="M143,44 C148,40 152,40 156,42 M170,40 C175,40 180,44 182,50"/>
+    <path class="k sR" d="M137,62 C133,46 139,35 150,32 C148,24 153,16 161,16 C169,16 174,23 171,32 C181,35 188,44 185,60 C181,50 172,45 163,46 C155,44 146,50 137,62 Z"/>
+    <path class="sR" d="M156,23 C158,20 164,20 166,25 M150,37 C154,40 157,43 159,46 M138,61 C135,67 136,74 139,79 M184,61 C187,67 186,74 183,79"/><path class="sA" d="M145,13 L177,28"/><path class="sK" d="M145,13 L142,11.5"/><path class="hl sR" d="M143,44 C148,40 152,40 156,42 M170,40 C175,40 180,44 182,50"/>
     <path class="sR" d="M147,53 C150,51.5 154,51.5 157,52.5 M168,52.5 C171,51.5 175,51.5 178,53"/>
     <g class="eyes-open"><circle class="fW" cx="155" cy="61.5" r="1.7"/><circle class="fW" cx="174.5" cy="61.5" r="1.7"/></g>
     <g class="eyes-closed"><path class="sW" d="M152,61.5 L158,61.5 M171.5,61.5 L177.5,61.5"/></g>
@@ -428,7 +428,7 @@ const PORTRAIT = {
     <path class="sW" d="M159.5,60 L166,60 M146.5,59 L141,58"/>
     <path class="hl sK" d="M149,68.5 C151,69.5 154,69.5 156,68.5 M168.5,68.5 C170.5,69.5 173.5,69.5 175.5,68.5"/>
     <path class="sK" d="M168,66 C165,71 168,73 171,72"/>
-    ${[[147, 74], [150, 77], [176, 74], [173, 77], [158, 80], [164, 80], [154, 79], [168, 79]].map(([x, y]) => `<circle class="fK" cx="${x}" cy="${y}" r=".45"/>`).join("")}
+    ${[[147.5, 71], [150.5, 72.5], [153.5, 71], [171.5, 71], [174.5, 72.5], [177.5, 71], [161, 70.5]].map(([x, y]) => `<circle class="fK" cx="${x}" cy="${y}" r=".45"/>`).join("")}
     <g class="mouth-a"><path class="sK" d="M161,75.5 C165,74 169,74.5 173,76.5"/></g>
     <g class="mouth-b"><path class="k sK" d="M161,75 C165,73.5 170,74 173,76 C171,79.5 164,80 161,75 Z"/></g>` },
 
@@ -527,7 +527,7 @@ const HS = {
   preston: { label: "Preston", day: { look: "Preston \"P.\" Valu. Third-year. First author. Rising Star. Never takes his earbuds out, not even for pizza.", talk: "cPreston", use: "Hands off. He's networking." } },
   lectern: { label: "lectern", day: { look: "The lectern. Its microphone has been on since 2009.", use: "Preston is using it. Aggressively." },
     night: { look: "The lectern. Someone left one index card on it: THE AUTHORS SHOULD CONSIDER…", use: "Gus pockets the card. Thirty years, never asked." } },
-  quorum: { label: "Prof. Quorum", day: { look: "Prof. Quorum, the Department Chair. Front row, as always. Round cufflinks. Expensive.", talk: "PROF. QUORUM|Not now, Mr. Null. We're about to lose quorum.", use: "Touching the Chair is a committee matter." } },
+  quorum: { label: "Prof. Quorum", day: { look: "Prof. Quorum, the Department Chair. Front row, as always. Round cufflinks. Expensive.", talk: "PROF. QUORUM|Not now, Ms. Null. We're about to lose quorum.", use: "Touching the Chair is a committee matter." } },
   faculty: { label: "senior faculty", day: { look: "The senior faculty, nodding in perfect unison.\n\nTenure does that to a person.", talk: "They nod. In unison.", use: "They nod. In unison." } },
   iris: { label: "old woman", day: { look: "An elderly woman in the back row, silver bun, cardigan, pearls. She has attended journal club since 1961. Nobody knows who she is.", talk: "cIris", use: "She swats your hand away with surprising speed." } },
   pizza: { label: "pizza", day: { look: "Journal club pizza. Monday's is edible. By Thursday it is a biohazard.", use: "You take a slice. Priorities.", score: ["pizza", 1] },
@@ -545,24 +545,24 @@ const HS = {
     use: "Gus folds the robe and tags it for the lost and found. Number four hundred and twelve. He's never asked.", score: ["robe", 2], take: true } },
 };
 const CONVOS = {
-  cPreston: { L: "ned", R: "preston", score: ["preston", 2], lines: [
+  cPreston: { L: "nell", R: "preston", score: ["preston", 2], lines: [
     ["L", "Great talk, Preston. Quick question. When did we get a 7T?"],
-    ["R", "Ned! Love the energy. Love it. Let's grab coffee. Actually, let's grab synergy."],
+    ["R", "Nell! Love the energy. Love it. Let's grab coffee. Actually, let's grab synergy."],
     ["L", "The building has a 3T."],
     ["R", "The authors thank the reviewer for their insightful comment.", "blank"],
     ["L", "…Preston?"],
     ["R", "Anyway! I ran every subject myself. Gotta network. Ciao!"],
     ["N", "Your voice memo recorder caught that. One (1) suspicious non-answer."],
   ]},
-  cIris: { L: "ned", R: "iris", score: ["iris", 2], lines: [
-    ["R", "Young man."],
+  cIris: { L: "nell", R: "iris", score: ["iris", 2], lines: [
+    ["R", "Young lady."],
     ["L", "Me?"],
     ["R", "Ask him who reviewed it."],
     ["L", "Who reviewed… his paper?"],
     ["R", "Mm. And while you're at it, ask yourself who reviewed yours."],
     ["N", "She goes back to her crossword. It's in pen."],
   ]},
-  cMorrisDay: { L: "ned", R: "morris", score: ["morrisD", 1], lines: [
+  cMorrisDay: { L: "nell", R: "morris", score: ["morrisD", 1], lines: [
     ["R", "Psst. Pal. Up here."],
     ["L", "Morris! You're supposed to stay in the drawer."],
     ["R", "The drawer doesn't have pizza. Also, your boy Preston's giving me the itch again."],
@@ -592,8 +592,8 @@ const ITEMS = {
     g: (x, y) => `<rect class="sW" x="${x - 5}" y="${y - 10}" width="10" height="20" rx="2"/><circle class="fR" cx="${x}" cy="${y + 5}" r="1.8"/><path class="hl sW" d="M${x - 2},${y - 6} L${x + 2},${y - 6} M${x - 2},${y - 3} L${x + 2},${y - 3}"/>` },
   notebook: { name: "lab notebook", look: "Your lab notebook. For tracing figures, signatures and suspicious shapes. Mostly it holds null results.",
     g: (x, y) => `<rect class="sW" x="${x - 7}" y="${y - 10}" width="14" height="20"/><path class="hl sW" d="M${x - 3},${y - 5} L${x + 4},${y - 5} M${x - 3},${y - 1} L${x + 4},${y - 1} M${x - 3},${y + 3} L${x + 4},${y + 3}"/>` },
-  thermos: { name: "thermos", look: "Your steel thermos, with NED written on it in marker. Keep it away from the MRI. (Foreshadowing.)",
-    g: (x, y) => `<path class="sA" d="M${x - 5},${y - 9} L${x + 5},${y - 9} L${x + 6},${y + 9} C${x + 6},${y + 11} ${x - 6},${y + 11} ${x - 6},${y + 9} Z"/>${seg("NED", x - 4, y - 2, 3.4, "sA", .7)}` },
+  thermos: { name: "thermos", look: "Your steel thermos, with NELL written on it in marker. Keep it away from the MRI. (Foreshadowing.)",
+    g: (x, y) => `<path class="sA" d="M${x - 5},${y - 9} L${x + 5},${y - 9} L${x + 6},${y + 9} C${x + 6},${y + 11} ${x - 6},${y + 11} ${x - 6},${y + 9} Z"/>${seg("NELL", x - 4, y - 2, 3.4, "sA", .7)}` },
   keys: { name: "keys", look: "Every key in Fechner Hall. Forty-one of them. Nobody suspects the janitor.",
     g: (x, y) => `<circle class="sW" cx="${x}" cy="${y - 4}" r="5"/>${[-4, 0, 4].map(dx => `<path class="sA" d="M${x + dx},${y} L${x + dx * 1.4},${y + 10}"/>`).join("")}` },
   flashlight: { name: "flashlight", look: "A flashlight with exactly one working battery. It's enough. Barely.",
@@ -605,7 +605,7 @@ ICON.play = (x, y, c) => `<path class="${c}" d="M${x - 4},${y - 6} L${x + 6},${y
 function hud() {
   const night = state.mode === "night";
   let s = `<rect x="0" y="291" width="640" height="69" fill="#000"/><path class="hl sD" d="M0,292 L640,292 M152,302 L152,350 M276,302 L276,350 M510,302 L510,350"/>`;
-  s += chip(night ? "GUS MOPLEY" : "NED NULL", 14, 300, 6.5, night ? "fB" : "fG");
+  s += chip(night ? "GUS MOPLEY" : "NELL NULL", 14, 300, 6.5, night ? "fB" : "fG");
   if (state.using) {
     s += chip("USE " + ITEMS[state.using].name.toUpperCase() + " ON", 14, 318, 4.6, "fA") + seg("RIGHT-CLICK TO CANCEL", 14, 334, 3.6, "sM", .7);
   } else {
@@ -621,7 +621,7 @@ function hud() {
   s += seg("BODIES", 462, 300, 4.2, "sR", .8) + seg("00", 462, 308, 20, "sR", 1.4);
   s += chip(state.status || (night ? "NIGHT SHIFT" : "JOURNAL CLUB"), 522, 300, 5.5, state.status === "RECORDING" ? "fR" : night ? "fG" : "fB");
   s += `<g id="toggle" style="cursor:pointer"><rect class="sW" x="522" y="322" width="106" height="26"/>
-        ${seg(night ? "< DAY SHIFT" : "NIGHT SHIFT >", 530, 329, 7, "sW", 1.1)}${seg(night ? "BACK TO NED" : "SWITCH TO GUS", 530, 340, 3.6, "sM", .7)}
+        ${seg(night ? "< DAY SHIFT" : "NIGHT SHIFT >", 530, 329, 7, "sW", 1.1)}${seg(night ? "BACK TO NELL" : "SWITCH TO GUS", 530, 340, 3.6, "sM", .7)}
         <rect x="522" y="322" width="106" height="26" fill="transparent"/></g>`;
   $("#hud").innerHTML = s;
 }
@@ -641,7 +641,7 @@ svg.innerHTML = room() + `<g id="sortables">
     <g data-depth="actor" id="actorWrap"><g id="actor" data-pose="0"></g></g>
   </g><g id="hud"></g><g id="chooser"></g>`;
 const sortables = $("#sortables"), actorWrap = $("#actorWrap"), actorEl = $("#actor");
-function drawActor() { actorEl.innerHTML = state.mode === "night" ? gusFigure() : nedFigure(); }
+function drawActor() { actorEl.innerHTML = state.mode === "night" ? gusFigure() : nellFigure(); }
 
 /* ---------------- helpers ---------------- */
 const hover = $("#hover"), msg = $("#msg");
