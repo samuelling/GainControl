@@ -36,7 +36,9 @@ export const START_INV = { day: ["recorder", "notebook", "thermos"], night: ["ke
 export const CONVOS = {
   preston: { L: "ned", R: "preston", score: ["preston", 2], lines: [
     ["L", "Great talk, Preston. Quick question. When did we get a 7T?"],
-    ["R", "Ned! Love the energy. Love it. Let's grab coffee. Actually, let's grab synergy."],
+    ["R", "Ned! Love the energy. Love it."],
+    ["R", "That's what fog neuro is all about.", "blank"],
+    ["R", "…Cog. Cog neuro. Let's grab coffee. Actually, let's grab synergy."],
     ["L", "The building has a 3T."],
     ["R", "The authors thank the reviewer for their insightful comment.", "blank"],
     ["L", "…Preston?"],

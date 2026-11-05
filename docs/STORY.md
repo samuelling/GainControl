@@ -46,6 +46,8 @@ Ned Null is a fifth-year grad student whose dissertation keeps coming up null. A
 - **Retirement at 40.** It used to mean leaving the club. In the NRT it means your gain is turned to zero. Retired members stay on as faculty: they sit through meetings blank-eyed, nod at every motion and say nothing new for the rest of their careers. *That explains a lot of faculty meetings.* Impact turned 41, tried to talk instead of retiring quietly, and was "retired" permanently. Quorum dodged it by forging his age.
 - **The Hunt.** Every year the society chooses an outsider as its **quarry**: someone promising and unconnected. Then it closes ranks with Reviewer 2 reports, triaged grants and job searches that go cold. **This year's quarry is Ned Null.** His paper's rejection was the opening move, not bad luck.
 - **The mill.** Members don't just review each other kindly; since the LTM, many don't write at all. The Archive was always the Table's memory. Now it's also its training data. (LTM is also neuroscience shorthand for long-term memory, which members find hilarious.)
+- **Fog neuro.** The Table's private name for its discipline of endless research: cognitive neuroscience as seen from a distance, with nothing solid inside. It never settles a question, because a settled question stops producing papers. Preston's CV covers every Big Question in the textbook, often in the same month. Under the Gain Controller he says the word out loud ("fog neuro… Cog. Cog neuro."), from his first line in Act I on.
+- **Straw men and staged feuds.** Members stay prominent by fighting each other in public. The mill writes a hypothesis nobody holds, one Rising Star knocks it down, another "defends" it, and the field watches. Twice the citations for both sides. Preston's three-year feud with **Dr. Polly Mick** was written, both sides, by the same machine on the same nights.
 - **Brilliant on paper, banal in person.** For all the secrecy, their actual meetings are intellectually empty: rote boilerplate, recycled slides, juvenile after-dinner roasts (which Morris loves). The NRT doesn't produce discoveries. It produces *success* and hands it out to its own. That's the game's theme again: the too-clean results come from people with nothing real to show.
 - **The gavel.** The Board calls each induction to order with a brass gavel whose head is cast from the skull of the first member who turned 40 and refused to retire.
 - **Defectors.** A few people have walked out, but most never managed to get anyone to listen, and almost none got away. The one survivor is **Prof. Emerita Iris Candor** (see Cast).
@@ -176,7 +178,7 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 - Tess grumbles that something keeps drawing power from the old B-level circuit at midnight on Fridays.
 - Rex's first rant: *"This whole field is rigged. I could tell you things."* (Nobody asks.)
 
-**Night (Gus):** Gus cleans his way into the Impact Lab (keypad smudges) and finds Preston's computer still logged in, running **LTM CLASSICS**: a generator that writes fake landmark papers from the field's 200 most-cited classics. It's a playable toy (an in-game METAMERS; design in [PUZZLE-METAMERS.md](PUZZLE-METAMERS.md)). Gus prints one because "it looked important." Then, at 2am, two robed figures cross the MRI hallway. Gus follows, stops to mop a spill (it's his job), and arrives five minutes late.
+**Night (Gus):** Gus cleans his way into the Impact Lab (keypad smudges) and finds Preston's computer still logged in, running **FOG NEURO**: the mill's front end, which writes a new fake paper on a different Big Question of cognitive neuroscience every time you press GENERATE. It's a playable toy (an in-game METAMERS; design in [PUZZLE-METAMERS.md](PUZZLE-METAMERS.md)). Gus prints one because "it looked important." Then, at 2am, two robed figures cross the MRI hallway. Gus follows, stops to mop a spill (it's his job), and arrives five minutes late.
 
 **Death:** Tess La, found in the magnet room in the morning, killed by a flying ferromagnetic thermos labeled **NED**.
 
@@ -358,7 +360,8 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 | 6 | Impossible means | Calculator | GRIM test |
 | 7 | Duplicated panel | Overlay screen | Rotate and flip panels to match (glowing overlay mini-game) |
 | 7b | The replication | Ned's monitor + Preston's log (Impact Lab, via Morris) + deposited data | Playable GLM: enter the blocks, fix the dummy-scan offset, apply the HRF, fit by hand, run the contrast, find the three tells. See [PUZZLE-GLM.md](PUZZLE-GLM.md) |
-| 7a | LTM CLASSICS printout | Preston's PC, Act II night (Gus) | Keypad smudges; generate, read SOURCES, print; leave it in the lost-and-found for Ned. See [PUZZLE-METAMERS.md](PUZZLE-METAMERS.md) |
+| 7a | FOG NEURO printout | Preston's PC, Act II night (Gus) | Keypad smudges; generate, read SOURCES, print; leave it in the lost-and-found for Ned. See [PUZZLE-METAMERS.md](PUZZLE-METAMERS.md) |
+| 7d | The feud seed | Library: the Valu vs. Mick exchange | Both "rival" papers carry the same LTM seed and the same Archive sources; overlaid in the notebook, the arguments mirror point for point. Polly Mick joins the nameable members |
 | 7c | The metamer | Library back issues + Big Finding | Notebook overlay: match each sentence to its source paper; the source authors form a partial membership roll. Check the references: some don't exist |
 | 8 | GPU logs | Server room | Rex's password costs coffee; fix the espresso machine (multi-step). Find both jobs: `superres_laminar.py` and the Friday-midnight `ltm_generate.py`, whose corpus path (`/mnt/B3/archive`) is the first written proof that B3 exists |
 | 9 | Murder weapon | Kitchen / Gus | Gus saw who took the NED thermos, but only tells you after you mop for him |
@@ -411,6 +414,8 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 - Det. Small's sample-size jokes as the body count climbs.
 - The printer: PC LOAD LETTER.
 - Preston's photo on the Rising Stars wall gets bigger each act.
+- "Fog neuro… Cog. Cog neuro." Preston's slip, a little worse every act.
+- Preston's research topics. Every time Ned sees him, he has solved a new Big Question.
 - Ned's stipend, mentioned by the narrator.
 
 ---
