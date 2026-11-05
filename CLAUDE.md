@@ -6,7 +6,8 @@ A Sierra-style point-and-click comedy murder mystery set in a university neurosc
 
 Every scene, character, object, portrait and UI element follows the line/pose/number language. The canonical references are:
 
-- `prototype/room-101/` — a playable scene: room, walking, hotspots, HUD, portraits, day/night. **Match this.**
+- `game/` — **the game.** A multi-room engine running Act I. New rooms, items and dialogue go here (see below).
+- `prototype/room-101/` — the original single-file scene: room, walking, hotspots, HUD, portraits, day/night. **Match this.**
 - `prototype/style-sheet/` — Style Sheet 02: characters, objects, isometric and perspective tiles, the stroke alphabet, palette.
 - `docs/STORY.md` → "Visual direction" — the eight rules, palette and character color keys.
 
@@ -43,6 +44,13 @@ Don't introduce other looks: no gradients, glows on everything, filled shapes, t
 ### Science on screen
 Real neuroscience, drawn correctly and simply. Laminar fMRI is shown as a close-up of folded cortex: the pial surface, six layer lines following the gyrus/sulcus, the white-matter boundary, and a depth probe. Never as concentric rings.
 
+## The game (`game/`)
+- `index.html` holds the CSS (palettes, pose classes, dialogue styles) and loads `js/main.js` as an ES module. No build step, but it must be served over HTTP.
+- `js/gfx.js`: stroke alphabet (`seg`, `chip`), glyph icons, `perspective()`, `shell()`, `sideDoor()`. `js/figures.js`: walking figures and props. `js/portraits.js`: talking portraits.
+- `js/rooms/<room>.js`: each room exports `{ id, name, pp, floor, entries, draw(G) → { back, sortables }, stand, labels }`. It draws itself from state (`G.mode`, `G.flags`), marks hotspots with `data-hs`, and puts depth-sorted things in `sortables`.
+- `js/story.js`: all words and logic. `ITEMS`, `CONVOS` (lines plus `choice` blocks), `HS[room][id][mode]` (look/talk/use/go plus score), `WITH["room.id"][item]`, and `check(api)` for act triggers. A response is a string, `"WHO|line"`, `"c:convo"`, or `fn(api)`.
+- `js/main.js`: the engine. State, chooser, stepped walking, conversations, cards, death and Revise & Resubmit (a snapshot before every action), and ambient pose clocks. `window.GC` is exposed for scripted tests; `#night` jumps straight to the night shift.
+
 ## Repo conventions
-- Plain HTML, CSS and JS; no build step. Each prototype is a single self-contained `index.html`.
+- Plain HTML, CSS and JS; no build step. Prototypes are single self-contained `index.html` files; the game is `game/` with ES modules.
 - Commit and push work as it's finished.

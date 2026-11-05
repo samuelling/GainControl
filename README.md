@@ -4,6 +4,7 @@ A point-and-click comedy murder mystery set in a university neuroscience departm
 
 A grad student suspects the department's rising star faked his breakthrough paper. Then people start dying.
 
-- Story bible: [docs/STORY.md](docs/STORY.md)
-- Playable scene: [prototype/room-101](prototype/room-101/index.html)
+- **Play Act I:** [game/](game/index.html). Serve the folder over HTTP (the game uses ES modules), e.g. `cd game && python3 -m http.server`, then open http://localhost:8000.
+- Story bible: [docs/STORY.md](docs/STORY.md) · Act I design: [docs/ACT1.md](docs/ACT1.md)
+- Style reference scene: [prototype/room-101](prototype/room-101/index.html)
 - Style sheet: [prototype/style-sheet](prototype/style-sheet/index.html)

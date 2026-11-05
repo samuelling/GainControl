@@ -134,6 +134,8 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 ---
 
 ### Act I — Monday: SUBMISSION
+*Playable vertical slice in `game/`; room-by-room design and puzzle dependencies in [ACT1.md](ACT1.md).*
+
 **Question:** Is the paper fake?
 
 **Day (Ned):** Journal club. Preston presents his dazzling paper to applause and free pizza. Ned looks at the methods slide and asks, "Wait, when did we get a 7T?" The room goes quiet and Preston's smile freezes. Morris, in the ceiling tiles for the pizza, hears Preston mutter something on his way out.
