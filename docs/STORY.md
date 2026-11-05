@@ -4,7 +4,7 @@
 
 **Genre:** point-and-click comedy adventure
 **Lineage:** Sierra structure and death screens (Laura Bow murder-mystery clock, Freddy Pharkas "day job" puzzles, Al Lowe narrator and puns), plus LucasArts flavor (Sam & Max deadpan duo, Day of the Tentacle character switching and cartoon logic), plus Gabriel Knight investigation (day structure, tape recorder, sketchbook, cipher, disguises)
-**Look:** colorful vector graphics on true black, glowing like an OLED synth screen (see bottom)
+**Look:** thin, uniform line art on black with almost no fill and pose-switching animation, in the spirit of the OP-1, Pocket Operators, Game & Watch and Q*bert (see Visual direction)
 **Platform:** web (canvas) for now
 **Rating target:** Al Lowe PG-13 — puns, innuendo, gross-out, cartoon murder
 
@@ -390,24 +390,34 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 
 ---
 
-## Visual direction: glowing vector on black
-The feel of a small synth's OLED screen, blown up to full size. It's a general look, not a reference to any one product: we don't copy any device's UI layout, controls, icons or characters.
+## Visual direction: line, pose, segment
+**Reference:** `prototype/style-sheet/` (Style Sheet 01). The look draws on the OP-1 and Pocket Operator screens, Game & Watch LCDs, and early-80s arcade games like Q*bert, but crisper. We borrow the drawing rules, not any product's actual graphics, UI layout, controls or characters.
 
-- **True black background.** Everything glows against it. No gradients, no textures.
-- **Flat, saturated vector shapes** with thin line work, in a small palette of bright accents plus white and greys. Everything looks like a playful toy diagram.
-- **Simple geometric characters** with expressive eyes and bouncy, springy animation. The scanner is a big white donut, brains are wobbly blobs, and Morris is a few lines and a tail.
-- **Our own verb interface:** a row of simple glyphs (walk, look, use, talk, plus the active character's portrait and inventory) along the bottom edge, styled in the same glow.
-- **Full-size, widescreen canvas** (16:9), vector-rendered so it stays crisp at any size. Optional subtle OLED touches: slight glow and bloom, a pixel-grid shimmer on transitions.
-- **Day vs. night palettes:** daytime scenes are bright and busy; Gus's night shifts drop to a few cool colors with more black.
-- **The goal: clean, retro-modern.** Precise vector shapes, a few bold colors, the playfulness of a well-designed electronic instrument. It should look like nothing else in the genre.
-- **Precedent:** Sierra's own early games (AGI) drew their backgrounds as vector commands (lines and fills), and *Another World* proved flat vector shapes can carry atmosphere and dread. The style is on-brand for the genre's history.
+### The eight rules
+1. **One line weight.** Everything is drawn at a native 320×200 with a 1.5 px stroke, then scaled up. Big screen, small-screen drawing.
+2. **No fill.** Closed shapes are filled black only so lines overlap cleanly. Color fills are reserved for things that are *on*: an LED, the NRT insignia, a canister, a lit cube, a pupil, Morris's implant.
+3. **Color = material.** Hair, cloth, skin, metal and wood each get one color. Skin is a pink line, never a filled face.
+4. **Open contours.** Faces are a jaw, a hairline and a few marks. Lines don't have to close.
+5. **Poses, not tweens.** Game & Watch / Pocket Operator logic: every animation frame is a pre-drawn pose that switches on and off in place. Movement across the screen steps between fixed positions (the thermos flies in four poses, then CLANG). Optional "LCD ghosts" show unlit poses faintly.
+6. **Motion as glyphs.** Vibration `((( )))`, speed dashes, sparks, drips and steam are drawn marks, not effects.
+7. **Places go isometric when they're maps.** Q*bert-style cube geometry for overview spaces (the steps to B3, the steam tunnels).
+8. **Segment type.** Every label, sign and on-screen number is drawn in one stroke alphabet on a 4×6 grid.
 
-### Making it work for point-and-click
-1. **Talking portraits, Gabriel Knight style (essential).** Conversations cut to large close-up portraits on each side of the screen, with blinking, mouth movement and reaction expressions. Portraits are drawn in a richer version of the same style (more shapes, more shading bands) so the comedy can land on a face. Sinister details live here too: Preston's earbud pulse and his face going blank happen in close-up.
-2. **Two drawing layers.** Atmosphere (bookshelves, cables, posters, chairs) is drawn in dim grey line-art. Things that matter get color fills. This removes pixel-hunting without turning every object into a hotspot; some colored objects are red herrings.
-3. **Stage-like rooms.** Mostly front-facing compositions with faint floor planes and wall lines, so players can read where they can walk on a black background.
-4. **Color fields by day, void by night.** Daytime scenes allow larger blocks of color (a lit window, a colored floor, the atrium) to keep long sessions comfortable. Near-total black is saved for night shifts and B3, so the nights feel darker by contrast.
-5. **Clue close-ups as instrument displays.** Documents, scans, figures and tables open as full-screen glowing "readouts." This is where the style shines: the neuroscience clues look like what they are.
+### Palette
+INK `#e9e6ff` · SIGNAL `#ff3b5c` · COOL `#6b8cff` · ON `#00e39a` · SKIN `#ff95ae` · BRASS `#ffb547` · ROBE `#9c7bff` · DEEP `#36346e` · STRUCT `#3a3842` · DIM `#7b7890`, on true black.
+
+### Character color keys
+- **Ned:** hair SIGNAL, glasses INK, T-shirt ON, jeans COOL.
+- **Preston:** hair BRASS, blazer SIGNAL, eyes COOL; earbuds light ON when he's being controlled.
+- **Gus:** cap COOL, uniform ROBE, name patch SIGNAL, mustache INK, mop BRASS.
+- **Morris:** body INK, ears/tail/nose SKIN, implant ON.
+- **Iris:** hair INK, cardigan ROBE, glasses and chain BRASS, staple gun SIGNAL.
+- **NRT members:** robes ROBE, insignia lit SIGNAL, gavel BRASS with an INK skull.
+
+### Point-and-click specifics
+- **Talking portraits (Gabriel Knight) are essential.** Close-ups drawn with the same rules at a larger native size, with swapped poses for blink, mouth and expression. Preston's blank-out happens in close-up.
+- **Day vs. night:** day scenes use the full palette; Gus's night shifts drop to DEEP, COOL, ON and DIM, plus the red EXIT sign.
+- **Hotspots** follow the no-fill rule: atmosphere is drawn in STRUCT/DIM, things that matter get full color, and a few colored objects are red herrings.
 
 ---
 
@@ -417,4 +427,4 @@ The feel of a small synth's OLED screen, blown up to full size. It's a general l
 - **Three playable characters:** Ned (day), Gus (night), Morris (both).
 - **Real neuroscience, simplified for laypeople** (see pillar 7).
 - **Web engine** (canvas) for now.
-- **Visuals inspired by OLED synth screens in general**, with no copying of any specific product's UI, controls or characters.
+- **Visuals follow Style Sheet 01** (line, pose, segment), with no copying of any specific product's UI, controls or characters.
