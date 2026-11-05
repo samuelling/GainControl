@@ -6,10 +6,10 @@
 <title>Gain Control — Seminar Room 101</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
-  body { font-family: "Saira Semi Condensed", "Arial Narrow", sans-serif; -webkit-font-smoothing: antialiased; }
+  body { font-family: "Saira Condensed", "Arial Narrow", sans-serif; -webkit-font-smoothing: antialiased; }
   #stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
   #frame {
     position: relative; width: min(100vw, calc(100vh * 16 / 9)); aspect-ratio: 16 / 9;
@@ -52,32 +52,35 @@
   #frame.night #exitChip { filter: drop-shadow(0 0 .5cqw #ff3b5c); }
 
   /* hover label */
-  #hover { position: absolute; pointer-events: none; font-size: 1.15cqw; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  #hover { position: absolute; pointer-events: none; font-size: 1.6cqw; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
     color: #000; background: var(--W); padding: .05cqw .5cqw; white-space: nowrap; opacity: 0; transition: opacity .1s; }
   #hover.show { opacity: 1; }
 
   /* narrator box */
-  #msg { position: absolute; left: 50%; top: 5%; transform: translateX(-50%); width: 54%; background: #000;
-    border: .16cqw solid var(--W); padding: 1cqw 1.4cqw 1.2cqw; color: var(--W); font-size: 1.55cqw; line-height: 1.35; display: none; }
+  #msg { position: absolute; left: 50%; top: 4%; transform: translateX(-50%); width: 66%; background: #000;
+    border: .16cqw solid var(--W); padding: 1.1cqw 1.6cqw 1.6cqw; color: var(--W); font-size: 2.45cqw; line-height: 1.16;
+    text-transform: uppercase; letter-spacing: .015em; font-weight: 400; display: none; }
   #msg.show { display: block; }
-  .who { display: inline-block; color: #000; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: 1.05cqw;
-    padding: 0 .45cqw; margin-bottom: .45cqw; }
-  .more { position: absolute; right: .9cqw; bottom: .35cqw; font-size: .95cqw; color: var(--M); letter-spacing: .1em; }
+  .who { display: inline-block; color: #000; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: 1.45cqw;
+    padding: 0 .5cqw; margin-bottom: .5cqw; line-height: 1.35; }
+  .more { position: absolute; right: 1cqw; bottom: .4cqw; font-size: 1.1cqw; color: var(--M); letter-spacing: .1em; }
   em { color: var(--M); font-style: normal; }
 
   /* conversation */
   #convo { position: absolute; inset: 0; display: none; background: rgba(0,0,0,.9); }
   #convo.show { display: block; }
-  .pf { position: absolute; top: 3.5%; width: 33%; height: 66%; border: .16cqw solid var(--D); background: #000; }
-  .pf.left { left: 4%; } .pf.right { right: 4%; }
+  .pf { position: absolute; top: 3%; width: 27%; height: 52%; border: .16cqw solid var(--D); background: #000; }
+  .pf.left { left: 9%; } .pf.right { right: 9%; }
   .pf.speaking { border-color: var(--W); }
   .pf svg.t { position: absolute; inset: 0; }
   .pf svg.t path, .pf svg.t circle, .pf svg.t rect, .pf svg.t ellipse, .pf svg.t line, .pf svg.t polygon { stroke-width: .62; }
   .pf svg.t .hl { stroke-width: .33; }
   .pf:not(.speaking) svg { opacity: .45; }
-  .pf .name { position: absolute; left: 0; bottom: -2.2cqw; }
-  #dlg { position: absolute; left: 4%; right: 4%; bottom: 4%; min-height: 15%; background: #000; border: .16cqw solid var(--W);
-    padding: .9cqw 1.4cqw 1.1cqw; color: var(--W); font-size: 1.6cqw; line-height: 1.35; }
+  .pf .name { position: absolute; left: 0; bottom: -2.6cqw; }
+  #dlg { position: absolute; left: 4%; right: 4%; top: 63%; bottom: 4%; background: #000; border: .16cqw solid var(--W);
+    padding: 1.1cqw 1.8cqw 1.4cqw; color: var(--W); font-size: 3.1cqw; line-height: 1.12; text-transform: uppercase;
+    letter-spacing: .015em; font-weight: 400; }
+  #dlg .txt em { display: block; font-size: .78em; margin-top: .35cqw; }
 
   /* title card */
   #card { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .7s; }
@@ -183,7 +186,7 @@ function room() {
   // screen + slide
   s += `<g data-hs="screen"><rect class="k sW mech" x="214" y="88" width="212" height="90"/>
         <g class="day-only">${slide()}</g>
-        <g class="night-only">${brainOutline(268, 136, .9, "hl sD")}</g>
+        <g class="night-only">${layers(["hl sD","hl sD","hl sD","hl sD","hl sD","hl sD"], "hl sD", "hl sD", false)}</g>
         <rect x="214" y="88" width="212" height="90" fill="transparent"/></g>`;
   s += `<path class="sM mech" d="M214,182 L426,182"/>`;
   // digital clock (right wall)
@@ -221,14 +224,25 @@ function room() {
 function brainOutline(cx, cy, sc, cls) {
   return `<path class="${cls}" transform="translate(${cx},${cy}) scale(${sc})" d="M-44,6 C-48,-18 -30,-34 -8,-32 C8,-40 32,-34 40,-18 C52,-10 50,10 40,18 C32,30 14,32 4,26 C-6,32 -24,30 -30,22 C-40,22 -46,16 -44,6 Z"/>`;
 }
+// a close-up of cortex: pial surface, six layers following the fold, white-matter boundary
+function layers(cls6, pialCls, wmCls, probe = true) {
+  // a gyral crown (left) dropping into a sulcus (right), layers following the fold
+  const curve = (o) => `M222,${130 + o} C232,${120 + o} 250,${118 + o} 262,${128 + o} C274,${138 + o} 278,${156 + o * .35} 290,${156 + o * .35} C302,${156 + o * .35} 306,${138 + o} 316,${130 + o} C320,${127 + o} 324,${126 + o} 328,${126 + o}`;
+  let s = `<path class="${pialCls}" d="${curve(0)}"/>`;
+  cls6.forEach((c, i) => { s += `<path class="${c}" d="${curve(3 + i * 3)}"/>`; });
+  s += `<path class="${wmCls}" d="${curve(22)}"/>`;
+  if (probe) s += `<path class="hl sW mech" d="M243,114 L243,148"/>${[0, 1, 2, 3, 4, 5, 6, 7].map(i => `<path class="hl sW mech" d="M241,${120 + i * 3} L245,${120 + i * 3}"/>`).join("")}`;
+  return s;
+}
 function slide() {
-  const cols = ["sR", "sA", "sG", "sB", "sV", "sK"];
   let s = seg("LAMINAR FMRI AT 7T", 222, 94, 7, "sW", 1.1) + chip("7T", 404, 93, 6, "fR");
-  cols.forEach((c, i) => { s += brainOutline(266, 140, 1.02 - i * 0.15, (i ? "hl " : "") + c); });
-  s += `<path class="sW mech" d="M330,170 L416,170 M330,170 L330,112"/>`;
-  [[338, 22, "sM"], [358, 44, "sR"], [378, 14, "sM"]].forEach(([x, h, c]) => {
+  s += seg("VALU + IMPACT 2026", 222, 105, 4, "sM", .7);
+  s += layers(["hl sR", "hl sA", "hl sG", "hl sB", "hl sV", "hl sK"], "sW", "hl dash sM");
+  s += seg("CSF", 282, 122, 4, "sM", .7) + seg("WM", 226, 164, 4, "sM", .7) + seg("DEPTH", 246, 150, 3.6, "sW", .6);
+  s += `<path class="sW mech" d="M340,170 L416,170 M340,170 L340,112"/>`;
+  [[348, 22, "sM"], [368, 44, "sR"], [388, 14, "sM"]].forEach(([x, h, c]) => {
     s += `<path class="${c} mech" d="M${x},170 L${x},${170 - h} L${x + 12},${170 - h} L${x + 12},170"/><path class="hl sW mech" d="M${x + 6},${168 - h} L${x + 6},${172 - h}"/>`; });
-  s += seg("P<.0000001", 352, 114, 5, "sW", .9) + seg("VALU + IMPACT 2026", 222, 170, 4.5, "sM", .8);
+  s += seg("P<.0000001", 360, 114, 5, "sW", .9);
   return s;
 }
 
@@ -314,18 +328,16 @@ function prestonBust() {
   const armDn = `<g class="pz" data-g="parm" data-i="1"><path class="sR" d="M201,110 L208,121"/><path class="k sK" d="M204,122 C204,118 214,118 214,122 C214,125 204,125 204,122 Z"/></g>`;
   return base + on + blank + armUp + armDn;
 }
-// seated, seen from behind
+// seated, seen from behind: just a head above the chair back (the chair does the rest)
 function sitter(x, y, k, o = {}) {
-  const body = o.body || "sD", head = o.head || "sD";
+  const head = o.head || "sD";
   return `<g class="${o.cls || ""}" ${o.hs ? `data-hs="${o.hs}"` : ""}>
-    <g ${o.nod ? `class="nodder"` : ""}>
-      <path class="k ${body}" d="M${x - 15 * k},${y - 16 * k} Q${x - 16 * k},${y - 38 * k} ${x},${y - 40 * k} Q${x + 16 * k},${y - 38 * k} ${x + 15 * k},${y - 16 * k} Z"/>
-      <circle class="k ${head}" cx="${x}" cy="${y - 50 * k}" r="${10 * k}"/>${o.extra ? o.extra(x, y, k) : ""}
-    </g>${o.hs ? `<rect x="${x - 18 * k}" y="${y - 64 * k}" width="${36 * k}" height="${64 * k}" fill="transparent"/>` : ""}</g>`;
+    <circle class="k ${head}" cx="${x}" cy="${y - 36 * k}" r="${8 * k}"/>${o.extra ? o.extra(x, y, k) : ""}
+    ${o.hs ? `<rect x="${x - 18 * k}" y="${y - 52 * k}" width="${36 * k}" height="${52 * k}" fill="transparent"/>` : ""}</g>`;
 }
 function chairBack(x, y, k) {
-  return `<rect class="k sD" x="${x - 16 * k}" y="${y - 30 * k}" width="${32 * k}" height="${20 * k}" rx="${4 * k}"/>
-    <path class="hl sD" d="M${x - 13 * k},${y - 10 * k} L${x - 14 * k},${y} M${x + 13 * k},${y - 10 * k} L${x + 14 * k},${y}"/>`;
+  return `<path class="k sD" d="M${x - 15 * k},${y - 10 * k} L${x - 15 * k},${y - 28 * k} Q${x - 15 * k},${y - 32 * k} ${x - 11 * k},${y - 32 * k} L${x + 11 * k},${y - 32 * k} Q${x + 15 * k},${y - 32 * k} ${x + 15 * k},${y - 28 * k} L${x + 15 * k},${y - 10 * k} Z"/>
+    <path class="hl sD" d="M${x - 12 * k},${y - 10 * k} L${x - 12 * k},${y} M${x + 12 * k},${y - 10 * k} L${x + 12 * k},${y}"/>`;
 }
 const ROWS = [0.56, 0.70, 0.86];
 const SEATS = [90, 170, 250, 390, 470, 550];
@@ -335,20 +347,17 @@ function rowGroup(ri) {
   SEATS.forEach(Xf => chairs += chairBack(X(Xf), y, k));
   if (ri === 0) {
     people += sitter(X(390), y, k, { hs: "quorum", cls: "day-only", body: "sN", head: "sK",
-      extra: (x, y, k) => `<path class="sW" d="M${x - 9 * k},${y - 46 * k} Q${x},${y - 41 * k} ${x + 9 * k},${y - 46 * k}"/><circle class="fA" cx="${x + 14 * k}" cy="${y - 18 * k}" r="${1.6}"/>` });
-    people += sitter(X(170), y, k, { cls: "day-only" });
+      extra: (x, y, k) => `<path class="sW" d="M${x - 8 * k},${y - 34 * k} Q${x},${y - 29 * k} ${x + 8 * k},${y - 34 * k}"/><circle class="fA" cx="${x + 17 * k}" cy="${y - 20 * k}" r="${1.6}"/>` });
   }
   if (ri === 1) {
     [250, 170, 90].forEach(Xf => {
       people += `<g class="day-only" data-hs="faculty"><g class="pz on" data-g="nod" data-i="0">${sitter(X(Xf), y, k)}</g>
-        <g class="pz" data-g="nod" data-i="1">${sitter(X(Xf), y + 3, k)}</g>
+        <g class="pz" data-g="nod" data-i="1">${sitter(X(Xf), y + 2.5, k)}</g>
         <rect x="${X(Xf) - 14}" y="${y - 46}" width="28" height="46" fill="transparent"/></g>`; });
-    people += sitter(X(470), y, k, { cls: "day-only", extra: (x, y, k) => `<path class="hl sB" d="M${x - 8 * k},${y - 20 * k} L${x + 8 * k},${y - 20 * k}"/>` });
   }
   if (ri === 2) {
     people += sitter(X(170), y, k, { hs: "iris", cls: "day-only", body: "sV", head: "sW",
-      extra: (x, y, k) => `<circle class="k sW" cx="${x}" cy="${y - 62 * k}" r="${5 * k}"/><path class="hl sV" d="M${x - 10 * k},${y - 24 * k} L${x - 10 * k},${y - 17 * k} M${x - 5 * k},${y - 24 * k} L${x - 5 * k},${y - 17 * k} M${x + 5 * k},${y - 24 * k} L${x + 5 * k},${y - 17 * k} M${x + 10 * k},${y - 24 * k} L${x + 10 * k},${y - 17 * k}"/>` });
-    people += sitter(X(470), y, k, { cls: "day-only" });
+      extra: (x, y, k) => `<circle class="k sW" cx="${x}" cy="${y - 46 * k}" r="${4 * k}"/><path class="sV" d="M${x - 12 * k},${y - 32 * k} Q${x},${y - 30 * k} ${x + 12 * k},${y - 32 * k}"/>` });
     const rx = X(390);
     people += `<g class="night-only" data-hs="robe" id="robe">
       <path class="k sV" d="M${rx - 15 * k},${y - 14 * k} L${rx - 12 * k},${y - 46 * k} Q${rx},${y - 62 * k} ${rx + 12 * k},${y - 46 * k} L${rx + 15 * k},${y - 14 * k} Z"/>
@@ -501,8 +510,8 @@ const STAND = { preston: [236, 214], lectern: [236, 214], screen: [320, 212], ir
   faculty: [300, 252], pizza: [500, 286], coffee: [520, 286], tube: [580, 286], morris: [420, 214], door: [104, 274], robe: [400, 286] };
 const HS = {
   screen: { label: "projector screen",
-    day: { look: "Preston's slide. Six perfect cortical layers, error bars so small they'd embarrass a ruler. The methods say 7T.\n\nThe building has a 3T.", score: ["screen", 1], use: "You cannot use a slide. You can only envy it." },
-    night: { look: "Dark. The faint ghost of a brain is burned into the screen.", use: "Gus wipes the screen. The ghost stays." } },
+    day: { look: "Preston's slide: a close-up of cortex, six layers, each one perfectly resolved. Error bars so small they'd embarrass a ruler. The methods say 7T.\n\nThe building has a 3T.", score: ["screen", 1], use: "You cannot use a slide. You can only envy it." },
+    night: { look: "Dark. The faint ghost of six cortical layers is burned into the screen.", use: "Gus wipes the screen. The ghost stays." } },
   preston: { label: "Preston", day: { look: "Preston \"P.\" Valu. Third-year. First author. Rising Star. Never takes his earbuds out, not even for pizza.", talk: "cPreston", use: "Hands off. He's networking." } },
   lectern: { label: "lectern", day: { look: "The lectern. Its microphone has been on since 2009.", use: "Preston is using it. Aggressively." },
     night: { look: "The lectern. Someone left one index card on it: THE AUTHORS SHOULD CONSIDER…", use: "Gus pockets the card. Thirty years, never asked." } },
@@ -643,7 +652,7 @@ function typeInto(el, html, speed, onTick) {
 async function say(text) {
   state.busy = true; hover.classList.remove("show");
   let who = "", body = text; if (text.includes("|")) [who, body] = text.split("|");
-  msg.innerHTML = `${who ? `<span class="who" style="background:var(--A)">${esc(who)}</span><br>` : ""}<span class="t"></span><span class="more">CLICK ▸</span>`;
+  msg.innerHTML = `${who ? `<span class="who" style="background:var(--A)">${esc(who)}</span><br>` : ""}<span class="t" style="color:${who ? "var(--A)" : "var(--W)"}"></span><span class="more">CLICK ▸</span>`;
   msg.classList.add("show");
   await typeInto($(".t", msg), esc(body), state.mode === "night" ? 26 : 16);
   msg.classList.remove("show"); state.busy = false;
@@ -669,13 +678,14 @@ async function runConvo(key) {
     PF.L.classList.toggle("speaking", side === "L"); PF.R.classList.toggle("speaking", side === "R");
     let text = raw, sub = ""; if (raw.includes("|")) [text, sub] = raw.split("|");
     const who = dlg.querySelector(".who");
-    if (side === "N") { who.textContent = "NARRATOR"; who.style.background = "var(--M)"; }
-    else { const p = PORTRAIT[c[side]]; who.textContent = p.name; who.style.background = `var(--${p.chip.slice(1)})`; }
+    const txtEl = dlg.querySelector(".txt");
+    if (side === "N") { who.textContent = "NARRATOR"; who.style.background = "var(--W)"; txtEl.style.color = "var(--W)"; }
+    else { const p = PORTRAIT[c[side]]; who.textContent = p.name; who.style.background = `var(--${p.chip.slice(1)})`; txtEl.style.color = `var(--${p.chip.slice(1)})`; }
     const sp = side === "N" ? null : els[side];
     if (sp) sp.classList.toggle("blank", fx === "blank");
     const scene = $("#preston"); if (fx === "blank" && scene) scene.classList.add("blank");
     let flap = 0;
-    await typeInto(dlg.querySelector(".txt"), esc(text) + (sub ? `<br><em>${esc(sub)}</em>` : ""), state.mode === "night" ? 26 : 18,
+    await typeInto(dlg.querySelector(".txt"), esc(text) + (sub ? `<em>${esc(sub)}</em>` : ""), state.mode === "night" ? 26 : 18,
       (on) => { if (!sp) return; if (on) { if (++flap % 3 === 0) sp.classList.toggle("mo"); } else sp.classList.remove("mo"); });
     if (sp) { sp.classList.remove("mo"); sp.classList.remove("blank"); }
     if (scene) scene.classList.remove("blank");
