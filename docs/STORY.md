@@ -25,6 +25,13 @@ Ned Null is a fifth-year grad student whose dissertation keeps coming up null. A
 
 **So the answer to "AI or fabrication?" is both.** The data is real, but it's Ned's. The fake part is everything the AI added.
 
+### The deeper secret: the Neuroscientific Round Table (revealed in Act III)
+7. Preston didn't come up with this on his own. He's the newest recruit of the **Neuroscientific Round Table (NRT)**, a secret society of under-40 neuroscientists. For decades it has quietly steered the field: members review each other's papers kindly, sit on each other's grant panels, and play **Reviewer 2** to everyone else. Reviewer 2 isn't a person. It's an institution.
+8. In the NRT's own lore, it split from the Psychological Round Table in 1968 because the PRT "lacked ambition." (In the game, the real PRT is the respectable one and the NRT is the rogue offshoot.)
+9. The NRT's real weapon is the **Gain Controller**: brain-stimulation tech that turns a person's neural gain up or down, so ambition goes up and conscience goes down. Preston's ever-present wireless earbuds are the receivers. He signed up willingly for the career boost, but the murders were the NRT's orders, carried out through him. **Preston is both villain and victim.** (This is where the title pays off.)
+10. The NRT has met for decades in a sealed sub-basement under Fechner Hall, **B3**, around their "Round Table": a decommissioned 1960s research magnet, a giant iron ring. The building's pneumatic tube system was built for them. It's how they've passed reviews, grant scores and orders for sixty years.
+11. The leader, **the Corresponding Author**, is Prof. Quorum. His "death" at the faculty meeting was faked; nobody checked his pulse for 40 minutes. The society's under-40 rule is absolute, which is why Quorum has been officially 39 since 1979. His birth certificate is the oldest fabrication in the department.
+
 ## Theme
 
 Real data is noisy and fake data is too clean, and the same goes for alibis. Every clue in the game comes down to *noticing something too perfect*. Preston's alibis are spotless, his figures have no motion artifacts, and his participants never miss an appointment.
@@ -36,20 +43,21 @@ Real data is noisy and fake data is too clean, and the same goes for alibis. Eve
 | Character | Role | Comic engine |
 |---|---|---|
 | **Ned Null** | You. 5th-year grad, Adline Lab. | Larry Laffer energy, straight man to Morris. Wears the same conference T-shirt all week. |
-| **Morris** | Second playable character. A rat who escaped the Morris water maze two years ago and lives in Ned's desk drawer on ramen. | The Max: gleeful, feral, chaos agent. Goes through vents, walls and ductwork. Only Ned can hear him talk, so nobody believes Ned's witness. |
-| **Preston "P." Valu** | The rival and the killer. 3rd-year, Impact Lab. | Relentlessly charming and always networking. Turns every conversation into an elevator pitch. |
+| **Morris** | Second playable character. A rat who escaped the Morris water maze two years ago and lives in Ned's desk drawer on ramen. | The Max: gleeful, feral, chaos agent. Goes through vents, walls and ductwork. Only Ned can hear him talk, so nobody believes Ned's witness. **Secret:** he was the NRT's first Gain Controller test subject. The implant is why he can talk, and why his head itches whenever the NRT is broadcasting nearby. |
+| **Preston "P." Valu** | The rival, the killer, and the NRT's puppet. 3rd-year, Impact Lab. | Relentlessly charming and always networking. Turns every conversation into an elevator pitch. Never takes his earbuds out. When they pulse, his smile goes blank. |
 | **Prof. Maximilian Impact** | Preston's PI. | Always in an airport. Speaks only in keynote soundbites. Never read the paper with his name on it. |
 | **Prof. Dee Adline** | Ned's PI. | Drowning in a grant deadline. Every conversation ends with "can we talk after the 15th?" |
 | **Dr. Tess La** | MRI physicist. | Guards the scanner calendar like a dragon. Victim #1. |
 | **Penny Ledger** | Department administrator. | The real power in the building. Has every key and every purchase order. Everything requires a form. |
-| **Dr. Rex Jected** | Postdoc, year 9. | Bitter informant who works for coffee. So hardened by rejection that he survives his own murder. |
-| **Gus Mopley** | Night custodian. **Third playable character** (night shift). | Sees everything at 3am. Speaks in mop-bucket proverbs. Has keys to every door and nobody suspects the janitor. |
+| **Dr. Rex Jected** | Postdoc, year 9. | Bitter informant who works for coffee. So hardened by rejection that he survives his own murder. Applied to the NRT at 39 and 11 months and was rejected. He knows the legend and nobody believes him either. |
+| **Gus Mopley** | Night custodian. **Third playable character** (night shift). | Sees everything at 3am. Speaks in mop-bucket proverbs. Has keys to every door and nobody suspects the janitor. For 30 years he's been finding hooded robes in the lost and found and never asked. Knows the steam tunnels better than anyone alive. |
 | **Cody Credit** | Undergrad RA. | "Ran" Preston's participants for course credit and never questioned it. Victim. |
 | **Dana Outlier** | Grad student, Preston's labmate. | Noticed Preston never comes in before noon. Victim, found in a recycling bin labeled EXCLUDED. |
-| **Prof. Quorum** | Department Chair. | Rules everything by procedure. Victim: dies at the faculty meeting, and nobody notices for 40 minutes. ("We've lost Quorum.") |
+| **Prof. Quorum** | Department Chair, and secretly **the Corresponding Author**, leader of the NRT. | Rules everything by procedure. Apparently dies at the faculty meeting, and nobody notices for 40 minutes. ("We've lost Quorum.") Returns in the Act V finale. ("Quorum has been restored.") |
+| **The NRT** | The Neuroscientific Round Table. Hooded members, under 40 (officially). | Speak in grant-panel jargon and peer-review clichés. Their ritual responses are boilerplate from reviews ("The authors should consider…"). |
 | **Ethel Bord** | Research Integrity Officer. | Has a binder for everything, including binders. |
 | **Det. Sgt. Enn Small** | Campus police. | Refuses to call it a pattern until N is big enough. "Two bodies? Underpowered." |
-| **Reviewer 2** | A hooded figure glimpsed at the edges of rooms. | Running gag all game. Revealed as Preston in Act IV. |
+| **Reviewer 2** | A hooded figure glimpsed at the edges of rooms. | Running gag all game. Revealed as Preston in Act IV, then as an *institution*: every NRT member wears the hood. |
 | **The Narrator** | Sardonic, Al Lowe voice. | Comments on the stipend, the coffee and your choices. |
 
 ---
@@ -62,7 +70,14 @@ A fictional university building, 1960s brutalist with a 2020s "innovation atrium
 - **1st floor:** innovation atrium with the "Rising Stars" photo wall (Preston's photo is twice as big as anyone's), seminar room (journal club, pizza), main office (Penny), mailroom, coffee kitchen with a broken espresso machine.
 - **2nd floor:** Adline Lab (dark psychophysics booths, a cluttered desk with Morris's drawer), Impact Lab (gleaming, empty, and suspiciously free of equipment), the shared printer (always jammed).
 - **3rd floor:** faculty offices (Impact, Adline, Quorum), the conference room, Ethel Bord's integrity office.
-- **Throughout:** a 1960s **pneumatic mail tube** system that still works. This is the Chron-o-John: Ned and Morris use it to pass items between floors.
+- **Throughout:** a 1960s **pneumatic mail tube** system that still works. This is the Chron-o-John: Ned and Morris use it to pass items between floors. Some canisters go to an address that isn't on any floor: **B3**.
+- **Steam tunnels:** reached from Gus's closet. They run under the whole campus and are mostly a maze of pipes, with one bricked-over door marked with the NRT insignia (a circle seated around a smaller circle, like a round table).
+- **B3, the sealed sub-basement:** the old 1960s Psychophysics Annex, "closed after the fire of '71." Inside:
+  - an antechamber with a robe rack and portraits of members, all aged 39
+  - the **Tube Hub**, where every pneumatic line in the building ends
+  - the **Archive**: sixty years of secret reviews and grant scores on reel-to-reel magnetic tape
+  - **the Round Table Chamber**, built around the giant decommissioned magnet ring
+  - the old power plant room that feeds the magnet
 
 ---
 
@@ -87,18 +102,24 @@ Ned investigates.
   - The participant sign-in sheet includes *H. Molaison, P. Gage, S. M.* and *Totally Real Person* (Cody's clipboard).
 - **Act ends:** Tess La is found dead in the magnet room, killed by a flying ferromagnetic thermos labeled **NED**. Ned is now the prime suspect, and Det. Sgt. Small arrives.
 
-### Act III — Wednesday: Underpowered
-Ned is under suspicion and investigates around Small's interrogations.
+### Act III — Wednesday: The Round Table
+Ned is under suspicion and investigates around Small's interrogations. This is the act where a fraud case turns into a conspiracy.
 
-- **Clues:**
+- **Clues (the fraud):**
   - Table 1's means are mathematically impossible (the GRIM test, done on a calculator).
   - Figure 3b and 3d are the same panel, flipped (an overlay puzzle).
   - Preston used 4,000 GPU-hours on a job called `superres_laminar.py` (cluster logs, via Rex and coffee).
+- **Clues (the conspiracy):**
+  - **Preston's blank moments.** Morris's head itches hard every time Preston's earbuds pulse, and Preston's face goes blank mid-sentence. Something is *talking* to him.
+  - **The insignia.** The round-table symbol shows up everywhere once you look: Preston's earbud case, the killer's sticky notes, Quorum's cufflinks, a brass plate on the old pneumatic tube hub.
+  - **Rex's legend,** bought with coffee: "There's a secret society. Under forty, invitation only. They review each other's papers. I applied at 39 and 11 months. They said my CV was *too old*."
+  - **The old notes.** Some threat notes don't decode with the modern brain atlas. They're in an *older* coordinate system, so the code has been in use for decades. Ned needs the old 1980s atlas from the department library.
 - **Deaths:**
   - Dana Outlier, who told Ned about Preston's hours, is found "excluded."
   - Cody Credit is found floating in the water maze, "unable to locate the hidden platform." Morris witnessed it from the vent but can't testify.
-  - Prof. Quorum dies at the faculty meeting. The meeting continues for 40 minutes.
-- **Act ends:** Det. Small: "Three more bodies. Still, I'd want a replication."
+  - Prof. Quorum "dies" at the faculty meeting. The meeting continues for 40 minutes.
+- **Wednesday night shift (Gus):** Gus follows a pneumatic canister's rattle down to the steam tunnels and finds the bricked-over door with the insignia. Through it he hears chanting in peer-review boilerplate: *"The authors should consider… the authors should consider…"* The canister he catches holds a single line: **"The grad student and the janitor. Before Friday."**
+- **Act ends:** Det. Small: "Three more bodies. Still, I'd want a replication." Down the hall, Gus quietly double-locks his closet for the first time in 30 years.
 
 ### Act IV — Thursday: The Ghost Reviewer
 Prof. Impact flies in, tells Ned he'll "look into it," and is found frozen in the -80 next to a box labeled DO NOT THAW. Ned and Morris break into Impact's office (password: his h-index).
@@ -106,18 +127,33 @@ Prof. Impact flies in, tells Ned he'll "look into it," and is found frozen in th
 - **Two big reveals:**
   - **Reviewer 2's report on Ned's paper** is in Impact's files, written in Preston's unmistakable style (he spells it "nueron" and uses "utilize" constantly).
   - **The retainer.** Ned looks again at Preston's figure and sees his own retainer artifact. The AI has hallucinated six cortical layers inside it. *"That's not his data. That's my mouth."*
-- **Act climax:** Preston knows Ned knows. A chase through the basement: cold room, LN2 station, animal facility. Rex is "killed" in the LN2 room and survives, because nine years of postdoc have made him impervious. Ned escapes with the evidence (unless he dies, a lot).
+  - **Why Impact died.** Impact's files also hold his NRT membership card (expired, age 41) and a draft letter to Ethel Bord: *"I can no longer stay silent about the Table."* Impact was an alumnus trying to get out.
+- **Act climax:** Preston knows Ned knows. A chase through the basement: cold room, LN2 station, animal facility. Rex is "killed" in the LN2 room and survives, because nine years of postdoc have made him impervious. Ned escapes with the evidence (unless he dies, a lot). During the chase Morris's itching is unbearable, and Ned sees Preston's earbuds glowing. Preston isn't chasing him alone.
+- **Thursday night shift (Gus):** Gus searches 30 years of lost-and-found and finds three hooded robes, an old reel of tape labeled *"Panel Scores 1983"*, and a hand-drawn steam-tunnel map with B3 circled.
 
-### Act V — Friday: The Defense
-Ned's thesis defense is scheduled at the same time as Preston's job talk, across the hall. Ned turns his defense into the accusation. The committee is Adline, Ethel Bord, Det. Small and an empty chair for Quorum.
+### Act V — Friday: The Defense, then the Table
+The finale comes in two halves: Laura Bow's courtroom, then Gabriel Knight's lair.
 
-- **Mechanic:** a Laura Bow-style interrogation. Present your evidence in a convincing order and answer the committee's questions. Your score (h-index) decides the ending.
-- **Finale:** Preston bolts into the MRI suite wearing his solid-gold "Rising Star" award medal. He finally rises to the top, straight into the bore.
+**Part 1, afternoon: the Defense.** Ned's thesis defense is scheduled at the same time as Preston's job talk, across the hall. Ned turns his defense into the accusation. The committee is Adline, Ethel Bord, Det. Small and an empty chair for Quorum.
+- **Mechanic:** a Laura Bow-style interrogation. Present your evidence in a convincing order and answer the committee's questions. Your score (h-index) carries into the finale.
+- **The turn:** the moment Ned names Preston, Preston's earbuds flare. He stands up mid-job-talk, says in a flat voice *"The authors thank the reviewers for their insightful comments,"* and walks out toward the basement. The committee is convinced of the fraud but not of a secret society ("Extraordinary claims, Mr. Null"). Ned needs proof, and the proof is underground.
+
+**Part 2, midnight: the Induction in B3.** Tonight is the NRT's annual induction, and Preston is to be made permanent: the Gain Controller fixed at full ambition, no conscience left. All three characters go in together, Day of the Tentacle style, each with a separate route:
+- **Ned** goes in the front, disguised in a lost-and-found robe. He has to pass as a member: give the decoded passphrase and answer the ritual call-and-response correctly (it's all peer-review boilerplate, learned from the cipher notes over the week). He also has to survive a member noticing he looks older than 39.
+- **Gus** goes through the steam tunnels to the old power plant room. He has to restart the 1960s magnet's power supply, a cold-start puzzle with ancient breakers and a manual written for "Mr. Custodian."
+- **Morris** goes through the pipes and the Tube Hub. He uses his own itch to track the broadcast to its source, the Gain Controller console, and the Archive.
+
+**The climax:**
+1. Quorum unhoods. He's not dead, he's 39, and he'd like Ned to consider joining: *"Think of your funding odds."* Saying yes is a valid (bad) ending.
+2. **The archive puzzle (required for the best ending):** before the magnet comes on, Morris has to send the most damning reels up the pneumatic tube to Ethel Bord's office. The tube system the NRT built becomes the thing that exposes them.
+3. **The magnet:** Gus throws the last breaker and the decommissioned Round Table ramps to full field. Every hood clasp, cufflink, earbud and gold medal in the room flies to the ring. The Gain Controller is ripped off its console and Preston's earbuds go with it, setting him free.
+4. **Quorum's end:** he's wearing sixty years of solid-gold awards. *"Forty years of honors. All of them ferromagnetic."* He finally rises to the top, straight into the ring.
 
 ### Endings
-- **Accepted:** Preston arrested, paper retracted, Ned passes his defense, and Ned gets the job Preston was interviewing for.
-- **Major Revisions:** Preston arrested, but Ned's defense is a mess. See you next semester.
-- **Desk Reject:** Preston gets the job. Ned is appointed to the curriculum committee. THE END.
+- **Accepted (best):** The archive reached Ethel Bord, so the NRT is exposed and dissolved, Quorum is arrested (at 39 — the charge sheet is amended), and sixty years of Reviewer 2 reports are unsealed. Preston, freed, confesses to stealing Ned's data. Preston's paper is retracted and Ned's original paper is published. Ned passes his defense and gets the job.
+- **Major Revisions:** The NRT is stopped but the archive was wiped by the magnet, so there's no proof. Ned passes with major revisions. Final shot: a single hood in Gus's lost-and-found box, and a pneumatic canister rattling somewhere in the walls…
+- **Inducted:** Ned says yes to Quorum and gets his own earbuds. *"Congratulations on your R01."* THE END.
+- **Desk Reject:** The induction succeeds, Preston gets the job, and Ned is appointed to the curriculum committee. THE END.
 
 ---
 
@@ -182,6 +218,10 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 | Ethics review (IRB) | "You need permission *before* you test people, not after." | Backdated protocol |
 | Dark adaptation | "Your eyes take about 20 minutes to adjust to darkness." | Psychophysics booth puzzle (and a death) |
 | Real vs. fake noise | "Real measurements wobble. Fake ones are too smooth." | Comparing Preston's data to Ned's |
+| Brain stimulation (TMS) | "A strong magnetic pulse near your head can briefly switch a small patch of brain on or off. Really it just makes your thumb twitch. The NRT's version goes much further." | The Gain Controller; Morris's itch |
+| Neural gain | "Neurons have a volume knob. Turn it up and a signal gets louder; turn it down and it fades." | What the Gain Controller does (and the title) |
+| Old vs. new brain atlases | "Brain addresses changed systems, like old and new street numbering. A 1980s address points somewhere else on a modern map." | Decoding the older cipher notes |
+| Magnets erase tape | "Strong magnets scramble anything recorded on magnetic tape." | Save the archive before the magnet comes on |
 
 ---
 
@@ -204,6 +244,13 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 | 13 | Threat notes | Sticky notes, all week | Coordinate cipher. Decode each note in the brain atlas. In Act V, write your own note to lure Preston |
 | 14 | Preston's lie on tape | Voice memo | Record "I ran every subject myself" in Act I; play it to Cody in Act II to get the clipboard |
 | 15 | Faculty lounge | 3rd floor | Disguise as Impact (lanyard + neck pillow + Morris as hair) |
+| 16 | The broadcast | Morris, Act III onward | Use Morris's itch as a detector: the stronger the itch, the closer the source |
+| 17 | The insignia | Earbud case, notes, cufflinks, tube hub | Notebook: trace each one and match them |
+| 18 | Older cipher notes | Library | Find the 1980s atlas and decode the old coordinates |
+| 19 | B3 location | Gus's tunnel map + tube canister addresses | Combine the map with where the canisters go |
+| 20 | Passing as a member | B3 antechamber | Passphrase from the cipher, ritual responses from peer-review boilerplate, and a forged "age 39" ID card |
+| 21 | Magnet cold start | Old power plant room | Gus restarts the 1960s supply by the manual, in the right breaker order |
+| 22 | The archive | Tube Hub | Morris sends the right reels up the tube to Ethel Bord before the magnet ramps |
 
 ---
 
@@ -224,6 +271,10 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 13. Enter the animal facility without booties.
 14. Tell your PI you're thinking about industry.
 15. Let Morris drive the floor buffer.
+16. Give the wrong ritual response in B3. *"The authors have failed to address the reviewers' concerns."* The hoods close in.
+17. Admit you're 40 in B3.
+18. Stand near the Round Table, wearing your belt buckle, when Gus throws the breaker.
+19. Ride the pneumatic tube yourself. *"Ned has been delivered to the Registrar."*
 
 ## Running gags
 - The espresso machine (broken, then fixed, then the center of a murder).
