@@ -176,11 +176,11 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 - Tess grumbles that something keeps drawing power from the old B-level circuit at midnight on Fridays.
 - Rex's first rant: *"This whole field is rigged. I could tell you things."* (Nobody asks.)
 
-**Night (Gus):** at 2am, two robed figures cross the MRI hallway. Gus follows, stops to mop a spill (it's his job), and arrives five minutes late.
+**Night (Gus):** Gus cleans his way into the Impact Lab (keypad smudges) and finds Preston's computer still logged in, running **LTM CLASSICS**: a generator that writes fake landmark papers from the field's 200 most-cited classics. It's a playable toy (an in-game METAMERS; design in [PUZZLE-METAMERS.md](PUZZLE-METAMERS.md)). Gus prints one because "it looked important." Then, at 2am, two robed figures cross the MRI hallway. Gus follows, stops to mop a spill (it's his job), and arrives five minutes late.
 
 **Death:** Tess La, found in the magnet room in the morning, killed by a flying ferromagnetic thermos labeled **NED**.
 
-**Turn:** Ned is the prime suspect and Det. Sgt. Small arrives. But for the first time, the two shifts cross: Ned finds a note in the lost-and-found box. *"Wasn't you. Saw robes. —G."* The Ned/Gus alliance begins.
+**Turn:** Ned is the prime suspect and Det. Sgt. Small arrives. But for the first time, the two shifts cross: Ned finds a note in the lost-and-found box, clipped to Gus's printout. *"Wasn't you. Saw robes. Also this. —G."* The Ned/Gus alliance begins.
 
 **Emotional beat:** fear. Morris's loyalty: *"If you go down, pal, I'm going down the drain with you."*
 
@@ -196,7 +196,7 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
   - **Preston's blank moments.** Morris's itch spikes, Preston's earbuds pulse, and his face goes empty mid-sentence.
   - **The insignia,** traced in the notebook: earbud case, sticky notes, Quorum's cufflinks, the brass plate on the tube hub. They all match.
   - **Rex's legend:** "There's a secret society. Under forty. I applied at 39 and 11 months. They said my CV was *too old*."
-  - **The metamer:** Ned overlays the Big Finding's sentences on the library's back issues. Every sentence comes from a different older paper, and every source paper's authors come from the same feeder labs. The paper is a collage of the Table's own work, and its author list is a partial membership roll. Some references don't exist at all (Quorum, 1979b; *J. Endless Res.*).
+  - **The metamer:** Ned overlays the Big Finding's sentences on the library's back issues. Gus's CLASSICS printout taught him what to look for. Every sentence comes from a different older paper, and every source paper's authors come from the same feeder labs. The paper is a collage of the Table's own work, and its author list is a partial membership roll. Some references don't exist at all (Quorum, 1979b; *J. Endless Res.*).
   - **The missing hours:** Preston, Impact and Quorum all share the same Friday-night expense gap, and the same three feeder labs on their CVs.
   - **The old notes:** some threats don't decode with the modern atlas. In the library, hunting for the 1980s atlas, Ned finds a bookmarked 1977 letter signed *I. Candor*.
 
@@ -358,6 +358,7 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 | 6 | Impossible means | Calculator | GRIM test |
 | 7 | Duplicated panel | Overlay screen | Rotate and flip panels to match (glowing overlay mini-game) |
 | 7b | The replication | Ned's monitor + Preston's log (Impact Lab, via Morris) + deposited data | Playable GLM: enter the blocks, fix the dummy-scan offset, apply the HRF, fit by hand, run the contrast, find the three tells. See [PUZZLE-GLM.md](PUZZLE-GLM.md) |
+| 7a | LTM CLASSICS printout | Preston's PC, Act II night (Gus) | Keypad smudges; generate, read SOURCES, print; leave it in the lost-and-found for Ned. See [PUZZLE-METAMERS.md](PUZZLE-METAMERS.md) |
 | 7c | The metamer | Library back issues + Big Finding | Notebook overlay: match each sentence to its source paper; the source authors form a partial membership roll. Check the references: some don't exist |
 | 8 | GPU logs | Server room | Rex's password costs coffee; fix the espresso machine (multi-step). Find both jobs: `superres_laminar.py` and the Friday-midnight `ltm_generate.py`, whose corpus path (`/mnt/B3/archive`) is the first written proof that B3 exists |
 | 9 | Murder weapon | Kitchen / Gus | Gus saw who took the NED thermos, but only tells you after you mop for him |
