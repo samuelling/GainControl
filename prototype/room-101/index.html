@@ -328,16 +328,18 @@ function prestonBust() {
   const armDn = `<g class="pz" data-g="parm" data-i="1"><path class="sR" d="M201,110 L208,121"/><path class="k sK" d="M204,122 C204,118 214,118 214,122 C214,125 204,125 204,122 Z"/></g>`;
   return base + on + blank + armUp + armDn;
 }
-// seated, seen from behind: just a head above the chair back (the chair does the rest)
+// seated, seen from behind: a head above a tall chair back (proportions match the standing figures)
+const AUD = 0.72;   // same scale factor the walking characters use
 function sitter(x, y, k, o = {}) {
-  const head = o.head || "sD";
+  const q = k * AUD, head = o.head || "sD";
   return `<g class="${o.cls || ""}" ${o.hs ? `data-hs="${o.hs}"` : ""}>
-    <circle class="k ${head}" cx="${x}" cy="${y - 36 * k}" r="${8 * k}"/>${o.extra ? o.extra(x, y, k) : ""}
-    ${o.hs ? `<rect x="${x - 18 * k}" y="${y - 52 * k}" width="${36 * k}" height="${52 * k}" fill="transparent"/>` : ""}</g>`;
+    <circle class="k ${head}" cx="${x}" cy="${y - 84 * q}" r="${17 * q}"/>${o.extra ? o.extra(x, y, q) : ""}
+    ${o.hs ? `<rect x="${x - 24 * q}" y="${y - 104 * q}" width="${48 * q}" height="${104 * q}" fill="transparent"/>` : ""}</g>`;
 }
 function chairBack(x, y, k) {
-  return `<path class="k sD" d="M${x - 15 * k},${y - 10 * k} L${x - 15 * k},${y - 28 * k} Q${x - 15 * k},${y - 32 * k} ${x - 11 * k},${y - 32 * k} L${x + 11 * k},${y - 32 * k} Q${x + 15 * k},${y - 32 * k} ${x + 15 * k},${y - 28 * k} L${x + 15 * k},${y - 10 * k} Z"/>
-    <path class="hl sD" d="M${x - 12 * k},${y - 10 * k} L${x - 12 * k},${y} M${x + 12 * k},${y - 10 * k} L${x + 12 * k},${y}"/>`;
+  const q = k * AUD;
+  return `<path class="k sD" d="M${x - 24 * q},${y - 34 * q} L${x - 24 * q},${y - 62 * q} Q${x - 24 * q},${y - 68 * q} ${x - 18 * q},${y - 68 * q} L${x + 18 * q},${y - 68 * q} Q${x + 24 * q},${y - 68 * q} ${x + 24 * q},${y - 62 * q} L${x + 24 * q},${y - 34 * q} Z"/>
+    <path class="hl sD" d="M${x - 20 * q},${y - 34 * q} L${x - 21 * q},${y} M${x + 20 * q},${y - 34 * q} L${x + 21 * q},${y}"/>`;
 }
 const ROWS = [0.56, 0.70, 0.86];
 const SEATS = [90, 170, 250, 390, 470, 550];
@@ -347,25 +349,28 @@ function rowGroup(ri) {
   SEATS.forEach(Xf => chairs += chairBack(X(Xf), y, k));
   if (ri === 0) {
     people += sitter(X(390), y, k, { hs: "quorum", cls: "day-only", body: "sN", head: "sK",
-      extra: (x, y, k) => `<path class="sW" d="M${x - 8 * k},${y - 34 * k} Q${x},${y - 29 * k} ${x + 8 * k},${y - 34 * k}"/><circle class="fA" cx="${x + 17 * k}" cy="${y - 20 * k}" r="${1.6}"/>` });
+      extra: (x, y, q) => `<path class="sW" d="M${x - 16 * q},${y - 80 * q} Q${x},${y - 70 * q} ${x + 16 * q},${y - 80 * q}"/><circle class="fA" cx="${x + 27 * q}" cy="${y - 44 * q}" r="1.8"/>` });
   }
   if (ri === 1) {
     [250, 170, 90].forEach(Xf => {
       people += `<g class="day-only" data-hs="faculty"><g class="pz on" data-g="nod" data-i="0">${sitter(X(Xf), y, k)}</g>
-        <g class="pz" data-g="nod" data-i="1">${sitter(X(Xf), y + 2.5, k)}</g>
-        <rect x="${X(Xf) - 14}" y="${y - 46}" width="28" height="46" fill="transparent"/></g>`; });
+        <g class="pz" data-g="nod" data-i="1">${sitter(X(Xf), y + 4 * k, k)}</g>
+        <rect x="${X(Xf) - 18 * k}" y="${y - 80 * k}" width="${36 * k}" height="${80 * k}" fill="transparent"/></g>`; });
   }
   if (ri === 2) {
     people += sitter(X(170), y, k, { hs: "iris", cls: "day-only", body: "sV", head: "sW",
-      extra: (x, y, k) => `<circle class="k sW" cx="${x}" cy="${y - 46 * k}" r="${4 * k}"/><path class="sV" d="M${x - 12 * k},${y - 32 * k} Q${x},${y - 30 * k} ${x + 12 * k},${y - 32 * k}"/>` });
+      extra: (x, y, q) => `<circle class="k sW" cx="${x}" cy="${y - 106 * q}" r="${8 * q}"/><path class="hl sW" d="M${x - 10 * q},${y - 96 * q} C${x - 4 * q},${y - 100 * q} ${x + 4 * q},${y - 100 * q} ${x + 10 * q},${y - 96 * q}"/><path class="sV" d="M${x - 24 * q},${y - 66 * q} Q${x},${y - 72 * q} ${x + 24 * q},${y - 66 * q}"/>` });
     const rx = X(390);
     people += `<g class="night-only" data-hs="robe" id="robe">
-      <path class="k sV" d="M${rx - 15 * k},${y - 14 * k} L${rx - 12 * k},${y - 46 * k} Q${rx},${y - 62 * k} ${rx + 12 * k},${y - 46 * k} L${rx + 15 * k},${y - 14 * k} Z"/>
-      <path class="k sV" d="M${rx - 7 * k},${y - 46 * k} Q${rx},${y - 53 * k} ${rx + 7 * k},${y - 46 * k} Q${rx},${y - 40 * k} ${rx - 7 * k},${y - 46 * k} Z"/>
-      <circle class="hl sX" cx="${rx}" cy="${y - 30 * k}" r="${3.4 * k}"/><circle class="fX" cx="${rx}" cy="${y - 30 * k}" r="${1.4 * k}"/>
-      <rect x="${rx - 18 * k}" y="${y - 64 * k}" width="${36 * k}" height="${64 * k}" fill="transparent"/></g>`;
+      <path class="k sV" d="M${rx - 22 * k},${y - 24 * k} L${rx - 18 * k},${y - 66 * k} Q${rx},${y - 90 * k} ${rx + 18 * k},${y - 66 * k} L${rx + 22 * k},${y - 24 * k} Z"/>
+      <path class="k sV" d="M${rx - 10 * k},${y - 66 * k} Q${rx},${y - 76 * k} ${rx + 10 * k},${y - 66 * k} Q${rx},${y - 58 * k} ${rx - 10 * k},${y - 66 * k} Z"/>
+      <path class="hl sV" d="M${rx - 8 * k},${y - 54 * k} L${rx - 10 * k},${y - 26 * k} M${rx + 8 * k},${y - 54 * k} L${rx + 10 * k},${y - 26 * k}"/>
+      <circle class="hl sX" cx="${rx}" cy="${y - 44 * k}" r="${4.5 * k}"/><circle class="fX" cx="${rx}" cy="${y - 44 * k}" r="${1.9 * k}"/>
+      <rect x="${rx - 24 * k}" y="${y - 92 * k}" width="${48 * k}" height="${92 * k}" fill="transparent"/></g>`;
   }
-  return `<g>${people}${chairs}</g>`;
+  const robe = people.match(/<g class="night-only" data-hs="robe"[\s\S]*$/);
+  if (robe) people = people.replace(robe[0], "");
+  return `<g>${people}${chairs}${robe ? robe[0] : ""}</g>`;
 }
 function tableGroup() {
   const k = 0.82, y = P(0, FY, k)[1], x = P(580, FY, k)[0], w = 70;
@@ -384,10 +389,11 @@ function tableGroup() {
   </g>`;
 }
 function lecternGroup() {
-  const s = 0.5, ax = 192, ay = 208;  // lectern base on the floor
+  const s = 0.5, sp = 0.40, ax = 192, ay = 208;  // lectern base on the floor; Preston drawn at his depth's scale
+  const top = ay - (190 - 124) * s;               // lectern's top edge
   return `<g>
-    <g class="day-only pt" id="preston" data-hs="preston"><g transform="translate(${ax - 160 * s},${ay - 190 * s}) scale(${s})">${prestonBust()}</g>
-      <rect x="${ax - 24}" y="${ay - 92}" width="56" height="40" fill="transparent"/></g>
+    <g class="day-only pt" id="preston" data-hs="preston"><g transform="translate(${ax - 160 * sp},${top + 6 - 130 * sp}) scale(${sp})">${prestonBust()}</g>
+      <rect x="${ax - 20}" y="${top - 50}" width="46" height="50" fill="transparent"/></g>
     <g data-hs="lectern" transform="translate(${ax - 160 * s},${ay - 190 * s}) scale(${s})">
       <path class="k sB mech" d="M114,124 L206,124 L202,131 L118,131 Z"/><path class="k sB mech" d="M118,131 L202,131 L196,190 L124,190 Z"/>
       <path class="sN mech" d="M132,140 L188,140 L184,180 L136,180 Z"/><path class="hl sN mech" d="M140,150 L180,150 M139,160 L181,160 M138,170 L182,170"/>

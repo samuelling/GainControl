@@ -391,7 +391,7 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 ---
 
 ## Visual direction: line, pose, segment
-**Reference:** `prototype/style-sheet/` (Style Sheet 02), checked against the official OP-1 module screens. The look draws on the OP-1 and Pocket Operator screens, Game & Watch LCDs, and early-80s arcade games like Q*bert, but crisper. We borrow the drawing rules, not any product's actual graphics, UI layout, controls or characters.
+**Status: locked.** Canonical references: `prototype/room-101/` (a playable scene) and `prototype/style-sheet/` (Style Sheet 02), checked against the official OP-1 module screens. `CLAUDE.md` has the short-form rules for anyone building scenes. The look draws on the OP-1 and Pocket Operator screens, Game & Watch LCDs, and early-80s arcade games like Q*bert, but crisper. We borrow the drawing rules, not any product's actual graphics, UI layout, controls or characters.
 
 ### The eight rules
 1. **Two line weights.** Everything is drawn at a native 320×200, then scaled up: a 1.5 px line for objects and a 0.75 px hairline for grids, guides and interior detail (folds, seams, muscles, gears).
@@ -415,6 +415,10 @@ INK `#e9e6ff` · SIGNAL `#ff3b5c` · COOL `#6b8cff` · ON `#00e39a` · SKIN `#ff
 - **NRT members:** robes ROBE, insignia lit SIGNAL, gavel BRASS with an INK skull.
 
 ### Point-and-click specifics
+- **Proportions:** everything in a room is sized against the walking characters (a chair back is about half a standing figure; a seated head matches a standing head).
+- **Unimportant things stay simple:** anonymous audience members are just chair backs; only story-relevant people show a head and one identifying mark.
+- **Dialogue type:** large condensed all-caps (Saira Condensed), each line in its speaker's color with a solid speaker chip. HUD and signage use the stroke alphabet.
+- **Laminar fMRI on screen** is a close-up of folded cortex (pial surface, six layer lines following the fold, white-matter boundary, depth probe), never concentric rings.
 - **Talking portraits (Gabriel Knight) are essential.** Close-ups drawn with the same rules at a larger native size, with swapped poses for blink, mouth and expression. Preston's blank-out happens in close-up.
 - **Day vs. night:** day scenes use the full palette; Gus's night shifts drop to DEEP, COOL, ON and DIM, plus the red EXIT sign.
 - **Hotspots** follow the no-fill rule: atmosphere is drawn in STRUCT/DIM, things that matter get full color, and a few colored objects are red herrings.
