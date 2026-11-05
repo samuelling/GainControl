@@ -4,7 +4,8 @@
 
 **Genre:** point-and-click comedy adventure
 **Lineage:** Sierra structure and death screens (Laura Bow murder-mystery clock, Freddy Pharkas "day job" puzzles, Al Lowe narrator and puns), plus LucasArts flavor (Sam & Max deadpan duo, Day of the Tentacle character switching and cartoon logic), plus Gabriel Knight investigation (day structure, tape recorder, sketchbook, cipher, disguises)
-**Look:** OP-1 screen aesthetic (see bottom)
+**Look:** colorful vector graphics on true black, glowing like an OLED synth screen (see bottom)
+**Platform:** web (canvas) for now
 **Rating target:** Al Lowe PG-13 — puns, innuendo, gross-out, cartoon murder
 
 ---
@@ -42,7 +43,7 @@ Real data is noisy and fake data is too clean, and the same goes for alibis. Eve
 | **Dr. Tess La** | MRI physicist. | Guards the scanner calendar like a dragon. Victim #1. |
 | **Penny Ledger** | Department administrator. | The real power in the building. Has every key and every purchase order. Everything requires a form. |
 | **Dr. Rex Jected** | Postdoc, year 9. | Bitter informant who works for coffee. So hardened by rejection that he survives his own murder. |
-| **Gus Mopley** | Night custodian. | Sees everything at 3am. Speaks in mop-bucket proverbs. |
+| **Gus Mopley** | Night custodian. **Third playable character** (night shift). | Sees everything at 3am. Speaks in mop-bucket proverbs. Has keys to every door and nobody suspects the janitor. |
 | **Cody Credit** | Undergrad RA. | "Ran" Preston's participants for course credit and never questioned it. Victim. |
 | **Dana Outlier** | Grad student, Preston's labmate. | Noticed Preston never comes in before noon. Victim, found in a recycling bin labeled EXCLUDED. |
 | **Prof. Quorum** | Department Chair. | Rules everything by procedure. Victim: dies at the faculty meeting, and nobody notices for 40 minutes. ("We've lost Quorum.") |
@@ -129,11 +130,21 @@ Every death gets an Al Lowe narrator joke, but the death screen has two buttons:
 
 This way you get Sierra's death jokes without its punishment.
 
-### 2. Ned + Morris switching (the Day of the Tentacle engine)
-- **Ned** can talk to people, use doors, sign forms and operate equipment. People take him semi-seriously.
-- **Morris** goes through vents, ceilings and walls, steals small things, causes chaos, and eavesdrops. Nobody notices a rat (except the animal facility staff).
-- **The pneumatic tube** passes items between them across floors.
-- Many puzzles need both. *Example:* to get into Tess's office, Morris goes into the vent above the scanner control room and chews a wire, which sets off the "helium low" alarm. Tess runs out. Ned walks in.
+### 2. Three-character switching (the Day of the Tentacle engine)
+Day of the Tentacle split its heroes across time. Here they split across **day and night**.
+
+- **Ned (day shift)** talks to people, uses doors, signs forms and operates equipment. People take him semi-seriously.
+- **Gus (night shift)** has every key, an all-night floor buffer, and the custodial cart. He can go into locked offices, empty trash cans *before* the evidence is shredded, and see who is in the building at 3am. Nobody suspects the janitor.
+- **Morris (both shifts)** is a rat, so he's nocturnal and also awake whenever there's food. He goes through vents, ceilings and walls, steals small things, eavesdrops and causes chaos. He's the link between the two shifts.
+
+**Passing things across shifts:**
+- **The pneumatic tube** moves items between floors in the same shift.
+- **The lost-and-found box** in the custodial closet moves items between shifts. Ned leaves something at 5pm; Gus finds it at 2am. Gus leaves a note at 3am; Ned finds it at 9am.
+- **Cause and effect across shifts:** what Gus does at night changes the next day. If he skips mopping the MRI hallway, Ned finds footprints in the morning. If he leaves Impact's door unlocked, it's still unlocked.
+
+**When you can play Gus:** each of Acts I–IV ends with a night shift (Monday night through Thursday night) before the next day's title card. The night shifts are when the murders get set up, and Gus is often a few minutes too late.
+
+**Example puzzle:** to get into Tess's office, Morris goes into the vent above the scanner control room and chews a wire, which sets off the "helium low" alarm. Tess runs out. Ned walks in.
 
 ### 3. Day job interludes (the Freddy Pharkas engine)
 Ned is still a TA. Undergrads from his stats section show up at random with questions, just as Freddy's customers did. A correct answer earns points and sometimes an item or favor. The same stats skills (GRIM, distributions, outliers) are what crack the case later, so the day job trains you for the mystery.
@@ -154,6 +165,24 @@ Ned is still a TA. Undergrads from his stats section show up at random with ques
 ### 6. Score = h-index
 Points are "citations." The status bar reads *h-index: 14 of 50*.
 
+### 7. Real neuroscience, explained simply
+Every science puzzle uses a real concept, explained so a non-scientist can solve it. The rule is the same as Freddy Pharkas's real chemistry: **the game teaches you the idea right before it asks you to use it.** Ned's office-hours students, Rex's rants, or the notebook give you the plain-language version. No jargon is needed to solve anything, and a neuroscientist should be able to nod along.
+
+| Concept | Plain-language version in the game | Puzzle |
+|---|---|---|
+| MRI magnet strength (3T vs. 7T) | "Tesla is how strong the magnet is. Stronger magnet, finer detail. Our building only has the weaker one." | Act I methods slide |
+| Magnet safety | "The magnet is always on. Metal flies into it." | Murder weapon; death screens |
+| Cortical layers | "The brain's surface is a stack of thin layers, like a cake. Seeing them needs a very strong magnet." | Why the 7T claim matters |
+| Signal dropout | "Metal in your mouth makes a hole in the scan, like a thumb over a camera lens." | The retainer reveal |
+| AI hallucination | "Ask an AI to sharpen a blurry photo and it invents detail that was never there." | Layers inside the retainer hole |
+| The GRIM test | "If 10 people answer with whole numbers, the average can't be 3.47." | Table 1 calculator puzzle |
+| Image duplication | "Two experiments shouldn't produce the identical picture." | Notebook overlay |
+| Brain coordinates | "Every spot in the brain has an address, like latitude and longitude." | Cipher notes |
+| Water maze | "Rats learn where a hidden platform is. It's a test of spatial memory." | Cody's death; Morris's backstory |
+| Ethics review (IRB) | "You need permission *before* you test people, not after." | Backdated protocol |
+| Dark adaptation | "Your eyes take about 20 minutes to adjust to darkness." | Psychophysics booth puzzle (and a death) |
+| Real vs. fake noise | "Real measurements wobble. Fake ones are too smooth." | Comparing Preston's data to Ned's |
+
 ---
 
 ## Clue chain (story → puzzle)
@@ -166,7 +195,7 @@ Points are "citations." The status bar reads *h-index: 14 of 50*.
 | 4 | Backdated IRB | Ethel's office | Find the right binder (the binder of binders) |
 | 5 | Fake participants | Cody's clipboard | Trade Cody a credit slip forged on the jammed printer |
 | 6 | Impossible means | Calculator | GRIM test |
-| 7 | Duplicated panel | Overlay screen | Rotate and flip panels to match (OP-1 visual mini-game) |
+| 7 | Duplicated panel | Overlay screen | Rotate and flip panels to match (glowing overlay mini-game) |
 | 8 | GPU logs | Server room | Rex's password costs coffee; fix the espresso machine (multi-step) |
 | 9 | Murder weapon | Kitchen / Gus | Gus saw who took the NED thermos, but only tells you after you mop for him |
 | 10 | Reviewer 2 identity | Impact's office | Password = h-index (findable in his bio); match the writing quirks |
@@ -207,18 +236,22 @@ Points are "citations." The status bar reads *h-index: 14 of 50*.
 
 ---
 
-## Visual direction: OP-1 screen
-- Flat vector shapes on black, a limited palette (blue, green, white, orange, plus grey), and thin line work. Everything looks like a toy diagram.
-- **The four OP-1 encoder colors are the four verbs:** blue = Walk, green = Look, white = Use, orange = Talk. Number keys or encoder clicks switch verbs.
-- The scanner is a big white donut, brains are wobbly blobs, people are simple geometric figures with expressive eyes.
-- The inventory lives on a tape-reel screen and the verb bar looks like the OP-1 mode row.
-- Low internal resolution (OP-1 is 320×160; we could do 320×200 for Sierra feel), scaled up crisp.
+## Visual direction: glowing vector on black
+The feel of a small synth's OLED screen, blown up to full size. It's a general look, not a reference to any one product: we don't copy any device's UI layout, controls, icons or characters.
+
+- **True black background.** Everything glows against it. No gradients, no textures.
+- **Flat, saturated vector shapes** with thin line work, in a small palette of bright accents plus white and greys. Everything looks like a playful toy diagram.
+- **Simple geometric characters** with expressive eyes and bouncy, springy animation. The scanner is a big white donut, brains are wobbly blobs, and Morris is a few lines and a tail.
+- **Our own verb interface:** a row of simple glyphs (walk, look, use, talk, plus the active character's portrait and inventory) along the bottom edge, styled in the same glow.
+- **Full-size, widescreen canvas** (16:9), vector-rendered so it stays crisp at any size. Optional subtle OLED touches: slight glow and bloom, a pixel-grid shimmer on transitions.
+- **Day vs. night palettes:** daytime scenes are bright and busy; Gus's night shifts drop to a few cool colors with more black.
 
 ---
 
-## Open questions
-- Is Ned fixed, or does the player get to name and customize the hero?
-- Five acts or four? (Act III is packed.)
-- Should the Day of the Tentacle switching expand to a third character (Gus on the night shift as a flashback act)?
-- How much real neuroscience should the puzzles use? Real GRIM math and real artifact-spotting, or simplified?
-- Engine: web (canvas, like the other games) or something else?
+## Decisions
+- **Ned is a fixed character.** No naming or customizing.
+- **Five acts**, Monday through Friday.
+- **Three playable characters:** Ned (day), Gus (night), Morris (both).
+- **Real neuroscience, simplified for laypeople** (see pillar 7).
+- **Web engine** (canvas) for now.
+- **Visuals inspired by OLED synth screens in general**, with no copying of any specific product's UI, controls or characters.
