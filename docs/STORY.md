@@ -456,6 +456,11 @@ INK `#e9e6ff` · SIGNAL `#ff3b5c` · COOL `#6b8cff` · ON `#00e39a` · SKIN `#ff
 - **Gus:** cardigan ROBE over an INK tee, curly INK hair, headphones around his neck, mustache INK, laptop under his arm.
 - **Morris:** body INK, ears/tail/nose SKIN, implant ON.
 - **Iris:** hair INK, cardigan ROBE, glasses and chain BRASS, staple gun SIGNAL.
+- **Dr. Tess La:** black bob INK, safety glasses BRASS pushed up on her head, ear defenders COOL round her neck, lab coat INK. Chip BRASS.
+- **Penny Ledger:** silver bouffant INK, headset STRUCT, glasses BRASS on a ROBE chain, pencil behind her ear BRASS, cardigan BRASS. Chip COOL.
+- **Ethel Bord:** tall bun INK, half-moon glasses BRASS, a lanyard of badges COOL, gray blazer STRUCT with shoulder pads. Chip ROBE.
+- **Cody Credit:** backwards cap SIGNAL, PSY 101 tee BRASS, the sign-in clipboard INK. Chip SIGNAL.
+- **Det. Sgt. Small:** short hair INK, trench coat BRASS, tie SIGNAL, notebook INK. Chip INK.
 - **NRT members:** robes ROBE, insignia lit SIGNAL, gavel BRASS with an INK skull.
 
 ### Point-and-click specifics

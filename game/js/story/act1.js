@@ -1,7 +1,7 @@
 // ACT I — Monday: SUBMISSION. All the words and the logic that moves the story.
 // A response can be: a string ("WHO|text" for a quoted line), "c:key" (a conversation),
 // or a function(api) that does things and may return either of those.
-import { seg } from "./gfx.js";
+import { seg } from "../gfx.js";
 
 /* ---------------- inventory ---------------- */
 export const ITEMS = {
@@ -154,8 +154,8 @@ export const HS = {
   lab: {
     door: { label: "door to hallway", day: { look: "Back to the hallway.", go: "hall@fromLab" }, night: { look: "Back to the hallway.", go: "hall@fromLab" } },
     monitor: { label: "your monitor",
-      day: { look: (api) => api.flag("noteReady") && !api.flag("noteRead") ? api.readNote() : "Your experiment. A dialog box: RESULTS NOT SIGNIFICANT. MATLAB is getting judgmental.",
-        use: (api) => api.flag("noteReady") && !api.flag("noteRead") ? api.readNote() : "You rerun the analysis. p = .48. Again." },
+      day: { look: (api) => api.flag("noteReady") && !api.flag("noteRead") ? readNote(api) : "Your experiment. A dialog box: RESULTS NOT SIGNIFICANT. MATLAB is getting judgmental.",
+        use: (api) => api.flag("noteReady") && !api.flag("noteRead") ? readNote(api) : "You rerun the analysis. p = .48. Again." },
       night: { look: "Nell's screensaver: the letters N.S. bouncing gently around the screen, forever.", use: "Gus taps the space bar. Her MATLAB is still open: p = .48. He winces in solidarity." } },
     drawer: { label: "desk drawer",
       day: {
@@ -215,3 +215,27 @@ export const NOTE = () => {
   return s + `</g>${seg("STUCK TO YOUR MONITOR. NO SIGNATURE.", 320 - 104, 290, 7, "sM", 1)}`;
 };
 export const NOTE_CAPTION = "Five rows of numbers. Not grades. Not phone numbers.\n\nThey're brain coordinates: x, y, z, the way an fMRI paper reports where something lit up. Someone in this building is leaving you a message in neuroanatomy.\n\nYou'll need an atlas. Tomorrow.";
+
+/* ---------------- act structure ---------------- */
+export const TITLE = ["ACT I", "SUBMISSION"];
+export const END = { title: "END OF ACT I", chip: "SUBMISSION", bodies: "BODIES 00.  FOR NOW.", next: "NEXT: TUESDAY.  ACT II  UNDER REVIEW",
+  epilogue: "Down in the dark, below a basement that doesn't have a below, six canisters arrive at a round table.\n\nSomeone opens the first one. It contains a single index card: THE AUTHORS SHOULD CONSIDER…\n\nTo be continued.",
+  thanks: "THANKS FOR PLAYING ACT I" };
+
+export async function start(api, { fresh } = {}) {
+  const G = api.G;
+  if (fresh) { G.flags = {}; G.score = 0; G.scored.clear(); G.inv = { nell: [...START_INV.day], gus: [...START_INV.night], morris: [] }; }
+  G.cast = ["nell"]; G.chars = {};
+  api.shift({ mode: "day", char: "nell", room: "seminar", entry: "start", min: 16 * 60 + 7 });
+  await api.card("MONDAY", "ACT I  SUBMISSION", "JOURNAL CLUB  SEMINAR RM 101  16:07", "fA", 2600);
+  await api.say("Nell Null. Fifth-year, Adline Lab. Eleven months of null results. Thesis defense on Friday.\n\nToday at journal club, Preston Valu is presenting the paper of the decade.\n\nOn a scanner the building doesn't have.");
+}
+
+async function readNote(api) {
+  if (api.flag("noteRead")) return;
+  await api.readout(NOTE(), NOTE_CAPTION);
+  api.flag("noteRead", true); api.score("note", 2);
+  await api.card("MONDAY NIGHT", "NIGHT SHIFT  GUS", "HALLWAY 1F  02:13", "fG", 3200);
+  api.shift({ mode: "night", char: "gus", room: "hall", entry: "start", min: 2 * 60 + 13, cast: ["gus"] });
+  await api.say("Gus Ian. Fourth-year, Adline Lab, Nell's labmate. He scans at 2 AM because the 3T is cheapest when nobody sane wants it. Nobody notices a grad student at 2 AM. Grad students are furniture.\n\nNell has been texting him about journal club. And something has been rattling in the tube pipes all week.");
+}

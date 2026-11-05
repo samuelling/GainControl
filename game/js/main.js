@@ -1,13 +1,24 @@
-// GAIN CONTROL — engine. Rooms draw themselves from state; story.js decides what everything means.
+// GAIN CONTROL — engine. Rooms draw themselves from state; the act files (story/actN.js) decide what everything means.
 import { seg, segW, chip, ICON } from "./gfx.js";
-import { nellFigure, gusFigure, AUD } from "./figures.js";
+import * as FIG from "./figures.js";
 import { PORTRAIT } from "./portraits.js";
-import { ITEMS, START_INV, CONVOS, HS, WITH, check, NOTE, NOTE_CAPTION } from "./story.js";
+import * as A1 from "./story/act1.js";
+import * as A2 from "./story/act2.js";
+import { keypad } from "./minigames/keypad.js";
+import { fogNeuro } from "./minigames/fogneuro.js";
 import seminar from "./rooms/seminar.js";
 import hall from "./rooms/hallway.js";
 import lab from "./rooms/lab.js";
+import mri from "./rooms/mri.js";
+import office from "./rooms/office.js";
+import ethics from "./rooms/ethics.js";
+import impact from "./rooms/impact.js";
 
-const ROOMS = { seminar, hall, lab };
+const ROOMS = { seminar, hall, lab, mri, office, ethics, impact };
+const ACTS = { 1: A1, 2: A2 };
+const ITEMS = A1.ITEMS;                                   // shared; later acts add to it
+const CONVOS = Object.assign({}, A1.CONVOS, A2.CONVOS);
+const AUD = FIG.AUD;
 const $ = (s, r = document) => r.querySelector(s);
 const svg = $("#game"), frame = $("#frame"), hover = $("#hover"), msg = $("#msg");
 
@@ -15,21 +26,32 @@ const svg = $("#game"), frame = $("#frame"), hover = $("#hover"), msg = $("#msg"
  *  STATE
  * ================================================================ */
 const G = {
-  mode: "day", room: "seminar", flags: {}, inv: { day: [...START_INV.day], night: [...START_INV.night] },
+  act: 1, mode: "day", char: "nell", room: "seminar", flags: {},
+  inv: { nell: [...A1.START_INV.day], gus: [...A1.START_INV.night], morris: [] },
+  chars: {},                                               // inactive characters: { morris: { room, x, y, dir } }
+  cast: ["nell"],                                          // who the player can switch between right now
   score: 0, scored: new Set(), min: 16 * 60 + 7, bodies: 0, status: "", statusT: 0,
-  busy: false, chooser: null, using: null,
+  busy: false, chooser: null, using: null, extras: [],
   actor: { x: 320, y: 280, dir: 1, tx: 320, ty: 280, walking: false, step: 0, cb: null },
   get clock() { const h = Math.floor(this.min / 60) % 24, m = this.min % 60; return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0"); },
 };
 const R = () => ROOMS[G.room];
+const ACT = () => ACTS[G.act];
+const HS = () => ACT().HS;
+const KEY = () => (G.char === "morris" ? "morris" : G.mode);          // which version of a hotspot applies
+const DAYNAMES = { 1: "MON", 2: "TUE", 3: "WED" };
+const FIGURE = { nell: () => FIG.nellFigure(), gus: () => FIG.gusFigure(), morris: () => (FIG.morrisFigure ? FIG.morrisFigure() : FIG.nellFigure()) };
+const CHIP = { nell: ["NELL", "fG"], gus: ["GUS", "fB"], morris: ["MORRIS", "fK"] };
+
 let checkpoint = null;
+const SAVE_KEYS = ["act", "mode", "char", "room", "flags", "inv", "chars", "cast", "score", "min", "bodies"];
 function snapshot() {
-  checkpoint = JSON.stringify({ mode: G.mode, room: G.room, flags: G.flags, inv: G.inv, score: G.score, scored: [...G.scored], min: G.min,
-    actor: { x: G.actor.x, y: G.actor.y, dir: G.actor.dir } });
+  const o = {}; SAVE_KEYS.forEach(k => o[k] = G[k]);
+  checkpoint = JSON.stringify({ ...o, scored: [...G.scored], actor: { x: G.actor.x, y: G.actor.y, dir: G.actor.dir } });
 }
 function restore() {
   const s = JSON.parse(checkpoint);
-  Object.assign(G, { mode: s.mode, room: s.room, flags: s.flags, inv: s.inv, score: s.score, scored: new Set(s.scored), min: s.min, using: null, status: "" });
+  SAVE_KEYS.forEach(k => G[k] = s[k]); G.scored = new Set(s.scored); G.using = null; G.status = "";
   frame.classList.toggle("night", G.mode === "night");
   loadRoom(G.room, null, s.actor);
 }
@@ -37,17 +59,28 @@ function restore() {
 /* ================================================================ *
  *  RENDERING
  * ================================================================ */
+function idleFigures() {   // the other playable character, if they're standing in this room
+  return Object.entries(G.chars).filter(([c, p]) => c !== G.char && p.room === G.room && G.cast.includes(c)).map(([c, p]) => {
+    const s = R().pp.kAtY(p.y) * AUD;
+    return { depth: p.y, svg: `<g data-pose="0" class="idle" transform="translate(${p.x},${p.y}) scale(${p.dir * s},${s}) translate(-160,-187)">${FIGURE[c]()}</g>` };
+  });
+}
 function build() {
   const d = R().draw(G);
+  const sorts = [...d.sortables.filter(o => o.svg), ...idleFigures()];
   svg.innerHTML = `<g id="roomBack">${d.back}</g><g id="sortables">
-    ${d.sortables.filter(o => o.svg).map(o => `<g data-depth="${o.depth}">${o.svg}</g>`).join("")}
-    <g data-depth="actor" id="actorWrap"><g id="actor" data-pose="0"></g></g></g><g id="hud"></g><g id="chooser"></g>`;
-  $("#actor").innerHTML = G.mode === "night" ? gusFigure() : nellFigure();
-  render(); hud();
+    ${sorts.map(o => `<g data-depth="${o.depth}">${o.svg}</g>`).join("")}
+    <g data-depth="actor" id="actorWrap"><g id="actor" data-pose="0"></g></g></g><g id="extras"></g><g id="hud"></g><g id="chooser"></g>`;
+  $("#actor").innerHTML = FIGURE[G.char]();
+  render(); hud(); drawExtras();
+}
+function entryPos(entry) {
+  if (entry === "vent" && R().stand.vent) { const [x, y] = R().stand.vent; return [x, y, 1]; }
+  return R().entries[entry] || Object.values(R().entries)[0];
 }
 function loadRoom(id, entry, pos) {
   G.room = id; G.chooser = null;
-  const a = G.actor, e = pos ? [pos.x, pos.y, pos.dir] : (R().entries[entry] || Object.values(R().entries)[0]);
+  const a = G.actor, e = pos ? [pos.x, pos.y, pos.dir] : entryPos(entry);
   Object.assign(a, { x: e[0], y: e[1], dir: e[2], tx: e[0], ty: e[1], walking: false, cb: null });
   build();
 }
@@ -61,28 +94,47 @@ function render() {
   const after = [...sort.children].find(c => c !== wrap && parseFloat(c.dataset.depth) > a.y);
   if (wrap.nextSibling !== after) sort.insertBefore(wrap, after || null);
 }
+// scripted walkers (the robed figures): drawn above the room, stepped by the act
+function drawExtras() {
+  const g = $("#extras"); if (!g) return;
+  g.innerHTML = G.extras.map(x => { const s = R().pp.kAtY(x.y) * AUD;
+    return `<g data-pose="${x.pose}" transform="translate(${x.x},${x.y}) scale(${x.dir * s},${s}) translate(-160,-187)">${x.fig()}</g>`; }).join("");
+}
 
 function hud() {
   const night = G.mode === "night", h = $("#hud"); if (!h) return;
   let s = `<rect x="0" y="291" width="640" height="69" fill="#000"/><path class="hl sD" d="M0,292 L640,292 M152,302 L152,350 M276,302 L276,350 M510,302 L510,350"/>`;
-  s += chip(night ? "GUS IAN" : "NELL NULL", 14, 300, 6.5, night ? "fB" : "fG");
+  // the cast: the active character is a solid chip; the others are outlined and clickable
+  let cx = 14;
+  for (const c of G.cast) {
+    const [nm, f] = CHIP[c], w = segW(nm, 6.5) + 6.5 * .9 + 2;
+    s += c === G.char ? chip(nm, cx, 300, 6.5, f)
+      : `<g data-char="${c}" style="cursor:pointer"><rect class="hl sW" x="${cx - 1}" y="${298.5}" width="${w}" height="${6.5 * 1.7 + 3}"/>${seg(nm, cx + 2, 301, 6.5, "s" + f.slice(1), .9)}</g>`;
+    cx += w + 6;
+  }
   if (G.using) {
     const t = "USE " + ITEMS[G.using].name.toUpperCase() + " ON";
     const hh = segW(t, 4.6) + 4 > 132 ? 3.6 : 4.6;
     s += chip(t, 14, 318, hh, "fA") + seg("RIGHT-CLICK TO CANCEL", 14, 334, 3.6, "sM", .7);
+  } else if (G.cast.length > 1) {
+    s += seg("CLICK A NAME", 14, 320, 4.2, "sW", .8) + seg("SWITCH", 92, 320, 4.2, "sM", .8);
+    s += seg("CLICK THINGS", 14, 331, 4.2, "sW", .8) + seg("CHOOSE", 92, 331, 4.2, "sM", .8);
   } else {
     s += seg("CLICK FLOOR", 14, 320, 4.2, "sW", .8) + seg("WALK", 92, 320, 4.2, "sM", .8);
     s += seg("CLICK THINGS", 14, 331, 4.2, "sW", .8) + seg("CHOOSE", 92, 331, 4.2, "sM", .8);
   }
   s += seg("INVENTORY", 164, 300, 4.2, "sM", .8);
-  G.inv[G.mode].forEach((id, i) => { const x = 174 + i * 30, y = 327;
+  const inv = G.inv[G.char] || [];
+  if (!inv.length && G.char === "morris") s += seg("CHEEKS FULL OF PEPPERONI", 164, 324, 3.8, "sM", .8);
+  inv.forEach((id, i) => { const x = 174 + i * 30, y = 327;
     s += `<g data-item="${id}" style="cursor:pointer">${G.using === id ? `<rect class="hl sA" x="${x - 13}" y="${y - 15}" width="26" height="30"/>` : ""}${ITEMS[id].g(x, y)}<rect x="${x - 13}" y="${y - 15}" width="26" height="30" fill="transparent"/></g>`; });
-  s += seg("DAY", 290, 300, 4.2, night ? "sG" : "sB", .8) + seg("MON", 290, 308, 20, night ? "sG" : "sB", 1.4);
+  const day = DAYNAMES[G.mode === "morning" ? G.act + 1 : G.act];
+  s += seg("DAY", 290, 300, 4.2, night ? "sG" : "sB", .8) + seg(day, 290, 308, 20, night ? "sG" : "sB", 1.4);
   s += seg("TIME", 336, 300, 4.2, "sW", .8) + seg(G.clock, 336, 308, 20, "sW", 1.4);
   s += seg("H-INDEX", 410, 300, 4.2, "sA", .8) + seg(String(G.score).padStart(2, "0"), 410, 308, 20, "sA", 1.4) + seg("/50", 432, 322, 7, "sM", 1);
   s += seg("BODIES", 462, 300, 4.2, "sR", .8) + seg(String(G.bodies).padStart(2, "0"), 462, 308, 20, "sR", 1.4);
   s += chip(G.status || R().name, 522, 300, 5.5, G.status === "RECORDING" ? "fR" : night ? "fG" : "fB");
-  s += seg("ACT I", 522, 324, 4.2, "sM", .8) + seg("SUBMISSION", 522, 333, 7, "sW", 1.1);
+  s += seg(ACT().TITLE[0], 522, 324, 4.2, "sM", .8) + seg(ACT().TITLE[1], 522, 333, 7, "sW", 1.1);
   h.innerHTML = s;
 }
 
@@ -108,7 +160,8 @@ function typeInto(el, html, speed, onTick) {
   });
 }
 // speaker colors for quoted one-liners ("WHO|text")
-const SPEAKER = [["MORRIS", "K"], ["PRESTON", "R"], ["BRETT", "B"], ["THE OLD WOMAN", "V"], ["GUS", "B"], ["NELL", "G"]];
+const SPEAKER = [["MORRIS", "K"], ["PRESTON", "R"], ["BRETT", "B"], ["THE OLD WOMAN", "V"], ["GUS", "B"], ["NELL", "G"], ["TESS", "A"], ["PENNY", "B"],
+  ["ETHEL", "V"], ["CODY", "R"], ["DET", "W"], ["PROF. ADLINE", "W"]];
 const colorOf = (who) => (SPEAKER.find(([k]) => who.startsWith(k)) || [0, "A"])[1];
 async function say(text) {
   if (!text) return;
@@ -124,7 +177,7 @@ async function say(text) {
 const convo = $("#convo"), dlg = $("#dlg"), PF = { L: $(".pf.left"), R: $(".pf.right") };
 let blinkTimers = [];
 function mount(side, id) {
-  const p = PORTRAIT[id];
+  const p = PORTRAIT[id] || PORTRAIT.nell;
   PF[side].querySelector(".pv").innerHTML = `<svg class="t pt" viewBox="${p.vb}" preserveAspectRatio="xMidYMid meet">${p.svg()}</svg>`;
   const nm = PF[side].querySelector(".name"); nm.textContent = p.name; nm.style.background = `var(--${p.chip.slice(1)})`;
   const el = PF[side].querySelector("svg");
@@ -138,7 +191,7 @@ async function speak(c, els, [side, raw, fx]) {
   const who = dlg.querySelector(".who"), txt = dlg.querySelector(".txt");
   dlg.querySelector(".more").style.display = "";
   if (side === "N") { who.textContent = "NARRATOR"; who.style.background = "var(--W)"; txt.style.color = "var(--W)"; }
-  else { const p = PORTRAIT[c[side]]; who.textContent = p.name; who.style.background = `var(--${p.chip.slice(1)})`; txt.style.color = `var(--${p.chip.slice(1)})`; }
+  else { const p = PORTRAIT[c[side]] || PORTRAIT.nell; who.textContent = p.name; who.style.background = `var(--${p.chip.slice(1)})`; txt.style.color = `var(--${p.chip.slice(1)})`; }
   const sp = side === "N" ? null : els[side];
   if (sp) sp.classList.toggle("blank", fx === "blank");
   const scene = $("#preston"); if (fx === "blank" && scene) scene.classList.add("blank");
@@ -157,11 +210,9 @@ function pick(c, choices) {
     dlg.querySelector(".more").style.display = "none";
     txt.style.color = "var(--W)";
     txt.innerHTML = choices.map((ch, i) => `<div class="choice" data-i="${i}"><b>${i + 1}</b>${esc(ch.text)}</div>`).join("");
-    function click(e) {
-      const el = e.target.closest && e.target.closest(".choice"); e.stopPropagation(); e.preventDefault();
-      if (!el) return; frame.removeEventListener("pointerdown", click, true); window.removeEventListener("keydown", key); resolve(choices[+el.dataset.i]);
-    }
-    function key(e) { const n = +e.key; if (n >= 1 && n <= choices.length) { frame.removeEventListener("pointerdown", click, true); window.removeEventListener("keydown", key); resolve(choices[n - 1]); } }
+    function done(ch) { frame.removeEventListener("pointerdown", click, true); window.removeEventListener("keydown", key); resolve(ch); }
+    function click(e) { const el = e.target.closest && e.target.closest(".choice"); e.stopPropagation(); e.preventDefault(); if (el) done(choices[+el.dataset.i]); }
+    function key(e) { const n = +e.key; if (n >= 1 && n <= choices.length) done(choices[n - 1]); }
     frame.addEventListener("pointerdown", click, true); window.addEventListener("keydown", key);
   });
 }
@@ -185,52 +236,51 @@ async function runConvo(key) {
   convo.classList.remove("show");
   if (c.score) addScore(...c.score);
   G.busy = false;
-  if (c.after) c.after(api);
+  if (c.after) await c.after(api);
 }
 
 /* ================================================================ *
- *  OVERLAYS: cards, readouts, death
+ *  OVERLAYS: cards, readouts, choices, death
  * ================================================================ */
 const card = $("#card"), readout = $("#readout");
-function showCard(inner, { hold = 0, auto = 2600 } = {}) {
+function showCard(inner, { hold = 0, auto = 2600, buttons = false } = {}) {
   return new Promise(resolve => {
     G.busy = true; card.innerHTML = `<rect width="640" height="360" fill="#000"/>${inner}`; card.classList.add("show");
     let done = false; const t0 = Date.now();
-    const hide = () => { if (done || Date.now() - t0 < hold) return; done = true; card.classList.remove("show"); card.removeEventListener("pointerdown", hide); G.busy = false; resolve(); };
-    card.addEventListener("pointerdown", hide); if (auto) setTimeout(() => { if (!done) { done = false; hide(); } }, auto);
+    const hide = (e) => {
+      if (done || Date.now() - t0 < hold) return;
+      let val = true;
+      if (buttons) { const b = e && e.target.closest && e.target.closest("[data-btn]"); if (!b) return; val = b.dataset.btn; }
+      done = true; card.classList.remove("show"); card.removeEventListener("pointerdown", hide); G.busy = false; resolve(val);
+    };
+    card.addEventListener("pointerdown", hide); if (auto && !buttons) setTimeout(() => hide(), auto);
   });
 }
 const centered = (t, y, h, cls, sw) => seg(t, 320 - segW(t, h) / 2, y, h, cls, sw);
 const cchip = (t, y, h, f) => chip(t, 320 - (segW(t, h) + h * .9) / 2, y, h, f);
 const dayCard = (t1, t2, t3, f) => `${centered(t1, 128, 42, "sW", 2)}${cchip(t2, 196, 8, f)}${centered(t3, 230, 6, "sM", 1)}`;
+const button = (id, label, x, y, w, primary) => `<g data-btn="${id}" class="cbtn" style="cursor:pointer"><rect class="${primary ? "fW" : "k sW"}" x="${x}" y="${y}" width="${w}" height="26"/>${seg(label, x + w / 2 - segW(label, 7) / 2, y + 9, 7, primary ? "s0" : "sW", 1.2)}</g>`;
 
-async function readNote() {
-  if (G.flags.noteRead) return;
+// a clue close-up: wait for a click, then dim it under a caption
+async function showReadout(inner, caption) {
   G.busy = true;
-  readout.innerHTML = `<rect width="640" height="360" fill="#000" opacity=".86"/>${NOTE()}`; readout.classList.add("show");
+  readout.innerHTML = `<rect width="640" height="360" fill="#000" opacity=".86"/>${inner}`; readout.classList.add("show");
   await new Promise(r => { const f = (e) => { e.stopPropagation(); frame.removeEventListener("pointerdown", f, true); r(); }; setTimeout(() => frame.addEventListener("pointerdown", f, true), 250); });
-  readout.classList.add("dim");
-  await say(NOTE_CAPTION);
-  readout.classList.remove("show", "dim");
-  G.flags.noteRead = true; addScore("note", 2);
-  await nightfall();
+  if (caption) { readout.classList.add("dim"); await say(caption); }
+  readout.classList.remove("show", "dim"); G.busy = false;
 }
-async function nightfall() {
-  await showCard(dayCard("MONDAY NIGHT", "NIGHT SHIFT  GUS", "HALLWAY 1F  02:13", "fG"), { auto: 3200 });
-  G.mode = "night"; G.min = 2 * 60 + 13; G.using = null; G.status = "";
-  frame.classList.add("night");
-  loadRoom("hall", "start");
-  await say("Gus Ian. Fourth-year, Adline Lab, Nell's labmate. He scans at 2 AM because the 3T is cheapest when nobody sane wants it. Nobody notices a grad student at 2 AM. Grad students are furniture.\n\nNell has been texting him about journal club. And something has been rattling in the tube pipes all week.");
-}
-async function endAct() {
-  await new Promise(r => setTimeout(r, 300));
-  const sc = "H-INDEX " + String(G.score).padStart(2, "0");
-  await showCard(`${centered("END OF ACT I", 96, 30, "sW", 1.8)}${cchip("SUBMISSION", 148, 7, "fA")}
-    ${centered(sc, 186, 12, "sA", 1.3)}${centered("BODIES 00.  FOR NOW.", 212, 6, "sR", 1)}
-    ${centered("NEXT: TUESDAY.  ACT II  UNDER REVIEW", 252, 6, "sM", 1)}${centered("CLICK TO CONTINUE", 300, 4.4, "sM", .8)}`, { hold: 1200, auto: 0 });
-  await say("Down in the dark, below a basement that doesn't have a below, six canisters arrive at a round table.\n\nSomeone opens the first one. It contains a single index card: THE AUTHORS SHOULD CONSIDER…\n\nTo be continued.");
-  await showCard(`${centered("GAIN CONTROL", 120, 34, "sW", 2)}${cchip("THANKS FOR PLAYING ACT I", 186, 7, "fG")}${centered("CLICK TO PLAY AGAIN", 232, 5, "sM", .9)}`, { hold: 800, auto: 0 });
-  location.hash = ""; location.reload();
+// pick one of several labeled chips (vent destinations, etc.)
+function chooseFrom(title, opts) {
+  const w = 150, x0 = 320 - w / 2, y0 = 150 - opts.length * 17;
+  let s = `<rect width="640" height="290" fill="#000" opacity=".8"/>${cchip(title, y0 - 30, 7, "fK")}`;
+  opts.forEach(([id, lbl], i) => { s += button(id, lbl, x0, y0 + i * 34, w, false); });
+  s += button("cancel", "NEVER MIND", x0, y0 + opts.length * 34 + 6, w, true);
+  return new Promise(resolve => {
+    G.busy = true; readout.innerHTML = s; readout.classList.add("show", "pick");
+    const f = (e) => { const b = e.target.closest && e.target.closest("[data-btn]"); if (!b) return;
+      readout.removeEventListener("pointerdown", f); readout.classList.remove("show", "pick"); G.busy = false; resolve(b.dataset.btn === "cancel" ? null : b.dataset.btn); };
+    readout.addEventListener("pointerdown", f);
+  });
 }
 function die(text) {
   return new Promise(resolve => {
@@ -243,34 +293,86 @@ function die(text) {
     d.classList.add("show"); blip([330, 220, 160]);
     d.onclick = (e) => { const b = e.target.closest(".dbtn"); if (!b) return;
       d.classList.remove("show"); d.onclick = null; G.busy = false;
-      if (b.dataset.b === "revise") { restore(); say("Revised and resubmitted. Reviewer 2 is still out there."); } else location.reload();
+      if (b.dataset.b === "revise") { restore(); say("Revised and resubmitted. Reviewer 2 is still out there."); } else { location.hash = ""; location.reload(); }
       resolve(); };
   });
 }
 
 /* ================================================================ *
- *  STORY API — what story.js is allowed to touch
+ *  SHIFTS, CHARACTERS, ACTS
+ * ================================================================ */
+// change who/when: { mode, char, room, entry, min, cast }
+function shift({ mode, char, room, entry, min, cast }) {
+  if (mode) G.mode = mode;
+  if (min != null) G.min = min;
+  if (cast) G.cast = cast;
+  G.using = null; G.status = ""; G.extras = [];
+  frame.classList.toggle("night", G.mode === "night");
+  if (char) { G.char = char; delete G.chars[char]; }
+  loadRoom(room, entry);
+}
+function switchTo(c) {
+  if (c === G.char || G.busy || !G.cast.includes(c)) return;
+  const a = G.actor;
+  G.chars[G.char] = { room: G.room, x: a.x, y: a.y, dir: a.dir };
+  const p = G.chars[c]; delete G.chars[c];
+  G.char = c; G.using = null; closeChooser();
+  loadRoom(p.room, null, p);
+  blip([660, 990]);
+  const t = ACT().onSwitch && ACT().onSwitch(api, c); if (t) say(t);
+}
+function saveProgress() { try { localStorage.setItem("gaincontrol.act", String(Math.max(G.act, +(localStorage.getItem("gaincontrol.act") || 1)))); } catch (e) {} }
+async function startAct(n, { fresh = false } = {}) {
+  G.act = n; saveProgress();
+  await ACTS[n].start(api, { fresh });
+}
+async function endAct() {
+  const E = ACT().END;
+  await new Promise(r => setTimeout(r, 300));
+  const sc = "H-INDEX " + String(G.score).padStart(2, "0");
+  await showCard(`${centered(E.title, 96, 30, "sW", 1.8)}${cchip(E.chip, 148, 7, "fA")}
+    ${centered(sc, 186, 12, "sA", 1.3)}${centered(E.bodies, 212, 6, "sR", 1)}
+    ${centered(E.next, 252, 6, "sM", 1)}${centered("CLICK TO CONTINUE", 300, 4.4, "sM", .8)}`, { hold: 1200, auto: 0 });
+  if (E.epilogue) await say(E.epilogue);
+  if (ACTS[G.act + 1]) { await startAct(G.act + 1); return; }
+  await showCard(`${centered("GAIN CONTROL", 120, 34, "sW", 2)}${cchip(E.thanks, 186, 7, "fG")}${centered("CLICK TO RETURN TO THE TITLE", 232, 5, "sM", .9)}`, { hold: 800, auto: 0 });
+  location.hash = ""; location.reload();
+}
+
+/* ================================================================ *
+ *  STORY API — what the act files are allowed to touch
  * ================================================================ */
 const api = {
-  G,
+  G, ITEMS,
   flag: (k, v) => { if (v === undefined) return !!G.flags[k]; G.flags[k] = v; },
-  has: (id) => G.inv.day.includes(id) || G.inv.night.includes(id),
-  give: (id) => { if (!G.inv[G.mode].includes(id)) G.inv[G.mode].push(id); hud(); },
-  take: (id) => { for (const m of ["day", "night"]) G.inv[m] = G.inv[m].filter(x => x !== id); if (G.using === id) G.using = null; hud(); },
-  score: addScore, refresh, say, die, readNote, endAct,
+  has: (id) => Object.values(G.inv).some(l => l.includes(id)),
+  give: (id, who = G.char) => { (G.inv[who] ||= []); if (!G.inv[who].includes(id)) G.inv[who].push(id); hud(); },
+  take: (id) => { for (const m in G.inv) G.inv[m] = G.inv[m].filter(x => x !== id); if (G.using === id) G.using = null; hud(); },
+  score: addScore, refresh, say, die, endAct, shift, switchTo, chooseFrom, blip,
+  convo: runConvo,
+  card: (t1, t2, t3, f, ms = 2800) => showCard(dayCard(t1, t2, t3, f), { auto: ms }),
+  bigCard: (inner, opts) => showCard(inner, opts), centered, cchip, button,
+  readout: showReadout,
+  keypad: (code, lit) => { G.busy = true; return keypad(readout, code, lit).finally(() => { G.busy = false; }); },
+  fogNeuro: (opts) => { G.busy = true; return fogNeuro($("#panel"), opts).finally(() => { G.busy = false; }); },
+  goRoom: (spec) => { const [room, entry] = spec.split("@"); loadRoom(room, entry); },
+  walk: (x, y) => new Promise(r => walkTo(x, y, r)),
+  wait: (ms) => new Promise(r => setTimeout(r, ms)),
+  extras: (list) => { G.extras = list; drawExtras(); },
   status: (t, ms) => { G.status = t; hud(); clearTimeout(G.statusT); G.statusT = setTimeout(() => { G.status = ""; hud(); }, ms); },
-  use: (id) => { const u = HS[G.room][id][G.mode].use; return typeof u === "function" ? u(api) : u; },
+  use: (id) => { const u = HS()[G.room][id][KEY()].use; return typeof u === "function" ? u(api) : u; },
+  hud: () => hud(),
 };
-// a response: string | "c:convo" | "room@entry" handled elsewhere | function(api) → any of those, or a promise
+// a response: string | "c:convo" | function(api) → any of those, or a promise
 async function respond(r) {
   if (typeof r === "function") r = r(api);
-  if (r && typeof r.then === "function") { await r; return; }
-  if (!r) return;
+  if (r && typeof r.then === "function") r = await r;
+  if (!r || typeof r !== "string") return;
   if (r.startsWith("c:")) await runConvo(r.slice(2)); else await say(r);
 }
 async function afterAction() {
   G.min += 1; if (G.room === "seminar" && !G.busy) refresh(); else hud();   // the room clock is part of the drawing
-  const t = check(api); if (t) await say(t);
+  const t = await ACT().check(api); if (t) await say(t);
 }
 
 /* ================================================================ *
@@ -278,17 +380,19 @@ async function afterAction() {
  * ================================================================ */
 const chooserEl = () => $("#chooser");
 function svgPoint(e) { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
-function hsFrom(t) { const el = t.closest && t.closest("[data-hs]"); if (!el) return null; const id = el.dataset.hs, h = HS[G.room][id];
-  return h && h[G.mode] ? id : null; }
-const hsLabel = (id) => HS[G.room][id].label;
+const hsOf = (id) => (HS()[G.room] || {})[id];
+function hsFrom(t) { const el = t.closest && t.closest("[data-hs]"); if (!el) return null; const id = el.dataset.hs, h = hsOf(id);
+  return h && h[KEY()] ? id : null; }
+const hsLabel = (id) => { const h = hsOf(id); return (typeof h.label === "function" ? h.label(api) : h.label); };
 function optionsFor(t) {
   if (t.type === "item") { const it = ITEMS[t.id]; return [["look", "LOOK"], ["use", "USE ON"], ...(it.verbs ? it.verbs(api) : [])]; }
-  const h = HS[G.room][t.id][G.mode], L = (R().labels[G.mode] || {})[t.id] || {}, o = [];
+  const h = hsOf(t.id)[KEY()], L = (R().labels[KEY()] || R().labels[G.mode === "morning" ? "day" : G.mode] || {})[t.id] || {}, o = [];
   if (h.look) o.push(["look", L.look || "LOOK"]);
   if (h.talk) o.push(["talk", L.talk || "TALK"]);
   if (h.use) o.push(["use", L.use || "USE"]);
-  if (h.go) o.push(["go", L.go || L.use || "GO"]);
-  return o;
+  if (typeof h.go === "string") o.push(["go", L.go || L.use || "GO"]);
+  else if (h.go) for (const k of Object.keys(h.go)) o.push(["go:" + k, L[k] || ("GO " + k.toUpperCase())]);
+  return o.slice(0, 4);
 }
 function openChooser(t, x, y) {
   const opts = optionsFor(t); if (!opts.length) return;
@@ -303,9 +407,10 @@ function openChooser(t, x, y) {
   opts.forEach(([v, lbl], i) => {
     const bx = x + RR * Math.cos(angles[i]), by = y + RR * Math.sin(angles[i]), lw = segW(lbl, 4.8);
     const lx = Math.max(2, Math.min(638 - lw, bx - lw / 2)), ly = up ? by - 23 : by + 15;
+    const icon = ICON[v.split(":")[0]] || ICON.use;
     full += `<path class="hl sW" d="M${x + 8 * Math.cos(angles[i])},${y + 8 * Math.sin(angles[i])} L${bx - 11 * Math.cos(angles[i])},${by - 11 * Math.sin(angles[i])}"/>
       <g class="opt" data-opt="${v}"><circle class="k sW bg" cx="${bx}" cy="${by}" r="12"/>
-        <g class="g" transform="translate(${bx},${by}) scale(.78)">${ICON[v](0, 0, "sW")}</g>
+        <g class="g" transform="translate(${bx},${by}) scale(.78)">${icon(0, 0, "sW")}</g>
         <g class="lbl"><rect class="k" x="${lx - 2}" y="${ly - 1.5}" width="${lw + 4}" height="7.8"/>${seg(lbl, lx, ly, 4.8, "sW", .8)}</g>
         <circle cx="${bx}" cy="${by}" r="14" fill="transparent"/></g>`;
   });
@@ -322,10 +427,10 @@ function cancelAll() { closeChooser(); if (G.using) { G.using = null; hud(); } }
 
 frame.addEventListener("pointermove", (e) => {
   if (G.busy || G.chooser) { hover.classList.remove("show"); return; }
-  const id = hsFrom(e.target), item = e.target.closest && e.target.closest("[data-item]");
+  const id = hsFrom(e.target), item = e.target.closest && e.target.closest("[data-item]"), ch = e.target.closest && e.target.closest("[data-char]");
   let label = "";
   if (G.using) label = `Use ${ITEMS[G.using].name} on ${id ? hsLabel(id) : item ? ITEMS[item.dataset.item].name : "…"}`;
-  else label = id ? hsLabel(id) : item ? ITEMS[item.dataset.item].name : "";
+  else label = id ? hsLabel(id) : item ? ITEMS[item.dataset.item].name : ch ? `Switch to ${CHIP[ch.dataset.char][0]}` : "";
   if (!label) { hover.classList.remove("show"); return; }
   const r = frame.getBoundingClientRect();
   hover.textContent = label; hover.classList.add("show");
@@ -334,19 +439,24 @@ frame.addEventListener("pointermove", (e) => {
   hover.style.left = lx + "px"; hover.style.top = (e.clientY - r.top + 16) + "px";
 });
 frame.addEventListener("contextmenu", (e) => { e.preventDefault(); if (!G.busy) cancelAll(); });
-window.addEventListener("keydown", (e) => { if (e.key === "Escape" && !G.busy) cancelAll(); });
+window.addEventListener("keydown", (e) => {
+  if (G.busy) return;
+  if (e.key === "Escape") cancelAll();
+  if (e.key === "Tab" && G.cast.length > 1) { e.preventDefault(); switchTo(G.cast[(G.cast.indexOf(G.char) + 1) % G.cast.length]); }
+});
 
 svg.addEventListener("click", (e) => {
   if (G.busy) return;
   const opt = e.target.closest(".opt");
   if (opt) { const t = G.chooser.t; closeChooser(); t.type === "item" ? itemAct(t.id, opt.dataset.opt) : act(t.id, opt.dataset.opt, t.x); return; }
   if (G.chooser) closeChooser();
+  const ch = e.target.closest("[data-char]"); if (ch) { switchTo(ch.dataset.char); return; }
   const it = e.target.closest("[data-item]");
   if (it) {
     const id = it.dataset.item;
     if (G.using && G.using !== id) { G.using = null; hud(); say("You hold them together. Nothing. They don't even seem to like each other."); return; }
     if (G.using === id) { G.using = null; hud(); return; }
-    openChooser({ type: "item", id }, 174 + G.inv[G.mode].indexOf(id) * 30, 327); return;
+    openChooser({ type: "item", id }, 174 + G.inv[G.char].indexOf(id) * 30, 327); return;
   }
   const p = svgPoint(e); if (p.y > 290) return;
   const id = hsFrom(e.target);
@@ -358,11 +468,20 @@ svg.addEventListener("click", (e) => {
 const face = (x) => { if (Math.abs(x - G.actor.x) > 6) { G.actor.dir = x > G.actor.x ? 1 : -1; render(); } };
 function goStand(id, fn) { const s = R().stand[id]; if (s) walkTo(s[0], s[1], fn); else fn(); }
 function act(id, v, cx) {
-  const h = HS[G.room][id][G.mode], sc = h.score || {};
+  const h = hsOf(id)[KEY()], sc = h.score || {};
   snapshot();
   if (v === "look") { face(cx ?? R().stand[id]?.[0] ?? G.actor.x);
     (async () => { await respond(h.look); if (sc.look) addScore(...sc.look); await afterAction(); })(); return; }
-  if (v === "go") { goStand(id, () => { const [room, entry] = h.go.split("@"); loadRoom(room, entry); afterAction(); }); return; }
+  if (v === "go" || v.startsWith("go:")) {
+    let dest = v === "go" ? h.go : h.go[v.slice(3)];
+    goStand(id, async () => {
+      if (typeof dest === "function") dest = await dest(api);
+      if (!dest) { await afterAction(); return; }
+      if (!dest.includes("@")) { await say(dest); await afterAction(); return; }    // a refusal ("Locked.")
+      api.goRoom(dest); await afterAction();
+    });
+    return;
+  }
   goStand(id, async () => { await respond(h[v]); if (sc[v]) addScore(...sc[v]); await afterAction(); });
 }
 function itemAct(id, v) {
@@ -372,9 +491,10 @@ function itemAct(id, v) {
   if (it[v]) respond(it[v]);
 }
 const NOPE = ["That doesn't work. Not even in theory.", "You try. Physics declines.", "No. Peer review would reject that too.", "Interesting hypothesis. Wrong, but interesting."];
-function useItemOn(item, id, x) {
+function useItemOn(item, id) {
   snapshot();
-  let r = (WITH[G.room + "." + id] || {})[item];
+  const W = ACT().WITH || {};
+  let r = (W[G.room + "." + id] || {})[item];
   if (typeof r === "function") r = r(api);
   if (!r && item === "recorder" && !G.flags.recorded) r = "Your recorder is empty. Talk to someone worth recording first.";
   if (!r) r = NOPE[Math.floor(Math.random() * NOPE.length)];
@@ -392,7 +512,7 @@ function clampFloor(x, y) {
 function walkTo(x, y, cb) { const a = G.actor; [a.tx, a.ty] = clampFloor(x, y); a.cb = cb || null; a.walking = true; }
 setInterval(() => {
   const a = G.actor; if (!a.walking) return;
-  const dx = a.tx - a.x, dy = a.ty - a.y, d = Math.hypot(dx, dy), stepLen = 9 * R().pp.kAtY(a.y) + 3;
+  const dx = a.tx - a.x, dy = a.ty - a.y, d = Math.hypot(dx, dy), stepLen = (G.char === "morris" ? 11 : 9) * R().pp.kAtY(a.y) + 3;
   if (d <= stepLen) { a.x = a.tx; a.y = a.ty; a.walking = false; render(); const cb = a.cb; a.cb = null; cb && cb(); return; }
   a.x += dx / d * stepLen; a.y += dy / d * stepLen; if (Math.abs(dx) > 1) a.dir = dx > 0 ? 1 : -1; a.step++; render();
 }, 120);
@@ -401,7 +521,7 @@ setInterval(() => {
  *  AMBIENT POSE CLOCKS
  * ================================================================ */
 function poseSet(group, i) { document.querySelectorAll(`#game [data-g="${group}"]`).forEach(el => el.classList.toggle("on", +el.dataset.i === i)); }
-const clocks = { nod: 800, tail: 650, parm: 1700, brett: 900, phone: 1100, saver: 1500, hum: 420 };
+const clocks = { nod: 800, tail: 650, parm: 1700, brett: 900, phone: 1100, saver: 1500, hum: 420, alarm: 380, wave: 520, type: 260, jam: 700 };
 for (const [g, ms] of Object.entries(clocks)) { let i = 0; setInterval(() => poseSet(g, i ^= 1), ms); }
 (function flicker() { poseSet("flicker", Math.random() < .25 ? 1 : 0); setTimeout(flicker, 90 + Math.random() * 600); })();
 (function blank() { const p = $("#preston"); if (p && G.mode === "day" && !G.busy) { p.classList.add("blank"); setTimeout(() => p.classList.remove("blank"), 700); }
@@ -416,16 +536,21 @@ setInterval(() => document.querySelectorAll("#game .needle").forEach(n => { cons
   n.setAttribute("d", `M${cx},${cy} L${(cx + 5 * Math.cos(a)).toFixed(1)},${(cy + 5 * Math.sin(a)).toFixed(1)}`); }), 300);
 
 /* ================================================================ *
- *  START
+ *  START: title and chapter select
  * ================================================================ */
-window.GC = { G, api, act, itemAct, useItemOn, loadRoom, walkTo, runConvo };   // for testing
+window.GC = { G, api, act, itemAct, useItemOn, loadRoom, walkTo, runConvo, switchTo, startAct };   // for testing
 async function start() {
-  if (location.hash === "#night") { G.flags = { recorded: true, officeHours: true, fedMorris: true, morrisMoved: true, noteReady: true, noteRead: true, pizzaGone: false };
-    G.mode = "night"; G.min = 133; frame.classList.add("night"); loadRoom("hall", "start"); return; }
+  const h = location.hash;
+  if (h === "#night") { G.flags = { recorded: true, officeHours: true, fedMorris: true, morrisMoved: true, noteReady: true, noteRead: true };
+    shift({ mode: "night", char: "gus", room: "hall", entry: "start", min: 133 }); return; }
+  if (h === "#act2") { await startAct(2, { fresh: true, skipCard: true }); return; }
+  if (h === "#act2night") { await startAct(2, { fresh: true }); await A2.debugNight(api); return; }
   loadRoom("seminar", "start");
-  await showCard(`${centered("GAIN CONTROL", 112, 44, "sW", 2.2)}${cchip("A MURDER MYSTERY WITH ERROR BARS", 180, 7, "fR")}
-    ${centered("ACT I  SUBMISSION", 222, 7, "sA", 1.1)}${centered("CLICK TO BEGIN", 290, 4.6, "sM", .8)}`, { auto: 0, hold: 300 });
-  await showCard(dayCard("MONDAY", "ACT I  SUBMISSION", "JOURNAL CLUB  SEMINAR RM 101  16:07", "fA"), { auto: 2600 });
-  await say("Nell Null. Fifth-year, Adline Lab. Eleven months of null results. Thesis defense on Friday.\n\nToday at journal club, Preston Valu is presenting the paper of the decade.\n\nOn a scanner the building doesn't have.");
+  const unlocked = +(localStorage.getItem("gaincontrol.act") || 1);
+  const choice = await showCard(`${centered("GAIN CONTROL", 92, 44, "sW", 2.2)}${cchip("A MURDER MYSTERY WITH ERROR BARS", 160, 7, "fR")}
+    ${button("1", "ACT I  SUBMISSION", 150, 214, 160, true)}${button("2", "ACT II  UNDER REVIEW", 330, 214, 160, unlocked >= 2)}
+    ${centered(unlocked >= 2 ? "PICK AN ACT" : "START WITH ACT I, OR JUMP AHEAD", 258, 4.6, "sM", .8)}`, { buttons: true });
+  if (choice === "2") { await startAct(2, { fresh: true }); return; }
+  await startAct(1, { fresh: true });
 }
 start();

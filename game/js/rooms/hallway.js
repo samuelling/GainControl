@@ -31,7 +31,7 @@ function back(G) {
         <g class="day-only"><path class="k sW" d="M305,112 C309,117 318,117 322,112 C317,114 310,114 305,112 Z"/></g>
         <g class="night-only"><path class="k sW" d="M300,110 C307,120 320,120 328,110 C319,114 309,114 300,110 Z"/></g>
         <path class="sR" d="M298,136 C300,128 306,124 313,124 C320,124 326,128 328,136"/>
-        ${chip("2026", 300, 144, 4, "fA")}${hit(232, 60, 140, 96)}</g>`;
+        ${chip("2026", 300, 144, 4, "fA")}${(G.act || 1) >= 2 ? seg("CITATIONS 147,794", 284, 153.5, 3.4, "sA", .6) : ""}${hit(232, 60, 140, 96)}</g>`;
   // bulletin board: the Friday 2 PM collision
   s += `<g data-hs="board"><rect class="k sM mech" x="236" y="164" width="132" height="44"/>
         <g transform="rotate(-3 270 186)"><rect class="k sG mech" x="246" y="168" width="48" height="36"/>${seg("DEFENSE", 250, 172, 5, "sG", .8)}${seg("N. NULL", 250, 181, 4.5, "sW", .7)}${seg("FRI 2PM", 250, 189, 4.5, "sW", .7)}${seg("RM 101", 250, 197, 4.5, "sM", .7)}</g>
@@ -40,10 +40,16 @@ function back(G) {
   // Impact Lab 116: brushed steel, keypad, light under the door at night
   s += `<g data-hs="impact"><rect class="k sW mech" x="400" y="112" width="54" height="118"/>
         ${[124, 134, 144, 154, 164, 174, 184, 194, 204, 214].map(y => `<path class="hl sD mech" d="M404,${y} L450,${y}"/>`).join("")}
-        <rect class="k sW mech" x="440" y="160" width="8" height="12"/><circle class="fG" cx="444" cy="164" r="1"/><path class="hl sW" d="M442,168 L446,168"/>
+        <rect class="k sW mech" x="440" y="160" width="8" height="12"/>${(G.act || 1) >= 2 && G.mode === "night"
+          ? [[442, 162], [444, 162], [446, 162], [442, 165], [444, 165], [446, 165], [442, 168], [444, 168], [446, 168], [444, 171]].map(([x, y], i) =>
+              [0, 3, 6, 8].includes(i) ? `<circle class="fG" cx="${x}" cy="${y}" r=".75"/>` : `<circle class="fM" cx="${x}" cy="${y}" r=".35"/>`).join("")
+          : `<circle class="fG" cx="444" cy="164" r="1"/><path class="hl sW" d="M442,168 L446,168"/>`}
         ${chip("IMPACT LAB 116", 402, 100, 4.6, "fW")}
         <g class="night-only"><g class="pz on" data-g="hum" data-i="0"><path class="sA" d="M402,229 L452,229"/></g><g class="pz" data-g="hum" data-i="1"><path class="hl sA" d="M402,229 L452,229"/></g></g>
         ${hit(398, 98, 58, 134)}</g>`;
+  // a low vent grille on the back wall
+  s += `<g data-hs="vent"><rect class="k sW mech" x="368" y="216" width="22" height="9"/>
+        ${[0, 1, 2, 3].map(i => `<path class="hl sW" d="M${372 + i * 4.5},218 L${372 + i * 4.5},223"/>`).join("")}${hit(362, 210, 34, 20)}</g>`;
   // tube station on the back wall
   s += `<g data-hs="tube"><path class="sW mech" d="M486,56 L486,230 M494,56 L494,230"/>
         ${[70, 100, 190, 216].map(y => `<path class="sW mech" d="M483,${y} L497,${y} M483,${y + 2} L497,${y + 2}"/>`).join("")}
@@ -65,14 +71,16 @@ function back(G) {
 export default {
   id: "hall", name: "HALLWAY 1F", pp,
   floor: { yMin: 240, yMax: 288, margin: 18 },
-  entries: { start: [300, 262, 1], from101: [172, 244, 1], fromLab: [536, 256, -1] },
+  entries: { start: [300, 262, 1], from101: [172, 244, 1], fromLab: [536, 256, -1], fromStairs: [112, 258, 1], fromOffice: [72, 280, 1], fromImpact: [426, 246, 1] },
   draw(G) { return { back: back(G), sortables: [] }; },
   stand: { door101: [172, 242], fountain: [214, 244], stars: [312, 242], board: [300, 246], impact: [426, 242], tube: [490, 244],
-    stairs: [104, 254], exitH: [104, 254], office: [52, 282], lab: [540, 256] },
+    stairs: [104, 254], exitH: [104, 254], office: [52, 282], lab: [540, 256], vent: [378, 244] },
   labels: {
     day: { door101: { use: "GO IN" }, fountain: { use: "DRINK" }, stars: { use: "STRAIGHTEN" }, board: { use: "MOVE FLYER" }, impact: { use: "KEYPAD" },
-      tube: { use: "OPEN HATCH" }, stairs: { use: "OPEN" }, office: { use: "KNOCK" }, lab: { use: "GO IN" }, exitH: { use: "TAP" } },
-    night: { door101: { use: "GO IN" }, fountain: { use: "DRINK" }, stars: { use: "STRAIGHTEN" }, board: { use: "TIDY" }, impact: { use: "TRY BADGE" },
-      tube: { use: "LISTEN" }, stairs: { use: "OPEN" }, office: { use: "OPEN" }, lab: { use: "GO IN" }, exitH: { use: "TAP" } },
+      tube: { use: "OPEN HATCH" }, stairs: { use: "OPEN", down: "GO DOWN", up: "GO UP" }, office: { use: "KNOCK", go: "GO IN" }, lab: { use: "GO IN" }, exitH: { use: "TAP" } },
+    night: { door101: { use: "GO IN" }, fountain: { use: "DRINK" }, stars: { use: "STRAIGHTEN" }, board: { use: "TIDY" }, impact: { use: "TRY BADGE", go: "GO IN" },
+      tube: { use: "LISTEN" }, stairs: { use: "OPEN", down: "GO DOWN", up: "GO UP" }, office: { use: "OPEN" }, lab: { use: "GO IN" }, exitH: { use: "TAP" } },
+    morris: { vent: { use: "CLIMB IN" }, door101: { go: "SCURRY IN" }, lab: { go: "SCURRY IN" }, office: { go: "SCURRY IN" }, stairs: { down: "SCURRY DOWN", up: "SCURRY UP" },
+      tube: { use: "SNIFF" }, fountain: { use: "DRINK" }, stars: { use: "GNAW FRAME" } },
   },
 };

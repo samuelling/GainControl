@@ -15,6 +15,9 @@ function back(G) {
         ${seg("P = .48", 270, 96, 7, "sR", 1)}${seg("N.S.", 270, 110, 6, "sM", .9)}
         ${seg("WHY", 296, 110, 6, "sW", .9)}<ellipse class="hl sW" cx="301" cy="113" rx="10" ry="7"/>
         ${seg("DEFENSE FRI 2PM!!", 270, 136, 4.4, "sR", .8)}<path class="sM" d="M196,152 L328,152"/>${hit(190, 84, 144, 70)}</g>`;
+  // a low vent grille under the whiteboard (Morris's front door)
+  s += `<g data-hs="vent"><rect class="k sW mech" x="300" y="188" width="26" height="11"/>
+        ${[0, 1, 2, 3, 4].map(i => `<path class="hl sW" d="M${304 + i * 4.5},190 L${304 + i * 4.5},197"/>`).join("")}${hit(294, 182, 38, 22)}</g>`;
   // Prof. Adline's door: sign, light under the door, a phone call that never ends
   s += `<g data-hs="adline"><rect class="k sW mech" x="352" y="104" width="54" height="98"/>
         ${chip("PROF. D. ADLINE", 354, 92, 4.4, "fW")}${chip("AFTER THE 15TH", 357, 122, 4.2, "fR")}
@@ -36,7 +39,9 @@ function back(G) {
 // Nell's desk, front left: monitor, keyboard, drawer (Morris), ramen cup, sticky note when it arrives
 function desk(G) {
   const k = .82, y = P(0, FY, k)[1], x = P(170, FY, k)[0];
-  const day = G.mode === "day", rat = (day && G.flags.morrisMoved) || !day;
+  const act1 = !G.act || G.act === 1;
+  const day = act1 ? G.mode === "day" : G.mode !== "night";
+  const rat = act1 ? ((day && G.flags.morrisMoved) || !day) : !!G.flags.morrisInDrawer;
   return `<g>
     <path class="hl sM" d="M${x - 46},${y - 30} L${x - 48},${y} M${x - 10},${y - 30} L${x - 10},${y}"/>
     <polygon class="k sW" points="${x - 50},${y - 30} ${x + 50},${y - 30} ${x + 44},${y - 40} ${x - 44},${y - 40}"/>
@@ -45,7 +50,7 @@ function desk(G) {
       <rect class="k sW mech" x="${x - 30}" y="${y - 76}" width="48" height="30"/>
       <g class="day-only">${seg("MATLAB", x - 26, y - 72, 3.8, "sM", .6)}${seg("ERROR:", x - 26, y - 64, 4.4, "sR", .7)}${seg("N.S.", x - 26, y - 56, 4.4, "sG", .7)}</g>
       <g class="night-only"><g class="pz on" data-g="saver" data-i="0">${seg("N.S.", x - 24, y - 70, 5, "sG", .8)}</g><g class="pz" data-g="saver" data-i="1">${seg("N.S.", x - 4, y - 58, 5, "sG", .8)}</g></g>
-      ${G.flags.noteReady && !G.flags.noteRead ? `<g transform="rotate(8 ${x + 16} ${y - 70})"><rect class="k sA" x="${x + 8}" y="${y - 80}" width="16" height="16"/>
+      ${act1 && G.flags.noteReady && !G.flags.noteRead ? `<g transform="rotate(8 ${x + 16} ${y - 70})"><rect class="k sA" x="${x + 8}" y="${y - 80}" width="16" height="16"/>
         <path class="hl sA" d="M${x + 11},${y - 75} L${x + 21},${y - 75} M${x + 11},${y - 71} L${x + 21},${y - 71} M${x + 11},${y - 67} L${x + 19},${y - 67}"/></g>` : ""}
       <path class="hl sW" d="M${x - 34},${y - 36} L${x + 10},${y - 36} L${x + 14},${y - 32} L${x - 38},${y - 32} Z"/>
       ${hit(x - 40, y - 82, 70, 50)}</g>
@@ -57,15 +62,24 @@ function desk(G) {
       ${hit(x + 6, y - 50, 44, 50)}</g>
   </g>`;
 }
-// a second desk (atmosphere), front right
-function otherDesk() {
+// Gus's desk, front right: closed laptop, headphones, the Gaussian mug, a sticky note
+function otherDesk(G) {
   const k = .78, y = P(0, FY, k)[1], x = P(470, FY, k)[0];
-  return `<g><path class="hl sD" d="M${x - 40},${y - 28} L${x - 42},${y} M${x + 40},${y - 28} L${x + 42},${y}"/>
+  if (!G.act || G.act === 1) return `<g><path class="hl sD" d="M${x - 40},${y - 28} L${x - 42},${y} M${x + 40},${y - 28} L${x + 42},${y}"/>
     <polygon class="k sD" points="${x - 44},${y - 28} ${x + 44},${y - 28} ${x + 38},${y - 37} ${x - 38},${y - 37}"/>
     <rect class="k sD mech" x="${x - 18}" y="${y - 64}" width="38" height="24"/><path class="hl sD" d="M${x},${y - 40} L${x},${y - 37}"/></g>`;
+  const t = y - 37;
+  return `<g data-hs="gusdesk"><path class="hl sM" d="M${x - 40},${y - 28} L${x - 42},${y} M${x + 40},${y - 28} L${x + 42},${y}"/>
+    <polygon class="k sW" points="${x - 44},${y - 28} ${x + 44},${y - 28} ${x + 38},${t} ${x - 38},${t}"/>
+    <polygon class="k sV" points="${x - 26},${t + 4} ${x + 6},${t + 4} ${x + 2},${t - 1} ${x - 22},${t - 1}"/><path class="hl sV" d="M${x - 22},${t + 1.5} L${x + 2},${t + 1.5}"/>
+    <rect class="k sA" x="${x - 18}" y="${t - 7}" width="8" height="6" transform="rotate(-8 ${x - 14} ${t - 4})"/>
+    <path class="sW" d="M${x + 10},${t + 1} C${x + 10},${t - 12} ${x + 30},${t - 12} ${x + 30},${t + 1}"/><ellipse class="k sW" cx="${x + 10}" cy="${t}" rx="3" ry="4"/><ellipse class="k sW" cx="${x + 30}" cy="${t}" rx="3" ry="4"/>
+    <path class="k sA" d="M${x + 34},${t + 2} L${x + 34},${t - 10} L${x + 44},${t - 10} L${x + 44},${t + 2} Z M${x + 44},${t - 7} C${x + 49},${t - 7} ${x + 49},${t - 1} ${x + 44},${t - 1}"/>
+    <path class="hl sA" d="M${x + 35.5},${t - 2} C${x + 37.5},${t - 2} ${x + 38},${t - 8} ${x + 39},${t - 8} C${x + 40},${t - 8} ${x + 40.5},${t - 2} ${x + 42.5},${t - 2}"/>
+    ${hit(x - 46, t - 16, 98, y - t + 16)}</g>`;
 }
 function brett(G) {
-  if (G.mode !== "day" || G.flags.officeHours) return "";
+  if ((G.act && G.act !== 1) || G.mode !== "day" || G.flags.officeHours) return "";
   const y = 250, x = 300, s = kAtY(y) * AUD;
   return `<g data-hs="brett"><g transform="translate(${x},${y}) scale(${-s},${s}) translate(-160,-187)">${brettFigure()}</g>${hit(x - 24, y - 120 * s, 48, 120 * s + 4)}</g>`;
 }
@@ -73,17 +87,19 @@ function brett(G) {
 export default {
   id: "lab", name: "ADLINE LAB 114", pp,
   floor: { yMin: 206, yMax: 287, margin: 16 },
-  entries: { fromHall: [112, 272, 1] },
+  entries: { fromHall: [112, 272, 1], start: [262, 272, 1] },
   draw(G) {
     return { back: back(G), sortables: [
       { depth: 250, svg: brett(G) },
-      { depth: P(0, FY, .78)[1], svg: otherDesk() },
+      { depth: P(0, FY, .78)[1], svg: otherDesk(G) },
       { depth: P(0, FY, .82)[1], svg: desk(G) },
     ] };
   },
-  stand: { monitor: [246, 284], drawer: [246, 284], whiteboard: [262, 212], adline: [380, 212], door: [106, 274], booth: [520, 252], brett: [262, 262] },
+  stand: { monitor: [246, 284], drawer: [246, 284], whiteboard: [262, 212], adline: [380, 212], door: [106, 274], booth: [520, 252], brett: [262, 262], vent: [314, 210], gusdesk: [414, 268] },
   labels: {
-    day: { monitor: { use: "RERUN" }, drawer: { use: "OPEN" }, whiteboard: { use: "ERASE" }, adline: { use: "KNOCK" }, door: { use: "GO OUT" }, booth: { use: "SIT IN" }, brett: { use: "HIGH FIVE" } },
+    day: { monitor: { use: "RERUN" }, drawer: { use: "OPEN" }, whiteboard: { use: "ERASE" }, adline: { use: "KNOCK" }, door: { use: "GO OUT" }, booth: { use: "SIT IN" }, brett: { use: "HIGH FIVE" },
+      gusdesk: { use: "SNOOP" } },
+    morris: { vent: { use: "CLIMB IN" }, drawer: { use: "HIDE IN" }, door: { go: "SCURRY OUT" }, gusdesk: { use: "RAID" }, monitor: { use: "WALK ON KEYS" } },
     night: { monitor: { use: "TAP KEY" }, drawer: { use: "OPEN" }, whiteboard: { use: "ERASE" }, adline: { use: "KNOCK" }, door: { use: "GO OUT" }, booth: { use: "SIT IN" } },
   },
 };

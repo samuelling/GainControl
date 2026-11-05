@@ -1,6 +1,7 @@
 // Talking portraits (Gabriel Knight). Same drawings as the scene, cropped and enlarged.
 // Pose classes: eyes-open / eyes-closed, mouth-a / mouth-b; Preston also normal-only / blank-only.
 import { seg, arcs } from "./gfx.js";
+import { tessBust, pennyBust, ethelBust, codyBust, smallBust } from "./figures.js";
 
 export const PORTRAIT = {
   nell: { name: "NELL NULL", chip: "fG", vb: "112 12 96 118", svg: () => `
@@ -122,4 +123,10 @@ export const PORTRAIT = {
     <path class="sK" d="M161,63 C158,69 161,71 164,70"/><path class="hl sK" d="M146,69 L148,70 M174,69 L172,70"/>
     <g class="mouth-a"><path class="sK" d="M154,75 C158,78 164,78 168,75"/></g>
     <g class="mouth-b"><path class="k sK" d="M154,74 C158,73 164,73 168,74 C166,80 156,80 154,74 Z"/></g>` },
+
+  tess: { name: "DR. TESS LA", chip: "fA", vb: "112 14 96 118", svg: tessBust },
+  penny: { name: "PENNY LEDGER", chip: "fB", vb: "112 10 96 118", svg: pennyBust },
+  ethel: { name: "ETHEL BORD", chip: "fV", vb: "112 4 96 118", svg: ethelBust },
+  cody: { name: "CODY (RA)", chip: "fR", vb: "112 14 96 118", svg: codyBust },
+  small: { name: "DET. SGT. SMALL", chip: "fW", vb: "112 14 96 118", svg: smallBust },
 };

@@ -1,6 +1,6 @@
 // Characters in the scene. Drawn in "sheet" coordinates: feet at about (160,187), about 170 units tall.
 // Walking figures carry three pose groups: .ap0 (stand), .ap1 and .ap2 (walk). The engine shows one at a time.
-import { seg, arcs } from "./gfx.js";
+import { seg, arcs, star4 } from "./gfx.js";
 
 export const AUD = 0.72;   // scale factor shared by walking figures and everything sized against them
 
@@ -137,4 +137,188 @@ export function morrisPeek(x, y, s = 1) {
     <circle class="fK" cx="20" cy="0" r="1.4"/><circle class="fW" cx="-2" cy="-9" r="1.6"/><circle class="fW" cx="6" cy="-9" r="1.5"/>
     <circle class="fG" cx="2" cy="-16" r="1"/>
     <path class="hl sW" d="M16,-1 L24,-3 M16,1 L24,2"/><path class="sW" d="M-8,1 L-8,4 M4,1 L4,4"/></g>`;
+}
+
+/* ======================================================================
+ *  ACT II CAST
+ *  Heads are drawn once in sheet coordinates (standing head ≈ y 28–82) and shared
+ *  with portraits.js. eyes(p)/mouth(p): in portraits (p = true) both poses are emitted.
+ * ====================================================================== */
+const eyes = (p, a, b, r = 1.6) => p
+  ? `<g class="eyes-open"><circle class="fW" cx="${a[0]}" cy="${a[1]}" r="${r}"/><circle class="fW" cx="${b[0]}" cy="${b[1]}" r="${r}"/></g>
+     <g class="eyes-closed"><path class="sW" d="M${a[0] - 3},${a[1] + .5} L${a[0] + 3},${a[1] + .5} M${b[0] - 3},${b[1] + .5} L${b[0] + 3},${b[1] + .5}"/></g>`
+  : `<circle class="fW" cx="${a[0]}" cy="${a[1]}" r="${r}"/><circle class="fW" cx="${b[0]}" cy="${b[1]}" r="${r}"/>`;
+const mouth = (p, a, b) => p ? `<g class="mouth-a">${a}</g><g class="mouth-b">${b}</g>` : a;
+const jaw = `<path class="k sK" d="M140,52 C139,71 149,81 161,81 C173,81 182,71 181,52"/>`;
+const ears = `<path class="sK" d="M140,56 C134,55 134,65 140,66 M181,56 C187,55 187,65 181,66"/>`;
+const neck = `<path class="sK" d="M154,80 L154,87 M167,80 L167,87"/>`;
+const nose = `<path class="sK" d="M160,60 C157,66 160,68 163,67"/>`;
+// local helper: a figure shown standing still outside the engine (drop the walk poses)
+export const standOnly = (svg) => svg.replace(/<g class="ap[12]">[\s\S]*?<\/g>/g, "");
+const seated = (x, y, k, inner) => { const q = k * AUD; return `<g transform="translate(${(x - 160 * q).toFixed(1)},${(y - 187 * q).toFixed(1)}) scale(${q.toFixed(3)})"><g transform="translate(0,34)">${inner}</g></g>`; };
+
+/* ---- Dr. Tess La: MRI physicist. Black bob, safety glasses up on her head, ear defenders round her neck, lab coat. ---- */
+export function tessHead(p = false) {
+  return `${ears}${jaw}
+    <path class="k sW" d="M135,68 C129,44 140,28 160,28 C181,28 191,44 185,68 C183,58 181,50 177,45 C166,48 152,46 143,42 C139,49 137,58 135,68 Z"/>
+    <path class="hl sW" d="M150,32 C146,36 144,40 143,42 M170,31 C176,36 178,41 177,45"/>
+    <path class="sA" d="M145,35 L157,34 L156,40 L146,41 Z M163,34 L175,35 L174,41 L164,40 Z M157,37 L163,37"/>
+    <path class="sW" d="M147,53 L156,51.5 M165,51.5 L174,53"/>
+    ${eyes(p, [152, 58], [169, 58])}${nose}
+    ${mouth(p, `<path class="sK" d="M154,73 L167,73"/>`, `<path class="k sK" d="M154,72 C158,71 163,71 167,72 C165,76.5 156,76.5 154,72 Z"/>`)}${neck}`;
+}
+const tessBody = `
+  <path class="k sW" d="M130,94 C136,87 147,85 154,86 L160,100 L166,86 C173,85 184,87 190,94 L194,140 L126,140 Z"/>
+  <path class="sW" d="M154,86 L150,100 L160,114 M166,86 L170,100 L160,114"/><path class="sB" d="M156,90 L160,98 L164,90"/>
+  <path class="hl sW" d="M170,112 L183,112 L183,124 L170,124 Z"/><path class="sR" d="M174,106 L174,113"/>
+  <path class="sB" d="M143,86 C143,97 177,97 177,86"/><ellipse class="k sB" cx="141" cy="88" rx="5" ry="7"/><ellipse class="k sB" cx="179" cy="88" rx="5" ry="7"/>`;
+export const tessBust = () => tessBody + tessHead(true);
+// at the console, swivelled round to face the room (guarding the calendar)
+export function tessAtConsole(x, y, k) {
+  return seated(x, y, k, `${tessBody}
+    <path class="sW" d="M132,98 L126,124 L146,132"/><circle class="sK" cx="149" cy="133" r="3"/>
+    <path class="sW" d="M188,98 L194,124 L176,132"/><circle class="sK" cx="173" cy="133" r="3"/>${tessHead()}`);
+}
+// seen through the window, at the magnet, arms waving (pose group "wave")
+export function tessFar(x, y, k) {
+  const q = k * AUD;
+  return `<g transform="translate(${(x - 160 * q).toFixed(1)},${(y - 187 * q).toFixed(1)}) scale(${q.toFixed(3)})">
+    <path class="k sM" d="M140,150 L142,184 L156,184 L159,156 L161,156 L164,184 L178,184 L180,150 Z"/>
+    <path class="k sW" d="M130,94 C136,87 147,85 154,86 L160,100 L166,86 C173,85 184,87 190,94 L196,160 L124,160 Z"/>
+    <path class="sB" d="M143,86 C143,97 177,97 177,86"/>
+    <g class="pz on" data-g="wave" data-i="0"><path class="sW" d="M132,96 L116,70 M188,96 L204,70"/><circle class="sK" cx="114" cy="66" r="3.5"/><circle class="sK" cx="206" cy="66" r="3.5"/>${arcs(206, 50, 1, "sR", 2, .7)}</g>
+    <g class="pz" data-g="wave" data-i="1"><path class="sW" d="M132,96 L108,92 M188,96 L212,92"/><circle class="sK" cx="104" cy="91" r="3.5"/><circle class="sK" cx="216" cy="91" r="3.5"/>${arcs(114, 74, -1, "sR", 2, .7)}</g>
+    ${tessHead()}</g>`;
+}
+
+/* ---- Penny Ledger: department administrator. Silver bouffant, headset, glasses on a chain, pencil behind her ear, brass cardigan. ---- */
+export function pennyHead(p = false) {
+  return `${ears}${jaw}
+    <path class="k sW" d="M134,62 C125,40 138,21 160,21 C183,21 195,40 186,62 C183,53 178,46 171,44 C162,40 150,42 145,46 C140,49 136,55 134,62 Z"/>
+    <path class="hl sW" d="M140,34 C144,29 150,29 152,33 M156,26 C160,23 166,24 167,28 M171,30 C176,28 181,31 181,36 M146,40 C150,37 155,38 156,41"/>
+    <path class="sM" d="M136,52 C133,26 187,26 184,52"/><circle class="k sM" cx="137" cy="60" r="4.5"/>
+    <path class="sW" d="M136,64 C138,73 144,77 151,77"/><circle class="fW" cx="152" cy="77" r="1.6"/>
+    <path class="sA" d="M182,46 L192,61"/><path class="sK" d="M192,61 L193.5,63.5"/>
+    <path class="sW" d="M146,54 C149,52 153,52 156,53 M165,53 C168,52 172,52 175,54"/>
+    ${eyes(p, [151, 58], [170, 58], 1.5)}
+    <path class="sA" d="M145,61 L157,61 L156,66 L146,66 Z M164,61 L176,61 L175,66 L165,66 Z M157,62.5 L164,62.5"/>
+    <path class="sV dash" d="M145,63 C138,76 140,90 150,98 M176,63 C183,76 181,90 171,98"/>
+    <path class="sK" d="M160,64 C158,68 160,70 163,69"/>
+    ${mouth(p, `<path class="sK" d="M155,74 C158,73 163,73 166,74.5"/>`, `<path class="k sK" d="M155,73 C158,72 163,72 166,73 C164,77 157,77 155,73 Z"/>`)}${neck}`;
+}
+const pennyBody = `
+  <path class="k sA" d="M130,94 C136,87 148,85 154,86 L160,92 L166,86 C172,85 184,87 190,94 L193,140 L127,140 Z"/>
+  <path class="sW" d="M152,86 C152,93 159,94 160,89 C161,94 168,93 168,86"/>
+  <path class="hl sA" d="M157,94 L156,140 M163,94 L164,140"/>${[104, 116, 128].map(y => `<circle class="hl sA" cx="160" cy="${y}" r="1.4"/>`).join("")}`;
+export const pennyBust = () => pennyBody + pennyHead(true);
+// typing: hands swap between two poses (pose group "type")
+export function pennyAtDesk(x, y, k) {
+  return seated(x, y, k, `${pennyBody}
+    <g class="pz on" data-g="type" data-i="0"><path class="sA" d="M132,98 L130,124 L148,134"/><circle class="sK" cx="151" cy="135" r="3"/><path class="sA" d="M188,98 L190,124 L176,130"/><circle class="sK" cx="173" cy="131" r="3"/></g>
+    <g class="pz" data-g="type" data-i="1"><path class="sA" d="M132,98 L130,124 L144,130"/><circle class="sK" cx="147" cy="131" r="3"/><path class="sA" d="M188,98 L190,124 L172,134"/><circle class="sK" cx="169" cy="135" r="3"/></g>
+    ${pennyHead()}`);
+}
+
+/* ---- Ethel Bord: Research Integrity Officer. Tall bun, half-moon glasses, a lanyard of badges, gray blazer with shoulder pads. ---- */
+export function ethelHead(p = false) {
+  return `${ears}${jaw}
+    <path class="k sW" d="M150,32 C148,15 153,7 160,7 C167,7 172,15 170,32"/><path class="hl sW" d="M151,24 C156,21 164,21 169,24 M152,15 C156,13 164,13 168,15"/>
+    <path class="k sW" d="M138,58 C134,40 144,30 160,30 C176,30 186,40 182,58 C178,46 170,42 160,42 C150,42 142,46 138,58 Z"/>
+    <path class="hl sW" d="M146,38 C151,35 156,34 160,34 M165,34 C171,35 176,38 178,42"/>
+    <path class="sW" d="M146,52 L155,53 M166,53 L175,52"/>
+    ${eyes(p, [151, 57], [170, 57], 1.4)}
+    <path class="sA" d="M145,61 C145,66 155,66 156,61 Z M165,61 C166,66 176,66 176,61 Z M156,61.5 L165,61.5"/>
+    <path class="sK" d="M160,63 C158,68 160,70 163,69"/>
+    ${mouth(p, `<path class="sK" d="M156,75 L165,75 M156,73.5 L156,75 M165,73.5 L165,75"/>`, `<path class="k sK" d="M156,74 C158,73 163,73 165,74 C164,77 157,77 156,74 Z"/>`)}${neck}`;
+}
+const ethelBody = `
+  <path class="k sM" d="M124,98 C127,88 145,85 152,86 L160,98 L168,86 C175,85 193,88 196,98 L195,140 L125,140 Z"/>
+  <path class="sM" d="M152,86 L148,104 L160,118 M168,86 L172,104 L160,118"/><path class="sW" d="M154,88 L160,96 L166,88"/>
+  <path class="sB" d="M150,88 L156,114 M170,88 L164,114"/>
+  <rect class="k sB" x="151" y="114" width="14" height="17"/><path class="hl sB" d="M154,119 L162,119 M154,123 L160,123"/>
+  <g transform="rotate(14 168 118)"><rect class="k sB" x="161" y="111" width="12" height="15"/><circle class="hl sB" cx="167" cy="116" r="2.5"/></g>`;
+export const ethelBust = () => ethelBody + ethelHead(true);
+export function ethelAtDesk(x, y, k) {
+  return seated(x, y, k, `${ethelBody}
+    <path class="sM" d="M126,100 L130,124 L148,130"/><circle class="sK" cx="151" cy="131" r="3"/>
+    <path class="sM" d="M194,100 L190,124 L172,130"/><circle class="sK" cx="169" cy="131" r="3"/>${ethelHead()}`);
+}
+
+/* ---- Cody Credit: undergrad RA. Backwards red cap, brass PSY 101 tee, the sign-in clipboard on his lap. ---- */
+export function codyHead(p = false) {
+  return `${ears}${jaw}
+    <path class="k sR" d="M137,54 C135,35 147,26 160,26 C173,26 185,35 183,54 C177,47 169,45 160,45 C151,45 143,47 137,54 Z"/>
+    <path class="hl sR" d="M151,45 C154,41 166,41 169,45 M160,26 L160,45"/><circle class="fR" cx="160" cy="27" r="1.4"/>
+    <path class="sW" d="M153,46 L155,42 L157,46 L160,41 L162,46 L165,42 L167,46"/>
+    <path class="sW" d="M146,52 C149,50 153,50 156,51 M165,51 C168,50 172,50 175,52"/>
+    ${p ? `<g class="eyes-open"><circle class="k sW" cx="151" cy="58" r="3"/><circle class="k sW" cx="170" cy="58" r="3"/><circle class="fW" cx="151.5" cy="58.5" r="1.3"/><circle class="fW" cx="170.5" cy="58.5" r="1.3"/></g>
+      <g class="eyes-closed"><path class="sW" d="M147,58.5 L155,58.5 M166,58.5 L174,58.5"/></g>`
+      : `<circle class="k sW" cx="151" cy="58" r="3"/><circle class="k sW" cx="170" cy="58" r="3"/><circle class="fW" cx="151.5" cy="58.5" r="1.3"/><circle class="fW" cx="170.5" cy="58.5" r="1.3"/>`}
+    ${nose}<path class="hl sK" d="M146,66 L148,67 M150,67 L152,68 M171,67 L173,66 M175,67 L177,66"/>
+    ${mouth(p, `<path class="sK" d="M153,73 C157,77 164,77 168,73"/>`, `<path class="k sK" d="M153,72 C157,71 164,71 168,72 C166,78 155,78 153,72 Z"/>`)}${neck}`;
+}
+const codyBody = `
+  <path class="k sA" d="M131,94 C137,88 148,86 153,87 C156,92 165,92 168,87 C173,86 184,88 190,94 L192,140 L128,140 Z"/>
+  <path class="sA" d="M153,87 C156,92 165,92 168,87"/>${seg("PSY 101", 147, 104, 4.4, "sA", .8)}`;
+export const codyBust = () => codyBody + codyHead(true);
+export function codySeated(x, y, k, hasClipboard = true) {
+  const chair = `<path class="hl sD" d="M120,150 L200,150 M124,150 L122,187 M196,150 L198,187 M118,96 L118,150 M202,96 L202,150 M118,96 L202,96"/>`;
+  const legs = `<path class="k sM" d="M134,140 L132,150 L150,150 L150,184 L162,184 L162,148 L164,148 L164,184 L176,184 L176,150 L186,150 L186,140 Z"/>${shoe(140, 184)}${shoe(162, 184)}`;
+  const board = hasClipboard
+    ? `<rect class="k sW" x="142" y="118" width="38" height="28"/><path class="sA" d="M154,116 L168,116 L168,121 L154,121 Z"/><path class="hl sW" d="M147,127 L175,127 M147,132 L175,132 M147,137 L169,137"/>
+       <path class="sA" d="M131,98 L134,124 L144,128"/><circle class="sK" cx="146" cy="129" r="3"/><path class="sA" d="M189,98 L186,124 L178,128"/><circle class="sK" cx="176" cy="129" r="3"/>`
+    : `<path class="sA" d="M131,98 L132,126 L150,136"/><circle class="sK" cx="153" cy="137" r="3"/><path class="sA" d="M189,98 L188,126 L170,136"/><circle class="sK" cx="167" cy="137" r="3"/>`;
+  const q = k * AUD;
+  return `<g transform="translate(${(x - 160 * q).toFixed(1)},${(y - 187 * q).toFixed(1)}) scale(${q.toFixed(3)})">
+    ${chair}${legs}<g transform="translate(0,22)">${codyBody}${board}${codyHead()}</g></g>`;
+}
+
+/* ---- Det. Sgt. Enn Small: campus police detective. Brass trench coat, short hair, notebook. ---- */
+export function smallHead(p = false) {
+  return `${ears}${jaw}
+    <path class="k sW" d="M137,56 C134,38 145,30 160,30 C176,30 187,38 183,56 C180,48 174,44 166,45 C158,42 148,44 143,48 C140,50 138,53 137,56 Z"/>
+    <path class="hl sW" d="M146,37 C152,33 160,33 166,35"/>
+    <path class="sW" d="M146,53 L155,52 M166,52 L175,53"/>
+    ${eyes(p, [151, 58], [170, 58], 1.5)}${nose}<path class="hl sK" d="M147,61.5 L154,61.5 M167,61.5 L174,61.5"/>
+    ${mouth(p, `<path class="sK" d="M154,74 L167,74"/>`, `<path class="k sK" d="M154,73 C158,72 163,72 167,73 C165,77 156,77 154,73 Z"/>`)}${neck}`;
+}
+const smallCoat = `
+  <path class="k sA" d="M130,94 C136,87 147,85 154,86 L160,96 L166,86 C173,85 184,87 190,94 L194,160 L126,160 Z"/>
+  <path class="sA" d="M146,86 L152,104 L160,96 M174,86 L168,104 L160,96 M150,86 L144,90 M170,86 L176,90"/><path class="sR" d="M160,96 L158,112 L160,118 L162,112 Z"/>
+  <path class="sA" d="M127,128 L193,128 M160,128 L160,160"/><rect class="hl sA" x="154" y="125" width="12" height="6"/>`;
+export const smallBust = () => smallCoat + smallHead(true);
+export function smallFigure() {
+  return `<g class="ap0">
+    <path class="k sM" d="M138,156 L140,182 L157,182 L158,160 L162,160 L163,182 L180,182 L182,156 Z"/>${shoe(138, 182)}${shoe(163, 182)}
+    ${smallCoat}
+    <path class="sA" d="M132,96 L126,124 L132,138"/><circle class="sK" cx="133" cy="141" r="3"/>
+    <path class="sA" d="M188,96 L190,116 L176,122"/><rect class="k sW" x="166" y="114" width="12" height="16"/><path class="hl sW" d="M169,119 L176,119 M169,123 L176,123"/><circle class="sK" cx="176" cy="122" r="3"/>
+    ${star4(180, 136, 4, "sA")}${smallHead()}</g>`;
+}
+
+/* ---- Morris, walking: side view, facing right, ~44 units long, feet on y 187 ---- */
+export function morrisFigure() {
+  const body = `
+    <path class="k sW" d="M140,186 C136,176 144,166 158,165 C170,164 178,168 183,174 C190,175 196,179 198,184 C196,186 190,186 188,186 Z"/>
+    <circle class="k sW" cx="178" cy="166" r="5.5"/><circle class="hl sK" cx="178" cy="166" r="2.8"/>
+    <circle class="fW" cx="187" cy="176" r="1.5"/><circle class="fK" cx="198" cy="183.5" r="1.6"/>
+    <path class="hl sW" d="M193,181 L203,178 M193,183 L204,184"/>
+    <path class="hl sW" d="M165,166 L171,165 M167,163 L167,168 M170,163 L170,167"/><circle class="fG" cx="173" cy="165.5" r="1.4"/>`;
+  return `<g class="ap0"><path class="sK" d="M140,182 C126,180 118,172 112,176"/><path class="sK" d="M148,186 L148,187 M180,186 L181,187"/></g>
+    <g class="ap1"><path class="sK" d="M140,182 C126,182 116,178 110,182"/><path class="sK" d="M146,185 L142,187 M152,185 L156,187 M178,185 L174,187 M184,185 L188,187"/></g>
+    <g class="ap2"><path class="sK" d="M140,182 C128,176 120,168 113,170"/><path class="sK" d="M148,185 L148,187 M180,185 L180,187"/></g>${body}`;
+}
+
+/* ---- A member of the Round Table, walking: hood, robe, the lit insignia pin. No face. ---- */
+export function robedFigure() {
+  const top = `
+    <path class="k sV" d="M141,72 C128,96 124,140 120,182 L200,182 C196,140 192,96 179,72 Z"/>
+    <path class="hl sV" d="M150,90 C146,120 144,150 142,180 M170,90 C174,120 176,150 178,180"/>
+    <path class="sV" d="M140,86 C132,110 146,126 160,126 C174,126 188,110 180,86"/><path class="hl sV" d="M150,124 L170,124"/>
+    <path class="k sV" d="M138,74 C134,46 146,22 160,18 C174,22 186,46 182,74 C176,70 168,68 160,68 C152,68 144,70 138,74 Z"/>
+    <path class="k hl sV" d="M148,62 C147,44 153,34 160,32 C167,34 173,44 172,62 C166,66 154,66 148,62 Z"/>
+    <circle class="sX" cx="173" cy="98" r="4.2"/><circle class="fX" cx="173" cy="98" r="1.7"/>`;
+  return `<g class="ap0"><path class="k sD" d="M140,182 L156,182 L156,186 L140,186 Z M164,182 L180,182 L180,186 L164,186 Z"/></g>
+    <g class="ap1"><path class="k sD" d="M126,182 L142,180 L143,185 L127,187 Z M170,182 L188,181 L188,186 L170,186 Z"/></g>
+    <g class="ap2"><path class="k sD" d="M146,182 L162,182 L162,186 L146,186 Z M158,181 L174,183 L173,187 L157,186 Z"/></g>${top}`;
 }
