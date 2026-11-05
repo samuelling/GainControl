@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gain Control — Seminar Room 101</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  body { font-family: "Saira Semi Condensed", "Arial Narrow", sans-serif; -webkit-font-smoothing: antialiased; }
+  #stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  #frame {
+    position: relative; width: min(100vw, calc(100vh * 16 / 9)); aspect-ratio: 16 / 9;
+    container-type: inline-size; user-select: none; -webkit-user-select: none; cursor: crosshair; background: #000;
+    /* DAY palette */
+    --W: #e9e6ff; --R: #ff3b5c; --B: #6b8cff; --G: #00e39a; --K: #ff95ae; --A: #ffb547;
+    --V: #9c7bff; --N: #36346e; --D: #3a3842; --M: #7b7890; --X: #ff3b5c;
+  }
+  #frame.night {
+    --W: #8f9cff; --R: #5a4bd1; --B: #3d5cff; --G: #00e39a; --K: #7064d6; --A: #2fb3a3;
+    --V: #4b47c9; --N: #24234f; --D: #1d1c2b; --M: #484673; --X: #ff3b5c;
+  }
+  svg.t { position: absolute; inset: 0; width: 100%; height: 100%; display: block; fill: none; }
+  svg.t path, svg.t line, svg.t circle, svg.t rect, svg.t ellipse, svg.t polyline, svg.t polygon {
+    stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+  }
+  svg.t .hl { stroke-width: .75; }
+  svg.t .mech { stroke-linecap: butt; stroke-linejoin: miter; }
+  svg.t .dash { stroke-dasharray: 2 4; }
+  svg.t .k { fill: #000; }
+  .sW{stroke:var(--W)} .sR{stroke:var(--R)} .sB{stroke:var(--B)} .sG{stroke:var(--G)} .sK{stroke:var(--K)} .sA{stroke:var(--A)}
+  .sV{stroke:var(--V)} .sN{stroke:var(--N)} .sD{stroke:var(--D)} .sM{stroke:var(--M)} .sX{stroke:var(--X)} .s0{stroke:#000}
+  .fW{fill:var(--W);stroke:none} .fR{fill:var(--R);stroke:none} .fB{fill:var(--B);stroke:none} .fG{fill:var(--G);stroke:none}
+  .fK{fill:var(--K);stroke:none} .fA{fill:var(--A);stroke:none} .fV{fill:var(--V);stroke:none} .fX{fill:var(--X);stroke:none}
+  .fM{fill:var(--M);stroke:none}
+  #frame * { transition: stroke .6s, fill .6s; }
+  #frame.night .day-only, #frame:not(.night) .night-only { display: none; }
+  [data-hs] { cursor: pointer; }
+
+  /* pose switching (Game & Watch) */
+  .pz { display: none; } .pz.on { display: inline; }
+  #actor[data-pose="0"] .ap1, #actor[data-pose="0"] .ap2,
+  #actor[data-pose="1"] .ap0, #actor[data-pose="1"] .ap2,
+  #actor[data-pose="2"] .ap0, #actor[data-pose="2"] .ap1 { display: none; }
+  .pt .mouth-b { display: none; } .pt.mo .mouth-b { display: inline; } .pt.mo .mouth-a { display: none; }
+  .pt .eyes-closed { display: none; } .pt.bl .eyes-closed { display: inline; } .pt.bl .eyes-open { display: none; }
+  .pt .blank-only { display: none; } .pt.blank .blank-only { display: inline; } .pt.blank .normal-only { display: none; }
+
+  /* exit sign glows at night */
+  #frame.night #exitChip { filter: drop-shadow(0 0 .5cqw #ff3b5c); }
+
+  /* hover label */
+  #hover { position: absolute; pointer-events: none; font-size: 1.15cqw; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    color: #000; background: var(--W); padding: .05cqw .5cqw; white-space: nowrap; opacity: 0; transition: opacity .1s; }
+  #hover.show { opacity: 1; }
+
+  /* narrator box */
+  #msg { position: absolute; left: 50%; top: 5%; transform: translateX(-50%); width: 54%; background: #000;
+    border: .16cqw solid var(--W); padding: 1cqw 1.4cqw 1.2cqw; color: var(--W); font-size: 1.55cqw; line-height: 1.35; display: none; }
+  #msg.show { display: block; }
+  .who { display: inline-block; color: #000; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: 1.05cqw;
+    padding: 0 .45cqw; margin-bottom: .45cqw; }
+  .more { position: absolute; right: .9cqw; bottom: .35cqw; font-size: .95cqw; color: var(--M); letter-spacing: .1em; }
+  em { color: var(--M); font-style: normal; }
+
+  /* conversation */
+  #convo { position: absolute; inset: 0; display: none; background: rgba(0,0,0,.9); }
+  #convo.show { display: block; }
+  .pf { position: absolute; top: 3.5%; width: 33%; height: 66%; border: .16cqw solid var(--D); background: #000; }
+  .pf.left { left: 4%; } .pf.right { right: 4%; }
+  .pf.speaking { border-color: var(--W); }
+  .pf svg.t { position: absolute; inset: 0; }
+  .pf svg.t path, .pf svg.t circle, .pf svg.t rect, .pf svg.t ellipse, .pf svg.t line, .pf svg.t polygon { stroke-width: .62; }
+  .pf svg.t .hl { stroke-width: .33; }
+  .pf:not(.speaking) svg { opacity: .45; }
+  .pf .name { position: absolute; left: 0; bottom: -2.2cqw; }
+  #dlg { position: absolute; left: 4%; right: 4%; bottom: 4%; min-height: 15%; background: #000; border: .16cqw solid var(--W);
+    padding: .9cqw 1.4cqw 1.1cqw; color: var(--W); font-size: 1.6cqw; line-height: 1.35; }
+
+  /* title card */
+  #card { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .7s; }
+  #card.show { opacity: 1; pointer-events: auto; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="frame">
+    <svg class="t" id="game" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="hover"></div>
+    <div id="msg"></div>
+    <div id="convo">
+      <div class="pf left"><div class="pv"></div><span class="who name"></span></div>
+      <div class="pf right"><div class="pv"></div><span class="who name"></span></div>
+      <div id="dlg"><span class="who"></span><div class="txt"></div><span class="more">CLICK ▸</span></div>
+    </div>
+    <svg class="t" id="card" viewBox="0 0 640 360"></svg>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const svg = $("#game"), frame = $("#frame");
+
+/* ================================================================ *
+ *  TYPE: condensed rounded monoline stroke alphabet (4×6 grid)
+ * ================================================================ */
+const GL = {
+  A:[[0,6,0,1,1,0,3,0,4,1,4,6],[0,3,4,3]], B:[[0,0,0,6],[0,6,3,6,4,5,4,4,3,3,0,3],[0,0,3,0,4,1,4,2,3,3]],
+  C:[[4,0,0,0,0,6,4,6]], D:[[0,0,0,6],[0,6,3,6,4,5,4,1,3,0,0,0]], E:[[4,0,0,0,0,6,4,6],[0,3,3,3]], F:[[4,0,0,0,0,6],[0,3,3,3]],
+  G:[[4,0,0,0,0,6,4,6,4,3,2,3]], H:[[0,0,0,6],[4,0,4,6],[0,3,4,3]], I:[[1,0,3,0],[2,0,2,6],[1,6,3,6]], J:[[4,0,4,6,0,6,0,4]],
+  K:[[0,0,0,6],[4,0,0,3,4,6]], L:[[0,0,0,6,4,6]], M:[[0,6,0,0,2,3,4,0,4,6]], N:[[0,6,0,0,4,6,4,0]],
+  O:[[0,0,4,0,4,6,0,6,0,0]], P:[[0,6,0,0],[0,0,4,0,4,3,0,3]], Q:[[0,0,4,0,4,6,0,6,0,0],[2,4,4,6]], R:[[0,6,0,0],[0,0,4,0,4,3,0,3],[1.6,3,4,6]],
+  S:[[4,0,0,0,0,3,4,3,4,6,0,6]], T:[[0,0,4,0],[2,0,2,6]], U:[[0,0,0,6,4,6,4,0]], V:[[0,0,2,6,4,0]],
+  W:[[0,0,1,6,2,3,3,6,4,0]], X:[[0,0,4,6],[4,0,0,6]], Y:[[0,0,2,3,4,0],[2,3,2,6]], Z:[[0,0,4,0,0,6,4,6]],
+  "0":[[0,0,4,0,4,6,0,6,0,0]], "1":[[1,1,2,0,2,6]], "2":[[0,0,4,0,4,3,0,3,0,6,4,6]], "3":[[0,0,4,0,4,6,0,6],[1,3,4,3]],
+  "4":[[0,0,0,3,4,3],[4,0,4,6]], "5":[[4,0,0,0,0,3,4,3,4,6,0,6]], "6":[[4,0,0,0,0,6,4,6,4,3,0,3]], "7":[[0,0,4,0,1.4,6]],
+  "8":[[0,0,4,0,4,6,0,6,0,0],[0,3,4,3]], "9":[[4,3,0,3,0,0,4,0,4,6,0,6]], "-":[[1,3,3,3]], ".":[[2,6,2,5.6]],
+  ":":[[2,1.5,2,1.9],[2,4.5,2,4.9]], "/":[[0,6,4,0]], "!":[[2,0,2,4],[2,5.8,2,6]], "?":[[0,0,4,0,4,3,2,3,2,4],[2,5.8,2,6]],
+  "+":[[2,1,2,5],[0,3,4,3]], ">":[[0,0,4,3,0,6]], "<":[[4,0,0,3,4,6]], "'":[[2,0,2,1.5]],
+};
+function rpath(pts, r) {
+  const closed = pts.length > 2 && pts[0][0] === pts[pts.length - 1][0] && pts[0][1] === pts[pts.length - 1][1];
+  if (closed) { const m = [(pts[0][0] + pts[1][0]) / 2, (pts[0][1] + pts[1][1]) / 2]; pts = [m, ...pts.slice(1), m]; }
+  const f = (q) => q[0].toFixed(2) + "," + q[1].toFixed(2);
+  let d = "M" + f(pts[0]);
+  for (let i = 1; i < pts.length - 1; i++) {
+    const a = pts[i - 1], c = pts[i], b = pts[i + 1];
+    const d1 = Math.hypot(c[0] - a[0], c[1] - a[1]), d2 = Math.hypot(b[0] - c[0], b[1] - c[1]);
+    if (!d1 || !d2) continue;
+    const rr = Math.min(r, d1 * .5, d2 * .5);
+    d += "L" + f([c[0] - (c[0] - a[0]) / d1 * rr, c[1] - (c[1] - a[1]) / d1 * rr]) + "Q" + f(c) + " " + f([c[0] + (b[0] - c[0]) / d2 * rr, c[1] + (b[1] - c[1]) / d2 * rr]);
+  }
+  return d + "L" + f(pts[pts.length - 1]);
+}
+const CXR = 0.62;
+function seg(str, x, y, h, cls, sw = 1.5) {
+  const u = h / 6, ux = u * CXR; let out = "", cx = x;
+  for (const ch of String(str).toUpperCase()) {
+    if (ch === " ") { cx += ux * 3.2; continue; }
+    const g = GL[ch]; if (!g) { cx += ux * 5.8; continue; }
+    for (const pl of g) { const pts = []; for (let i = 0; i < pl.length; i += 2) pts.push([cx + pl[i] * ux, y + pl[i + 1] * u]);
+      out += `<path d="${rpath(pts, u * 1.1)}" class="${cls}" style="stroke-width:${sw}"/>`; }
+    cx += ux * 5.8;
+  }
+  return out;
+}
+const segW = (str, h) => { const ux = h / 6 * CXR; let w = 0; for (const ch of String(str)) w += ch === " " ? ux * 3.2 : ux * 5.8; return w - ux * 1.8; };
+const chip = (txt, x, y, h, fcls, id = "") => `<g ${id ? `id="${id}"` : ""}><rect class="${fcls}" x="${x}" y="${y}" width="${(segW(txt, h) + h * .9).toFixed(1)}" height="${(h * 1.7).toFixed(1)}"/>${seg(txt, x + h * .45, y + h * .35, h, "s0", 1.2)}</g>`;
+const arcs = (x, y, dir, cls, n = 3, s = 1) => { let o = ""; for (let i = 0; i < n; i++) { const r = (5 + i * 4) * s, xx = x + dir * i * 4 * s;
+  o += `<path class="${cls}" d="M${xx},${y - r} C${xx + dir * r * .6},${y - r * .4} ${xx + dir * r * .6},${y + r * .4} ${xx},${y + r}"/>`; } return o; };
+
+/* ================================================================ *
+ *  ROOM GEOMETRY — one-point perspective, native 640×360 (room 0–290)
+ * ================================================================ */
+const VP = [320, 130], KB = 0.42, FY = 290;
+const P = (X, Y, k) => [VP[0] + (X - VP[0]) * k, VP[1] + (Y - VP[1]) * k];
+const pt = (a) => a[0].toFixed(1) + "," + a[1].toFixed(1);
+const poly = (...a) => a.map(pt).join(" ");
+const kAtY = (y) => (y - VP[1]) / (FY - VP[1]);
+const ln = (a, b, cls) => `<path class="${cls}" d="M${pt(a)} L${pt(b)}"/>`;
+
+function room() {
+  const TL = P(0, 0, KB), TR = P(640, 0, KB), BL = P(0, FY, KB), BR = P(640, FY, KB);
+  let s = "";
+  // floor perspective grid (hairline, structural)
+  for (let X = -160; X <= 800; X += 80) s += ln([X, FY], P(X, FY, KB), "hl sN");
+  [0.5, 0.6, 0.72, 0.86].forEach(k => s += ln(P(0, FY, k), P(640, FY, k), "hl sN"));
+  // ceiling tiles
+  for (let X = 0; X <= 640; X += 64) s += ln([X, 0], P(X, 0, KB), "hl sD");
+  [0.5, 0.6, 0.72, 0.86].forEach(k => s += ln(P(0, 0, k), P(640, 0, k), "hl sD"));
+  // room edges
+  s += `<polyline class="sM" points="${poly([0, 0], TL, TR, [640, 0])}"/><polyline class="sM" points="${poly([0, FY], BL, BR, [640, FY])}"/>`;
+  s += ln(TL, BL, "sM") + ln(TR, BR, "sM");
+  s += ln(P(0, 170, KB), P(640, 170, KB), "hl sD"); // chair rail
+
+  // projector + beam
+  s += `<rect class="k sM mech" x="306" y="20" width="28" height="10"/><path class="sM" d="M320,0 L320,20"/>
+        <g class="day-only"><path class="hl dash sM" d="M320,30 L214,88 M320,30 L426,88 M320,30 L214,178 M320,30 L426,178"/><circle class="fW" cx="320" cy="30" r="1.6"/></g>`;
+  // screen + slide
+  s += `<g data-hs="screen"><rect class="k sW mech" x="214" y="88" width="212" height="90"/>
+        <g class="day-only">${slide()}</g>
+        <g class="night-only">${brainOutline(268, 136, .9, "hl sD")}</g>
+        <rect x="214" y="88" width="212" height="90" fill="transparent"/></g>`;
+  s += `<path class="sM mech" d="M214,182 L426,182"/>`;
+  // digital clock (right wall)
+  s += `<g data-hs="clock"><path class="k sM mech" d="M476,58 L520,50 L520,70 L476,76 Z"/>
+        <g class="day-only">${seg("16:07", 481, 57, 9, "sG", 1.2)}</g><g class="night-only">${seg("02:13", 481, 57, 9, "sG", 1.2)}</g>
+        <rect x="474" y="48" width="48" height="30" fill="transparent"/></g>`;
+  // door + EXIT chip (left wall)
+  const d1 = P(0, 120, .62), d2 = P(0, 120, .8), d3 = P(0, FY, .8), d4 = P(0, FY, .62);
+  s += `<g data-hs="door"><polygon class="k sW mech" points="${poly(d1, d2, d3, d4)}"/>
+        <path class="hl sW" d="M${(d1[0] + d2[0]) / 2 - 2},${d1[1] + 4} L${(d4[0] + d3[0]) / 2 - 2},${(d3[1] + d4[1]) / 2 - 4}"/>
+        <path class="sW" d="M74,190 L74,198"/>
+        <rect x="58" y="118" width="70" height="146" fill="transparent"/></g>`;
+  s += `<g data-hs="exit">${chip("EXIT", 70, 100, 7, "fX", "exitChip")}<rect x="68" y="98" width="30" height="16" fill="transparent"/></g>`;
+  // pneumatic tube (right wall), double-line pipe + station
+  const tx = P(640, 0, .86)[0], ty0 = P(640, 0, .86)[1], ty1 = P(640, FY, .86)[1];
+  const b1 = P(640, 120, .8), b2 = P(640, 120, .9), b3 = P(640, 190, .9), b4 = P(640, 190, .8);
+  s += `<g data-hs="tube">
+    <path class="sW mech" d="M${tx - 4},${ty0} L${tx - 4},${ty1} M${tx + 4},${ty0} L${tx + 4},${ty1}"/>
+    ${[0.1, 0.3, 0.75, 0.9].map(f => { const y = ty0 + (ty1 - ty0) * f; return `<path class="sW mech" d="M${tx - 7},${y} L${tx + 7},${y} M${tx - 7},${y + 2} L${tx + 7},${y + 2}"/>`; }).join("")}
+    <polygon class="k sW" points="${poly(b1, b2, b3, b4)}"/>
+    <circle class="k sW" cx="${tx}" cy="138" r="6"/><circle class="fW" cx="${tx}" cy="138" r="1.2"/><path id="needle" class="sR" d="M${tx},138 L${tx + 4},134"/>
+    <path class="hl sM mech" d="M${tx - 9},150 L${tx + 9},150 L${tx + 9},172 L${tx - 9},172 Z"/><circle class="fG" cx="${tx + 6}" cy="176" r="1.4"/>
+    <rect x="${tx - 16}" y="${ty0}" width="32" height="${ty1 - ty0}" fill="transparent"/></g>`;
+  s += `<g id="canister" style="display:none"><rect class="fA" x="${tx - 2.6}" y="-6" width="5.2" height="12" rx="2.6"/>${seg("B3", tx + 8, -4, 6, "sA", 1)}</g>`;
+  // Morris in the ajar ceiling tile
+  const m1 = P(448, 0, .6), m2 = P(512, 0, .6), m3 = P(512, 0, .72), m4 = P(448, 0, .72);
+  s += `<g data-hs="morris"><polygon class="k sM" points="${poly(m4, m3, m2, m1)}"/>
+    <polygon class="k hl sM" points="${poly(m4, m3, [m3[0] + 4, m3[1] - 8], [m4[0] + 4, m4[1] - 8])}"/>
+    <circle class="fA" cx="412" cy="45" r="1.7"/><circle class="fA" cx="419" cy="45" r="1.7"/>
+    <g class="pz on" data-g="tail" data-i="0"><path class="sK" d="M424,52 C428,60 420,66 426,74 C430,80 426,84 428,88"/></g>
+    <g class="pz" data-g="tail" data-i="1"><path class="sK" d="M424,52 C420,60 428,66 422,74 C418,80 422,84 420,88"/></g>
+    <rect x="400" y="34" width="34" height="58" fill="transparent"/></g>`;
+  return s;
+}
+function brainOutline(cx, cy, sc, cls) {
+  return `<path class="${cls}" transform="translate(${cx},${cy}) scale(${sc})" d="M-44,6 C-48,-18 -30,-34 -8,-32 C8,-40 32,-34 40,-18 C52,-10 50,10 40,18 C32,30 14,32 4,26 C-6,32 -24,30 -30,22 C-40,22 -46,16 -44,6 Z"/>`;
+}
+function slide() {
+  const cols = ["sR", "sA", "sG", "sB", "sV", "sK"];
+  let s = seg("LAMINAR FMRI AT 7T", 222, 94, 7, "sW", 1.1) + chip("7T", 404, 93, 6, "fR");
+  cols.forEach((c, i) => { s += brainOutline(266, 140, 1.02 - i * 0.15, (i ? "hl " : "") + c); });
+  s += `<path class="sW mech" d="M330,170 L416,170 M330,170 L330,112"/>`;
+  [[338, 22, "sM"], [358, 44, "sR"], [378, 14, "sM"]].forEach(([x, h, c]) => {
+    s += `<path class="${c} mech" d="M${x},170 L${x},${170 - h} L${x + 12},${170 - h} L${x + 12},170"/><path class="hl sW mech" d="M${x + 6},${168 - h} L${x + 6},${172 - h}"/>`; });
+  s += seg("P<.0000001", 352, 114, 5, "sW", .9) + seg("VALU + IMPACT 2026", 222, 170, 4.5, "sM", .8);
+  return s;
+}
+
+/* ================================================================ *
+ *  PEOPLE (sheet coordinates: feet ≈ (160,187))
+ * ================================================================ */
+function nedFigure() {
+  const shoe = (x, y) => `<path class="k sW" d="M${x},${y} L${x + 18},${y} C${x + 22},${y} ${x + 22},${y + 5} ${x + 18},${y + 5} L${x},${y + 5} Z"/>`;
+  const head = `
+    <path class="k sK" d="M139,54 C138,72 149,82 161,82 C174,82 183,72 183,56"/>
+    <path class="sK" d="M140,58 C134,57 133,67 140,68"/>
+    <path class="k sR" d="M137,60 C132,41 143,30 156,31 L153,21 L162,28 L166,17 L172,28 L181,22 L180,33 C189,38 189,51 184,59 C180,49 172,45 164,47 C156,43 145,47 137,60 Z"/>
+    <path class="sR" d="M149,38 L155,45 M164,33 L166,42 M174,36 L172,44"/>
+    <rect class="sW" x="146.5" y="56" width="13" height="10" rx="3"/><rect class="sW" x="166" y="56" width="13" height="10" rx="3"/>
+    <path class="sW" d="M159.5,60 L166,60 M146.5,59 L141,58"/>
+    <circle class="fW" cx="155" cy="61.5" r="1.6"/><circle class="fW" cx="174.5" cy="61.5" r="1.6"/>
+    <path class="sK" d="M168,66 C165,71 168,73 171,72 M162,76 C166,74 170,75 173,77"/>
+    <path class="sK" d="M154,80 L154,87 M167,80 L167,87"/>`;
+  const torso = `
+    <path class="k sG" d="M136,92 C140,87 148,85 153,86 L160,92 L167,86 C172,85 180,87 184,92 L187,128 L133,128 Z"/>
+    <path class="sG" d="M153,86 C156,91 164,91 167,86"/><circle class="sG" cx="170" cy="106" r="5"/><path class="sG" d="M168,104 L172,108"/>
+    <path class="hl sG" d="M142,100 C145,108 145,117 142,125 M180,98 C178,106 179,115 182,123"/>`;
+  const stand = `<g class="ap0">
+    <path class="k sB" d="M134,128 L137,182 L156,182 L159,136 L161,136 L164,182 L183,182 L186,128 Z"/>${shoe(136, 182)}${shoe(164, 182)}
+    <path class="hl sB" d="M147,140 L148,178 M173,140 L172,178"/>
+    <path class="sG" d="M136,93 L128,114"/><path class="sK" d="M128,114 L125,124"/><circle class="sK" cx="124.5" cy="127" r="3"/>
+    <path class="sG" d="M184,93 L192,114"/><path class="sK" d="M192,114 L195,124"/><circle class="sK" cx="195.5" cy="127" r="3"/></g>`;
+  const walkA = `<g class="ap1">
+    <path class="k sB" d="M137,128 L120,176 L137,182 L158,134 Z"/><path class="k sB" d="M162,132 L178,182 L196,178 L184,128 Z"/>${shoe(118, 177)}${shoe(180, 179)}
+    <path class="sG" d="M136,93 L142,114"/><path class="sK" d="M142,114 L148,123"/><circle class="sK" cx="150" cy="126" r="3"/>
+    <path class="sG" d="M184,93 L178,112"/><path class="sK" d="M178,112 L170,120"/><circle class="sK" cx="168" cy="123" r="3"/></g>`;
+  const walkB = `<g class="ap2">
+    <path class="k sB" d="M134,128 L146,180 L162,182 L157,130 Z"/><path class="k sB" d="M163,130 L160,182 L177,180 L186,128 Z"/>${shoe(146, 181)}${shoe(160, 181)}
+    <path class="sG" d="M136,93 L124,110"/><path class="sK" d="M124,110 L116,118"/><circle class="sK" cx="114" cy="121" r="3"/>
+    <path class="sG" d="M184,93 L196,110"/><path class="sK" d="M196,110 L204,117"/><circle class="sK" cx="206" cy="120" r="3"/></g>`;
+  return stand + walkA + walkB + torso + head;
+}
+function gusFigure() {
+  const mop = (hx, hy, mx, my, ang) => `<path class="sA mech" d="M${hx},${hy} L${mx},${my}"/>
+    <g transform="translate(${mx},${my}) rotate(${ang})"><path class="k sW" d="M-12,0 L12,0 L14,4 L-14,4 Z"/>
+    ${[-12, -7, -2, 3, 8, 12].map(x => `<path class="sW" d="M${x},4 L${x + (ang > 0 ? 2 : -2)},11"/>`).join("")}</g>`;
+  const arms = (lx, ly, rx, ry) => `<path class="sV" d="M135,88 L${lx},${ly}"/><circle class="sK" cx="${lx}" cy="${ly + 3}" r="3.2"/>
+    <path class="sV" d="M185,88 L${rx},${ry}"/><circle class="sK" cx="${rx}" cy="${ry + 3}" r="3.2"/>`;
+  const body = `
+    <path class="k sM" d="M134,128 L136,182 L157,182 L159,138 L161,138 L163,182 L184,182 L186,128 Z"/>
+    <path class="k sW" d="M134,182 L158,182 L158,188 L130,188 C130,184 131,182 134,182 Z M162,182 L186,182 C189,182 190,184 190,188 L162,188 Z"/>
+    <path class="k sV" d="M134,86 C140,80 150,80 160,84 C170,80 180,80 186,86 L189,130 L131,130 Z"/>
+    <path class="hl sV" d="M140,94 L152,94 L152,104 L140,104 Z M160,86 L160,130"/>
+    <ellipse class="k sR" cx="173" cy="99" rx="9" ry="5.5"/>${seg("GUS", 167.4, 97, 4, "sR", .9)}
+    <circle class="sA" cx="140" cy="122" r="4"/><path class="sA" d="M138,126 L136,132 M141,126 L141,133"/>
+    <path class="sK" d="M154,76 L154,83 M166,76 L166,83"/>
+    <path class="k sK" d="M137,47 C136,66 148,77 160,77 C172,77 184,66 183,47"/>
+    <path class="sW" d="M137,50 C134,54 135,60 138,62 M183,50 C186,54 185,60 182,62"/>
+    <path class="k sB" d="M136,46 C135,30 147,22 160,22 C173,22 185,30 184,46 Z"/><path class="k sB" d="M156,46 L204,46 C206,48 204,51 200,51 L156,51 Z"/>
+    <path class="sW" d="M146,52 L154,51 M166,51 L174,52"/><circle class="fW" cx="150.5" cy="56" r="1.5"/><circle class="fW" cx="169.5" cy="56" r="1.5"/>
+    <path class="sK" d="M160,57 C156,64 159,67 164,65"/>
+    <path class="k sW" d="M144,68 C150,62 157,65 160,67 C163,65 170,62 176,68 C170,72 163,70 160,70 C157,70 150,72 144,68 Z"/>`;
+  return `<g class="ap1">${mop(150, 70, 102, 178, -14)}${arms(136, 108, 146, 104)}</g>
+    <g class="ap0">${mop(160, 66, 160, 178, 0)}${arms(152, 110, 166, 100)}</g>
+    <g class="ap2">${mop(170, 70, 218, 178, 14)}${arms(176, 104, 186, 108)}</g>${body}`;
+}
+function prestonBust() {
+  const base = `
+    <path class="k sR" d="M116,130 C116,106 126,95 150,92 L160,106 L170,92 C194,95 204,106 204,130 Z"/>
+    <path class="sR" d="M150,92 L155,114 M170,92 L165,114"/><path class="sW" d="M154,94 L160,104 L166,94"/>
+    <path class="sK" d="M152,84 L152,92 M168,84 L168,92"/>
+    <path class="k sK" d="M132,50 C131,72 145,86 160,86 C175,86 189,72 188,50"/>
+    <path class="sK" d="M133,56 C127,55 127,66 133,66 M187,56 C193,55 193,66 187,66"/>
+    <path class="k sA" d="M129,56 C124,34 138,19 158,17 C179,15 196,26 193,46 C192,50 190,54 188,56 C184,45 176,41 167,43 C173,36 168,30 159,33 C148,37 139,45 129,56 Z"/>
+    <path class="sA" d="M141,30 C151,23 166,21 179,25 M137,42 C143,37 150,34 156,33"/>
+    <path class="sK" d="M160,61 C157,68 160,70 163,69"/>`;
+  const on = `<g class="normal-only">
+    <path class="k sW" d="M143,60 C146,56 152,56 156,60 C152,64 147,64 143,60 Z"/><circle class="fB" cx="150.5" cy="60" r="2"/>
+    <path class="k sW" d="M164,60 C168,56 174,56 177,60 C173,64 168,64 164,60 Z"/><circle class="fB" cx="171.5" cy="60" r="2"/>
+    <path class="sA" d="M142,53 C146,49 152,49 157,51 M163,51 C168,49 174,49 178,53"/>
+    <path class="k sW" d="M146,72 C152,81 168,81 174,72 C166,75 154,75 146,72 Z"/>
+    <circle class="sW" cx="129.5" cy="62" r="2.5"/><circle class="sW" cx="190.5" cy="62" r="2.5"/></g>`;
+  const blank = `<g class="blank-only">
+    <circle class="k sW" cx="150" cy="60" r="4.2"/><circle class="fW" cx="150" cy="60" r=".9"/><circle class="k sW" cx="170" cy="60" r="4.2"/><circle class="fW" cx="170" cy="60" r=".9"/>
+    <path class="sA" d="M143,52 L157,52 M163,52 L177,52"/><path class="sK" d="M150,75 L170,75"/>
+    <circle class="fG" cx="129.5" cy="62" r="3"/><circle class="fG" cx="190.5" cy="62" r="3"/>${arcs(124, 62, -1, "sG")}${arcs(196, 62, 1, "sG")}</g>`;
+  const armUp = `<g class="pz on" data-g="parm" data-i="0"><path class="sR" d="M200,108 L213,85"/><circle class="sK" cx="215" cy="81" r="4"/><path class="sK" d="M217,77 L221,69"/></g>`;
+  const armDn = `<g class="pz" data-g="parm" data-i="1"><path class="sR" d="M201,110 L208,121"/><path class="k sK" d="M204,122 C204,118 214,118 214,122 C214,125 204,125 204,122 Z"/></g>`;
+  return base + on + blank + armUp + armDn;
+}
+// seated, seen from behind
+function sitter(x, y, k, o = {}) {
+  const body = o.body || "sD", head = o.head || "sD";
+  return `<g class="${o.cls || ""}" ${o.hs ? `data-hs="${o.hs}"` : ""}>
+    <g ${o.nod ? `class="nodder"` : ""}>
+      <path class="k ${body}" d="M${x - 15 * k},${y - 16 * k} Q${x - 16 * k},${y - 38 * k} ${x},${y - 40 * k} Q${x + 16 * k},${y - 38 * k} ${x + 15 * k},${y - 16 * k} Z"/>
+      <circle class="k ${head}" cx="${x}" cy="${y - 50 * k}" r="${10 * k}"/>${o.extra ? o.extra(x, y, k) : ""}
+    </g>${o.hs ? `<rect x="${x - 18 * k}" y="${y - 64 * k}" width="${36 * k}" height="${64 * k}" fill="transparent"/>` : ""}</g>`;
+}
+function chairBack(x, y, k) {
+  return `<rect class="k sD" x="${x - 16 * k}" y="${y - 30 * k}" width="${32 * k}" height="${20 * k}" rx="${4 * k}"/>
+    <path class="hl sD" d="M${x - 13 * k},${y - 10 * k} L${x - 14 * k},${y} M${x + 13 * k},${y - 10 * k} L${x + 14 * k},${y}"/>`;
+}
+const ROWS = [0.56, 0.70, 0.86];
+const SEATS = [90, 170, 250, 390, 470, 550];
+function rowGroup(ri) {
+  const k = ROWS[ri], y = P(0, FY, k)[1], X = (Xf) => P(Xf, FY, k)[0];
+  let people = "", chairs = "";
+  SEATS.forEach(Xf => chairs += chairBack(X(Xf), y, k));
+  if (ri === 0) {
+    people += sitter(X(390), y, k, { hs: "quorum", cls: "day-only", body: "sN", head: "sK",
+      extra: (x, y, k) => `<path class="sW" d="M${x - 9 * k},${y - 46 * k} Q${x},${y - 41 * k} ${x + 9 * k},${y - 46 * k}"/><circle class="fA" cx="${x + 14 * k}" cy="${y - 18 * k}" r="${1.6}"/>` });
+    people += sitter(X(170), y, k, { cls: "day-only" });
+  }
+  if (ri === 1) {
+    [250, 170, 90].forEach(Xf => {
+      people += `<g class="day-only" data-hs="faculty"><g class="pz on" data-g="nod" data-i="0">${sitter(X(Xf), y, k)}</g>
+        <g class="pz" data-g="nod" data-i="1">${sitter(X(Xf), y + 3, k)}</g>
+        <rect x="${X(Xf) - 14}" y="${y - 46}" width="28" height="46" fill="transparent"/></g>`; });
+    people += sitter(X(470), y, k, { cls: "day-only", extra: (x, y, k) => `<path class="hl sB" d="M${x - 8 * k},${y - 20 * k} L${x + 8 * k},${y - 20 * k}"/>` });
+  }
+  if (ri === 2) {
+    people += sitter(X(170), y, k, { hs: "iris", cls: "day-only", body: "sV", head: "sW",
+      extra: (x, y, k) => `<circle class="k sW" cx="${x}" cy="${y - 62 * k}" r="${5 * k}"/><path class="hl sV" d="M${x - 10 * k},${y - 24 * k} L${x - 10 * k},${y - 17 * k} M${x - 5 * k},${y - 24 * k} L${x - 5 * k},${y - 17 * k} M${x + 5 * k},${y - 24 * k} L${x + 5 * k},${y - 17 * k} M${x + 10 * k},${y - 24 * k} L${x + 10 * k},${y - 17 * k}"/>` });
+    people += sitter(X(470), y, k, { cls: "day-only" });
+    const rx = X(390);
+    people += `<g class="night-only" data-hs="robe" id="robe">
+      <path class="k sV" d="M${rx - 15 * k},${y - 14 * k} L${rx - 12 * k},${y - 46 * k} Q${rx},${y - 62 * k} ${rx + 12 * k},${y - 46 * k} L${rx + 15 * k},${y - 14 * k} Z"/>
+      <path class="k sV" d="M${rx - 7 * k},${y - 46 * k} Q${rx},${y - 53 * k} ${rx + 7 * k},${y - 46 * k} Q${rx},${y - 40 * k} ${rx - 7 * k},${y - 46 * k} Z"/>
+      <circle class="hl sX" cx="${rx}" cy="${y - 30 * k}" r="${3.4 * k}"/><circle class="fX" cx="${rx}" cy="${y - 30 * k}" r="${1.4 * k}"/>
+      <rect x="${rx - 18 * k}" y="${y - 64 * k}" width="${36 * k}" height="${64 * k}" fill="transparent"/></g>`;
+  }
+  return `<g>${people}${chairs}</g>`;
+}
+function tableGroup() {
+  const k = 0.82, y = P(0, FY, k)[1], x = P(580, FY, k)[0], w = 70;
+  return `<g>
+    <path class="hl sM" d="M${x - w / 2 + 4},${y - 24} L${x - w / 2 + 2},${y} M${x + w / 2 - 4},${y - 24} L${x + w / 2 - 2},${y}"/>
+    <polygon class="k sM" points="${x - w / 2},${y - 24} ${x + w / 2},${y - 24} ${x + w / 2 - 6},${y - 34} ${x - w / 2 + 6},${y - 34}"/>
+    <g data-hs="pizza">
+      <polygon class="k sA" points="${x - 30},${y - 27} ${x + 6},${y - 27} ${x + 3},${y - 33} ${x - 27},${y - 33}"/>
+      <polygon class="k sA" points="${x - 27},${y - 33} ${x + 3},${y - 33} ${x + 6},${y - 58} ${x - 30},${y - 58}"/>
+      ${seg("PIZZA", x - 23, y - 51, 6, "sA", 1)}
+      <g class="day-only"><ellipse class="sR" cx="${x - 12}" cy="${y - 30}" rx="13" ry="2.4"/><path class="hl sR" d="M${x - 20},${y - 30} L${x - 4},${y - 30} M${x - 12},${y - 32} L${x - 12},${y - 28}"/></g>
+      <rect x="${x - 32}" y="${y - 60}" width="40" height="36" fill="transparent"/></g>
+    <g data-hs="coffee" class="day-only">
+      <path class="k sK" d="M${x + 16},${y - 26} L${x + 14},${y - 38} L${x + 26},${y - 38} L${x + 24},${y - 26} Z"/>
+      <rect x="${x + 12}" y="${y - 40}" width="16" height="16" fill="transparent"/></g>
+  </g>`;
+}
+function lecternGroup() {
+  const s = 0.5, ax = 192, ay = 208;  // lectern base on the floor
+  return `<g>
+    <g class="day-only pt" id="preston" data-hs="preston"><g transform="translate(${ax - 160 * s},${ay - 190 * s}) scale(${s})">${prestonBust()}</g>
+      <rect x="${ax - 24}" y="${ay - 92}" width="56" height="40" fill="transparent"/></g>
+    <g data-hs="lectern" transform="translate(${ax - 160 * s},${ay - 190 * s}) scale(${s})">
+      <path class="k sB mech" d="M114,124 L206,124 L202,131 L118,131 Z"/><path class="k sB mech" d="M118,131 L202,131 L196,190 L124,190 Z"/>
+      <path class="sN mech" d="M132,140 L188,140 L184,180 L136,180 Z"/><path class="hl sN mech" d="M140,150 L180,150 M139,160 L181,160 M138,170 L182,170"/>
+      <path class="sM" d="M194,124 C197,112 192,104 186,102"/><circle class="fG" cx="185" cy="101" r="2.2"/>
+      <rect x="114" y="100" width="92" height="90" fill="transparent"/></g>
+  </g>`;
+}
+
+/* ================================================================ *
+ *  PORTRAITS (same drawings, larger, with blink / mouth / blank)
+ * ================================================================ */
+const PORTRAIT = {
+  ned: { name: "NED NULL", chip: "fG", vb: "112 12 96 118", svg: () => `
+    <path class="k sG" d="M108,140 C112,104 124,94 140,90 C146,88 150,86 153,86 L160,92 L167,86 C170,86 174,88 180,90 C196,94 208,104 212,140 Z"/>
+    <path class="sG" d="M153,86 C156,91 164,91 167,86"/><circle class="sG" cx="180" cy="112" r="6"/><path class="sG" d="M177.5,109.5 L182.5,114.5"/>
+    <path class="hl sG" d="M126,104 C130,114 130,126 127,136 M196,104 C192,114 193,126 196,136 M146,96 C150,98 154,98 158,97"/>
+    <path class="sK" d="M154,80 L154,87 M167,80 L167,87"/>
+    <path class="k sK" d="M139,54 C138,72 149,82 161,82 C174,82 183,72 183,56"/>
+    <path class="sK" d="M140,58 C134,57 133,67 140,68"/><path class="hl sK" d="M137,61 C136,63 137,65 139,65"/>
+    <path class="k sR" d="M137,60 C132,41 143,30 156,31 L153,21 L162,28 L166,17 L172,28 L181,22 L180,33 C189,38 189,51 184,59 C180,49 172,45 164,47 C156,43 145,47 137,60 Z"/>
+    <path class="sR" d="M149,38 L155,45 M164,33 L166,42 M174,36 L172,44"/><path class="hl sR" d="M143,44 C148,40 152,40 156,42 M170,40 C175,40 180,44 182,50"/>
+    <path class="sR" d="M147,53 C150,51.5 154,51.5 157,52.5 M168,52.5 C171,51.5 175,51.5 178,53"/>
+    <g class="eyes-open"><circle class="fW" cx="155" cy="61.5" r="1.7"/><circle class="fW" cx="174.5" cy="61.5" r="1.7"/></g>
+    <g class="eyes-closed"><path class="sW" d="M152,61.5 L158,61.5 M171.5,61.5 L177.5,61.5"/></g>
+    <rect class="sW" x="146.5" y="56" width="13" height="10" rx="3"/><rect class="sW" x="166" y="56" width="13" height="10" rx="3"/>
+    <path class="sW" d="M159.5,60 L166,60 M146.5,59 L141,58"/>
+    <path class="hl sK" d="M149,68.5 C151,69.5 154,69.5 156,68.5 M168.5,68.5 C170.5,69.5 173.5,69.5 175.5,68.5"/>
+    <path class="sK" d="M168,66 C165,71 168,73 171,72"/>
+    ${[[147, 74], [150, 77], [176, 74], [173, 77], [158, 80], [164, 80], [154, 79], [168, 79]].map(([x, y]) => `<circle class="fK" cx="${x}" cy="${y}" r=".45"/>`).join("")}
+    <g class="mouth-a"><path class="sK" d="M161,75.5 C165,74 169,74.5 173,76.5"/></g>
+    <g class="mouth-b"><path class="k sK" d="M161,75 C165,73.5 170,74 173,76 C171,79.5 164,80 161,75 Z"/></g>` },
+
+  preston: { name: "PRESTON VALU", chip: "fR", vb: "112 10 96 118", svg: () => `
+    <path class="k sR" d="M104,140 C106,108 122,95 150,92 L160,106 L170,92 C198,95 214,108 216,140 Z"/>
+    <path class="sR" d="M150,92 L156,118 M170,92 L164,118"/><path class="sW" d="M154,94 L160,104 L166,94"/>
+    <path class="hl sR" d="M126,108 C130,116 130,126 128,136 M194,108 C190,116 190,126 192,136"/><circle class="hl sR" cx="160" cy="124" r="1.6"/>
+    <path class="hl sW" d="M182,104 L192,102 L190,109 Z"/>
+    <path class="sK" d="M152,84 L152,92 M168,84 L168,92"/>
+    <path class="k sK" d="M132,50 C131,72 145,86 160,86 C175,86 189,72 188,50"/>
+    <path class="sK" d="M133,56 C127,55 127,66 133,66 M187,56 C193,55 193,66 187,66"/>
+    <path class="k sA" d="M129,56 C124,34 138,19 158,17 C179,15 196,26 193,46 C192,50 190,54 188,56 C184,45 176,41 167,43 C173,36 168,30 159,33 C148,37 139,45 129,56 Z"/>
+    <path class="sA" d="M141,30 C151,23 166,21 179,25 M137,42 C143,37 150,34 156,33"/>
+    <path class="hl sA" d="M146,26 C156,22 170,22 182,30 M150,22 C160,19 172,20 184,26 M186,34 C188,40 189,46 188,52"/>
+    <path class="sK" d="M160,61 C157,68 160,70 163,69"/><path class="hl sK" d="M141,74 C143,76 144,78 144,80 M179,74 C177,76 176,78 176,80"/>
+    <g class="normal-only">
+      <path class="sA" d="M142,53 C146,49 152,49 157,51 M163,51 C168,49 174,49 178,53"/>
+      <g class="eyes-open"><path class="k sW" d="M143,60 C146,56 152,56 156,60 C152,64 147,64 143,60 Z"/><circle class="fB" cx="150.5" cy="60" r="2"/><circle class="fW" cx="151.3" cy="59.2" r=".5"/>
+        <path class="k sW" d="M164,60 C168,56 174,56 177,60 C173,64 168,64 164,60 Z"/><circle class="fB" cx="171.5" cy="60" r="2"/><circle class="fW" cx="172.3" cy="59.2" r=".5"/></g>
+      <g class="eyes-closed"><path class="sW" d="M143,60 C147,62.5 152,62.5 156,60 M164,60 C168,62.5 173,62.5 177,60"/></g>
+      <g class="mouth-a"><path class="k sW" d="M146,72 C152,81 168,81 174,72 C166,75 154,75 146,72 Z"/><path class="hl sW" d="M154,74 L154,77.5 M160,75 L160,79 M166,74 L166,77.5"/></g>
+      <g class="mouth-b"><path class="k sW" d="M146,71 C152,85 168,85 174,71 C166,74 154,74 146,71 Z"/><path class="hl sW" d="M148,74 L172,74"/></g>
+      <circle class="sW" cx="129.5" cy="62" r="2.5"/><circle class="sW" cx="190.5" cy="62" r="2.5"/>
+    </g>
+    <g class="blank-only">
+      <path class="sA" d="M143,52 L157,52 M163,52 L177,52"/>
+      <circle class="k sW" cx="150" cy="60" r="4.2"/><circle class="fW" cx="150" cy="60" r=".9"/><circle class="k sW" cx="170" cy="60" r="4.2"/><circle class="fW" cx="170" cy="60" r=".9"/>
+      <g class="mouth-a"><path class="sK" d="M150,75 L170,75"/></g><g class="mouth-b"><path class="k sK" d="M151,73 L169,73 L169,77 L151,77 Z"/></g>
+      <circle class="fG" cx="129.5" cy="62" r="3"/><circle class="fG" cx="190.5" cy="62" r="3"/>${arcs(124, 62, -1, "sG")}${arcs(196, 62, 1, "sG")}
+      ${[54, 58, 62, 66, 70, 74, 78].map(y => `<path class="hl sG" d="M138,${y} L182,${y}" opacity=".35"/>`).join("")}
+    </g>` },
+
+  iris: { name: "THE OLD WOMAN", chip: "fV", vb: "112 8 96 118", svg: () => `
+    <path class="k sV" d="M106,140 C108,108 126,95 150,92 L160,104 L170,92 C194,95 212,108 214,140 Z"/>
+    <path class="sV" d="M160,104 L160,140"/>${[112, 122, 132].map(y => `<circle class="sV" cx="165" cy="${y}" r="1.6"/>`).join("")}
+    <path class="hl sV" d="M126,108 C130,118 130,128 128,138 M194,108 C190,118 190,128 192,138"/>
+    ${[150, 155, 160, 165, 170].map((x, i) => `<circle class="sW" cx="${x}" cy="${98 - Math.abs(i - 2) * 1.2}" r="1.7"/>`).join("")}
+    <path class="sK" d="M153,84 L153,92 M167,84 L167,92"/>
+    <path class="k sK" d="M139,50 C138,71 148,84 160,84 C172,84 182,71 181,50"/>
+    <path class="k sW" d="M137,56 C134,37 146,29 160,29 C174,29 186,37 183,56 C178,46 168,42 160,42 C152,42 142,46 137,56 Z"/>
+    <circle class="k sW" cx="160" cy="22" r="8"/><path class="sW" d="M154,20 C158,18 162,18 166,20 M150,36 C154,33 158,32 162,32"/>
+    <path class="hl sW" d="M144,40 C150,36 156,35 160,35 M170,36 C175,37 179,40 181,44 M155,24 C158,26 162,26 165,24"/>
+    <g class="eyes-open"><circle class="fW" cx="151" cy="60" r="1.5"/><circle class="fW" cx="169" cy="60" r="1.5"/></g>
+    <g class="eyes-closed"><path class="sW" d="M148,60.5 L154,60.5 M166,60.5 L172,60.5"/></g>
+    <path class="k sA" d="M143,57 L157,56 L156,63 L145,64 Z M163,56 L177,57 L175,64 L164,63 Z" fill-opacity="0"/><path class="sA" d="M157,58 L163,58"/>
+    <path class="sA dash" d="M143,60 C134,72 136,88 146,96"/>
+    <path class="sK" d="M160,63 C157,69 160,71 163,70 M146,70 L149,72.5 M174,70 L171,72.5"/>
+    <path class="hl sK" d="M142,66 L145,67 M178,66 L175,67 M152,79 C156,81 164,81 168,79"/>
+    <g class="mouth-a"><path class="sK" d="M153,75 C157,77 163,77 167,74"/></g>
+    <g class="mouth-b"><path class="k sK" d="M153,74 C157,73 163,73 167,74 C165,78.5 156,78.5 153,74 Z"/></g>` },
+
+  gus: { name: "GUS MOPLEY", chip: "fB", vb: "112 14 96 118", svg: () => `
+    <path class="k sV" d="M106,142 C108,104 124,84 140,82 C148,81 154,82 160,84 C166,82 172,81 180,82 C196,84 212,104 214,142 Z"/>
+    <path class="hl sV" d="M136,98 L150,98 L150,110 L136,110 Z M160,86 L160,142 M128,112 C130,122 130,132 128,140 M192,112 C190,122 190,132 192,140"/>
+    <ellipse class="k sR" cx="176" cy="102" rx="11" ry="6.5"/>${seg("GUS", 169.5, 99.5, 5, "sR", .7)}
+    <path class="sK" d="M154,76 L154,83 M166,76 L166,83"/>
+    <path class="k sK" d="M137,47 C136,66 148,77 160,77 C172,77 184,66 183,47"/>
+    <path class="sW" d="M137,50 C134,54 135,60 138,62 M183,50 C186,54 185,60 182,62"/>
+    <path class="hl sK" d="M141,58 L144,59 M141,62 L144,62 M179,58 L176,59 M179,62 L176,62 M150,46.5 C154,46 156,46 158,46.5"/>
+    <path class="k sB" d="M136,46 C135,30 147,22 160,22 C173,22 185,30 184,46 Z"/><path class="k sB" d="M156,46 L204,46 C206,48 204,51 200,51 L156,51 Z"/>
+    <path class="hl sB" d="M148,24 C146,32 146,40 148,46 M172,24 C174,32 174,40 172,46 M160,22 L160,30"/>
+    <circle class="k sW" cx="160" cy="36" r="5"/>${seg("FM", 157, 34.2, 3.5, "sW", .6)}
+    <path class="sW" d="M146,52 L154,51 M166,51 L174,52"/>
+    <g class="eyes-open"><circle class="fW" cx="150.5" cy="56" r="1.5"/><circle class="fW" cx="169.5" cy="56" r="1.5"/></g>
+    <g class="eyes-closed"><path class="sW" d="M148,56 L153,56 M167,56 L172,56"/></g>
+    <path class="sK" d="M160,57 C156,64 159,67 164,65"/>
+    <g class="mouth-a"><path class="k sW" d="M144,68 C150,62 157,65 160,67 C163,65 170,62 176,68 C170,72 163,70 160,70 C157,70 150,72 144,68 Z"/></g>
+    <g class="mouth-b"><path class="k sK" d="M155,71 C158,70 162,70 165,71 C164,74.5 156,74.5 155,71 Z"/>
+      <path class="k sW" d="M144,66 C150,60 157,63 160,65 C163,63 170,60 176,66 C170,70 163,68 160,68 C157,68 150,70 144,66 Z"/></g>` },
+
+  morris: { name: "MORRIS", chip: "fK", vb: "-6 -6 128 116", svg: () => `
+    <path class="sK" d="M24,88 C-4,96 -10,62 10,58 C22,56 22,74 12,72"/>
+    <circle class="k sW" cx="30" cy="20" r="14"/><circle class="sK" cx="30" cy="21" r="7.5"/>
+    <circle class="k sW" cx="72" cy="14" r="14"/><circle class="sK" cx="72" cy="15" r="7.5"/>
+    <path class="k sW" d="M28,98 C14,98 12,66 24,52 C18,36 30,18 52,18 C78,16 92,34 88,54 C104,56 112,64 112,70 C108,78 94,80 86,78 C92,92 82,98 72,98 Z"/>
+    <path class="hl sW" d="M30,74 C38,80 50,82 60,80 M22,60 L18,58 M24,66 L19,66 M40,88 C48,90 56,90 62,88"/>
+    <circle class="fK" cx="111" cy="69" r="3.2"/><path class="sW" d="M100,74 L118,70 M100,77 L118,80 M98,80 L112,88"/>
+    <g class="eyes-open"><circle class="k sW" cx="52" cy="44" r="10"/><circle class="k sW" cx="74" cy="42" r="9"/>
+      <circle class="fW" cx="55" cy="45" r="3.4"/><circle class="fW" cx="77" cy="43" r="3.2"/></g>
+    <g class="eyes-closed"><path class="sW" d="M43,45 C48,49 56,49 61,45 M66,43 C70,46.5 78,46.5 82,43"/></g>
+    <g class="mouth-a"><path class="k sW" d="M90,79 L95,79 L95,85 L90,85 Z"/></g>
+    <g class="mouth-b"><path class="k sW" d="M86,80 C90,78 100,78 102,81 C100,88 90,90 86,80 Z"/><path class="k sW" d="M90,79 L95,79 L95,83 L90,83 Z"/></g>
+    <path class="sW" d="M40,22 L58,20 M44,18 L44,25 M50,17 L50,24 M56,17 L56,23"/><circle class="fG" cx="62" cy="20" r="2.6"/>
+    <path class="k sW" d="M26,98 C26,93 40,93 40,98 Z M62,98 C62,93 76,93 76,98 Z"/>` },
+};
+
+/* ================================================================ *
+ *  HOTSPOTS, CONVERSATIONS
+ * ================================================================ */
+const STAND = { preston: [236, 214], lectern: [236, 214], screen: [320, 212], iris: [214, 286], quorum: [362, 228],
+  faculty: [300, 252], pizza: [500, 286], coffee: [520, 286], tube: [580, 286], morris: [420, 214], door: [104, 274], robe: [400, 286] };
+const HS = {
+  screen: { label: "projector screen",
+    day: { look: "Preston's slide. Six perfect cortical layers, error bars so small they'd embarrass a ruler. The methods say 7T.\n\nThe building has a 3T.", score: ["screen", 1], use: "You cannot use a slide. You can only envy it." },
+    night: { look: "Dark. The faint ghost of a brain is burned into the screen.", use: "Gus wipes the screen. The ghost stays." } },
+  preston: { label: "Preston", day: { look: "Preston \"P.\" Valu. Third-year. First author. Rising Star. Never takes his earbuds out, not even for pizza.", talk: "cPreston", use: "Hands off. He's networking." } },
+  lectern: { label: "lectern", day: { look: "The lectern. Its microphone has been on since 2009.", use: "Preston is using it. Aggressively." },
+    night: { look: "The lectern. Someone left one index card on it: THE AUTHORS SHOULD CONSIDER…", use: "Gus pockets the card. Thirty years, never asked." } },
+  quorum: { label: "Prof. Quorum", day: { look: "Prof. Quorum, the Department Chair. Front row, as always. Round cufflinks. Expensive.", talk: "PROF. QUORUM|Not now, Mr. Null. We're about to lose quorum.", use: "Touching the Chair is a committee matter." } },
+  faculty: { label: "senior faculty", day: { look: "The senior faculty, nodding in perfect unison.\n\nTenure does that to a person.", talk: "They nod. In unison.", use: "They nod. In unison." } },
+  iris: { label: "old woman", day: { look: "An elderly woman in the back row, silver bun, cardigan, pearls. She has attended journal club since 1961. Nobody knows who she is.", talk: "cIris", use: "She swats your hand away with surprising speed." } },
+  pizza: { label: "pizza", day: { look: "Journal club pizza. Monday's is edible. By Thursday it is a biohazard.", use: "You take a slice. Priorities.", score: ["pizza", 1] },
+    night: { look: "Empty. The rat got here first.", use: "Gus folds the box flat. It's what he does." } },
+  coffee: { label: "coffee cup", day: { look: "Someone's abandoned coffee. Not a clue. Just sad.", use: "It's cold. Like the job market." } },
+  tube: { label: "pneumatic tube", day: { look: "The building's old pneumatic tube. A canister just went by, marked B3.\n\nThere is no B3.", use: "You'd need a canister. And a reason.", score: ["tube", 1] },
+    night: { look: "The canisters are rattling. Going down. Past the basement.\n\nThere is no \"past the basement.\"", use: "Gus puts his ear to the pipe. Chanting? No. Probably the boiler.", score: ["tubeN", 1] } },
+  morris: { label: "ceiling tile", day: { look: "A ceiling tile is ajar. Two small eyes. A tail. Morris is attending journal club for the pizza.", talk: "cMorrisDay", use: "You can't reach. Morris can reach you, though." },
+    night: { look: "Two small eyes in the ceiling. The rat is back.", talk: "cMorrisNight", use: "Gus can't reach. The rat seems fine with that." } },
+  door: { label: "door", day: { look: "The hallway to the rest of Fechner Hall. Not built yet.", use: "Locked by the narrator, for your own good." },
+    night: { look: "The hallway. The motion-sensor lights never come on for Gus. They never have.", use: "Not tonight." } },
+  exit: { label: "exit sign", day: { look: "EXIT.", use: "It's a sign, not a door. Though it may be a sign." }, night: { look: "EXIT. The only warm color on three floors.", use: "Gus taps it. It hums back." } },
+  clock: { label: "clock", day: { look: "16:07. Journal club ends when the pizza does." }, night: { look: "02:13. The canisters always start around two." } },
+  robe: { label: "hooded robe", night: { look: "A hooded robe, draped over a chair. A small round pin on the chest: a circle around a smaller circle, lit red.\n\nSomeone forgot it. Again.",
+    use: "Gus folds the robe and tags it for the lost and found. Number four hundred and twelve. He's never asked.", score: ["robe", 2], take: true } },
+};
+const CONVOS = {
+  cPreston: { L: "ned", R: "preston", score: ["preston", 2], lines: [
+    ["L", "Great talk, Preston. Quick question. When did we get a 7T?"],
+    ["R", "Ned! Love the energy. Love it. Let's grab coffee. Actually, let's grab synergy."],
+    ["L", "The building has a 3T."],
+    ["R", "The authors thank the reviewer for their insightful comment.", "blank"],
+    ["L", "…Preston?"],
+    ["R", "Anyway! I ran every subject myself. Gotta network. Ciao!"],
+    ["N", "Your voice memo recorder caught that. One (1) suspicious non-answer."],
+  ]},
+  cIris: { L: "ned", R: "iris", score: ["iris", 2], lines: [
+    ["R", "Young man."],
+    ["L", "Me?"],
+    ["R", "Ask him who reviewed it."],
+    ["L", "Who reviewed… his paper?"],
+    ["R", "Mm. And while you're at it, ask yourself who reviewed yours."],
+    ["N", "She goes back to her crossword. It's in pen."],
+  ]},
+  cMorrisDay: { L: "ned", R: "morris", score: ["morrisD", 1], lines: [
+    ["R", "Psst. Pal. Up here."],
+    ["L", "Morris! You're supposed to stay in the drawer."],
+    ["R", "The drawer doesn't have pizza. Also, your boy Preston's giving me the itch again."],
+    ["L", "Fleas?"],
+    ["R", "Fleas don't pulse, pal."],
+  ]},
+  cMorrisNight: { L: "gus", R: "morris", score: ["morrisN", 1], lines: [
+    ["L", "Evening, rat."],
+    ["R", "Squeak squeak. Squeak squeak squeak.|(The canisters are going down again. Six tonight.)"],
+    ["L", "Those canisters again. Going down past the basement. Every night this week."],
+    ["R", "SQUEAK.|(There IS something past the basement, you know.)"],
+    ["L", "Yeah. I don't like it either."],
+  ]},
+};
+
+/* ================================================================ *
+ *  HUD (y 290–360)
+ * ================================================================ */
+const ICON = {
+  walk: (x, y, c) => `<path class="${c}" d="M${x - 5},${y + 6} C${x - 8},${y} ${x - 2},${y - 2} ${x - 2},${y + 4} Z M${x + 3},${y} C${x},${y - 6} ${x + 6},${y - 8} ${x + 6},${y - 2} Z"/>`,
+  look: (x, y, c) => `<path class="${c}" d="M${x - 9},${y} Q${x},${y - 8} ${x + 9},${y} Q${x},${y + 8} ${x - 9},${y} Z"/><circle class="${c.replace("s", "f")}" cx="${x}" cy="${y}" r="2.4"/>`,
+  use: (x, y, c) => `<path class="${c}" d="M${x - 5},${y + 7} L${x - 5},${y - 2} M${x - 2},${y + 1} L${x - 2},${y - 7} M${x + 1},${y + 1} L${x + 1},${y - 8} M${x + 4},${y + 1} L${x + 4},${y - 6} M${x - 6},${y + 7} L${x + 6},${y + 7} L${x + 6},${y}"/>`,
+  talk: (x, y, c) => `<path class="${c}" d="M${x - 9},${y - 6} L${x + 9},${y - 6} L${x + 9},${y + 4} L${x - 2},${y + 4} L${x - 6},${y + 8} L${x - 6},${y + 4} L${x - 9},${y + 4} Z"/>`,
+};
+const ITEMS = {
+  recorder: { name: "voice memo recorder", look: "Your voice memo recorder. Record what people say; play it back to someone else.",
+    g: (x, y) => `<rect class="sW" x="${x - 5}" y="${y - 10}" width="10" height="20" rx="2"/><circle class="fR" cx="${x}" cy="${y + 5}" r="1.8"/><path class="hl sW" d="M${x - 2},${y - 6} L${x + 2},${y - 6} M${x - 2},${y - 3} L${x + 2},${y - 3}"/>` },
+  notebook: { name: "lab notebook", look: "Your lab notebook. For tracing figures, signatures and suspicious shapes. Mostly it holds null results.",
+    g: (x, y) => `<rect class="sW" x="${x - 7}" y="${y - 10}" width="14" height="20"/><path class="hl sW" d="M${x - 3},${y - 5} L${x + 4},${y - 5} M${x - 3},${y - 1} L${x + 4},${y - 1} M${x - 3},${y + 3} L${x + 4},${y + 3}"/>` },
+  thermos: { name: "thermos", look: "Your steel thermos, with NED written on it in marker. Keep it away from the MRI. (Foreshadowing.)",
+    g: (x, y) => `<path class="sA" d="M${x - 5},${y - 9} L${x + 5},${y - 9} L${x + 6},${y + 9} C${x + 6},${y + 11} ${x - 6},${y + 11} ${x - 6},${y + 9} Z"/>${seg("NED", x - 4, y - 2, 3.4, "sA", .7)}` },
+  keys: { name: "keys", look: "Every key in Fechner Hall. Forty-one of them. Nobody suspects the janitor.",
+    g: (x, y) => `<circle class="sW" cx="${x}" cy="${y - 4}" r="5"/>${[-4, 0, 4].map(dx => `<path class="sA" d="M${x + dx},${y} L${x + dx * 1.4},${y + 10}"/>`).join("")}` },
+  flashlight: { name: "flashlight", look: "A flashlight with exactly one working battery. It's enough. Barely.",
+    g: (x, y) => `<rect class="sW" x="${x - 3}" y="${y - 3}" width="6" height="13"/><path class="sW" d="M${x - 6},${y - 10} L${x + 6},${y - 10} L${x + 3},${y - 3} L${x - 3},${y - 3} Z"/><circle class="fA" cx="${x}" cy="${y - 10}" r="2"/>` },
+  tag: { name: "lost & found tag", look: "A lost-and-found tag. Gus has filled out four hundred of these for hooded robes. He's never asked.",
+    g: (x, y) => `<path class="sW" d="M${x - 7},${y - 8} L${x + 4},${y - 8} L${x + 8},${y} L${x + 4},${y + 8} L${x - 7},${y + 8} Z"/><circle class="fW" cx="${x + 3}" cy="${y}" r="1.5"/>` },
+};
+const VERBS = ["walk", "look", "use", "talk"];
+function hud() {
+  const night = state.mode === "night";
+  let s = `<rect x="0" y="291" width="640" height="69" fill="#000"/><path class="hl sD" d="M0,292 L640,292 M152,302 L152,350 M276,302 L276,350 M510,302 L510,350"/>`;
+  VERBS.forEach((v, i) => {
+    const x = 26 + i * 33, y = 318, on = state.verb === v;
+    s += `<g data-verb="${v}" style="cursor:pointer">${on ? `<rect class="fW" x="${x - 14}" y="${y - 13}" width="28" height="26"/>` : `<rect class="hl sD" x="${x - 14}" y="${y - 13}" width="28" height="26"/>`}
+      ${ICON[v](x, y, on ? "s0" : "sW")}${seg(v, x - segW(v, 4.2) / 2, 338, 4.2, on ? "sW" : "sM", .8)}<rect x="${x - 15}" y="${y - 14}" width="30" height="34" fill="transparent"/></g>`;
+  });
+  const items = night ? ["keys", "flashlight", "tag"] : ["recorder", "notebook", "thermos"];
+  s += seg("INVENTORY", 164, 300, 4.2, "sM", .8);
+  items.forEach((id, i) => { const x = 176 + i * 34, y = 326; s += `<g data-item="${id}" style="cursor:pointer">${ITEMS[id].g(x, y)}<rect x="${x - 14}" y="${y - 16}" width="28" height="32" fill="transparent"/></g>`; });
+  s += seg("DAY", 290, 300, 4.2, night ? "sG" : "sB", .8) + seg("MON", 290, 308, 20, night ? "sG" : "sB", 1.4);
+  s += seg("TIME", 336, 300, 4.2, "sW", .8) + seg(night ? "02:13" : "16:07", 336, 308, 20, "sW", 1.4);
+  s += seg("H-INDEX", 410, 300, 4.2, "sA", .8) + `<g id="score">${seg(String(state.score).padStart(2, "0"), 410, 308, 20, "sA", 1.4)}</g>` + seg("/50", 432, 322, 7, "sM", 1);
+  s += seg("BODIES", 462, 300, 4.2, "sR", .8) + seg("00", 462, 308, 20, "sR", 1.4);
+  s += chip(state.status || (night ? "NIGHT SHIFT" : "JOURNAL CLUB"), 522, 300, 5.5, state.status === "RECORDING" ? "fR" : night ? "fG" : "fB");
+  s += `<g id="toggle" style="cursor:pointer"><rect class="sW" x="522" y="322" width="106" height="26"/>
+        ${seg(night ? "< DAY SHIFT" : "NIGHT SHIFT >", 530, 329, 7, "sW", 1.1)}${seg(night ? "BACK TO NED" : "SWITCH TO GUS", 530, 340, 3.6, "sM", .7)}
+        <rect x="522" y="322" width="106" height="26" fill="transparent"/></g>`;
+  $("#hud").innerHTML = s;
+}
+
+/* ================================================================ *
+ *  STATE + BUILD
+ * ================================================================ */
+const state = { mode: "day", verb: "walk", score: 0, scored: new Set(), busy: false, taken: new Set(), status: "",
+  actor: { x: 320, y: 280, dir: 1, tx: 320, ty: 280, walking: false, step: 0, cb: null } };
+
+svg.innerHTML = room() + `<g id="sortables">
+    <g data-depth="208">${lecternGroup()}</g>
+    <g data-depth="${P(0, FY, ROWS[0])[1]}">${rowGroup(0)}</g>
+    <g data-depth="${P(0, FY, ROWS[1])[1]}">${rowGroup(1)}</g>
+    <g data-depth="${P(0, FY, 0.82)[1] - 1}">${tableGroup()}</g>
+    <g data-depth="${P(0, FY, ROWS[2])[1]}">${rowGroup(2)}</g>
+    <g data-depth="actor" id="actorWrap"><g id="actor" data-pose="0"></g></g>
+  </g><g id="hud"></g>`;
+const sortables = $("#sortables"), actorWrap = $("#actorWrap"), actorEl = $("#actor");
+function drawActor() { actorEl.innerHTML = state.mode === "night" ? gusFigure() : nedFigure(); }
+
+/* ---------------- helpers ---------------- */
+const hover = $("#hover"), msg = $("#msg");
+function setVerb(v) { state.verb = v; hud(); }
+let actx;
+function blip() { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); const t = actx.currentTime;
+  [880, 1320].forEach((f, i) => { const o = actx.createOscillator(), g = actx.createGain(); o.type = "square"; o.frequency.value = f;
+    g.gain.setValueAtTime(.0001, t + i * .08); g.gain.exponentialRampToValueAtTime(.04, t + i * .08 + .01); g.gain.exponentialRampToValueAtTime(.0001, t + i * .08 + .1);
+    o.connect(g).connect(actx.destination); o.start(t + i * .08); o.stop(t + i * .08 + .12); }); } catch (e) {} }
+function addScore(key, n) { if (!key || state.scored.has(key)) return; state.scored.add(key); state.score += n; hud(); blip(); }
+const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br>");
+function typeInto(el, html, speed, onTick) {
+  return new Promise(resolve => {
+    let i = 0, done = false; const tokens = html.match(/<[^>]+>|&[a-z]+;|[\s\S]/g) || [];
+    el.innerHTML = "";
+    const timer = setInterval(() => { if (i >= tokens.length) { finish(); return; } el.innerHTML += tokens[i++]; onTick && onTick(true); }, speed);
+    function finish() { clearInterval(timer); el.innerHTML = html; done = true; onTick && onTick(false); }
+    function click(e) { e.stopPropagation(); if (!done) { finish(); return; } frame.removeEventListener("pointerdown", click, true); resolve(); }
+    frame.addEventListener("pointerdown", click, true);
+  });
+}
+async function say(text) {
+  state.busy = true; hover.classList.remove("show");
+  let who = "", body = text; if (text.includes("|")) [who, body] = text.split("|");
+  msg.innerHTML = `${who ? `<span class="who" style="background:var(--A)">${esc(who)}</span><br>` : ""}<span class="t"></span><span class="more">CLICK ▸</span>`;
+  msg.classList.add("show");
+  await typeInto($(".t", msg), esc(body), state.mode === "night" ? 26 : 16);
+  msg.classList.remove("show"); state.busy = false;
+}
+
+/* ---------------- conversations ---------------- */
+const convo = $("#convo"), dlg = $("#dlg"), PF = { L: $(".pf.left"), R: $(".pf.right") };
+let blinkTimers = [];
+function mount(side, id) {
+  const p = PORTRAIT[id];
+  PF[side].querySelector(".pv").innerHTML = `<svg class="t pt" viewBox="${p.vb}" preserveAspectRatio="xMidYMid meet">${p.svg()}</svg>`;
+  const nm = PF[side].querySelector(".name"); nm.textContent = p.name; nm.style.background = `var(--${p.chip.slice(1)})`;
+  const el = PF[side].querySelector("svg");
+  const blink = () => { el.classList.add("bl"); setTimeout(() => el.classList.remove("bl"), 140); blinkTimers.push(setTimeout(blink, 1800 + Math.random() * 3000)); };
+  blinkTimers.push(setTimeout(blink, 700 + Math.random() * 1500));
+  return el;
+}
+async function runConvo(key) {
+  const c = CONVOS[key]; state.busy = true; hover.classList.remove("show");
+  const els = { L: mount("L", c.L), R: mount("R", c.R) };
+  convo.classList.add("show");
+  for (const [side, raw, fx] of c.lines) {
+    PF.L.classList.toggle("speaking", side === "L"); PF.R.classList.toggle("speaking", side === "R");
+    let text = raw, sub = ""; if (raw.includes("|")) [text, sub] = raw.split("|");
+    const who = dlg.querySelector(".who");
+    if (side === "N") { who.textContent = "NARRATOR"; who.style.background = "var(--M)"; }
+    else { const p = PORTRAIT[c[side]]; who.textContent = p.name; who.style.background = `var(--${p.chip.slice(1)})`; }
+    const sp = side === "N" ? null : els[side];
+    if (sp) sp.classList.toggle("blank", fx === "blank");
+    const scene = $("#preston"); if (fx === "blank" && scene) scene.classList.add("blank");
+    let flap = 0;
+    await typeInto(dlg.querySelector(".txt"), esc(text) + (sub ? `<br><em>${esc(sub)}</em>` : ""), state.mode === "night" ? 26 : 18,
+      (on) => { if (!sp) return; if (on) { if (++flap % 3 === 0) sp.classList.toggle("mo"); } else sp.classList.remove("mo"); });
+    if (sp) { sp.classList.remove("mo"); sp.classList.remove("blank"); }
+    if (scene) scene.classList.remove("blank");
+  }
+  blinkTimers.forEach(clearTimeout); blinkTimers = [];
+  convo.classList.remove("show");
+  if (c.score) addScore(...c.score);
+  if (key === "cPreston") { state.status = "RECORDING"; hud(); setTimeout(() => { state.status = ""; hud(); }, 3500); }
+  state.busy = false;
+}
+
+/* ---------------- input ---------------- */
+function svgPoint(e) { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
+function hsFrom(t) { const el = t.closest && t.closest("[data-hs]"); if (!el) return null; const id = el.dataset.hs, h = HS[id];
+  if (!h || !h[state.mode] || state.taken.has(id)) return null; return id; }
+const VL = { walk: "Walk to", look: "Look at", use: "Use", talk: "Talk to" };
+frame.addEventListener("pointermove", (e) => {
+  if (state.busy) { hover.classList.remove("show"); return; }
+  const id = hsFrom(e.target), item = e.target.closest && e.target.closest("[data-item]");
+  const label = id ? `${VL[state.verb]} ${HS[id].label}` : item ? `Look at ${ITEMS[item.dataset.item].name}` : "";
+  if (!label) { hover.classList.remove("show"); return; }
+  const r = frame.getBoundingClientRect();
+  hover.textContent = label; hover.classList.add("show");
+  hover.style.left = (e.clientX - r.left + 14) + "px"; hover.style.top = (e.clientY - r.top + 16) + "px";
+});
+frame.addEventListener("contextmenu", (e) => { e.preventDefault(); if (!state.busy) setVerb(VERBS[(VERBS.indexOf(state.verb) + 1) % 4]); });
+window.addEventListener("keydown", (e) => { const n = +e.key; if (n >= 1 && n <= 4 && !state.busy) setVerb(VERBS[n - 1]); });
+svg.addEventListener("click", (e) => {
+  if (state.busy) return;
+  const v = e.target.closest("[data-verb]"); if (v) { setVerb(v.dataset.verb); return; }
+  if (e.target.closest("#toggle")) { toggleMode(); return; }
+  const it = e.target.closest("[data-item]"); if (it) { say(ITEMS[it.dataset.item].look); return; }
+  const p = svgPoint(e); if (p.y > 290) return;
+  const id = hsFrom(e.target); if (id) { act(id); return; }
+  if (state.verb !== "walk") setVerb("walk");
+  walkTo(p.x, p.y);
+});
+function act(id) {
+  const h = HS[id][state.mode], v = state.verb;
+  if (v === "walk") { const s = STAND[id]; if (s) walkTo(s[0], s[1]); return; }
+  if (v === "look") { if (h.look) { say(h.look); if (h.score) addScore(...h.score); } return; }
+  const resp = h[v] || (v === "talk" ? "No answer. Not even a squeak." : "Nothing happens. Academia in a nutshell.");
+  const go = () => {
+    if (CONVOS[resp]) { runConvo(resp); return; }
+    say(resp);
+    if (v === "use" && h.score) addScore(...h.score);
+    if (v === "use" && h.take) { state.taken.add(id); const el = document.getElementById(id); if (el) el.style.display = "none"; }
+  };
+  const s = STAND[id]; if (s) walkTo(s[0], s[1], go); else go();
+}
+
+/* ---------------- stepped (Game & Watch) movement ---------------- */
+function clampFloor(x, y) { y = Math.max(206, Math.min(287, y)); const k = kAtY(y), half = 320 * k - 16; return [Math.max(320 - half, Math.min(320 + half, x)), y]; }
+function walkTo(x, y, cb) { const a = state.actor; [a.tx, a.ty] = clampFloor(x, y); a.cb = cb || null; a.walking = true; }
+function render() {
+  const a = state.actor, s = kAtY(a.y) * 0.72;
+  actorEl.setAttribute("transform", `translate(${a.x.toFixed(1)},${a.y.toFixed(1)}) scale(${(a.dir * s).toFixed(3)},${s.toFixed(3)}) translate(-160,-187)`);
+  actorEl.setAttribute("data-pose", a.walking ? (a.step % 2 ? 2 : 1) : 0);
+  const kids = [...sortables.children].filter(c => c !== actorWrap);
+  const after = kids.find(c => parseFloat(c.dataset.depth) > a.y);
+  if (actorWrap.nextSibling !== after) sortables.insertBefore(actorWrap, after || null);
+}
+setInterval(() => {   // one G&W step every 120 ms
+  const a = state.actor; if (!a.walking) return;
+  const dx = a.tx - a.x, dy = a.ty - a.y, d = Math.hypot(dx, dy), stepLen = 9 * kAtY(a.y) + 3;
+  if (d <= stepLen) { a.x = a.tx; a.y = a.ty; a.walking = false; render(); const cb = a.cb; a.cb = null; cb && cb(); return; }
+  a.x += dx / d * stepLen; a.y += dy / d * stepLen; if (Math.abs(dx) > 1) a.dir = dx > 0 ? 1 : -1; a.step++; render();
+}, 120);
+
+/* ---------------- ambient pose clocks ---------------- */
+function poseSet(group, i) { document.querySelectorAll(`[data-g="${group}"]`).forEach(el => el.classList.toggle("on", +el.dataset.i === i)); }
+let nod = 0; setInterval(() => poseSet("nod", nod ^= 1), 800);
+let tail = 0; setInterval(() => poseSet("tail", tail ^= 1), 650);
+let parm = 0; setInterval(() => poseSet("parm", parm ^= 1), 1700);
+function blankBlip() { const p = $("#preston"); if (p && state.mode === "day" && !state.busy) { p.classList.add("blank"); setTimeout(() => p.classList.remove("blank"), 700); }
+  setTimeout(blankBlip, 5500 + Math.random() * 4000); }
+setTimeout(blankBlip, 4200);
+const can = $("#canister"), ctx = P(640, 0, .86)[0];
+function dropCanister() {   // the canister falls in fixed positions, then vanishes past the floor
+  const ys = [24, 48, 72, 100, 128, 200, 226, 252, 276]; let i = 0; can.style.display = "inline";
+  const t = setInterval(() => { if (i >= ys.length) { clearInterval(t); can.style.display = "none"; return; } can.setAttribute("transform", `translate(0,${ys[i++]})`); }, 110);
+  setTimeout(dropCanister, state.mode === "night" ? 3200 + Math.random() * 2400 : 8000 + Math.random() * 5000);
+}
+setTimeout(dropCanister, 2200);
+setInterval(() => { const a = Math.random() * 1.2 - .9; $("#needle").setAttribute("d", `M${ctx},138 L${(ctx + 5 * Math.cos(a)).toFixed(1)},${(138 + 5 * Math.sin(a)).toFixed(1)}`); }, 300);
+
+/* ---------------- title card + day/night ---------------- */
+const card = $("#card");
+function showCard() {
+  const night = state.mode === "night";
+  const t1 = night ? "MONDAY NIGHT" : "MONDAY", t2 = night ? "NIGHT SHIFT  GUS" : "ACT I  SUBMISSION";
+  card.innerHTML = `<rect width="640" height="360" fill="#000"/>${seg(t1, 320 - segW(t1, 42) / 2, 128, 42, "sW", 2)}
+    ${chip(t2, 320 - (segW(t2, 8) + 7.2) / 2, 196, 8, night ? "fG" : "fA")}
+    ${seg(night ? "SEMINAR RM 101  02:13" : "JOURNAL CLUB  SEMINAR RM 101  16:07", 320 - segW(night ? "SEMINAR RM 101  02:13" : "JOURNAL CLUB  SEMINAR RM 101  16:07", 6) / 2, 230, 6, "sM", 1)}`;
+  card.classList.add("show"); state.busy = true;
+  const hide = () => { card.classList.remove("show"); state.busy = false; card.removeEventListener("click", hide); };
+  card.addEventListener("click", hide); setTimeout(hide, 2300);
+}
+function toggleMode() {
+  state.mode = state.mode === "day" ? "night" : "day"; state.status = "";
+  frame.classList.toggle("night", state.mode === "night");
+  const a = state.actor; Object.assign(a, state.mode === "night" ? { x: 140, y: 278, dir: 1 } : { x: 320, y: 280, dir: 1 }, { walking: false, cb: null });
+  drawActor(); render(); hud(); showCard();
+}
+
+drawActor(); render(); hud(); showCard();
+})();
+</script>
+</body>
+</html>
