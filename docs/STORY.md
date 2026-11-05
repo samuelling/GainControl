@@ -391,17 +391,17 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 ---
 
 ## Visual direction: line, pose, segment
-**Reference:** `prototype/style-sheet/` (Style Sheet 01). The look draws on the OP-1 and Pocket Operator screens, Game & Watch LCDs, and early-80s arcade games like Q*bert, but crisper. We borrow the drawing rules, not any product's actual graphics, UI layout, controls or characters.
+**Reference:** `prototype/style-sheet/` (Style Sheet 02), checked against the official OP-1 module screens. The look draws on the OP-1 and Pocket Operator screens, Game & Watch LCDs, and early-80s arcade games like Q*bert, but crisper. We borrow the drawing rules, not any product's actual graphics, UI layout, controls or characters.
 
 ### The eight rules
-1. **One line weight.** Everything is drawn at a native 320×200 with a 1.5 px stroke, then scaled up. Big screen, small-screen drawing.
-2. **No fill.** Closed shapes are filled black only so lines overlap cleanly. Color fills are reserved for things that are *on*: an LED, the NRT insignia, a canister, a lit cube, a pupil, Morris's implant.
+1. **Two line weights.** Everything is drawn at a native 320×200, then scaled up: a 1.5 px line for objects and a 0.75 px hairline for grids, guides and interior detail (folds, seams, muscles, gears).
+2. **Almost no fill.** Closed shapes are filled black so lines overlap cleanly. Color fills are for things that are *on* (an LED, the NRT insignia, a canister, a lit cube, a pupil, Morris's implant) and for solid status chips with black lettering (RECORDING, NIGHT SHIFT).
 3. **Color = material.** Hair, cloth, skin, metal and wood each get one color. Skin is a pink line, never a filled face.
 4. **Open contours.** Faces are a jaw, a hairline and a few marks. Lines don't have to close.
 5. **Poses, not tweens.** Game & Watch / Pocket Operator logic: every animation frame is a pre-drawn pose that switches on and off in place. Movement across the screen steps between fixed positions (the thermos flies in four poses, then CLANG). Optional "LCD ghosts" show unlit poses faintly.
 6. **Motion as glyphs.** Vibration `((( )))`, speed dashes, sparks, drips and steam are drawn marks, not effects.
-7. **Places go isometric when they're maps.** Q*bert-style cube geometry for overview spaces (the steps to B3, the steam tunnels).
-8. **Segment type.** Every label, sign and on-screen number is drawn in one stroke alphabet on a 4×6 grid.
+7. **3D as wireframe.** Exploded isometric diagrams for clue close-ups (Preston's earbud), isometric cubes for maps (the Q*bert lineage, the steps to B3), perspective grids for corridors (the steam tunnels).
+8. **Condensed monoline type.** Big, thin, rounded numbers carry the screen, with tiny labels above them (DAY / MON, H-INDEX / 14). All lettering is drawn as strokes at the same weight as the art.
 
 ### Palette
 INK `#e9e6ff` · SIGNAL `#ff3b5c` · COOL `#6b8cff` · ON `#00e39a` · SKIN `#ff95ae` · BRASS `#ffb547` · ROBE `#9c7bff` · DEEP `#36346e` · STRUCT `#3a3842` · DIM `#7b7890`, on true black.

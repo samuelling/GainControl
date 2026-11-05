@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gain Control — Style Sheet 01</title>
+<title>Gain Control — Style Sheet 02</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -38,6 +38,7 @@
     stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; vector-effect: none;
   }
   svg.t { fill: none; }
+  svg.t .hl { stroke-width: .75; }
   svg.t .k { fill: #000; }
   svg.t .f { stroke: none; }
   svg.t .mech { stroke-linecap: butt; stroke-linejoin: miter; }
@@ -60,14 +61,14 @@
       </div>
     </div>
     <ol class="rules">
-      <li><b>One line weight.</b> Everything is drawn at a native 320×200 with a 1.5 px stroke, then scaled up. Big screen, small-screen drawing.</li>
-      <li><b>No fill.</b> Closed shapes are filled black only so lines can overlap cleanly. Color fills are reserved for things that are <i>on</i>: an LED, the insignia, the canister, a lit cube, a pupil.</li>
+      <li><b>Two line weights.</b> Drawn at a native 320×200, then scaled up: a 1.5 px line for objects and a 0.75 px hairline for grids, guides and interior detail (folds, seams, muscles, gears).</li>
+      <li><b>Almost no fill.</b> Closed shapes are filled black so lines overlap cleanly. Color fills are for things that are <i>on</i> (an LED, the insignia, a pupil, a lit cube) and for solid status chips with black lettering, like <span style="background:#ff3b5c;color:#000;padding:0 4px">RECORDING</span>.</li>
       <li><b>Color = material.</b> Hair, cloth, skin, metal and wood each get one color. Skin is a pink line, never a filled face.</li>
       <li><b>Open contours.</b> Faces are a jaw, a hairline and a few marks. Lines don't have to close.</li>
       <li><b>Poses, not tweens.</b> Game &amp; Watch / Pocket Operator logic: every frame is a pre-drawn pose that switches on and off in place. Toggle LCD GHOSTS to see the unlit segments.</li>
       <li><b>Motion as glyphs.</b> Vibration <span style="color:#00e39a">((( )))</span>, speed dashes, sparks and drips are drawn marks, not effects.</li>
-      <li><b>Places go isometric.</b> Q*bert-era cube geometry for maps and spaces, but crisp.</li>
-      <li><b>Segment type.</b> Every label is drawn in one stroke alphabet on the same grid.</li>
+      <li><b>3D as wireframe.</b> Exploded isometric diagrams for close-ups, isometric cubes for maps (the Q*bert lineage), perspective grids for corridors.</li>
+      <li><b>Condensed monoline type.</b> Big, thin, rounded numbers carry the screen; tiny labels sit above them. All lettering is drawn as strokes at the same weight as the art.</li>
     </ol>
   </header>
 
@@ -87,11 +88,11 @@ const PAL = [["INK", W], ["SIGNAL", R], ["COOL", B], ["ON", G], ["SKIN", K], ["B
 
 /* ---------------- segment stroke alphabet: 4×6 grid ---------------- */
 const GL = {
-  A:[[0,6,0,1,1,0,3,0,4,1,4,6],[0,3,4,3]], B:[[0,0,0,6,3,6,4,5,4,4,3,3,0,3],[0,0,3,0,4,1,4,2,3,3]],
-  C:[[4,0,0,0,0,6,4,6]], D:[[0,0,0,6,3,6,4,5,4,1,3,0,0,0]], E:[[4,0,0,0,0,6,4,6],[0,3,3,3]], F:[[4,0,0,0,0,6],[0,3,3,3]],
+  A:[[0,6,0,1,1,0,3,0,4,1,4,6],[0,3,4,3]], B:[[0,0,0,6],[0,6,3,6,4,5,4,4,3,3,0,3],[0,0,3,0,4,1,4,2,3,3]],
+  C:[[4,0,0,0,0,6,4,6]], D:[[0,0,0,6],[0,6,3,6,4,5,4,1,3,0,0,0]], E:[[4,0,0,0,0,6,4,6],[0,3,3,3]], F:[[4,0,0,0,0,6],[0,3,3,3]],
   G:[[4,0,0,0,0,6,4,6,4,3,2,3]], H:[[0,0,0,6],[4,0,4,6],[0,3,4,3]], I:[[1,0,3,0],[2,0,2,6],[1,6,3,6]], J:[[4,0,4,6,0,6,0,4]],
   K:[[0,0,0,6],[4,0,0,3,4,6]], L:[[0,0,0,6,4,6]], M:[[0,6,0,0,2,3,4,0,4,6]], N:[[0,6,0,0,4,6,4,0]],
-  O:[[0,0,4,0,4,6,0,6,0,0]], P:[[0,6,0,0,4,0,4,3,0,3]], Q:[[0,0,4,0,4,6,0,6,0,0],[2,4,4,6]], R:[[0,6,0,0,4,0,4,3,0,3,4,6]],
+  O:[[0,0,4,0,4,6,0,6,0,0]], P:[[0,6,0,0],[0,0,4,0,4,3,0,3]], Q:[[0,0,4,0,4,6,0,6,0,0],[2,4,4,6]], R:[[0,6,0,0],[0,0,4,0,4,3,0,3],[1.6,3,4,6]],
   S:[[4,0,0,0,0,3,4,3,4,6,0,6]], T:[[0,0,4,0],[2,0,2,6]], U:[[0,0,0,6,4,6,4,0]], V:[[0,0,2,6,4,0]],
   W:[[0,0,1,6,2,3,3,6,4,0]], X:[[0,0,4,6],[4,0,0,6]], Y:[[0,0,2,3,4,0],[2,3,2,6]], Z:[[0,0,4,0,0,6,4,6]],
   "0":[[0,0,4,0,4,6,0,6,0,0]], "1":[[1,1,2,0,2,6]], "2":[[0,0,4,0,4,3,0,3,0,6,4,6]], "3":[[0,0,4,0,4,6,0,6],[1,3,4,3]],
@@ -101,21 +102,42 @@ const GL = {
   "@":[[4,6,0,6,0,0,4,0,4,4,2,4,2,2,4,2]], "#":[[1,0,1,6],[3,0,3,6],[0,2,4,2],[0,4,4,4]], ">":[[0,0,4,3,0,6]], "'":[[2,0,2,1.5]],
   "*":[[2,1,2,5],[0,2,4,4],[0,4,4,2]], "(":[[3,0,1,2,1,4,3,6]], ")":[[1,0,3,2,3,4,1,6]], "&":[[4,6,0,2,0,0,2,0,2,2,0,4,0,6,2,6,4,4]], "+":[[2,1,2,5],[0,3,4,3]],
 };
+function rpath(pts, r) {
+  // pts: [[x,y],...]; rounds interior corners; closed shapes start mid-edge so every corner rounds
+  const closed = pts.length > 2 && pts[0][0] === pts[pts.length - 1][0] && pts[0][1] === pts[pts.length - 1][1];
+  if (closed) { const m = [(pts[0][0] + pts[1][0]) / 2, (pts[0][1] + pts[1][1]) / 2]; pts = [m, ...pts.slice(1), m]; }
+  const f = (q) => q[0].toFixed(2) + "," + q[1].toFixed(2);
+  let d = "M" + f(pts[0]);
+  for (let i = 1; i < pts.length - 1; i++) {
+    const a = pts[i - 1], c = pts[i], b = pts[i + 1];
+    const d1 = Math.hypot(c[0] - a[0], c[1] - a[1]), d2 = Math.hypot(b[0] - c[0], b[1] - c[1]);
+    if (!d1 || !d2) continue;
+    const rr = Math.min(r, d1 * .5, d2 * .5);
+    const p1 = [c[0] - (c[0] - a[0]) / d1 * rr, c[1] - (c[1] - a[1]) / d1 * rr];
+    const p2 = [c[0] + (b[0] - c[0]) / d2 * rr, c[1] + (b[1] - c[1]) / d2 * rr];
+    d += "L" + f(p1) + "Q" + f(c) + " " + f(p2);
+  }
+  return d + "L" + f(pts[pts.length - 1]);
+}
+const CX = 0.62;   // condensed: horizontal unit = 0.62 × vertical unit
 function seg(str, x, y, h, col, sw = 1.5) {
-  const u = h / 6; let out = "", cx = x;
+  const u = h / 6, ux = u * CX; let out = "", cx = x;
   for (const ch of str.toUpperCase()) {
-    if (ch === " ") { cx += u * 3.4; continue; }
-    const g = GL[ch]; if (!g) { cx += u * 5.4; continue; }
+    if (ch === " ") { cx += ux * 3.2; continue; }
+    const g = GL[ch]; if (!g) { cx += ux * 5.8; continue; }
     for (const pl of g) {
-      let d = "";
-      for (let i = 0; i < pl.length; i += 2) d += (i ? "L" : "M") + (cx + pl[i] * u).toFixed(2) + "," + (y + pl[i + 1] * u).toFixed(2);
-      out += `<path d="${d}" stroke="${col}" style="stroke-width:${sw}" class="mech"/>`;
+      const pts = []; for (let i = 0; i < pl.length; i += 2) pts.push([cx + pl[i] * ux, y + pl[i + 1] * u]);
+      out += `<path d="${rpath(pts, u * 1.1)}" stroke="${col}" style="stroke-width:${sw}" fill="none"/>`;
     }
-    cx += u * 5.6;
+    cx += ux * 5.8;
   }
   return out;
 }
-const segW = (str, h) => { const u = h / 6; let w = 0; for (const ch of str) w += ch === " " ? u * 3.4 : u * 5.6; return w - u * 1.6; };
+const segW = (str, h) => { const ux = h / 6 * CX; let w = 0; for (const ch of str) w += ch === " " ? ux * 3.2 : ux * 5.8; return w - ux * 1.8; };
+// status chip: solid color, black lettering (the one place big fills live)
+const chip = (txt, x, y, h, col) => { const w = segW(txt, h) + h * .9; return `<rect class="f" fill="${col}" x="${x}" y="${y}" width="${w.toFixed(1)}" height="${(h * 1.7).toFixed(1)}"/>${seg(txt, x + h * .45, y + h * .35, h, "#000", 1.3)}`; };
+// OP-1 style readout: tiny label over a big thin number
+const readout = (label, val, x, y, col, big = 22) => seg(label, x, y, 5, col, 1) + seg(val, x, y + 9, big, col, 1.5);
 
 /* ---------------- shared drawing bits ---------------- */
 const P = (cls, body) => `<g class="pose ${cls}">${body}</g>`;
@@ -148,11 +170,13 @@ const ned = () => {
   const torso = `
     <path class="k" stroke="${G}" d="M136,92 C140,87 148,85 153,86 L160,92 L167,86 C172,85 180,87 184,92 L187,128 L133,128 Z"/>
     <path stroke="${G}" d="M153,86 C156,91 164,91 167,86"/>
-    <circle stroke="${G}" cx="170" cy="106" r="5"/><path stroke="${G}" d="M168,104 L172,108"/>`;
+    <circle stroke="${G}" cx="170" cy="106" r="5"/><path stroke="${G}" d="M168,104 L172,108"/>
+    <path class="hl" stroke="${G}" d="M142,100 C145,108 145,117 142,125 M180,98 C178,106 179,115 182,123 M152,120 C156,122 162,122 166,120"/>`;
   const shoe = (x, y, d = 1) => `<path class="k" stroke="${W}" d="M${x},${y} L${x + 18 * d},${y} C${x + 22 * d},${y} ${x + 22 * d},${y + 5} ${x + 18 * d},${y + 5} L${x},${y + 5} Z"/>`;
   const stand = `
     <path class="k" stroke="${B}" d="M134,128 L137,182 L156,182 L159,136 L161,136 L164,182 L183,182 L186,128 Z"/>
     ${shoe(136, 182)}${shoe(164, 182)}
+    <path class="hl" stroke="${B}" d="M147,140 L148,178 M173,140 L172,178 M138,132 C144,134 150,134 156,132"/>
     <path stroke="${G}" d="M136,93 L128,114"/><path stroke="${K}" d="M128,114 L125,124"/><circle stroke="${K}" cx="124.5" cy="127" r="3"/>
     <path stroke="${G}" d="M184,93 L192,114"/><path stroke="${K}" d="M192,114 L195,124"/><circle stroke="${K}" cx="195.5" cy="127" r="3"/>`;
   const walkA = `
@@ -183,15 +207,19 @@ const preston = () => {
   const base = `
     <path class="k" stroke="${R}" d="M116,130 C116,106 126,95 150,92 L160,106 L170,92 C194,95 204,106 204,130 Z"/>
     <path stroke="${R}" d="M150,92 L155,114 M170,92 L165,114"/><path stroke="${W}" d="M154,94 L160,104 L166,94"/>
+    <path class="hl" stroke="${R}" d="M126,110 C130,116 130,124 128,130 M194,110 C190,116 190,124 192,130"/><circle class="hl" stroke="${R}" cx="160" cy="118" r="1.6"/>
+    <path class="hl" stroke="${W}" d="M182,102 L190,100 L188,106 Z"/>
     <path stroke="${K}" d="M152,84 L152,92 M168,84 L168,92"/>
     <path class="k" stroke="${K}" d="M132,50 C131,72 145,86 160,86 C175,86 189,72 188,50"/>
     <path stroke="${K}" d="M133,56 C127,55 127,66 133,66 M187,56 C193,55 193,66 187,66"/>
     <path class="k" stroke="${A}" d="M129,56 C124,34 138,19 158,17 C179,15 196,26 193,46 C192,50 190,54 188,56 C184,45 176,41 167,43 C173,36 168,30 159,33 C148,37 139,45 129,56 Z"/>
     <path stroke="${A}" d="M141,30 C151,23 166,21 179,25 M137,42 C143,37 150,34 156,33"/>
+    <path class="hl" stroke="${A}" d="M146,26 C156,22 170,22 182,30 M150,22 C160,19 172,20 184,26 M186,34 C188,40 189,46 188,52"/>
     <path stroke="${K}" d="M160,61 C157,68 160,70 163,69"/>
     <path class="k mech" stroke="${B}" d="M114,124 L206,124 L202,131 L118,131 Z"/>
     <path class="k mech" stroke="${B}" d="M118,131 L202,131 L196,190 L124,190 Z"/>
     <path stroke="${N}" class="mech" d="M132,140 L188,140 L184,180 L136,180 Z"/>
+    <path class="hl mech" stroke="${N}" d="M140,150 L180,150 M139,160 L181,160 M138,170 L182,170"/>
     <path stroke="${M}" d="M194,124 C197,112 192,104 186,102"/><circle class="f" fill="${G}" cx="185" cy="101" r="2.2"/>`;
   const faceOn = `
     <path class="k" stroke="${W}" d="M143,60 C146,56 152,56 156,60 C152,64 147,64 143,60 Z"/><circle class="f" fill="${B}" cx="150.5" cy="60" r="2"/>
@@ -217,6 +245,9 @@ const gus = () => {
     <path class="k" stroke="${M}" d="M134,128 L136,182 L157,182 L159,138 L161,138 L163,182 L184,182 L186,128 Z"/>
     <path class="k" stroke="${W}" d="M134,182 L158,182 L158,188 L130,188 C130,184 131,182 134,182 Z M162,182 L186,182 C189,182 190,184 190,188 L162,188 Z"/>
     <path class="k" stroke="${V}" d="M134,86 C140,80 150,80 160,84 C170,80 180,80 186,86 L189,130 L131,130 Z"/>
+    <path class="hl" stroke="${V}" d="M140,94 L152,94 L152,104 L140,104 Z M160,86 L160,130 M138,112 C142,116 146,118 150,118"/>
+    <path class="hl" stroke="${M}" d="M148,140 L148,180 M172,140 L172,180"/>
+    <path class="hl" stroke="${B}" d="M148,24 C146,32 146,40 148,46 M172,24 C174,32 174,40 172,46"/>
     <ellipse class="k" stroke="${R}" cx="173" cy="99" rx="9" ry="5.5"/>${seg("GUS", 166.6, 97, 4, R, 1)}
     <circle stroke="${A}" cx="140" cy="122" r="4"/><path stroke="${A}" d="M138,126 L136,132 M141,126 L141,133"/>
     <path stroke="${K}" d="M154,76 L154,83 M166,76 L166,83"/>
@@ -272,7 +303,9 @@ const morris = () => `${tag("MORRIS", K)}${floor()}
 const iris = () => {
   const base = `
     <path class="k" stroke="${V}" d="M116,190 L118,128 C118,104 132,94 150,92 L160,104 L170,92 C188,94 202,104 202,128 L204,190 Z"/>
-    <path stroke="${V}" d="M160,104 L160,190"/>${[116, 132, 148, 164].map(y => `<circle stroke="${V}" cx="165" cy="${y}" r="1.6"/>`).join("")}
+    <path stroke="${V}" d="M160,104 L160,190"/>
+    ${[124,130,136,142,148,176,182,188,194,200].map(x => `<path class="hl" stroke="${V}" d="M${x},178 L${x},188"/>`).join("")}
+    <path class="hl" stroke="${V}" d="M126,140 C130,150 130,160 128,170 M194,140 C190,150 190,160 192,170"/>${[116, 132, 148, 164].map(y => `<circle stroke="${V}" cx="165" cy="${y}" r="1.6"/>`).join("")}
     ${[150, 155, 160, 165, 170].map((x, i) => `<circle stroke="${W}" cx="${x}" cy="${97 + Math.abs(i - 2) * -1.2 + 2}" r="1.5"/>`).join("")}
     <path stroke="${K}" d="M153,84 L153,92 M167,84 L167,92"/>
     <path class="k" stroke="${K}" d="M139,50 C138,71 148,84 160,84 C172,84 182,71 181,50"/>
@@ -307,6 +340,7 @@ const author = () => {
     <path class="k" stroke="${V}" d="M118,190 L131,112 C134,80 146,56 160,54 C174,56 186,80 189,112 L202,190 Z"/>
     <path class="k" stroke="${V}" d="M144,98 C143,78 151,68 160,68 C169,68 177,78 176,98 C169,103 151,103 144,98 Z"/>
     <path stroke="${V}" d="M140,120 C144,150 142,172 136,190 M180,120 C176,150 178,172 184,190 M160,140 L160,190"/>
+    <path class="hl" stroke="${V}" d="M150,104 C150,130 148,160 146,190 M170,104 C170,130 172,160 174,190 M136,80 C140,72 146,64 152,60 M184,80 C180,72 174,64 168,60"/>
     <circle stroke="${R}" cx="160" cy="124" r="8"/><circle class="f" fill="${R}" cx="160" cy="124" r="3.6"/>
     <path class="k mech" stroke="${N}" d="M214,168 L262,168 L262,178 L214,178 Z"/>`;
   const eyes = (c) => `<circle class="f" fill="${c}" cx="155" cy="88" r="1.6"/><circle class="f" fill="${c}" cx="165" cy="88" r="1.6"/>`;
@@ -431,9 +465,81 @@ const qsteps = () => {
     ${P("p0", lit("0-0") + mini(160, 40))}
     ${P("p1", lit("1-1") + mini(182, 73))}
     ${P("p2", lit("2-1") + mini(160, 106))}
-    ${P("p3", lit("3-2") + mini(182, 139) + `<path class="k" stroke="${W}" d="M200,118 L262,118 L262,138 L214,138 L206,146 L208,138 L200,138 Z"/>${seg("#@!?@!", 207, 124.5, 8, W)}`)}
+    ${P("p3", lit("3-2") + mini(182, 139) + `<path class="k" stroke="${W}" d="M200,118 L262,118 L262,138 L214,138 L206,146 L208,138 L200,138 Z"/>${seg("#@!?@!", 210, 124.5, 8, W)}`)}
     ${seg("B3", 270, 176, 10, R)}<path stroke="${R}" class="mech" d="M262,181 L252,181 M256,177 L252,181 L256,185"/>
     <path class="dash" stroke="${D}" d="M30,186 L240,186"/>`;
+};
+
+
+/* ---- exploded isometric: Preston's earbud ---- */
+const earbud = () => {
+  const cx = 100, ex = 30, ey = 30 * 0.577;
+  const disc = (y, rx, ry, col, cls = "k") => `<ellipse class="${cls}" stroke="${col}" cx="${cx}" cy="${y}" rx="${rx}" ry="${ry}"/>`;
+  const cyl = (y, h, rx, col) => `<path class="k" stroke="${col}" d="M${cx - rx},${y} L${cx - rx},${y + h} A${rx},${rx * .577} 0 0 0 ${cx + rx},${y + h} L${cx + rx},${y}"/>${disc(y, rx, rx * .577, col)}`;
+  const lead = (y, n, label, col) => `<path class="hl dash" stroke="${D}" d="M${cx + 36},${y} L196,${y}"/>${seg(n, 200, y - 4, 8, col, 1.2)}${seg(label, 214, y - 2, 5, col, 1)}`;
+  const chipIso = (y, lit) => {
+    const pts = [[cx, y - 14], [cx + 24, y], [cx, y + 14], [cx - 24, y]].map(q => q.join(",")).join(" ");
+    let pins = ""; for (let i = -2; i <= 2; i++) { pins += `<path class="hl" stroke="${G}" d="M${cx + 12 + i * 3},${y - 7 + i * 1.7 + 7} l4,2.3"/>`; }
+    return `<polygon class="k" stroke="${G}" points="${pts}"/><polygon class="k hl" stroke="${G}" points="${[[cx, y - 7], [cx + 12, y], [cx, y + 7], [cx - 12, y]].map(q => q.join(",")).join(" ")}"/>
+      ${lit ? `<polygon class="f" fill="${G}" points="${[[cx, y - 4], [cx + 7, y], [cx, y + 4], [cx - 7, y]].map(q => q.join(",")).join(" ")}"/>` : ""}${pins}`;
+  };
+  return `${tag("EXPLODED  EARBUD  P. VALU", W)}
+    <path class="hl dash" stroke="${N}" d="M${cx},26 L${cx},188"/>
+    ${cyl(34, 8, 12, K)}${disc(34, 6, 3.4, K, "hl")}
+    ${disc(64, 26, 15, W)}${disc(64, 18, 10.4, W, "hl")}${disc(64, 9, 5.2, W, "hl")}<circle class="f" fill="${W}" cx="${cx}" cy="64" r="1.6"/>
+    ${[88, 92, 96, 100].map(y => disc(y, 20, 11.5, B, "hl")).join("")}${disc(86, 20, 11.5, B)}
+    <g class="chipwrap">${chipIso(124, false)}</g>
+    ${cyl(150, 14, 18, A)}${seg("+", cx - 3, 151, 5, A, 1)}
+    ${cyl(176, 6, ex, W)}
+    ${lead(38, "1", "SILICONE TIP", K)}${lead(64, "2", "DRIVER", W)}${lead(92, "3", "COIL", B)}${lead(124, "4", "???", G)}${lead(156, "5", "CELL", A)}${lead(180, "6", "SHELL", W)}
+    ${P("p0", "")}
+    ${P("p1", chipIso(124, true) + arcs(cx - 30, 124, -1, G, 3, .7) + arcs(cx + 30, 124, 1, G, 3, .7))}
+    ${P("p2", chipIso(124, true) + `<rect class="k" stroke="${D}" x="196" y="114" width="110" height="14"/>` + chip("GAIN CONTROLLER", 198, 116, 5.5, G))}`;
+};
+
+/* ---- perspective corridor: the steam tunnels ---- */
+const tunnel = () => {
+  const vx = 150, vy = 92;
+  let g = "";
+  // floor & ceiling rails converging to the vanishing point
+  [-160, -100, -50, 0, 50, 100, 160].forEach(dx => { g += `<path class="hl" stroke="${N}" d="M${vx + dx * 2.2},200 L${vx + dx * .06},${vy + 6}"/>`; });
+  // pipes along the walls (double lines)
+  [[-150, 30], [-150, 44], [150, 26], [150, 40]].forEach(([dx, y0], i) => {
+    const y1 = vy - 4 + (y0 - 30) * .05;
+    g += `<path stroke="${i < 2 ? W : M}" d="M${vx + dx * 1.15},${y0} L${vx + dx * .08},${y1}"/><path stroke="${i < 2 ? W : M}" d="M${vx + dx * 1.15},${y0 + 7} L${vx + dx * .08},${y1 + 1}"/>`;
+  });
+  // the far door with the insignia
+  g += `<rect class="k mech" stroke="${M}" x="${vx - 10}" y="${vy - 14}" width="20" height="24"/>
+        ${[0, 1, 2, 3, 4].map(i => `<path class="hl mech" stroke="${D}" d="M${vx - 10},${vy - 14 + i * 5} L${vx + 10},${vy - 14 + i * 5}"/>`).join("")}
+        <circle class="hl" stroke="${R}" cx="${vx}" cy="${vy - 2}" r="4"/><circle class="f" fill="${R}" cx="${vx}" cy="${vy - 2}" r="1.8"/>`;
+  // receding cross-ties: three G&W phases
+  const ties = (off) => { let t = ""; for (let i = 0; i < 6; i++) { const k = Math.pow(0.62, i + off / 3); const y = vy + 8 + 108 * k, w = 230 * k;
+      t += `<path class="mech" stroke="${B}" d="M${vx - w},${y.toFixed(1)} L${vx + w},${y.toFixed(1)}"/>`; } return t; };
+  return `${tag("STEAM TUNNELS", W)}${g}
+    ${readout("DEPTH", "03", 262, 26, R, 24)}${seg("B3", 20, 34, 12, R)}<path class="mech" stroke="${R}" d="M27,52 L27,64 M22,59 L27,64 L32,59"/>
+    ${P("p0", ties(0))}${P("p1", ties(1))}${P("p2", ties(2) + `<circle class="f" fill="${A}" cx="${vx - 70}" cy="38" r="2.6"/>`)}`;
+};
+
+/* ---- HUD: the game's status line, OP-1 readout style ---- */
+const hud = () => {
+  const icon = {
+    walk: (x, y) => `<path stroke="${W}" d="M${x - 5},${y + 6} C${x - 8},${y} ${x - 2},${y - 2} ${x - 2},${y + 4} Z M${x + 3},${y} C${x},${y - 6} ${x + 6},${y - 8} ${x + 6},${y - 2} Z"/>`,
+    look: (x, y) => `<path stroke="${W}" d="M${x - 9},${y} Q${x},${y - 8} ${x + 9},${y} Q${x},${y + 8} ${x - 9},${y} Z"/><circle class="f" fill="${W}" cx="${x}" cy="${y}" r="2.4"/>`,
+    use: (x, y) => `<path stroke="${W}" d="M${x - 5},${y + 7} L${x - 5},${y - 2} M${x - 2},${y + 1} L${x - 2},${y - 7} M${x + 1},${y + 1} L${x + 1},${y - 8} M${x + 4},${y + 1} L${x + 4},${y - 6} M${x - 6},${y + 7} L${x + 6},${y + 7} L${x + 6},${y}"/>`,
+    talk: (x, y) => `<path stroke="${W}" d="M${x - 9},${y - 6} L${x + 9},${y - 6} L${x + 9},${y + 4} L${x - 2},${y + 4} L${x - 6},${y + 8} L${x - 6},${y + 4} L${x - 9},${y + 4} Z"/>`,
+  };
+  const verbs = (sel) => ["walk", "look", "use", "talk"].map((v, i) => { const x = 32 + i * 30, y = 168;
+      return (i === sel ? `<rect class="f" fill="${W}" x="${x - 13}" y="${y - 12}" width="26" height="24"/>` + icon[v](x, y).replace(/stroke="#e9e6ff"/g, 'stroke="#000"').replace(/fill="#e9e6ff"/g, 'fill="#000"') : icon[v](x, y)); }).join("");
+  const inv = `<path class="hl" stroke="${D}" d="M152,150 L152,186"/>
+    <rect stroke="${W}" x="166" y="158" width="10" height="20" rx="2"/><circle class="f" fill="${R}" cx="171" cy="173" r="1.8"/>
+    <rect stroke="${W}" x="188" y="158" width="14" height="20"/><path class="hl" stroke="${W}" d="M192,164 L199,164 M192,168 L199,168"/>
+    <path stroke="${A}" d="M216,160 L224,160 L225,178 C225,180 215,180 215,178 Z"/>`;
+  const top = (day, time, col) => `${readout("DAY", day, 20, 28, col, 26)}${readout("TIME", time, 84, 28, W, 26)}${readout("H-INDEX", "14", 186, 28, A, 26)}${seg("/50", 214, 52, 8, M, 1)}${readout("BODIES", "03", 252, 28, R, 26)}`;
+  return `${tag("HUD", W)}<path class="hl" stroke="${D}" d="M14,96 L306,96 M14,144 L306,144"/>
+    ${seg("WALK  LOOK  USE  TALK", 18, 186, 4.5, M, .9)}${inv}
+    ${P("p0", top("MON", "16:07", B) + chip("JOURNAL CLUB", 20, 112, 7, B) + verbs(0))}
+    ${P("p1", top("MON", "16:09", B) + chip("RECORDING", 20, 112, 7, R) + verbs(3) + `<circle class="f" fill="${R}" cx="${20 + segW("RECORDING", 7) + 14}" cy="118" r="2.6"/>`)}
+    ${P("p2", top("MON", "02:13", G) + chip("NIGHT SHIFT", 20, 112, 7, G) + verbs(1))}`;
 };
 
 /* ================================================================ *
@@ -454,7 +560,10 @@ const OBJS = [
   ["tube", tube, "<b>THE TUBE STATION</b> — a canister steps down the pipe the way a Game &amp; Watch ball falls. Double-line pipes, a gauge with a lit hub."],
   ["espresso", espresso, "<b>THE ESPRESSO MACHINE</b> — the drip falls in three positions; the gauge sits in the red. Steam is a drawn squiggle."],
   ["freezer", freezer, "<b>THE -80</b> — frost sparkles blink in place; then the door opens on fog and something that shouldn't be in there."],
-  ["qsteps", qsteps, "<b>THE STEPS TO B3</b> — the Q*bert homage: isometric cubes, tops light up as Morris lands, and he swears in segments."],
+  ["qsteps", qsteps, "<b>THE STEPS TO B3</b> — the Q*bert homage: isometric cubes, tops light up as Morris lands, and he swears in symbols."],
+  ["earbud", earbud, "<b>EXPLODED: THE EARBUD</b> — a clue close-up as an exploded isometric diagram (after the OP-1's Phone screen). Part 4 is labeled ??? until it switches on."],
+  ["tunnel", tunnel, "<b>THE STEAM TUNNELS</b> — a Nitro-style perspective grid. The cross-ties step toward you in three poses; the insignia waits at the vanishing point."],
+  ["hud", hud, "<b>THE HUD</b> — big thin numbers with tiny labels, status chips in solid color (JOURNAL CLUB, RECORDING, NIGHT SHIFT), the selected verb inverted."],
 ];
 const timers = [];
 function build(list, host) {
@@ -468,7 +577,7 @@ function build(list, host) {
 build(CHARS, "chars"); build(OBJS, "objs");
 
 // titles
-document.getElementById("titleSvg").innerHTML = seg("GAIN CONTROL", 0, 8, 46, W, 2.2) + seg("STYLE SHEET 01  -  LINE  POSE  SEGMENT", 2, 76, 11, M, 1.4)
+document.getElementById("titleSvg").innerHTML = seg("GAIN CONTROL", 0, 8, 46, W, 2.2) + seg("STYLE SHEET 02  -  LINE  POSE  NUMBER", 2, 76, 11, M, 1.4)
   + `<circle class="f" fill="${G}" cx="626" cy="16" r="5"/>`;
 document.getElementById("secChars").innerHTML = seg("CHARACTERS", 0, 4, 14, W, 1.6) + `<path stroke="${D}" class="mech" d="M140,11 L640,11"/>`;
 document.getElementById("secObjs").innerHTML = seg("OBJECTS + PLACES", 0, 4, 14, W, 1.6) + `<path stroke="${D}" class="mech" d="M206,11 L640,11"/>`;
@@ -479,9 +588,9 @@ let playing = true;
 const SEQ = {
   ned: [0, 1, 2, 1, 2, 1, 2, 0, 3, 3, 0], preston: [0, 0, 1, 1, 0, 2, 2, 1], gus: [0, 1, 2, 1], morris: [0, 0, 1, 0, 2, 2, 0],
   iris: [0, 0, 1, 1, 2, 2], author: [2, 0, 1, 1, 0], mri: [0, 1, 2, 3, 3], tube: [0, 1, 2, 3, 4],
-  espresso: [0, 1, 2, 3, 3], freezer: [0, 1, 0, 1, 2, 2, 2], qsteps: [0, 1, 2, 3, 3, 3],
+  espresso: [0, 1, 2, 3, 3], freezer: [0, 1, 0, 1, 2, 2, 2], qsteps: [0, 1, 2, 3, 3, 3], earbud: [0, 0, 1, 1, 2, 2, 2], tunnel: [0, 1, 2], hud: [0, 0, 1, 1, 2, 2],
 };
-const RATE = { ned: 260, preston: 520, gus: 320, morris: 420, iris: 560, author: 520, mri: 380, tube: 300, espresso: 420, freezer: 520, qsteps: 460 };
+const RATE = { ned: 260, preston: 520, gus: 320, morris: 420, iris: 560, author: 520, mri: 380, tube: 300, espresso: 420, freezer: 520, qsteps: 460, earbud: 650, tunnel: 220, hud: 900 };
 Object.keys(SEQ).forEach(id => {
   const svg = document.getElementById("t-" + id); if (!svg) return;
   const poses = svg.querySelectorAll(".pose"); let i = 0;
