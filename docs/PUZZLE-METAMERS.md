@@ -1,6 +1,6 @@
 # Night discovery: FOG NEURO (an in-game METAMERS)
 
-**Act II — Tuesday night, Gus.** Built later. This is the plan.
+**Act II — Tuesday night, Gus.** Built: `game/js/minigames/fogneuro.js` + `game/js/data/classics.js`.
 
 On his way back from a 2 AM scan, Gus gets into Preston's computer and finds the program behind Preston's career: **FOG NEURO**, the paper mill's front end. Press GENERATE and it writes a brand-new paper on one of the Big Questions of cognitive neuroscience. Press it again and it's a different Big Question. Consciousness on Monday, free will by lunch, the neural basis of nostalgia by dinner. It's a playable toy inside the game, in the spirit of METAMERS (the Large Ling Model), and it explains how a third-year has "solved" half the field.
 
@@ -41,19 +41,33 @@ A full-screen app on Preston's monitor, in the house style: stroke-alphabet titl
   - a journal (*Nurture Neuroscience*, *Cell-ebrity*, *Trends in Trends*), a year, and a citation count that ticks up while you watch
   - byline **P. Valu**, sometimes "et al.", where "al." is a different Rising Star each time
 - **FEUD** generates a paper *and* its furious reply: Valu vs. Polly Mick, same topic, opposite claims, both ending in "further research is needed."
-- **SOURCES** flips the page over: each sentence lists the fictional NRT papers it was stitched from, bylined to Table members and the Archive's dead and "retired." The same few names recur on every page, which is the point.
+- **SOURCES** flips the page over: under each sentence is its lineage. Sentences 1 and 2 show "THE ESSENCE OF A 1990s MEMORY CLASSIC: PLACE CELLS" and "MASHED WITH…", the region is "LIFTED FROM THE SAME CLASSIC", and the sweeping claim and the faculty it "predicts" show **NONE. PURE FOG.** The last line traces to THE GRANT OFFICE. The mill can only recombine what the field already found; everything new in a paper is the fog.
 - **PRINT** (once per night) sends it to the lab printer. The printout is the clue.
 - **After the game:** the generator unlocks from the title screen as an extra, FOG NEURO, endlessly replayable.
 
 ## The feud seed (a clue for Nell, Act III–IV)
 Nell reads the famous Valu vs. Mick exchange in the library: paper, reply, reply to the reply. The two "rival" papers carry the same LTM footer seed, and SOURCES shows both sides built from the same three Archive papers. Overlay them in the notebook and the arguments line up point for point, mirror-imaged. It's a staged fight between two sock puppets with one hand inside both. Polly Mick goes on the list of members Nell can name at the Defense.
 
-## Building it (for later)
+## How it's built: resynthesis from the classics
 
-- **No real papers, no real people.** The corpus is a hand-written list of about 200 Big Questions and fog-neuro building blocks: brain regions, mental faculties, everyday behaviors, methods, buzzwords, hedges and grant-bait closers. It covers consciousness, memory, attention, emotion, language, decisions, sleep, faces, reward, time, creativity, social brains and the rest of the textbook. Every name in the output (authors, sources, journals) is fictional. Nothing reproduces anyone's writing.
-- **Grammar, not recombination.** Unlike METAMERS, which recombined Sam's own sentences, this one generates every sentence from templates over that list, so the output is always new and only *sounds* like the field. Templates follow the fog-neuro arc: straw man, knockdown, blob, sweeping claim, "further research is needed."
-- **The real science is the mirror.** The Big Questions are real, and so are the regions and methods. What's fake is the pace, the certainty and the perfect blobs, which is the satire.
-- **Module:** `game/js/minigames/fogneuro.js` plus `game/data/fogneuro.json`. Same overlay pattern as the sticky-note readout; PRINT sets a flag and gives Gus the printout item.
+- **The corpus is the field's most-cited work, reduced to its essence.** `game/js/data/classics.js` holds about 140 landmark ideas in cognitive neuroscience. They were chosen from bibliometric lists of the most-cited papers, plus well-known landmarks from the textbook canon. Each entry is a single row: Big Question, decade, a short topic name, the essence of the idea paraphrased in one clause, its regions, and its method. For example: `["memory", "2000s", "grid cells", "neurons tile space with a triangular grid, like graph paper in the head", "entorhinal cortex", "single-neuron recording"]`.
+- **No titles, no authors, no copied text.** Each essence is written fresh in our own words, as you'd summarize the idea to a first-year. Nothing on screen names a real person or a real paper. The bylines, journals and feud rivals are all fictional.
+- **Resynthesis.** GENERATE takes two classics from *different* Big Questions (X and Y) and runs them through the fog-neuro arc:
+  1. Straw man: "It has long been assumed that ⟨X's essence⟩."
+  2. Knockdown: "Using ⟨Y's method⟩ in n participants, we show that ⟨X⟩ and ⟨Y⟩ are the same thing."
+  3. The blob: "Both live in ⟨a region taken from Y⟩, which predicted ⟨an absurd faculty⟩ with near-perfect accuracy."
+  4. Sweeping claim: "These findings overturn ⟨decades since X⟩ decades of ⟨X's field⟩ research and suggest that ⟨an everyday behavior⟩ is, at heart, ⟨Y⟩."
+  5. "Further research is needed, and funded."
+  
+  The title templates use the same mash-up ("Rethinking the Salience Network in the Age of Common-Currency Value").
+- **FEUD** brings in a third classic, Z. P. Mick's reply says X is really Z, located in Z's region, "as it always has" been.
+- **The joke is the mirror.** The real findings are real, and recognizably so to anyone in the field. What's fake is the welding: two unrelated landmarks declared identical, a region borrowed from the wrong paper, and a faculty nobody measured.
+
+### Where the corpus came from (selection only; nothing is quoted)
+- Yeung, Goto & Leung (2017), *Frontiers in Human Neuroscience* (PMC5520389): a bibliometric analysis of the 100 most-cited neuroscience articles. The cognitive and imaging entries were used.
+- Kim et al. (2016), *NeuroImage*: a bibliometric analysis of the 100 most-cited articles in neuroimaging.
+- Most-cited article lists for *Trends in Cognitive Sciences* and *Journal of Cognitive Neuroscience* (exaly.com).
+- Textbook-canon landmarks (place and grid cells, the two visual streams, prediction error, the default mode, the replication-crisis methods papers, and others).
 
 ## Points and gags
 - Get in: +2. Generate: +1. Read SOURCES: +2. FEUD: +1. Print it and leave it for Nell: +3.
