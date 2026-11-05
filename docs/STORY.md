@@ -399,6 +399,15 @@ The feel of a small synth's OLED screen, blown up to full size. It's a general l
 - **Our own verb interface:** a row of simple glyphs (walk, look, use, talk, plus the active character's portrait and inventory) along the bottom edge, styled in the same glow.
 - **Full-size, widescreen canvas** (16:9), vector-rendered so it stays crisp at any size. Optional subtle OLED touches: slight glow and bloom, a pixel-grid shimmer on transitions.
 - **Day vs. night palettes:** daytime scenes are bright and busy; Gus's night shifts drop to a few cool colors with more black.
+- **The goal: clean, retro-modern.** Precise vector shapes, a few bold colors, the playfulness of a well-designed electronic instrument. It should look like nothing else in the genre.
+- **Precedent:** Sierra's own early games (AGI) drew their backgrounds as vector commands (lines and fills), and *Another World* proved flat vector shapes can carry atmosphere and dread. The style is on-brand for the genre's history.
+
+### Making it work for point-and-click
+1. **Talking portraits, Gabriel Knight style (essential).** Conversations cut to large close-up portraits on each side of the screen, with blinking, mouth movement and reaction expressions. Portraits are drawn in a richer version of the same style (more shapes, more shading bands) so the comedy can land on a face. Sinister details live here too: Preston's earbud pulse and his face going blank happen in close-up.
+2. **Two drawing layers.** Atmosphere (bookshelves, cables, posters, chairs) is drawn in dim grey line-art. Things that matter get color fills. This removes pixel-hunting without turning every object into a hotspot; some colored objects are red herrings.
+3. **Stage-like rooms.** Mostly front-facing compositions with faint floor planes and wall lines, so players can read where they can walk on a black background.
+4. **Color fields by day, void by night.** Daytime scenes allow larger blocks of color (a lit window, a colored floor, the atrium) to keep long sessions comfortable. Near-total black is saved for night shifts and B3, so the nights feel darker by contrast.
+5. **Clue close-ups as instrument displays.** Documents, scans, figures and tables open as full-screen glowing "readouts." This is where the style shines: the neuroscience clues look like what they are.
 
 ---
 
