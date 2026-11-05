@@ -16,14 +16,14 @@ Ned Null is a fifth-year grad student whose dissertation keeps coming up null. A
 
 ## The secret (what really happened)
 
-1. Last spring Ned submitted his pilot paper (3T data, modest effect, honest). Ned scanned himself as pilot subject #1, retainer and all.
+1. Last spring Ned submitted his pilot paper (3T data, a top-down attention task: a strong visual response and an honest **null** for attention in V1). Ned scanned himself as pilot subject #1, retainer and all.
 2. The journal sent it to famous Prof. Maximilian Impact for review. Impact, as usual, handed it to his student Preston to ghost-review.
-3. Preston, writing as **Reviewer 2**, rejected it ("the authors should simply collect more data"). Then he downloaded Ned's shared dataset.
+3. Preston, writing as **Reviewer 2**, rejected it for being null ("the authors should simply collect more data"). Then he downloaded Ned's shared dataset.
 4. He ran it through an AI super-resolution model on the department GPU cluster to upscale 3T into "7T laminar" data. The model hallucinated beautiful cortical layers everywhere, **including inside Ned's retainer artifact**.
 5. He published it with fake participants, a backdated IRB protocol and imaginary scanner sessions. The job offers rolled in.
 6. Now anyone who could connect the dots has to go. Preston kills the way he publishes: efficiently, and while framing someone else.
 
-**So the answer to "AI or fabrication?" is both.** The data is real, but it's Ned's. The fake part is everything the AI added.
+**So the answer to "AI or fabrication?" is both.** The data is real, but it's Ned's. The fake part is everything the AI added. And the words are fake too (see step 12): Preston hasn't written a paper himself in years.
 
 ### The deeper secret: the Neuroscientific Round Table (seeded from Act I, revealed at the Act III midpoint)
 7. Preston didn't come up with this on his own. He's the newest recruit of the **Neuroscientific Round Table (NRT)**, a secret society of under-40 neuroscientists. For decades it has quietly steered the field: members review each other's papers kindly, sit on each other's grant panels, and play **Reviewer 2** to everyone else. Reviewer 2 isn't a person. It's an institution.
@@ -31,6 +31,8 @@ Ned Null is a fifth-year grad student whose dissertation keeps coming up null. A
 9. The NRT's real weapon is the **Gain Controller**: brain-stimulation tech that turns a person's neural gain up or down, so ambition goes up and conscience goes down. Preston's ever-present wireless earbuds are the receivers. He signed up willingly for the career boost, but the murders were the NRT's orders, carried out through him. **Preston is both villain and victim.** (This is where the title pays off.)
 10. The NRT has met for decades in a sealed sub-basement under Fechner Hall, **B3**, around their "Round Table": a decommissioned 1960s research magnet, a giant iron ring. The building's pneumatic tube system was built in the 1960s for the old table, and the NRT inherited it. It's how they've passed reviews, grant scores and orders for half a century.
 11. The leader, **the Corresponding Author**, is Prof. Quorum. His "death" at the faculty meeting was faked; nobody checked his pulse for 40 minutes. The society's under-40 rule is absolute, which is why Quorum has been officially 39 since 1979. His birth certificate is the oldest fabrication in the department.
+12. **The paper mill.** Preston is the NRT's ghostwriter, and the ghost is a machine. The Archive in B3 holds fifty years of members' papers, reviews and grant text. Every Friday at midnight, on the department GPU cluster, Preston runs **the Large Table Model (LTM)**: a language model trained on that whole corpus. It writes new papers that read exactly like the Table's work because they're stitched from it. They're **metamers** of real science: different underneath, indistinguishable at a glance. Every one of Preston's 31 first-author papers in three years came out of the mill, and its queue has bylines for half the Rising Stars wall. The Big Finding was different only because the mill finally had real data to dress up: Ned's, upscaled. The Gain Controller supplies the will; the LTM supplies the words. It's the NRT's "endless research" made literal: research without researchers.
+    - **The one thing Preston wrote himself was the rejection.** Reviewer 2's report on Ned's paper is full of human typos ("nueron," "utilize"). The LTM never misspells anything. The typos are Preston's fingerprints, and the rejection was personal.
 
 ### How the NRT works
 *Loosely inspired by Charles Gross's 1977 letter in* American Psychologist *("Psychological Round Table in the 1960s"), a first-hand account of a real secret society of young experimental psychologists. We borrow its structure (secret officers, secret selection, the age cutoff, uncritical meetings, the archive) and push it much further toward the sinister. We deliberately leave out the letter's sexist specifics. Nothing here depicts a real organization or real people.*
@@ -43,6 +45,7 @@ Ned Null is a fifth-year grad student whose dissertation keeps coming up null. A
 - **Selection without consent.** You're never told you're a candidate. The Board watches you for years and then sets you a test: a single line to cross. **Preston's initiation test was Ned's paper.** The Board had Impact route the review to Preston, and stealing the data was how he proved himself.
 - **Retirement at 40.** It used to mean leaving the club. In the NRT it means your gain is turned to zero. Retired members stay on as faculty: they sit through meetings blank-eyed, nod at every motion and say nothing new for the rest of their careers. *That explains a lot of faculty meetings.* Impact turned 41, tried to talk instead of retiring quietly, and was "retired" permanently. Quorum dodged it by forging his age.
 - **The Hunt.** Every year the society chooses an outsider as its **quarry**: someone promising and unconnected. Then it closes ranks with Reviewer 2 reports, triaged grants and job searches that go cold. **This year's quarry is Ned Null.** His paper's rejection was the opening move, not bad luck.
+- **The mill.** Members don't just review each other kindly; since the LTM, many don't write at all. The Archive was always the Table's memory. Now it's also its training data. (LTM is also neuroscience shorthand for long-term memory, which members find hilarious.)
 - **Brilliant on paper, banal in person.** For all the secrecy, their actual meetings are intellectually empty: rote boilerplate, recycled slides, juvenile after-dinner roasts (which Morris loves). The NRT doesn't produce discoveries. It produces *success* and hands it out to its own. That's the game's theme again: the too-clean results come from people with nothing real to show.
 - **The gavel.** The Board calls each induction to order with a brass gavel whose head is cast from the skull of the first member who turned 40 and refused to retire.
 - **Defectors.** A few people have walked out, but most never managed to get anyone to listen, and almost none got away. The one survivor is **Prof. Emerita Iris Candor** (see Cast).
@@ -187,11 +190,13 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 **Question:** Why?
 
 **Day (Ned):** Ned investigates under suspicion, interrupted by Det. Small's interrogations.
-- **The fraud, proven:** Table 1's impossible means (GRIM test), Figure 3b and 3d are the same panel flipped (overlay), and 4,000 GPU-hours on `superres_laminar.py` (Rex's logs, bought with coffee).
+- **The fraud, proven:** Table 1's impossible means (GRIM test), Figure 3b and 3d are the same panel flipped (overlay), and 4,000 GPU-hours on `superres_laminar.py` (Rex's logs, bought with coffee), plus a second job that runs every Friday at 00:00: `ltm_generate.py --corpus /mnt/B3/archive --byline "P. Valu"`. Its output queue holds 40 finished drafts with future dates, including *Valu et al. (2027): "The Null Result of N. Null Is an Artifact."*
+- **The replication** (centerpiece; full design in [PUZZLE-GLM.md](PUZZLE-GLM.md)): with Preston's own stimulus log (Morris, from the Impact Lab) and his deposited raw data, Ned runs the GLM by hand. Attention does nothing in visual cortex: ATTEND = IGNORE. And at 3T a single voxel is bigger than all six layers. *"It's not a small effect. It's no effect."* / *"So the fancy layers?"* / *"Painted on."*
 - **The conspiracy, surfacing:**
   - **Preston's blank moments.** Morris's itch spikes, Preston's earbuds pulse, and his face goes empty mid-sentence.
   - **The insignia,** traced in the notebook: earbud case, sticky notes, Quorum's cufflinks, the brass plate on the tube hub. They all match.
   - **Rex's legend:** "There's a secret society. Under forty. I applied at 39 and 11 months. They said my CV was *too old*."
+  - **The metamer:** Ned overlays the Big Finding's sentences on the library's back issues. Every sentence comes from a different older paper, and every source paper's authors come from the same feeder labs. The paper is a collage of the Table's own work, and its author list is a partial membership roll. Some references don't exist at all (Quorum, 1979b; *J. Endless Res.*).
   - **The missing hours:** Preston, Impact and Quorum all share the same Friday-night expense gap, and the same three feeder labs on their CVs.
   - **The old notes:** some threats don't decode with the modern atlas. In the library, hunting for the 1980s atlas, Ned finds a bookmarked 1977 letter signed *I. Candor*.
 
@@ -218,7 +223,7 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 - **Impact flies in** rattled, agrees to meet Ned at 4pm, and is found frozen in the -80 next to a box labeled DO NOT THAW.
 - **Impact's office** (password: his h-index):
   - **Reviewer 2's report** on Ned's paper, in Preston's unmistakable style ("nueron," "utilize").
-  - **The retainer.** Ned's own retainer artifact in Preston's figure, with six hallucinated cortical layers inside it. *"That's not his data. That's my mouth."*
+  - **The retainer.** Ned's own retainer artifact in Preston's figure, with six hallucinated cortical layers inside it. *"That's not his data. That's my mouth."* And the null from the replication clicks: *"His sub-01 had my null. Because his sub-01 is me."*
   - **Impact's NRT card** (expired, age 41) and a draft letter to Ethel Bord: *"I can no longer stay silent about the Table."*
 - **Cody Credit** decides to tell Det. Small about the clipboard and is found floating in the water maze, "unable to locate the hidden platform." Morris saw it from the vent: Preston with glowing earbuds, and a robed figure behind him holding a remote.
 - **The chase:** Preston comes after Ned through the basement (cold room, LN2 station, animal facility). Rex is "killed" in the LN2 room and survives; nine years of postdoc have made him impervious. Morris's itch is unbearable. Preston isn't chasing Ned alone.
@@ -249,11 +254,11 @@ Day and night merge. The finale comes in two halves: Laura Bow's courtroom, then
 1. The Editorial Board calls the induction to order with the skull gavel. Quorum unhoods. He's not dead, he's 39, and he makes the Hunt's traditional final offer to its quarry: join instead of being destroyed. *"Think of your funding odds."* Saying yes is a valid (bad) ending.
 2. **Iris arrives** (if Ned told her the plan in Act IV). Fifty years late and right on time: *"I told you in 1974."* She staples Quorum's robe to the Round Table, which buys Morris the time he needs.
 3. **The archive (required for the best ending):** before the magnet comes on, Morris sends the most damning reels up the pneumatic tube to Ethel Bord's office. The tube system the Table built becomes the thing that exposes it.
-4. **The magnet:** Gus throws the last breaker and the Round Table ramps to full field. Every hood clasp, cufflink, earbud and gold medal in the room flies to the ring. The Gain Controller is ripped off its console and Preston's earbuds go with it, setting him free.
+4. **The magnet:** Gus throws the last breaker and the Round Table ramps to full field. Every hood clasp, cufflink, earbud and gold medal in the room flies to the ring. The Gain Controller is ripped off its console and Preston's earbuds go with it, setting him free. The LTM's drives, racked beside the Archive, are wiped clean. The mill forgets everything it ever learned.
 5. **Quorum's end:** he's wearing fifty years of solid-gold awards. *"Fifty years of honors. All of them ferromagnetic."* He finally rises to the top, straight into the ring.
 
 ### Endings
-- **Accepted (best):** The archive reached Ethel Bord. Ned lays the membership rolls next to fifty years of grant panel and editorial board rosters, exactly as Iris said, and the pattern is undeniable. The NRT is exposed and dissolved, Quorum is arrested (at 39 — the charge sheet is amended), and half a century of Reviewer 2 reports are unsealed. Preston, freed, confesses to stealing Ned's data. Preston's paper is retracted and Ned's original paper is published. Ned passes his defense and gets the job. Iris watches the news, puts down the staple gun, and finally retires.
+- **Accepted (best):** The archive reached Ethel Bord. Ned lays the membership rolls next to fifty years of grant panel and editorial board rosters, exactly as Iris said, and the pattern is undeniable. The NRT is exposed and dissolved, Quorum is arrested (at 39 — the charge sheet is amended), and half a century of Reviewer 2 reports are unsealed. Preston, freed, confesses to stealing Ned's data and to running the mill. All 31 of his papers are retracted (the retraction notices are the first thing he's written himself in years), and Ned's original paper, null and all, is published. Ned passes his defense and gets the job. Iris watches the news, puts down the staple gun, and finally retires.
 - **Major Revisions:** The Table is stopped but the archive was wiped by the magnet, so there's no proof. Ned passes with major revisions. Final shot: a single hood in Gus's lost-and-found box, and a pneumatic canister rattling somewhere in the walls…
 - **Inducted:** Ned says yes to Quorum and gets his own earbuds. *"Congratulations on your R01."* THE END.
 - **Desk Reject:** The induction succeeds, Preston gets the job, and Ned is appointed to the curriculum committee. THE END.
@@ -323,6 +328,16 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 | Water maze | "Rats learn where a hidden platform is. It's a test of spatial memory." | Cody's death; Morris's backstory |
 | Ethics review (IRB) | "You need permission *before* you test people, not after." | Backdated protocol |
 | Dark adaptation | "Your eyes take about 20 minutes to adjust to darkness." | Psychophysics booth puzzle (and a death) |
+| Block design | "Show the picture for 16 seconds, then nothing for 16. Over and over." | The replication: entering the log |
+| Hemodynamic response | "Neurons answer instantly. The blood arrives about five seconds later and lingers. Lightning, then thunder." | The replication: the HRF stamp |
+| The GLM | "Your guess is a template. Stretch it until it lies on top of the data. How far you stretched it is the answer." | The replication: fit by hand |
+| Contrasts | "Same picture both times; only attention changes. The difference between the fits is the attention effect." | The replication: ATTEND vs IGNORE |
+| Voxel size vs. cortical thickness | "Measuring a cake's six layers with a spoon bigger than the cake." | The replication: one voxel, six layers |
+| Draining veins | "Blood drains outward to the surface, so the top layer always looks loudest. His building has no plumbing." | The replication: tell #3 |
+| Forking paths (p-hacking) | "Try enough analyses and one will pass by luck." | The replication: the INDUCTED EARLY death |
+| Language models | "Autocomplete that read a whole library. It writes what *sounds* like the library, not what's true." | The paper mill (LTM) |
+| Metamers | "Two different lights your eye sees as the same color. His paper is a metamer of science: different parts, same look." | The metamer overlay |
+| Hallucinated citations | "AI writing invents sources that sound right. Look them up and the shelf is empty." | Phantom references in the library |
 | Real vs. fake noise | "Real measurements wobble. Fake ones are too smooth." | Comparing Preston's data to Ned's |
 | Brain stimulation (TMS) | "A strong magnetic pulse near your head can briefly switch a small patch of brain on or off. Really it just makes your thumb twitch. The NRT's version goes much further." | The Gain Controller; Morris's itch |
 | Neural gain | "Neurons have a volume knob. Turn it up and a signal gets louder; turn it down and it fades." | What the Gain Controller does (and the title) |
@@ -342,7 +357,9 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 | 5 | Fake participants | Cody's clipboard | Trade Cody a credit slip forged on the jammed printer |
 | 6 | Impossible means | Calculator | GRIM test |
 | 7 | Duplicated panel | Overlay screen | Rotate and flip panels to match (glowing overlay mini-game) |
-| 8 | GPU logs | Server room | Rex's password costs coffee; fix the espresso machine (multi-step) |
+| 7b | The replication | Ned's monitor + Preston's log (Impact Lab, via Morris) + deposited data | Playable GLM: enter the blocks, fix the dummy-scan offset, apply the HRF, fit by hand, run the contrast, find the three tells. See [PUZZLE-GLM.md](PUZZLE-GLM.md) |
+| 7c | The metamer | Library back issues + Big Finding | Notebook overlay: match each sentence to its source paper; the source authors form a partial membership roll. Check the references: some don't exist |
+| 8 | GPU logs | Server room | Rex's password costs coffee; fix the espresso machine (multi-step). Find both jobs: `superres_laminar.py` and the Friday-midnight `ltm_generate.py`, whose corpus path (`/mnt/B3/archive`) is the first written proof that B3 exists |
 | 9 | Murder weapon | Kitchen / Gus | Gus saw who took the NED thermos, but only tells you after you mop for him |
 | 10 | Reviewer 2 identity | Impact's office | Password = h-index (findable in his bio); match the writing quirks |
 | 11 | The retainer | Ned's own pilot scan vs. the paper's figure | Overlay your scan on his: identical dropout, hallucinated layers |
@@ -383,6 +400,8 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 17. Admit you're 40 in B3.
 18. Stand near the Round Table, wearing your belt buckle, when Gus throws the breaker.
 19. Ride the pneumatic tube yourself. *"Ned has been delivered to the Registrar."*
+20. Press TRY ANOTHER ANALYSIS fourteen times during the replication. *"You found significance on the fourteenth try. The Round Table has noticed your potential."* INDUCTED EARLY. (See [PUZZLE-GLM.md](PUZZLE-GLM.md).)
+21. Ask the Large Table Model to write your dissertation. It's beautiful, 300 pages, 412 references. Your committee looks up reference 1. *"Your thesis has been retracted before it was submitted."*
 
 ## Running gags
 - The espresso machine (broken, then fixed, then the center of a murder).
