@@ -68,7 +68,11 @@ And a plot of the run, like a real one: fog level by landing, a zigzag settling 
 - **Rex's threshold:** Rex, "killed" in the LN2 room, staggers out of the fog. *"Nine percent. My threshold's nine percent. It's the coffee."* He survives, as always.
 - **The fog machine's label:** FOG NEURO 3000, property of the Round Table, CHECK OUT FROM B3. One more piece of evidence that B3 exists.
 
-## Building it (for later)
+## Building it
+
+**The stairwell is built** as a test scene: `game/stairwell.html` + `game/js/minigames/stairwell.js` (playable at `/game/stairwell.html`). The mark's contrast is rendered for real in sRGB, using bit-stealing (small per-channel offsets around neutral gray) for luminance steps finer than 8-bit grays, so the threshold is the player's own. A simulated observer with a known psychometric function recovers its 71%-correct point in about 33 landings.
+
+Still to build (corridors 1–4):
 
 - **Fog model:** each drawn element gets an apparent contrast C = C₀ · e^(−β·d) · V, where d is its distance from Nell along the corridor, β is that corridor's fog density, and V < 1 when the phone light is on (veil). Each element also has a size class (fine, medium, coarse) with its own threshold. Visibility per frame = a Weibull psychometric function of C / threshold. Strokes are shown or hidden per frame (poses), never faded with gradients.
 - **Colors:** fog moves stroke colors toward the fog gray through the CSS palette variables, so it works in both day and night palettes.

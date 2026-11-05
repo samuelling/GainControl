@@ -1,0 +1,89 @@
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  body { font-family: "Saira Condensed", "Arial Narrow", sans-serif; -webkit-font-smoothing: antialiased; }
+  #stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  #frame {
+    position: relative; width: min(100vw, calc(100vh * 16 / 9)); aspect-ratio: 16 / 9;
+    container-type: inline-size; user-select: none; -webkit-user-select: none; cursor: crosshair; background: #000;
+    /* DAY palette */
+    --W: #e9e6ff; --R: #ff3b5c; --B: #6b8cff; --G: #00e39a; --K: #ff95ae; --A: #ffb547;
+    --V: #9c7bff; --N: #36346e; --D: #3a3842; --M: #7b7890; --X: #ff3b5c;
+  }
+  #frame.night {
+    --W: #8f9cff; --R: #5a4bd1; --B: #3d5cff; --G: #00e39a; --K: #7064d6; --A: #2fb3a3;
+    --V: #4b47c9; --N: #24234f; --D: #1d1c2b; --M: #484673; --X: #ff3b5c;
+  }
+  svg.t { position: absolute; inset: 0; width: 100%; height: 100%; display: block; fill: none; }
+  svg.t path, svg.t line, svg.t circle, svg.t rect, svg.t ellipse, svg.t polyline, svg.t polygon {
+    stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+  }
+  svg.t .hl { stroke-width: .75; }
+  svg.t .mech { stroke-linecap: butt; stroke-linejoin: miter; }
+  svg.t .dash { stroke-dasharray: 2 4; }
+  svg.t .k { fill: #000; }
+  .sW{stroke:var(--W)} .sR{stroke:var(--R)} .sB{stroke:var(--B)} .sG{stroke:var(--G)} .sK{stroke:var(--K)} .sA{stroke:var(--A)}
+  .sV{stroke:var(--V)} .sN{stroke:var(--N)} .sD{stroke:var(--D)} .sM{stroke:var(--M)} .sX{stroke:var(--X)} .s0{stroke:#000}
+  .fW{fill:var(--W);stroke:none} .fR{fill:var(--R);stroke:none} .fB{fill:var(--B);stroke:none} .fG{fill:var(--G);stroke:none}
+  .fK{fill:var(--K);stroke:none} .fA{fill:var(--A);stroke:none} .fV{fill:var(--V);stroke:none} .fX{fill:var(--X);stroke:none}
+  .fM{fill:var(--M);stroke:none}
+  #frame.night .day-only, #frame:not(.night) .night-only { display: none; }
+  [data-hs] { cursor: pointer; }
+  .opt { cursor: pointer; }
+  .opt:hover .bg { fill: var(--W); }
+  .opt:hover .g path, .opt:hover .g circle { stroke: #000; }
+  .opt:hover .g .fW, .opt:hover .g .fR { fill: #000; }
+  .opt:hover .lbl path { stroke: var(--A); }
+
+  /* pose switching (Game & Watch) */
+  .pz { display: none; } .pz.on { display: inline; }
+  #actor[data-pose="0"] .ap1, #actor[data-pose="0"] .ap2,
+  #actor[data-pose="1"] .ap0, #actor[data-pose="1"] .ap2,
+  #actor[data-pose="2"] .ap0, #actor[data-pose="2"] .ap1 { display: none; }
+  .pt .mouth-b { display: none; } .pt.mo .mouth-b { display: inline; } .pt.mo .mouth-a { display: none; }
+  .pt .eyes-closed { display: none; } .pt.bl .eyes-closed { display: inline; } .pt.bl .eyes-open { display: none; }
+  .pt .blank-only { display: none; } .pt.blank .blank-only { display: inline; } .pt.blank .normal-only { display: none; }
+
+  #frame.night #exitChip { filter: drop-shadow(0 0 .5cqw #ff3b5c); }
+
+  /* hover label */
+  #hover { position: absolute; pointer-events: none; font-size: 1.6cqw; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    color: #000; background: var(--W); padding: .05cqw .5cqw; white-space: nowrap; opacity: 0; transition: opacity .1s; }
+  #hover.show { opacity: 1; }
+
+  /* narrator box */
+  #msg { position: absolute; left: 50%; top: 4%; transform: translateX(-50%); width: 66%; background: #000;
+    border: .16cqw solid var(--W); padding: 1.1cqw 1.6cqw 1.6cqw; color: var(--W); font-size: 2.45cqw; line-height: 1.16;
+    text-transform: uppercase; letter-spacing: .015em; font-weight: 400; display: none; z-index: 5; }
+  #msg.show { display: block; }
+  .who { display: inline-block; color: #000; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: 1.45cqw;
+    padding: 0 .5cqw; margin-bottom: .5cqw; line-height: 1.35; }
+  .more { position: absolute; right: 1cqw; bottom: .4cqw; font-size: 1.1cqw; color: var(--M); letter-spacing: .1em; }
+  em { color: var(--M); font-style: normal; }
+
+  /* conversation */
+  #convo { position: absolute; inset: 0; display: none; background: rgba(0,0,0,.9); z-index: 6; }
+  #convo.show { display: block; }
+  .pf { position: absolute; top: 3%; width: 27%; height: 52%; border: .16cqw solid var(--D); background: #000; }
+  .pf.left { left: 9%; } .pf.right { right: 9%; }
+  .pf.speaking { border-color: var(--W); }
+  .pf svg.t { position: absolute; inset: 0; }
+  .pf svg.t path, .pf svg.t circle, .pf svg.t rect, .pf svg.t ellipse, .pf svg.t line, .pf svg.t polygon { stroke-width: .62; }
+  .pf svg.t .hl { stroke-width: .33; }
+  .pf:not(.speaking) svg { filter: brightness(.45); }
+  .pf .name { position: absolute; left: 0; bottom: -2.6cqw; }
+  #dlg { position: absolute; left: 4%; right: 4%; top: 63%; bottom: 4%; background: #000; border: .16cqw solid var(--W);
+    padding: 1.1cqw 1.8cqw 1.4cqw; color: var(--W); font-size: 3.1cqw; line-height: 1.12; text-transform: uppercase;
+    letter-spacing: .015em; font-weight: 400; }
+  #dlg .txt em { display: block; font-size: .78em; margin-top: .35cqw; }
+  #dlg .choice { font-size: 2.35cqw; line-height: 1.12; padding: .25cqw 0 .25cqw 2.6cqw; position: relative; cursor: pointer; color: var(--W); }
+  #dlg .choice b { position: absolute; left: 0; top: .25cqw; font-weight: 600; color: #000; background: var(--W); padding: 0 .45cqw; font-size: .8em; }
+  #dlg .choice:hover { color: var(--G); } #dlg .choice:hover b { background: var(--G); }
+
+  /* clue readout, title cards, death */
+  #readout { position: absolute; inset: 0; display: none; z-index: 4; }
+  #readout.show { display: block; } #readout.dim { filter: brightness(.35); }
+  #card { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .6s; z-index: 8; }
+  #card.show { opacity: 1; pointer-events: auto; cursor: pointer; }
+  #death { position: absolute; inset: 0; background: #000; display: none; z-index: 9; }
+  #death.show { display: block; }
+  #death .dtxt { position: absolute; left: 14%; right: 14%; top: 22%; color: var(--W); font-size: 2.6cqw; line-height: 1.18; text-transform: uppercase; }
+  #death .dbtn { cursor: pointer; } #death .dbtn:hover rect { fill: var(--G); stroke: var(--G); } #death .dbtn:hover path { stroke: #000; }

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gain Control — The Fog (stairwell test)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/game.css">
+<style>
+  #quip { position: absolute; left: 3%; top: 3%; max-width: 70%; font-size: 2.1cqw; line-height: 1.15; text-transform: uppercase;
+    background: #000; padding: .5cqw .9cqw; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 5; }
+  #quip.show { opacity: 1; }
+  #quip .who { font-size: 1.3cqw; margin: 0 .4cqw 0 0; vertical-align: .2cqw; }
+  #intro { position: absolute; inset: 0; background: #000; z-index: 8; display: none; cursor: pointer; }
+  #intro.show { display: block; }
+  #intro .lines { position: absolute; left: 12%; right: 12%; top: 40%; font-size: 2.2cqw; line-height: 1.25; text-transform: uppercase; color: var(--W); }
+  #intro .lines p { margin: 0 0 1.1cqw; }
+  #intro .lines .g { color: var(--G); } #intro .lines .m { color: var(--M); } #intro .lines .a { color: var(--A); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="frame">
+    <svg class="t" id="game" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="quip"></div>
+    <div id="intro" class="show">
+      <svg class="t" viewBox="0 0 640 360" id="introSvg"></svg>
+      <div class="lines">
+        <p>The NRT has filled the stairwell with fog. Nell has to get down to B3.</p>
+        <p class="a">On every landing, one door is marked with a faint circle inside a circle. That's the way down. The other door goes back up.</p>
+        <p class="g">Pick the marked door: click it, or press ← / →. If you can't see it, pick anyway.</p>
+        <p class="m">For science: screen brightness up, room lights down, arm's length away.</p>
+        <p>Click to begin.</p>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module">
+  import { segC, chip, segW } from "./js/gfx.js";
+  const t = "TEST BUILD   ACT IV   STAIRWELL B";
+  document.getElementById("introSvg").innerHTML = segC("THE FOG", 320, 40, 44, "sW", 2.2)
+    + chip(t, 320 - (segW(t, 6.5) + 6.5 * .9) / 2, 104, 6.5, "fV");
+</script>
+<script type="module" src="js/minigames/stairwell.js"></script>
+</body>
+</html>
