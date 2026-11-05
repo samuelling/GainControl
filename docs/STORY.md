@@ -229,7 +229,7 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
   - **The retainer.** Nell's own retainer artifact in Preston's figure, with six hallucinated cortical layers inside it. *"That's not his data. That's my mouth."* And the null from the replication clicks: *"His sub-01 had my null. Because his sub-01 is me."*
   - **Impact's NRT card** (expired, age 41) and a draft letter to Ethel Bord: *"I can no longer stay silent about the Table."*
 - **Cody Credit** decides to tell Det. Small about the clipboard and is found floating in the water maze, "unable to locate the hidden platform." Morris saw it from the vent: Preston with glowing earbuds, and a robed figure behind him holding a remote.
-- **The chase:** Preston comes after Nell through the basement (cold room, LN2 station, animal facility). Rex is "killed" in the LN2 room and survives; nine years of postdoc have made him impervious. Morris's itch is unbearable. Preston isn't chasing Nell alone.
+- **The chase:** Preston comes after Nell through the basement (cold room, LN2 station, animal facility), and the NRT floods the corridors with fog from its induction machines (**THE FOG**, a contrast-threshold puzzle; see [PUZZLE-FOG.md](PUZZLE-FOG.md)). Doors and markers fade corridor by corridor, the NRT has re-signed some doors with decoys, and the last stretch is a staircase procedure in the stairwell. Rex is "killed" in the LN2 room and survives; nine years of postdoc have made him impervious. Morris's itch is unbearable. Preston isn't chasing Nell alone.
 
 **Emotional beat, Morris:** in the water-maze room, Morris goes quiet. He remembers the maze, the electrodes and the robes. He was the Table's first Gain Controller test subject, and the implant is why he can talk. The Max-style goof gets a real wound.
 > Nell: "You were never a lab pet. You were a pilot."
@@ -346,6 +346,11 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 | Working memory (n-back) | "Juggling: every new thing lands and the oldest one drops. You only keep the last two in the air." | The Echo: the faculty nod, Iris's drill, the induction |
 | Signal detection | "Count hits *and* false alarms. Saying 'now' all the time catches everything and proves nothing." | Nell's d′ after the faculty meeting |
 | Brain-training hype | "Getting better at the game doesn't make you smarter at everything else." | The Table's unreplicated 1979 Echo paper |
+| Contrast and fog | "Fog doesn't hide things. It washes them out. Everything drifts toward the same gray." | THE FOG |
+| Spatial frequency (contrast sensitivity) | "Big and blurry survives fog. Small and sharp goes first." | THE FOG: reading doors by coarse features |
+| Backscatter | "Like high beams in fog. Put the light down." | THE FOG: the phone light |
+| Hybrid images | "One sign, two messages: what it says from far away isn't what it says up close." | THE FOG: the decoy EXIT |
+| Thresholds and staircases | "Harder after you get it right, easier after you miss, until you're right about seven times in ten." | THE FOG: the stairwell |
 | Real vs. fake noise | "Real measurements wobble. Fake ones are too smooth." | Comparing Preston's data to Nell's |
 | Brain stimulation (TMS) | "A strong magnetic pulse near your head can briefly switch a small patch of brain on or off. Really it just makes your thumb twitch. The NRT's version goes much further." | The Gain Controller; Morris's itch |
 | Neural gain | "Neurons have a volume knob. Turn it up and a signal gets louder; turn it down and it fades." | What the Gain Controller does (and the title) |
@@ -412,6 +417,8 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 19. Ride the pneumatic tube yourself. *"Nell has been delivered to the Registrar."*
 20. Press TRY ANOTHER ANALYSIS fourteen times during the replication. *"You found significance on the fourteenth try. The Round Table has noticed your potential."* INDUCTED EARLY. (See [PUZZLE-GLM.md](PUZZLE-GLM.md).)
 21. Ask the Large Table Model to write your dissertation. It's beautiful, 300 pages, 412 references. Your committee looks up reference 1. *"Your thesis has been retracted before it was submitted."*
+22. In the fog, trust the big EXIT sign without walking up to it. The fine print said −80 FREEZER. *"You have been archived at −80 °C."*
+23. Shine your phone light straight into the fog while Preston is in the corridor. *"You have successfully made yourself the brightest thing in the basement."*
 
 ## Running gags
 - The espresso machine (broken, then fixed, then the center of a murder).
