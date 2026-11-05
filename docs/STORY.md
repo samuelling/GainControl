@@ -77,7 +77,7 @@ Real data is noisy and fake data is too clean, and the same goes for alibis. Eve
 | **Prof. Quorum** | Department Chair, and secretly **the Corresponding Author**, leader of the NRT. | Rules everything by procedure. Apparently dies at the faculty meeting, and nobody notices for 40 minutes. ("We've lost Quorum.") Returns in the Act V finale. ("Quorum has been restored.") |
 | **The NRT** | The Neuroscientific Round Table. Hooded members, under 40 (officially). | Speak in grant-panel jargon and peer-review clichés. Their ritual responses are boilerplate from reviews ("The authors should consider…"). |
 | **Ethel Bord** | Research Integrity Officer. | Has a binder for everything, including binders. |
-| **Det. Sgt. Enn Small** | Campus police (they/them). | Refuses to call it a pattern until N is big enough. Their notebook is mostly power calculations. "Two bodies? Underpowered." |
+| **Det. Sgt. Enn Small** | Campus police. | Refuses to call it a pattern until N is big enough. Keeps a notebook that is mostly power calculations. "Two bodies? Underpowered." |
 | **Reviewer 2** | A hooded figure glimpsed at the edges of rooms. | Running gag all game. Revealed as Preston in Act IV, then as an *institution*: every NRT member wears the hood. |
 | **The Narrator** | Sardonic, Al Lowe voice. | Comments on the stipend, the coffee and your choices. |
 
@@ -237,7 +237,7 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 
 **Night (Gus):** Gus knows he's on the list. He goes back to the bricked door anyway and finds the Table's coat check beside it: a rack of robes (including the one from his Act I photo, pin and all), a reel labeled *"Panel Scores 1983,"* and a hand-drawn steam-tunnel map with **B3** circled. A canister confirms it: the induction is Friday at midnight. Gus leaves the robe on Nell's chair, sends her the map through the pneumatic tube with a last note, *"Tomorrow. Bring the rat. —G."*, and goes to run his 2 AM scan.
 
-**Death:** Gus Ian. Friday at dawn Nell finds him in the 3T. The scan is still running. His pupils are pinpoints, and he's wearing NRT earbuds instead of the scanner's headphones: the Board turned his gain to zero. Det. Small doesn't make a joke. They just take off their hat. This is the Hot Fuzz turn at full strength: the world stays comic, and the loss is real.
+**Death:** Gus Ian. Friday at dawn Nell finds him in the 3T. The scan is still running. His pupils are pinpoints, and he's wearing NRT earbuds instead of the scanner's headphones: the Board turned his gain to zero. Det. Small doesn't make a joke, and just takes off the hat. This is the Hot Fuzz turn at full strength: the world stays comic, and the loss is real.
 
 **Turn:** Preston is a puppet, and Nell decides to *save* him, not just expose him. Nell tells Iris the plan. She reaches for the staple gun.
 
