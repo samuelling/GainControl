@@ -1,6 +1,6 @@
 // GPU SERVER ROOM B1 — racks blinking in the heat, the LTM rack standing apart (a tiny lit insignia sticker), a login terminal
 // on a cart, the thermostat at 31, and the heavy MRI EQUIPMENT door where the chilled-water leak comes from at night.
-import { seg, segC, chip, perspective, shell, sideDoor, hit, arcs } from "../gfx.js";
+import { seg, segC, segW, chip, perspective, shell, sideDoor, hit, arcs, onQuad } from "../gfx.js";
 
 const pp = perspective(320, 130, 0.5);
 const { P, poly, kAtY, FY } = pp;
@@ -8,6 +8,12 @@ const floorY = (k) => P(0, FY, k)[1];
 const RB = floorY(.5);   // back-wall floor line (210)
 
 function led(x, y, on, cls = "fG") { return on ? `<circle class="${cls}" cx="${x}" cy="${y}" r="1"/>` : `<circle class="hl sD" cx="${x}" cy="${y}" r=".8"/>`; }
+
+// content laid flat on a side wall, starting at screen point (x, y) and running w screen units along the wall (h tall at x)
+function onWall(side, x, y, w, h, inner) {
+  const k = (X) => (X - pp.vpx) / (side - pp.vpx), Y = pp.vpy + (y - pp.vpy) / k(x);
+  return onQuad(inner, w, h, [x, y], P(side, Y, k(x + w)), [x, y + h]);
+}
 
 function back(G) {
   const night = G.mode === "night";
@@ -50,7 +56,7 @@ function back(G) {
   s += `<g data-hs="equip">${e.svg}
         ${[0, 1, 2].map(i => { const t = (i + 1) / 4; return `<path class="hl sB" d="M${(e.a[0] + (e.b[0] - e.a[0]) * t).toFixed(1)},${(e.a[1] + (e.b[1] - e.a[1]) * t + 6).toFixed(1)} L${(e.d[0] + (e.c[0] - e.d[0]) * t).toFixed(1)},${(e.d[1] + (e.c[1] - e.d[1]) * t - 6).toFixed(1)}"/>`; }).join("")}
         <path class="sB" d="M${ec[0] - 9},${ec[1] - 6} L${ec[0] - 9},${ec[1] + 8}"/>
-        ${chip("MRI EQUIPMENT", e.a[0] - 26, e.a[1] - 22, 4.2, "fB")}${seg("CHILLED WATER", e.a[0] - 26, e.a[1] - 9, 3.4, "sB", .6)}
+        ${chip("MRI EQUIPMENT", e.a[0] - 26, e.a[1] - 22, 4.2, "fB")}${onWall(640, e.a[0] - 26, e.a[1] - 9, segW("CHILLED WATER", 3.4), 3.4, seg("CHILLED WATER", 0, 0, 3.4, "sB", .6))}
         ${night ? `<ellipse class="hl sB" cx="${ec[0] - 18}" cy="${e.d[1] + 6}" rx="26" ry="4"/><ellipse class="hl sB" cx="${ec[0] - 22}" cy="${e.d[1] + 6}" rx="12" ry="1.8"/>
           <path class="hl sB" d="M${e.a[0] + 4},${e.d[1] - 2} C${e.a[0] - 4},${e.d[1] + 2} ${e.a[0] - 10},${e.d[1] + 4} ${e.a[0] - 20},${e.d[1] + 5}"/>
           <g class="pz on" data-g="drip" data-i="0"><path class="sB" d="M${e.a[0] + 2},${e.a[1] + 4} L${e.a[0] + 2},${e.a[1] + 7}"/></g>

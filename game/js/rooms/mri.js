@@ -1,12 +1,16 @@
 // MRI CONTROL, B1 — the window onto the 3T, Tess's console and calendar, the metal locker, Cody waiting with the clipboard.
 // Morning (Act II): police tape across the window, Nell's thermos stuck to the face of the magnet, Det. Small and Gus.
-import { seg, segC, chip, chipW, perspective, shell, sideDoor, hit, arcs } from "../gfx.js";
+import { seg, segC, segW, chip, chipW, perspective, shell, sideDoor, hit, arcs, wallPatch } from "../gfx.js";
 import { tessAtConsole, tessFar, codySeated, smallFigure, gusFigure, standOnly, AUD } from "../figures.js";
 import { gusInBore, smallHatInHand } from "../cast/act4b.js";
 
 const pp = perspective(320, 130, 0.45);
 const { P, poly, kAtY, FY } = pp;
 const floorY = (k) => P(0, FY, k)[1];
+// the patch of side wall behind a screen box x0..x1, y0..y1 (heights read at the box's middle depth), and a level line on it
+const wallBox = (side, x0, x1, y0, y1) => { const k = (x) => Math.abs(x - pp.vpx) / Math.abs(side - pp.vpx), ka = k(x0), kb = k(x1), km = (ka + kb) / 2, Y = (y) => pp.vpy + (y - pp.vpy) / km;
+  return wallPatch(pp, side, Math.min(ka, kb), Math.max(ka, kb), Y(y0), Y(y1)); };
+const wallLine = (side, x0, x1, y, cls) => { const b = wallBox(side, x0, x1, y, y); return `<path class="${cls}" d="M${pp.pt(b.tl)} L${pp.pt(b.tr)}"/>`; };
 // Friday morning (Act IV): no thermos, no tape. Gus is in the bore, and Det. Small has his hat in his hand
 const friday = (G) => G.act === 4 && G.mode === "morning";
 let cur = null;   // the last state drawn (stand points that differ by act read it)
@@ -56,11 +60,11 @@ function back(G) {
   // right wall: the metal locker (ZONE III) — Nell's thermos inside once it's locked away
   const L = sideDoor(pp, 640, .6, .68, 132, "sW"), L2 = sideDoor(pp, 640, .68, .76, 132, "sD");
   const lc = [(L.a[0] + L.b[0]) / 2, (L.a[1] + L.c[1]) / 2];
-  s += L2.svg.replace(/class="sD"/, 'class="hl sD"') + [0, 1, 2].map(i => { const t = (L2.a[1] + L2.c[1]) / 2 - 24 + i * 5; return `<path class="hl sD" d="M${(L2.a[0] + 6).toFixed(1)},${t.toFixed(1)} L${(L2.b[0] - 8).toFixed(1)},${(t - 2).toFixed(1)}"/>`; }).join("");
+  s += L2.svg.replace(/class="sD"/, 'class="hl sD"') + [0, 1, 2].map(i => { const t = (L2.a[1] + L2.c[1]) / 2 - 24 + i * 5; return wallLine(640, L2.a[0] + 6, L2.b[0] - 8, t, "hl sD"); }).join("");
   s += `<g data-hs="locker">${L.svg}
-        ${[0, 1, 2, 3].map(i => `<path class="hl sW" d="M${(lc[0] - 6).toFixed(1)},${(lc[1] - 26 + i * 5).toFixed(1)} L${(lc[0] + 7).toFixed(1)},${(lc[1] - 27.5 + i * 5).toFixed(1)}"/>`).join("")}
-        ${G.flags.thermosLocked && !morning ? `<path class="sA" d="M${lc[0] - 4},${lc[1] - 6} L${lc[0] + 4},${lc[1] - 7} L${lc[0] + 5},${lc[1] + 8} L${lc[0] - 4},${lc[1] + 9} Z"/>${seg("NELL", lc[0] - 8, lc[1] + 12, 3.6, "sA", .7)}` : ""}
-        ${chip("ZONE III", L.a[0] - 2, L.a[1] - 20, 4.4, "fA")}${seg("METAL IN LOCKER", L.a[0] - 16, L.a[1] - 8, 3.6, "sA", .7)}
+        ${[0, 1, 2, 3].map(i => wallLine(640, lc[0] - 6, lc[0] + 7, lc[1] - 26.75 + i * 5, "hl sW")).join("")}
+        ${G.flags.thermosLocked && !morning ? `<polygon class="sA" points="${wallBox(640, lc[0] - 4, lc[0] + 4.5, lc[1] - 6.5, lc[1] + 8.5).pts}"/>${wallBox(640, lc[0] - 8, lc[0] - 8 + segW("NELL", 3.6), lc[1] + 12, lc[1] + 15.6).put(seg("NELL", 0, 0, 3.6, "sA", .7))}` : ""}
+        ${wallBox(640, L.a[0] - 2, L.a[0] - 2 + chipW("ZONE III", 4.4), L.a[1] - 20, L.a[1] - 12.5).put(chip("ZONE III", 0, 0, 4.4, "fA"))}${wallBox(640, L.a[0] - 16, L.a[0] - 16 + segW("METAL IN LOCKER", 3.6), L.a[1] - 8, L.a[1] - 4.4).put(seg("METAL IN LOCKER", 0, 0, 3.6, "sA", .7))}
         ${hit(...L.box)}</g>`;
   return s;
 }

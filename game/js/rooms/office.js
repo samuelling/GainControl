@@ -1,5 +1,5 @@
 // MAIN OFFICE, 1F — Penny Ledger behind the counter, the purchase-order cabinet, the form rack, the mailboxes, the jammed printer.
-import { seg, segC, chip, perspective, shell, sideDoor, hit, arcs } from "../gfx.js";
+import { seg, segC, chip, perspective, shell, sideDoor, hit, arcs, onQuad } from "../gfx.js";
 import { pennyAtDesk, AUD } from "../figures.js";
 
 const pp = perspective(320, 130, 0.5);
@@ -54,7 +54,7 @@ function back(G) {
         <path class="sA" d="M270,${ct - 1} C270,${ct - 9} 282,${ct - 9} 282,${ct - 1} Z M276,${ct - 9} L276,${ct - 11}"/>`;
   // the sign on the counter: BACK IN 5 MIN (she's right there)
   s += `<g data-hs="sign"><path class="k sA" d="M206,${ct - 1} L214,${ct - 15} L250,${ct - 15} L242,${ct - 1} Z"/>
-        <g transform="translate(0,0)">${seg("BACK IN", 214, ct - 13, 3.8, "sA", .7)}${seg("5 MIN", 214, ct - 7.5, 3.8, "sA", .7)}</g>${hit(202, ct - 18, 52, 20)}</g>`;
+        ${onQuad(seg("BACK IN", 3, 2, 3.8, "sA", .7) + seg("5 MIN", 3, 7.5, 3.8, "sA", .7), 36, 14, [214, ct - 15], [250, ct - 15], [206, ct - 1])}${hit(202, ct - 18, 52, 20)}</g>`;
   return s;
 }
 

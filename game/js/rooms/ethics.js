@@ -1,10 +1,13 @@
 // RESEARCH INTEGRITY, 2F — Ethel Bord's office: a wall of binders, the Binder of Binders, the step stool, shelf R up top.
-import { seg, segC, chip, perspective, shell, sideDoor, hit } from "../gfx.js";
+import { seg, segC, segW, chip, perspective, shell, sideDoor, hit, wallPatch } from "../gfx.js";
 import { ethelAtDesk, AUD } from "../figures.js";
 
 const pp = perspective(320, 130, 0.45);
 const { P, poly, kAtY, FY } = pp;
 const floorY = (k) => P(0, FY, k)[1];
+// the patch of side wall behind a screen box x0..x1, y0..y1 (heights read at the box's middle depth)
+const wallBox = (side, x0, x1, y0, y1) => { const k = (x) => Math.abs(x - pp.vpx) / Math.abs(side - pp.vpx), ka = k(x0), kb = k(x1), km = (ka + kb) / 2, Y = (y) => pp.vpy + (y - pp.vpy) / km;
+  return wallPatch(pp, side, Math.min(ka, kb), Math.max(ka, kb), Y(y0), Y(y1)); };
 
 // a row of binder spines
 function spines(x0, x1, y, h, cls, every = 7, thin = false) {
@@ -35,7 +38,7 @@ function back(G) {
   s += `<g data-hs="door">${d.svg}${chip("STAIRS", d.b[0] + 4, d.b[1] - 14, 4.4, "fW")}${hit(...d.box)}</g>`;
   // a framed motto, right wall
   const m = [P(640, 110, .55), P(640, 110, .66), P(640, 150, .66), P(640, 150, .55)];
-  s += `<polygon class="k hl sD mech" points="${poly(...m)}"/>${seg("FILE IT", m[0][0] + 6, (m[0][1] + m[3][1]) / 2 - 4, 4.2, "sD", .7)}`;
+  s += `<polygon class="k hl sD mech" points="${poly(...m)}"/>${(() => { const x = m[0][0] + 6, y = (m[0][1] + m[3][1]) / 2 - 4; return wallBox(640, x, x + segW("FILE IT", 4.2), y, y + 4.2).put(seg("FILE IT", 0, 0, 4.2, "sD", .7)); })()}`;
   return s;
 }
 

@@ -4,7 +4,7 @@
 // up to the chamber (right wall) and the way back to the tunnels (left wall).
 // G.flags.brk: the breakers thrown so far, in order (e.g. "CAD"): those are up, the rest down.
 // G.flags.knife: the knife switch is closed. G.flags.magnetCharged: the field meter pegs and the conduit hums.
-import { seg, segC, chip, perspective, sideDoor, hit, arcs, star4 } from "../gfx.js";
+import { seg, segC, chip, perspective, sideDoor, hit, arcs, star4, wallPatch } from "../gfx.js";
 import { AUD } from "../figures.js";
 
 const pp = perspective(320, 130, 0.5);
@@ -100,14 +100,22 @@ function stair() {
   const k1 = .6, k2 = .82, top = 92;
   const a = P(640, top, k1), b = P(640, top, k2), c = P(640, FY, k2), d = P(640, FY, k1);
   let s = `<g data-hs="stair"><polygon class="k sW mech" points="${poly(a, b, c, d)}"/>`;
-  // the stair seen in profile through the opening: treads rising from the near jamb to the far one, a handrail above
-  const S = [c[0] - 5, c[1] - 6], E = [a[0] + 5, a[1] + 26], n = 8;
-  let st = `M${fx(S[0])},${fx(S[1])}`;
-  for (let i = 0; i < n; i++) { const x = S[0] + (E[0] - S[0]) * (i + 1) / n, y = S[1] + (E[1] - S[1]) * (i + 1) / n;
-    st += ` L${fx(x)},${fx(y - (E[1] - S[1]) / n)} L${fx(x)},${fx(y)}`; }
-  s += `<path class="hl sW" d="${st}"/><path class="sM" d="M${fx(S[0])},${fx(S[1] - 26)} L${fx(E[0])},${fx(E[1] - 26)}"/>
-    <path class="hl sM" d="M${fx(S[0] + (E[0] - S[0]) * .25)},${fx(S[1] - 26 + (E[1] - S[1]) * .25)} l0,16 M${fx(S[0] + (E[0] - S[0]) * .7)},${fx(S[1] - 26 + (E[1] - S[1]) * .7)} l0,16"/>
-    ${seg("UP", a[0] + 8, a[1] + 8, 4, "sW", .6)}<path class="hl sW" d="M${fx(a[0] + 17)},${fx(a[1] + 14)} l0,-6 l-2,2 M${fx(a[0] + 17)},${fx(a[1] + 8)} l2,2"/>`;
+  // the stair seen in profile through the opening, in the wall's plane: treads rising from the near jamb to the far one
+  // (each tread runs back toward the vanishing point), a handrail above. Laid out in wall coordinates (depth k, height Y).
+  const W = (k, Y) => P(640, Y, k), n = 8;
+  const S = { z: 1 / (k2 - .016), Y: FY - 4.4 }, E = { z: 1 / (k1 + .016), Y: top + 43 };
+  const at = (t) => ({ k: 1 / (S.z + (E.z - S.z) * t), Y: S.Y + (E.Y - S.Y) * t });       // even steps in depth
+  const ptk = (k, Y) => { const p = W(k, Y); return `${fx(p[0])},${fx(p[1])}`; };
+  let st = `M${ptk(at(0).k, S.Y)}`;
+  for (let i = 0; i < n; i++) { const p = at((i + 1) / n), y0 = at(i / n).Y; st += ` L${ptk(p.k, y0)} L${ptk(p.k, p.Y)}`; }
+  const R = 36, rail = (t) => { const p = at(t); return W(p.k, p.Y - R); };
+  const post = (t) => { const p = at(t); return `M${ptk(p.k, p.Y - R)} L${ptk(p.k, p.Y - R + 22)}`; };
+  const r0 = rail(0), r1 = rail(1);
+  s += `<path class="hl sW" d="${st}"/><path class="sM" d="M${fx(r0[0])},${fx(r0[1])} L${fx(r1[0])},${fx(r1[1])}"/>
+    <path class="hl sM" d="${post(.25)} ${post(.7)}"/>`;
+  // UP, and its arrow, painted on the far jamb
+  { const up = wallPatch(pp, 640, .623, .686, 104, 124);
+    s += up.put(`${seg("UP", 2, 2.6, 4, "sW", .6)}<path class="hl sW" d="M11,8.6 l0,-6 l-2,2 M11,2.6 l2,2"/>`); }
   s += chip("SERVICE STAIR", a[0] - 48, a[1] - 14, 3.8, "fW");
   const xs = [a, b, c, d].map(p => p[0]), ys = [a, b, c, d].map(p => p[1]);
   return s + `${hit(Math.min(...xs) - 2, Math.min(...ys) - 16, Math.max(...xs) - Math.min(...xs) + 4, Math.max(...ys) - Math.min(...ys) + 18)}</g>`;

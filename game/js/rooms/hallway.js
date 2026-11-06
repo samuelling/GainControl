@@ -1,11 +1,14 @@
 // FIRST-FLOOR HALLWAY, FECHNER HALL — the Rising Stars wall, the Friday 2 PM collision, the Impact Lab door.
-import { seg, chip, chipW, perspective, shell, sideDoor, hit } from "../gfx.js";
+import { seg, chip, chipW, perspective, shell, sideDoor, hit, wallPatch } from "../gfx.js";
 import { smallFigure, AUD } from "../figures.js";
 import { prestonStanding, danaStanding } from "../cast/act3b.js";
 import { impactStanding, codyStanding } from "../cast/act4.js";
 
 const pp = perspective(320, 140, 0.6);
 const { P, poly, FY, kAtY } = pp;
+// the patch of side wall behind a screen box x0..x1, y0..y1 (heights read at the box's middle depth)
+const wallBox = (side, x0, x1, y0, y1) => { const k = (x) => Math.abs(x - pp.vpx) / Math.abs(side - pp.vpx), ka = k(x0), kb = k(x1), km = (ka + kb) / 2, Y = (y) => pp.vpy + (y - pp.vpy) / km;
+  return wallPatch(pp, side, Math.min(ka, kb), Math.max(ka, kb), Y(y0), Y(y1)); };
 let ACT = 1;   // the act last drawn: the stairs labels depend on it (Act III has five exits)
 
 function back(G) {
@@ -65,7 +68,7 @@ function back(G) {
   s += `<g data-hs="stairs">${st.svg}${chip("STAIRS", st.a[0] - 4, st.a[1] - 14, 4.4, "fW")}${hit(...st.box)}</g>`;
   s += `<g data-hs="exitH">${chip("EXIT", 78, 72, 6, "fX", "exitChip")}${hit(76, 70, 28, 14)}</g>`;
   s += `<g data-hs="office">${of.svg}${chip("MAIN OFFICE", of.a[0] - 2, of.a[1] - 14, 4.4, "fW")}
-        <g transform="rotate(-8 ${of.a[0] + 10} ${of.a[1] + 40})">${chip("BACK IN 5 MIN", of.a[0] + 2, of.a[1] + 34, 3.8, "fA")}</g>${hit(...of.box)}</g>`;
+        ${wallBox(0, of.a[0] + 2, of.a[0] + 2 + chipW("BACK IN 5 MIN", 3.8), of.a[1] + 34, of.a[1] + 40.5).put(`<g transform="rotate(-4 14 3)">${chip("BACK IN 5 MIN", 0, 0, 3.8, "fA")}</g>`)}${hit(...of.box)}</g>`;
   // right wall: Adline Lab 114
   const lab = sideDoor(pp, 640, .64, .8, 108);
   s += `<g data-hs="lab">${lab.svg}${chip("114 ADLINE", lab.a[0] - 4, lab.a[1] - 14, 4.4, "fG")}${hit(...lab.box)}</g>`;

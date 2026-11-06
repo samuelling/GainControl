@@ -1,7 +1,7 @@
 // −80 ROOM B1 — a row of upright −80 freezers (readouts, frost), and at the back a walk-in −80 with its heavy door swung
 // open and fog spilling out over the floor. After four o'clock (G.flags.impactDead): Prof. Impact inside, frozen mid-stride,
 // a box at his feet labeled DO NOT THAW, police tape, and Det. Small beside the door, hat on. Act IV.
-import { seg, segC, chip, perspective, shell, sideDoor, hit, arcs, star4 } from "../gfx.js";
+import { seg, segC, chip, perspective, shell, sideDoor, hit, arcs, star4, onQuad } from "../gfx.js";
 import { smallFigure, AUD } from "../figures.js";
 import { impactFrozen } from "../cast/act4.js";
 
@@ -79,9 +79,11 @@ function back(G) {
   let fz = "";
   for (let i = 0; i < 5; i++) {
     const k1 = .52 + i * .09, k2 = k1 + .082, A = P(640, 112, k1), B = P(640, 112, k2), C = P(640, 290, k2), D = P(640, 290, k1);
-    const r = P(640, 126, (k1 + k2) / 2), hdl = P(640, 160, k1 + .015);
+    const km = (k1 + k2) / 2, hdl = P(640, 160, k1 + .015), E = P(640, 150, k1);
+    // the readout sits on the door face: drawn upright in the face's own box (top edge at Y 112), mapped onto the wall
+    const ro = onQuad(segC("-80", (B[0] - A[0]) / 2, 14 * km - 4, 6.4 + i * 1.4, "sB", .9), B[0] - A[0], E[1] - A[1], A, B, E);
     fz += `<polygon class="k sW mech" points="${poly(A, B, C, D)}"/><path class="hl sW" d="M${f1(P(640, 150, k1))} L${f1(P(640, 150, k2))}"/>
-      ${segC("-80", r[0], r[1] - 4, 6.4 + i * 1.4, "sB", .9)}<path class="sW" d="M${hdl[0]},${hdl[1]} L${hdl[0]},${hdl[1] + 18 + i * 3}"/>
+      ${ro}<path class="sW" d="M${hdl[0]},${hdl[1]} L${hdl[0]},${hdl[1] + 18 + i * 3}"/>
       ${frost([[A[0] + 1, A[1] + 2, 2, 5], [B[0] - 2, B[1] + 2, -1, 6]])}`;
   }
   const rw0 = P(640, 112, .52), rw1 = P(640, 290, .962);

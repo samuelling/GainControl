@@ -1,9 +1,12 @@
 // SEMINAR ROOM 101 — journal club by day, the forgotten robe by night.
-import { seg, chip, perspective, shell, hit } from "../gfx.js";
+import { seg, chip, perspective, shell, hit, onQuad, wallPatch } from "../gfx.js";
 import { prestonBust, sitter, chairBack } from "../figures.js";
 
 const pp = perspective(320, 130, 0.42);
 const { P, poly, kAtY, FY } = pp;
+// the patch of side wall behind a screen box x0..x1, y0..y1 (heights read at the box's middle depth)
+const wallBox = (side, x0, x1, y0, y1) => { const k = (x) => Math.abs(x - pp.vpx) / Math.abs(side - pp.vpx), ka = k(x0), kb = k(x1), km = (ka + kb) / 2, Y = (y) => pp.vpy + (y - pp.vpy) / km;
+  return wallPatch(pp, side, Math.min(ka, kb), Math.max(ka, kb), Y(y0), Y(y1)); };
 const ROWS = [0.56, 0.70, 0.86];
 const SEATS = [90, 170, 250, 390, 470, 550];
 
@@ -34,7 +37,7 @@ function back(G) {
         <g class="day-only">${slide()}</g>
         <g class="night-only">${layers(Array(6).fill("hl sD"), "hl sD", "hl sD", false)}</g>${hit(214, 88, 212, 90)}</g>`;
   s += `<path class="sM mech" d="M214,182 L426,182"/>`;
-  s += `<g data-hs="clock"><path class="k sM mech" d="M476,58 L520,50 L520,70 L476,76 Z"/>${seg(G.clock, 481, 57, 9, "sG", 1.2)}${hit(474, 48, 48, 30)}</g>`;
+  s += `<g data-hs="clock"><path class="k sM mech" d="M476,58 L520,50 L520,70 L476,76 Z"/>${onQuad(seg(G.clock, 5, 4.5, 9, "sG", 1.2), 44, 18, [476, 58], [520, 50], [476, 76])}${hit(474, 48, 48, 30)}</g>`;
   const d1 = P(0, 120, .62), d2 = P(0, 120, .8), d3 = P(0, FY, .8), d4 = P(0, FY, .62);
   s += `<g data-hs="door"><polygon class="k sW mech" points="${poly(d1, d2, d3, d4)}"/>
         <path class="hl sW" d="M${(d1[0] + d2[0]) / 2 - 2},${d1[1] + 4} L${(d4[0] + d3[0]) / 2 - 2},${(d3[1] + d4[1]) / 2 - 4}"/>
@@ -46,8 +49,8 @@ function back(G) {
     <path class="sW mech" d="M${tx - 4},${ty0} L${tx - 4},${ty1} M${tx + 4},${ty0} L${tx + 4},${ty1}"/>
     ${[0.1, 0.3, 0.75, 0.9].map(f => { const y = ty0 + (ty1 - ty0) * f; return `<path class="sW mech" d="M${tx - 7},${y} L${tx + 7},${y} M${tx - 7},${y + 2} L${tx + 7},${y + 2}"/>`; }).join("")}
     <polygon class="k sW" points="${poly(b1, b2, b3, b4)}"/>
-    <circle class="k sW" cx="${tx}" cy="138" r="6"/><circle class="fW" cx="${tx}" cy="138" r="1.2"/><path class="needle sR" data-cx="${tx}" data-cy="138" d="M${tx},138 L${tx + 4},134"/>
-    <path class="hl sM mech" d="M${tx - 9},150 L${tx + 9},150 L${tx + 9},172 L${tx - 9},172 Z"/><circle class="fG" cx="${tx + 6}" cy="176" r="1.4"/>
+    ${wallBox(640, tx - 6, tx + 6, 132, 144).put(`<circle class="k sW" cx="6" cy="6" r="6"/><circle class="fW" cx="6" cy="6" r="1.2"/><path class="needle sR" data-cx="6" data-cy="6" d="M6,6 L10,2"/>`)}
+    <polygon class="hl sM mech" points="${wallBox(640, tx - 9, tx + 9, 150, 172).pts}"/>${wallBox(640, tx + 4, tx + 8, 174, 178).put(`<circle class="fG" cx="2" cy="2" r="1.4"/>`)}
     ${hit(tx - 16, ty0, 32, ty1 - ty0)}</g>`;
   s += `<g class="canister" data-x="${tx}" style="display:none"><rect class="fA" x="${tx - 2.6}" y="-6" width="5.2" height="12" rx="2.6"/>${seg("B3", tx + 8, -4, 6, "sA", 1)}</g>`;
   // Morris in the ceiling (by day until he heads for the drawer; always at night)

@@ -86,6 +86,23 @@ export function shell(pp, { tiles = true, floorStep = 80, rail = 170 } = {}) {
   if (rail) s += ln(P(0, rail, KB), P(640, rail, KB), "hl sD");
   return s;
 }
+// Flat things on a receding surface (a clock or sign on a side wall, a label on a desk top): draw the content upright in a
+// local box (0,0)-(w,h), then map it onto the surface's quad from three screen corners tl, tr, bl (affine; exact enough
+// for anything sign-sized). Pick w and h near the quad's on-screen size so strokes keep their weight.
+export const onQuad = (inner, w, h, tl, tr, bl) => {
+  const a = (tr[0] - tl[0]) / w, b = (tr[1] - tl[1]) / w, c = (bl[0] - tl[0]) / h, d = (bl[1] - tl[1]) / h, n = (v) => +v.toFixed(4);
+  return `<g transform="matrix(${n(a)},${n(b)},${n(c)},${n(d)},${n(tl[0])},${n(tl[1])})">${inner}</g>`;
+};
+// a patch of side wall (side 0 = left, 640 = right) between depths k0 (far) and k1 (near) and heights Y0..Y1, in room
+// coordinates. Returns its corners, a polygon string, a natural local size, and put(inner) to lay content on it.
+export function wallPatch(pp, side, k0, k1, Y0, Y1) {
+  const { P, poly } = pp;
+  // left wall: far edge is on the right of the screen, so read the patch left-to-right from the near edge
+  const [ka, kb] = side === 0 ? [k1, k0] : [k0, k1];
+  const tl = P(side, Y0, ka), tr = P(side, Y0, kb), br = P(side, Y1, kb), bl = P(side, Y1, ka);
+  const w = Math.abs(tr[0] - tl[0]), h = ((bl[1] - tl[1]) + (br[1] - tr[1])) / 2;
+  return { tl, tr, br, bl, w, h, pts: poly(tl, tr, br, bl), put: (inner) => onQuad(inner, w, h, tl, tr, bl) };
+}
 // a door drawn on a side wall between depths k1..k2 (side: 0 = left wall, 640 = right wall)
 export function sideDoor(pp, side, k1, k2, top = 120, cls = "sW") {
   const { P, poly, FY } = pp;

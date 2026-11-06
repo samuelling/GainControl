@@ -159,6 +159,10 @@ function seg(str, x, y, h, cls, sw = 1.5) {
 }
 const segW = (str, h) => { const ux = h / 6 * CXR; let w = 0; for (const ch of String(str)) w += ch === " " ? ux * 3.2 : ux * 5.8; return w - ux * 1.8; };
 const chip = (txt, x, y, h, fcls, id = "") => `<g ${id ? `id="${id}"` : ""}><rect class="${fcls}" x="${x}" y="${y}" width="${(segW(txt, h) + h * .9).toFixed(1)}" height="${(h * 1.7).toFixed(1)}"/>${seg(txt, x + h * .45, y + h * .35, h, "s0", 1.2)}</g>`;
+// flat content on a receding surface: draw it upright in a local box (0,0)-(w,h), mapped affinely onto the quad with
+// screen corners tl, tr, bl (a sign or clock on a side wall). w, h ≈ the quad's on-screen size keeps stroke weights.
+const onQuad = (inner, w, h, tl, tr, bl) => { const n = (v) => +v.toFixed(4);
+  return `<g transform="matrix(${n((tr[0] - tl[0]) / w)},${n((tr[1] - tl[1]) / w)},${n((bl[0] - tl[0]) / h)},${n((bl[1] - tl[1]) / h)},${n(tl[0])},${n(tl[1])})">${inner}</g>`; };
 const arcs = (x, y, dir, cls, n = 3, s = 1) => { let o = ""; for (let i = 0; i < n; i++) { const r = (5 + i * 4) * s, xx = x + dir * i * 4 * s;
   o += `<path class="${cls}" d="M${xx},${y - r} C${xx + dir * r * .6},${y - r * .4} ${xx + dir * r * .6},${y + r * .4} ${xx},${y + r}"/>`; } return o; };
 
@@ -197,7 +201,7 @@ function room() {
   s += `<path class="sM mech" d="M214,182 L426,182"/>`;
   // digital clock (right wall)
   s += `<g data-hs="clock"><path class="k sM mech" d="M476,58 L520,50 L520,70 L476,76 Z"/>
-        <g class="day-only">${seg("16:07", 481, 57, 9, "sG", 1.2)}</g><g class="night-only">${seg("02:13", 481, 57, 9, "sG", 1.2)}</g>
+        ${onQuad(`<g class="day-only">${seg("16:07", 5, 4.5, 9, "sG", 1.2)}</g><g class="night-only">${seg("02:13", 5, 4.5, 9, "sG", 1.2)}</g>`, 44, 18, [476, 58], [520, 50], [476, 76])}
         <rect x="474" y="48" width="48" height="30" fill="transparent"/></g>`;
   // door + EXIT chip (left wall)
   const d1 = P(0, 120, .62), d2 = P(0, 120, .8), d3 = P(0, FY, .8), d4 = P(0, FY, .62);
@@ -214,7 +218,7 @@ function room() {
     ${[0.1, 0.3, 0.75, 0.9].map(f => { const y = ty0 + (ty1 - ty0) * f; return `<path class="sW mech" d="M${tx - 7},${y} L${tx + 7},${y} M${tx - 7},${y + 2} L${tx + 7},${y + 2}"/>`; }).join("")}
     <polygon class="k sW" points="${poly(b1, b2, b3, b4)}"/>
     <circle class="k sW" cx="${tx}" cy="138" r="6"/><circle class="fW" cx="${tx}" cy="138" r="1.2"/><path id="needle" class="sR" d="M${tx},138 L${tx + 4},134"/>
-    <path class="hl sM mech" d="M${tx - 9},150 L${tx + 9},150 L${tx + 9},172 L${tx - 9},172 Z"/><circle class="fG" cx="${tx + 6}" cy="176" r="1.4"/>
+    <polygon class="hl sM mech" points="${poly(P(640, 153.3, .832), P(640, 153.3, .888), P(640, 178.8, .888), P(640, 178.8, .832))}"/><circle class="fG" cx="${tx + 6}" cy="176" r="1.4"/>
     <rect x="${tx - 16}" y="${ty0}" width="32" height="${ty1 - ty0}" fill="transparent"/></g>`;
   s += `<g id="canister" style="display:none"><rect class="fA" x="${tx - 2.6}" y="-6" width="5.2" height="12" rx="2.6"/>${seg("B3", tx + 8, -4, 6, "sA", 1)}</g>`;
   // Morris in the ajar ceiling tile

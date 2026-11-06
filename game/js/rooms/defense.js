@@ -3,7 +3,7 @@
 // the screen reading NULL RESULTS, A DEFENSE. In the audience (chair backs): Preston in the front row, waiting for
 // his job talk in the same room, next slot (earbuds dark; they flare: #preston blank-only); Iris in the back row,
 // where she has sat since 1961. After G.flags.defenseDone, Preston's seat is empty.
-import { seg, segC, chip, perspective, shell, hit, arcs } from "../gfx.js";
+import { seg, segC, chip, perspective, shell, hit, arcs, onQuad } from "../gfx.js";
 import { chairBack, ethelAtDesk, AUD } from "../figures.js";
 import { adlineSeated, smallSeated } from "../cast/act5a.js";
 
@@ -49,8 +49,8 @@ function back(G) {
         ${hit(SCR.x, SCR.y, SCR.w, SCR.h)}</g>`;
   s += `<path class="sM mech" d="M${SCR.x},${SCR.y + SCR.h + 4} L${SCR.x + SCR.w},${SCR.y + SCR.h + 4}"/>`;
   // the wall clock on the right wall (as in Room 101), and a sign taped under it
-  s += `<path class="k sM mech" d="M476,58 L520,50 L520,70 L476,76 Z"/>${seg(G.clock || "14:00", 481, 57, 9, "sG", 1.2)}`;
-  s += `<path class="k hl sW mech" d="M478,84 L520,78 L520,94 L478,99 Z"/>${seg("DEFENSE 14:00", 481, 84, 3.2, "sW", .55)}${seg("JOB TALK 15:00", 481, 90, 3.2, "sR", .55)}`;
+  s += `<path class="k sM mech" d="M476,58 L520,50 L520,70 L476,76 Z"/>${onQuad(seg(G.clock || "14:00", 5, 4.5, 9, "sG", 1.2), 44, 18, [476, 58], [520, 50], [476, 76])}`;
+  s += `<path class="k hl sW mech" d="M478,84 L520,78 L520,94 L478,99 Z"/>${onQuad(seg("DEFENSE 14:00", 3, 2.5, 3.2, "sW", .55) + seg("JOB TALK 15:00", 3, 8.5, 3.2, "sR", .55), 42, 15, [478, 84], [520, 78], [478, 99])}`;
   // left wall: the door out, the EXIT sign
   const d1 = P(0, 120, .64), d2 = P(0, 120, .82), d3 = P(0, FY, .82), d4 = P(0, FY, .64);
   s += `<g data-hs="door"><polygon class="k sW mech" points="${poly(d1, d2, d3, d4)}"/>

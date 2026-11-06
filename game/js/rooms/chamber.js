@@ -12,7 +12,7 @@
 // G.flags.crash (wins over creak): the 3T lies smashed into the Round Table under a ragged hole in the ceiling (bent rebar,
 // dangling conduit, the chilled water pouring), the table split, the ring dented, the console crushed, the hoods knocked
 // over, Quorum's feet and a few gold medals sticking out of the bore, Morris peeking down over the edge of the hole.
-import { seg, segC, chip, perspective, hit, arcs, star4 } from "../gfx.js";
+import { seg, segW, segC, chip, chipW, perspective, hit, arcs, star4, onQuad } from "../gfx.js";
 import { AUD, morrisPeek } from "../figures.js";
 import { insignia } from "../cast/act3a.js";
 import { hoodSeated, hoodStanding, prestonHooded, quorumUnhooded } from "../cast/act5a.js";
@@ -27,6 +27,11 @@ const kz = (z) => D / z;
 const line = (arr) => "M" + arr.map(p => f(p[0]) + "," + f(p[1])).join(" L");
 const pts = (arr) => arr.map(p => f(p[0]) + "," + f(p[1])).join(" ");
 const WALL = 420, ZB = D / .32;   // side walls at lateral ±420, back wall depth
+// a flat thing on a side wall (lat = ±WALL), true to the camera: local (0,0)-(w,h) laid on the wall with local (cx, cy) at
+// height hc and depth zc, at the size it has there (1 local unit = 1/k world units). Screen-right runs deeper on the left wall.
+const onWall = (lat, hc, zc, w, h, inner, cx = w / 2, cy = h / 2) => { const k = kz(zc), dir = lat < 0 ? 1 : -1;
+  const at = (x, y) => W(lat, hc + (cy - y) / k, zc + dir * (x - cx) / k);
+  return onQuad(inner, w, h, at(0, 0), at(w, 0), at(0, h)); };
 
 /* ---- the magnet: a torus (ring radius RR, tube radius RT, centre height RH) around the pole face ---- */
 const RZ = 800, RR = 230, RT = 22, RH = 40, TAU = Math.PI * 2;
@@ -177,12 +182,15 @@ function room(G) {
       ${seg("TESLA", x - 6, y + r + 2, 2.6, "sD", .5)}`; }
   // the field-safety line painted on the floor around the magnet
   s += `<polygon class="hl dash sA" points="${pts(sweep(0, TAU, 96, th => W(352 * Math.cos(th), 0, RZ + 352 * Math.sin(th))))}"/>`;
-  { const [x, y] = W(150, 0, 452); s += seg("NO METAL BEYOND THIS LINE", x, y - 9, 3.6, "sA", .6); }
+  // painted on the floor: the same screen box as before, laid on the floor (its left edge runs back toward the vanishing point)
+  { const t = "NO METAL BEYOND THIS LINE", h = 3.6, w = segW(t, h), y = W(0, 0, 452)[1], zAt = (yy) => E * D / (yy - VPY);
+    const zf = zAt(y - 9), zn = zAt(y - 9 + h), lat0 = 150 * kz(452) / kz((zf + zn) / 2), lat1 = lat0 + w / kz(zf);
+    s += onQuad(seg(t, 0, 0, h, "sA", .6), w, h, W(lat0, 0, zf), W(lat1, 0, zf), W(lat0, 0, zn)); }
   // left wall: the arched door back to the antechamber, insignia over it
   const z0 = 640, z1 = 760, a = W(-WALL, 0, z0), b = W(-WALL, 150, z0), c = W(-WALL, 150, z1), d = W(-WALL, 0, z1), m = W(-WALL, 182, (z0 + z1) / 2);
   s += `<g data-hs="door"><path class="k sW mech" d="M${f(a[0])},${f(a[1])} L${f(b[0])},${f(b[1])} Q${f(m[0])},${f(m[1])} ${f(c[0])},${f(c[1])} L${f(d[0])},${f(d[1])} Z"/>
     <path class="hl sW" d="${line([W(-WALL, 0, (z0 + z1) / 2), W(-WALL, 160, (z0 + z1) / 2)])}"/>
-    ${insignia(m[0], m[1] - 10, 3.4)}${chip("ANTECHAMBER", Math.max(4, m[0] - 30), m[1] - 30, 3.8, "fW")}
+    ${onWall(-WALL, 182 + 10 / kz((z0 + z1) / 2), (z0 + z1) / 2, 10, 10, insignia(5, 5, 3.4))}${chip("ANTECHAMBER", Math.max(4, m[0] - 30), m[1] - 30, 3.8, "fW")}
     ${hit(Math.min(a[0], d[0]) - 4, m[1] - 26, Math.abs(a[0] - d[0]) + 30, a[1] - m[1] + 28)}</g>`;
   return s;
 }
@@ -198,7 +206,7 @@ function stair(G) {
   for (let i = 0; i < n; i++) { const z = z0 + 12 + i * dz, hh = 66 - i * 14; prof.push(W(WALL + 8, hh, z), W(WALL + 8, hh, z + dz)); prof.push(W(WALL + 8, hh - 14, z + dz)); }
   s += `<g clip-path="url(#stairClip)"><path class="sM" d="${line(prof)}"/><path class="hl sM" d="${line([W(WALL + 8, 112, z0 + 12), W(WALL + 8, 112 - 14 * n, z1 - 12)])}"/>
     <path class="hl sD" d="${line([W(WALL + 8, 66, z0 + 12), W(WALL + 8, 112, z0 + 12)])}"/></g>`;
-  { const [x, y] = W(WALL, 128, (z0 + z1) / 2 - 10); s += `<path class="sW" d="M${f(x)},${f(y - 8)} L${f(x)},${f(y + 4)} M${f(x - 4)},${f(y)} L${f(x)},${f(y + 4)} L${f(x + 4)},${f(y)}"/>`; }
+  s += onWall(WALL, 128, (z0 + z1) / 2 - 10, 10, 14, `<path class="sW" d="M5,0 L5,12 M1,8 L5,12 L9,8"/>`, 5, 8);   // painted on the wall
   s += `<path class="sW" d="${line([W(WALL - 2, 0, z0 - 4), W(WALL - 2, 70, z0 - 4), W(WALL - 2, 70, z0 + 30)])}"/>`;
   { const [x, y] = c(h + 26, (z0 + z1) / 2); s += chip("SERVICE STAIR", x - 40, y - 4, 3.6, "fW") + seg("DOWN · PLANT", x - 40, y + 4.4, 3, "sM", .5); }
   return s + hit(d[0] - 4, b[1] - 18, a[0] - d[0] + 8, a[1] - b[1] + 20) + `</g>`;
@@ -492,10 +500,12 @@ function scanner(G) {
   [3, 10, 17, 24].forEach(i => { const o = xs[i]; if (facing(nrm(o.nU, o.nV), P3(o.U, o.V, 0))) s += `<path class="hl sW" d="${line([S(o.U, o.V, L2), S(o.U, o.V, -L2)])}"/>`; });
   // stickers on the visible side panel, and the crumple where it hit
   const side = facing(nrm(-1, 0), P3(-HW, 0, 0)) ? -1 : 1;
-  const ang = (p, q) => Math.atan2(q[1] - p[1], q[0] - p[0]) * 180 / Math.PI;
-  { const p = S(side * HW, 10, -10), q = S(side * HW, 10, -40); const r = ang(q, p);
-    s += `<g transform="rotate(${f(r)} ${f(p[0])} ${f(p[1])})">${chip("ZONE IV", +f(p[0] - 18), +f(p[1] - 4), 4.2, "fR")}</g>`;
-    const p2 = S(side * HW, -36, -50); s += `<g transform="rotate(${f(r)} ${f(p2[0])} ${f(p2[1])})">${chip("THE MAGNET IS ALWAYS ON", +f(p2[0] - 30), +f(p2[1] - 3), 3, "fR")}</g>`; }
+  // a sticker laid on a face of the cover: local (0,0)-(w,h) centred at the face point c = [U, V, Wd], local x along ex and
+  // local y down -ey (both in U, V, Wd), at the size it has at the scanner's depth
+  const onFace = (inner, w, h, c, ex, ey) => { const at = (x, y) => S(...[0, 1, 2].map(i => c[i] + (ex[i] * (x - w / 2) - ey[i] * (y - h / 2)) / k));
+    return onQuad(inner, w, h, at(0, 0), at(w, 0), at(0, h)); };
+  const sticker = (t, h, c, ex, ey) => onFace(chip(t, 0, 0, h, "fR"), chipW(t, h), h * 1.7, c, ex, ey);
+  s += sticker("ZONE IV", 4.2, [side * HW, 10, -10], [0, 0, -side], [0, 1, 0]) + sticker("THE MAGNET IS ALWAYS ON", 3, [side * HW, -24, -40], [0, 0, -side], [0, 1, 0]);
   s += jag([S(side * HW, HH - 10, L2 - 10), S(side * HW, HH - 40, L2 - 30), S(side * HW, HH - 30, L2 - 60)], "hl sW", 1.3, 2);
   // the quench: the vent on top has sheared off and the helium is going (two poses)
   { const b0 = S(-40, HH, -L2 * .5), b1 = S(-40, HH + 22, -L2 * .5), b2 = S(-28, HH + 30, -L2 * .5);
@@ -506,8 +516,9 @@ function scanner(G) {
   // the front: the cover, its seam, the round face with its flare, the bore
   s += `<polygon class="k sW mech" points="${pts(front)}"/><polygon class="hl sW" points="${pts(xsec(.9).map(o => S(o.U, o.V, L2 + 1)))}"/>`;
   s += `<polygon class="k sW" points="${pts(circ(RF, L2 + 4))}"/><polygon class="hl sW" points="${pts(circ(RF * .8, L2 + 6))}"/>`;
-  { const p = S(-HW + 22, HH - 26, L2 + 1), q = S(-HW + 60, HH - 26, L2 + 1); s += `<g transform="rotate(${f(ang(p, q))} ${f(p[0])} ${f(p[1])})">${seg("3T", p[0], p[1], 14 * k, "sW", 1.2)}</g>`;
-    const z = S(HW - 70, -HH + 18, L2 + 1); s += `<g transform="rotate(${f(ang(p, q))} ${f(z[0])} ${f(z[1])})">${chip("ZONE IV", +f(z[0]), +f(z[1]), 4.2, "fR")}</g>`; }
+  { const h = 14 * k, w = segW("3T", h), cw = chipW("ZONE IV", 4.2), ch = 4.2 * 1.7;
+    s += onFace(seg("3T", 0, 0, h, "sW", 1.2), w, h, [-HW + 22 + w / 2 / k, HH - 26 - 7, L2 + 1], [1, 0, 0], [0, 1, 0]);
+    s += sticker("ZONE IV", 4.2, [HW - 70 + cw / 2 / k, -HH + 18 - ch / 2 / k, L2 + 1], [1, 0, 0], [0, 1, 0]); }
   s += jag([S(RF + 6, -40, L2 + 1), S(HW - 20, -60, L2 + 1), S(HW - 6, -90, L2 + 1)], "hl sW", 1.4, 4) + jag([S(-RF - 4, 30, L2 + 1), S(-HW + 12, 46, L2 + 1)], "hl sW", 1.2, 5);
   // the bore: black, its lining running back to the far opening, Quorum inside it to the shins
   const bore = circ(RB, L2 + 6);

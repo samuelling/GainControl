@@ -2,7 +2,7 @@
 // (a star, a triangle, a square), an overhead tracking camera, rat cages along the back wall, a vent high on the left
 // wall (where Morris watched from). After G.flags.codyDead: Cody face down in the tank, "unable to locate the hidden
 // platform", the platform a faint hairline square just under the surface. Act IV.
-import { seg, segC, chip, perspective, shell, sideDoor, hit, arcs, star4 } from "../gfx.js";
+import { seg, segC, segW, chip, perspective, shell, sideDoor, hit, arcs, star4, onQuad } from "../gfx.js";
 import { AUD } from "../figures.js";
 import { codyFloating } from "../cast/act4.js";
 
@@ -71,11 +71,13 @@ function tank(G) {
     s += `<polygon class="hl sB dash" points="${f1([px - 12, py + 3])} ${f1([px + 10, py + 3])} ${f1([px + 7, py - 3])} ${f1([px - 9, py - 3])}"/>`;
     s += `<g data-hs="cody">${codyFloating(TX - 14, WY, TK)}${hit(TX - 54, WY - 18, 80, 36)}</g>`;
   }
+  // the temperature label on the tank's curved front, following the wall's curve (its local tangent) where it turns away
+  const bow = (x) => RRY * Math.sqrt(1 - ((x - TX) / RX) ** 2), lx = TX + RX - 24, ly = RY + RRY + 2, lw = segW("22 C", 3.2);
   // the front of the wall, filled black so the water and anything behind sit inside it
   s += `<path class="k sW" d="${ell(TX, RY, RX, RRY, 0, Math.PI)} L${TX - RX},${by} ${ell(TX, by, RX, RRY, Math.PI, 0).slice(1)} Z"/>
     <path class="sW" d="${ell(TX, RY, RX, RRY, Math.PI, 2 * Math.PI)}"/>
     ${[-.6, -.2, .2, .6].map(t => { const x = TX + RX * t, dy = RRY * Math.sqrt(1 - t * t); return `<path class="hl sM" d="M${x.toFixed(1)},${(RY + dy).toFixed(1)} L${x.toFixed(1)},${(by + dy).toFixed(1)}"/>`; }).join("")}
-    ${segC("WATER MAZE", TX, RY + RRY + 8, 4, "sM", .7)}${seg("22 C", TX + RX - 24, RY + RRY + 2, 3.2, "sB", .55)}
+    ${segC("WATER MAZE", TX, RY + RRY + 8, 4, "sM", .7)}${onQuad(seg("22 C", 0, 0, 3.2, "sB", .55), lw, 3.2, [lx, ly], [lx + lw, ly + bow(lx + lw) - bow(lx)], [lx, ly + 3.2])}
     ${hit(TX - RX - 2, RY - RRY - 4, RX * 2 + 4, WH + RRY * 2 + 6)}</g>`;
   return s;
 }

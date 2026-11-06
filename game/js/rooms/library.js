@@ -1,7 +1,7 @@
 // LIBRARY 2F — tall stacks receding down both walls, the bound back issues (THE METAMER), the reading table with the
 // Valu vs. Mick papers laid side by side, the FACULTY DIRECTORY on its stand, the card catalog (red herring), a fat 1980s
 // BRAIN ATLAS on a high shelf, and the circulation desk: BACK AFTER TENURE. Act IV.
-import { seg, segC, chip, perspective, shell, sideDoor, hit } from "../gfx.js";
+import { seg, segC, chip, chipW, perspective, shell, sideDoor, hit, onQuad } from "../gfx.js";
 import { AUD } from "../figures.js";
 
 const pp = perspective(320, 130, 0.5);
@@ -10,6 +10,12 @@ const floorY = (k) => P(0, FY, k)[1];
 const f1 = (a) => a.map(v => v.toFixed(1)).join(",");
 // a deterministic scatter for book spines
 const rnd = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+
+// content laid flat on a side wall, starting at screen point (x, y) and running w screen units along the wall (h tall at x)
+function onWall(side, x, y, w, h, inner) {
+  const k = (X) => (X - pp.vpx) / (side - pp.vpx), Y = pp.vpy + (y - pp.vpy) / k(x);
+  return onQuad(inner, w, h, [x, y], P(side, Y, k(x + w)), [x, y + h]);
+}
 
 // tall shelving on a side wall between depths k1..k2 (atmosphere: STRUCT frame, DIM spines)
 function stacks(side, k1, k2, top = 30) {
@@ -33,11 +39,11 @@ function back(G) {
   let s = shell(pp, { rail: false });
   // the stacks: right wall all the way down, left wall in front of the stairs door
   s += stacks(640, .5, 1.02) + stacks(0, .82, 1.02);
-  s += `${chip("QA–QP", P(640, 22, .6)[0] - 10, P(640, 22, .6)[1] - 4, 3.8, "fW")}`;
+  s += onWall(640, P(640, 22, .6)[0] - 10, P(640, 22, .6)[1] - 4, chipW("QA-QP", 3.8), 3.8 * 1.7, chip("QA-QP", 0, 0, 3.8, "fW"));
   // left wall: the stairs
   const d = sideDoor(pp, 0, .62, .78, 118);
   s += `<g data-hs="door">${d.svg}${chip("STAIRS", d.a[0] - 4, d.a[1] - 14, 4.4, "fW")}${hit(...d.box)}</g>`;
-  s += `<g transform="rotate(-6 ${d.a[0] + 14} ${d.a[1] + 30})">${chip("SHH", d.a[0] + 4, d.a[1] + 24, 4, "fA")}</g>`;
+  s += onWall(0, d.a[0] + 4, d.a[1] + 24, chipW("SHH", 4), 4 * 1.7, chip("SHH", 0, 0, 4, "fA"));
 
   // back wall left: the bound back issues. Four shelves of journals by year: the metamer's sources.
   const BX = 168, BW = 94, rows = [80, 112, 144, 176], cols = ["sA", "sB", "sR", "sG", "sV", "sW"];
@@ -82,8 +88,8 @@ function table(G) {
   // a paper lying flat: a small parallelogram, its title in the stroke alphabet
   const paper = (X, who, cls, rot) => { const a = P(X - 30, H, k2 - .02), b = P(X + 30, H, k2 - .02), c = P(X + 28, H, k1 + .02), d = P(X - 32, H, k1 + .02);
     return `<g transform="rotate(${rot} ${a[0] + 20} ${a[1] - 4})"><polygon class="k sW" points="${poly(a, b, c, d)}"/>
-      ${seg(who, d[0] + 4, d[1] + 1.5, 3.4, cls, .6)}<path class="hl sM" d="M${d[0] + 3},${d[1] + 7} L${c[0] - 4},${c[1] + 7} M${a[0] + 3},${a[1] - 2} L${b[0] - 14},${b[1] - 2}"/>
-      ${chip("SEED 0451", d[0] + 4, d[1] + 8.4, 2.8, "fV")}</g>`; };
+      <path class="hl sM" d="M${d[0] + 3},${d[1] + 7} L${c[0] - 4},${c[1] + 7} M${a[0] + 3},${a[1] - 2} L${b[0] - 14},${b[1] - 2}"/>
+      ${onQuad(seg(who, 4, 1.5, 3.4, cls, .6) + chip("SEED 0451", 4, 8.4, 2.8, "fV"), c[0] - d[0], a[1] - d[1], d, c, a)}</g>`; };
   // the banker's lamp, left end
   const L = P(222, H, .69);
   const lamp = `<path class="sW" d="M${L[0] - 8},${L[1]} L${L[0] + 8},${L[1]} M${L[0]},${L[1]} L${L[0]},${L[1] - 18}"/>

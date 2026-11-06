@@ -7,7 +7,7 @@
 // "drip"); the riser pipe Morris came up, back down to the tube hub.
 // Every bolt out tips the pad toward that post (its base kicks out, the beam drops there). G.flags.supportsOut: every
 // bolt gone, the posts kicked out, the pad bowing, cracks, dust, ((( ))) (pose groups "drip" and "hum").
-import { seg, segC, chip, chipW, perspective, hit, arcs, star4 } from "../gfx.js";
+import { seg, segW, segC, chip, chipW, perspective, hit, arcs, star4, onQuad } from "../gfx.js";
 import { insignia } from "../cast/act3a.js";
 
 const VPY = 186, CY = 124, BD = 24;          // eye low (rat's-eye), pad underside at screen Y 124 on the picture plane, beam depth
@@ -106,7 +106,9 @@ function beam(kc, w, label) {
   for (let X = 40; X < 640; X += 120) s += `<path class="hl sM" d="${L([C(X, k1, 4), C(X, k1, BD - 5)])}"/>`;
   [90, 300, 470, 560].forEach((X, i) => { const a = C(X, k1, BD - 5), b = C(X + 3, k1, BD), c = C(X + 8, k1, BD - 3);
     s += `<path class="hl sA" d="M${pt(a)} C${fx(a[0] - 2)},${fx(a[1] + 2)} ${fx(b[0] + 1)},${fx(b[1] - 3)} ${pt(b)} M${pt(c)} L${fx(c[0])},${fx(c[1] + 3 * kc)}"/>`; });
-  if (label) { const a = C(label[0], k1, 7); s += seg(label[1], a[0], a[1], 5.2 * kc, "sD", .7); }
+  // the stencil on the web follows the beam as the pad tips and bows
+  if (label) { const h = 5.2 * kc, w = segW(label[1], h), X0 = label[0];
+    s += onQuad(seg(label[1], 0, 0, h, "sD", .7), w, h, C(X0, k1, 7), C(X0 + w / k1, k1, 7), C(X0, k1, 7 + h / k1)); }
   return s;
 }
 
@@ -142,7 +144,9 @@ function post(i) {
   s += streak(Y(6), -18, 10 + i * 3, 1) + streak(Y(6), 16, 14, -1) + streak(Y(41), -6, 40 + i * 9, 1) + streak(Y(41), 3, 70 - i * 8, 0) + streak(Y(41), 7, 24, 1);
   s += `<path class="hl sA" d="M${pt(pl(-30, .036, 0))} C${pt(pl(-36, .05, 0))} ${pt(pl(-20, .06, 0))} ${pt(pl(-6, .05, 0))} M${pt(pl(14, .04, 0))} C${pt(pl(24, .055, 0))} ${pt(pl(34, .05, 0))} ${pt(pl(32, .036, 0))}"/>`;
   // the stencil: which post
-  { const p = side(Y(70), -6); s += seg(id, p[0], p[1], 6 * s_, "s0", 1.1); s += seg(id, p[0], p[1], 6 * s_, "sM", .5); }
+  { const p = side(Y(70), -6), h = 6 * s_, w = segW(id, h), ax = bxS - tx, ay = byS - ty, al = Math.hypot(ax, ay), ux = ax / al, uy = ay / al;
+    // stencilled down the tube: it leans with the post
+    s += onQuad(seg(id, 0, 0, h, "s0", 1.1) + seg(id, 0, 0, h, "sM", .5), w, h, p, [p[0] + uy * w, p[1] - ux * w], [p[0] + ux * h, p[1] + uy * h]); }
   // three bolts on the base plate: a hex nut on a threaded stud, or an empty hole and the nut lying where Morris kicked it
   NUTS.forEach(([dx, dk], j) => {
     const c = pl(dx, dk, 4), w = 6 * s_, h = 4 * s_;
@@ -179,7 +183,10 @@ function chillerLine() {
   const top = deep(CW.X, 3.4, KB, 30, 24), bot = deep(CW.X, 3.4, KB, 40, 24);
   let s = `<polygon class="k sB" points="${[...top, ...bot.slice().reverse()].map(pt).join(" ")}"/>`;
   [2.6, 2.0, 1.5, 1.15, .9, .66, .5, .38].forEach(k => s += `<path class="hl sB" d="${L([C(CW.X, k, 30), C(CW.X, k, 40)])}"/><path class="hl sM" d="${L([C(CW.X, k + .02, k > .95 || (k < .87 && k > .63) || k < .57 ? 0 : BD), C(CW.X, k + .02, 30)])}"/>`);
-  { const a = C(CW.X, 1.0, 40); s += seg("CHW SUPPLY 3T", a[0] - 50, a[1] + 3, 4.4, "sB", .6); }
+  // stencilled along the underside of the pipe, receding with it
+  { const t = "CHW SUPPLY 3T", h = 4.4, w = segW(t, h), x0 = C(CW.X, 1.0, 40)[0] - 50, kAt = (x) => (x - 320) / (CW.X - 320);
+    const kf = kAt(x0), kn = kAt(x0 + w), km = (kf + kn) / 2, d0 = 40 + 3 / km, d1 = d0 + h / km;
+    s += onQuad(seg(t, 0, 0, h, "sB", .6), w, h, C(CW.X, kf, d0), C(CW.X, kn, d0), C(CW.X, kf, d1)); }
   return s;
 }
 function chiller(G) {

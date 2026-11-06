@@ -3,7 +3,7 @@
 // (left); an arch through to the Archive, shelves of reel-to-reel tapes; the LTM drive rack blinking beside the arch;
 // and, low on the left wall, the open mouth of the pipe Morris came down.
 // G.flags.archiveSent: the dial is left pointing at 2F · ETHEL BORD. G.flags.finale: the LTM drives are wiped (dark).
-import { seg, segC, chip, perspective, hit, arcs } from "../gfx.js";
+import { seg, segC, chip, perspective, hit, arcs, wallPatch } from "../gfx.js";
 import { AUD } from "../figures.js";
 
 const pp = perspective(320, 150, 0.5);
@@ -141,7 +141,9 @@ function deadLetters(G) {
   const mx = (sa[0] + sb[0]) / 2, my = (sa[1] + sb[1]) / 2, out = G.flags.brassGavel ? 4 : 0;
   s += `<rect class="k sD" x="${fx(mx - 3)}" y="${fx(my - 3.5)}" width="${16 + out}" height="7" rx="3"/><path class="hl sD" d="M${fx(mx + 9 + out)},${fx(my - 3.5)} L${fx(mx + 9 + out)},${fx(my + 3.5)}"/>`;
   s += `<path class="hl sD" d="M${fx(b[0])},${fx(b[1])} Q${fx(mx + 6)},${fx(my - 10)} ${fx(mx + 13 + out)},${fx(my - 3.5)} M${fx(mx + 2)},${fx(my - 13)} L${fx(mx + 4)},${fx(my - 3.5)}"/>`;
-  s += seg("DEAD LETTERS", d[0] + 1, d[1] + 3, 2.6, "sD", .5);
+  // stencilled on the wall just beyond the box, running back along the wall
+  { const lab = wallPatch(pp, 0, k1 - .06, k1 - .003, Y1 + 5.1, Y1 + 9.2);
+    s += lab.put(seg("DEAD LETTERS", 0, 0, lab.h, "sD", .5)); }
   return s + `${hit(Math.min(a[0], b[0]) - 2, a[1] - 4, Math.abs(b[0] - a[0]) + 24, d[1] - a[1] + 14)}</g>`;
 }
 
