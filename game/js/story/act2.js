@@ -1,7 +1,7 @@
 // ACT II — Tuesday: UNDER REVIEW. The paper trail (Nell + Morris), Preston's computer (Gus), and the first body.
 import { seg, segC } from "../gfx.js";
 import * as FIG from "../figures.js";
-import { ITEMS, VIV, dendro } from "./act1.js";
+import { ITEMS, VIV, dendro, boothNap } from "./act1.js";
 import { openConsole } from "../console/open.js";
 
 /* ---------------- new items, and act-aware versions of old ones ---------------- */
@@ -19,16 +19,27 @@ Object.assign(ITEMS, {
 });
 const wrapLook = (id, fn) => { const old = ITEMS[id].look; ITEMS[id].look = (api) => api.G.act >= 2 ? fn(api) : (typeof old === "function" ? old(api) : old); };
 wrapLook("notebook", (api) => {
-  const f = api.G.flags, t = (k, s) => `- ${f[k] ? "(done) " : ""}${s}`;
+  const f = api.G.flags, t = (k, s, next) => `- ${f[k] ? "(done) " : ""}${s}${f[k] || !next ? "" : " " + next}`;
+  // each line carries a nudge toward its next step, so a stalled player can always find one
+  const cal = !f.thermosLocked && api.has("thermos") ? "Tess won't let anything metal near her magnet. (The locker.)"
+    : !f.heliumAlarm ? "Tess never leaves her console. Something would have to call her away. Something small, behind it, with teeth." : "Tess is in the magnet room. Read it now.";
+  const coil = api.has("po7s") ? "It's signed. Back to Penny." : api.has("po7") ? "Form PO-7 needs a PI's signature. Yours signs anything slid under her door during a deadline."
+    : "Penny will want a form. Penny always wants a form.";
+  const irb = !f.sawIndex ? "Ethel files everything through the Binder of Binders. Don't pull binders at random." : !f.stoolPlaced ? "Shelf R, binder 12. The top shelf. You'll need a step up." : "Shelf R, binder 12. Pull it.";
+  const clip = !f.codyTalked ? "" : !f.codyShaken ? "He'd have to hear Preston say it. (USE the recorder ON Cody.)"
+    : api.has("slip") ? "Give Cody his credit slip." : !f.printerFixed ? "He wants the credit slip Preston promised. Slips print in the main office, and the printer's jammed. Something small could clear it."
+    : "He wants his credit slip. The main office printer works now.";
   return "Your lab notebook. Today: prove Preston never ran the study. Find the paper trail.\n\n"
-    + [t("clueCalendar", "Scanner calendar: Tess, MRI control, B1."), t("clueCoil", "Purchase orders: Penny, main office."),
-      t("clueIRB", "Ethics protocol: Ethel, 2nd floor."), t("clueClipboard", "Participant sign-in sheet: Cody, MRI control, B1." + (f.clueClipboard ? "" : !f.codyTalked ? "" : !f.codyShaken ? " He'd have to hear Preston say it. (The recorder.)" : " He wants the credit slip Preston promised."))].join("\n")
+    + (f.morrisJoined ? "" : "- Morris is in your drawer, giving you a look. (Talk to him.)\n")
+    + [t("clueCalendar", "Scanner calendar: Tess, MRI control, B1.", cal), t("clueCoil", "Purchase orders: Penny, main office.", coil),
+      t("clueIRB", "Ethics protocol: Ethel, 2nd floor.", irb), t("clueClipboard", "Participant sign-in sheet: Cody, MRI control, B1.", clip)].join("\n")
     + (f.morrisJoined ? "\n\nMorris fits through vents. Click his name to switch." : "");
 });
 wrapLook("recorder", (api) => "Your voice memo recorder. Memo 1, PRESTON, JOURNAL CLUB: \"I ran every subject myself.\" Anyone who worked on his study would want to hear that."
   + (api.flag("pennyMemo") ? "\n\nMemo 2, PENNY: \"Nobody ordered a coil.\"" : ""));
 wrapLook("phone", (api) => "Texts from Nell, 11:40 PM:\n\nNELL: preston never booked the scanner. never bought a coil. ethics approved AFTER. his participants are H.M. and phineas gage\nNELL: he's in 116 every afternoon. what is IN there\n\nGus's list:\n- "
-  + (api.flag("impactOpen") ? "(done) " : "") + "Get into 116. The keypad has to give something away.\n- Scan at 2:30.");
+  + (api.flag("impactOpen") ? "(done) " : "") + "Get into 116. The keypad has to give something away. (Six digits. Preston's vanity.)\n- "
+  + (api.flag("printed") ? "(done) " : "") + "Bring Nell something from in there she can hold.\n- Scan at 2:30.");
 wrapLook("thermos", () => "Your steel thermos, NELL in marker. Keep it away from the MRI.");
 
 const SIGNIN = () => {
@@ -220,7 +231,7 @@ export const HS = {
       day: { look: "AFTER THE 15TH. Through the door: frantic typing, three phones, and the sound of someone signing things very fast.", talk: "PROF. ADLINE (THROUGH THE DOOR)|Nell? Is it urgent? AFTER THE FIFTEENTH!", use: "Locked. She's signing things in there. Anything that slides under the door, probably." },
       morris: { look: "Morris listens at the door. 'She's signing stuff, pal. Anything that moves.'" } },
     booth: { label: "dark booth",
-      day: { look: "The dark-adapted psychophysics booth. Still dark. Still tempting.", use: (api) => api.die("You sit in the dark booth just for a minute, to think. Your eyes adapt. Your thoughts slow. Your eyelids file a formal complaint and win.\n\nYou wake up on Saturday. Your defense was yesterday. Preston gave a lovely job talk in your slot."), go: openConsole },
+      day: { look: "The dark-adapted psychophysics booth. Still dark. Still tempting.", use: boothNap("You sit in the dark booth just for a minute, to think. Your eyes adapt. Your thoughts slow. Your eyelids file a formal complaint and win.\n\nYou wake up on Saturday. Your defense was yesterday. Preston gave a lovely job talk in your slot."), go: openConsole },
       morris: { look: "MORRIS|I've seen what the dark does to grad students, pal. No." } },
     viv: VIV,
     gusdesk: { label: "Gus's desk",
@@ -250,7 +261,9 @@ export const HS = {
           if (!api.flag("impactOpen")) {
             if (!api.flag("keypadLine")) { api.flag("keypadLine", true); await api.say("GUS|Four keys, six digits. That's 1,560 possibilities. Preston's vanity makes it one."); }
             const ok = await api.keypad("147794", ["1", "4", "7", "9"]);
-            if (!ok) return "Gus steps back from the keypad. Something about Preston is six digits long.";
+            if (!ok) { api.G.flags.keypadFails = (api.G.flags.keypadFails || 0) + 1;
+              return api.G.flags.keypadFails < 2 ? "Gus steps back from the keypad. Something about Preston is six digits long."
+                : "Gus steps back from the keypad. Something about Preston is six digits long.\n\nGUS|Six digits. All of them 1, 4, 7 or 9. And a man who re-hangs his own photo every morning. The Rising Stars wall is ten feet away."; }
             api.flag("impactOpen", true); api.score("keypad", 3);
           }
           api.goRoom("impact@fromHall"); return null;
@@ -308,13 +321,16 @@ export const HS = {
       day: { look: (api) => "Cody Credit, undergrad RA. " + (api.flag("gotClipboard") ? "He's lighter without the clipboard. Spiritually." : "He's been waiting with the sign-in clipboard since March."),
         talk: (api) => !api.flag("codyTalked") ? "c:cody"
           : api.flag("gotClipboard") ? "CODY|I'm going to go find a participant. Any participant. Just to see one."
+          : api.flag("codyShaken") && api.has("slip") ? "c:codySlip"
           : !api.flag("codyShaken") ? "CODY|Preston ran every subject himself? I'd have to hear him say it.\n\n(Your recorder has him saying it. USE the recorder ON Cody.)"
           : "CODY|I'd trade the clipboard for my credit slip. Preston promised. In March. Credit slips print in the main office, if the printer ever works." },
       morris: { look: "Cody sees Morris and waves. Cody waves at everything." } },
     door: { label: "stairs up", day: { look: "Back up the stairs.", go: "hall@fromStairs" }, morris: { look: "Stairs. Vent." }, morning: { look: "The stairs.", go: "Det. Small would like you to stay." } },
     magnetdoor: { label: "magnet room door",
       day: { look: "The magnet room door. A red sign, a red line on the floor. The field never sleeps.",
-        use: (api) => api.has("thermos")
+        use: (api) => api.has("thermos") && !api.flag("magnetWarned")
+          ? (api.flag("magnetWarned", true), "You reach for the magnet room door. Your bag lurches toward it on its own. Something steel in there would very much like to meet the magnet.\n\nTESS|METAL. LOCKER. NOW.")
+          : api.has("thermos")
           ? api.die("You step over the red line with a steel thermos in your bag.\n\nThe magnet introduces itself. The thermos leaves your bag at forty miles an hour, and so, briefly, do you.\n\nTESS: The magnet is ALWAYS ON.")
           : (api.flag("heliumAlarm") ? "TESS (FROM INSIDE)|OUT! Helium emergency!" : "TESS|Nobody goes in my magnet room. Not today.") },
       morris: { look: "MORRIS|Not a chance, pal. My head's got hardware in it." },
@@ -327,7 +343,8 @@ export const HS = {
   office: {
     penny: { label: "Penny Ledger",
       day: { look: "Penny Ledger, department administrator. Headset, reading glasses on a chain, the only key to everything. The real power in the building.",
-        talk: (api) => api.flag("clueCoil") ? "PENNY|Nobody ordered a coil, hon. I'd remember. I remember everything." : api.flag("gotPO7") ? "PENNY|Form PO-7. Signed. By a PI." : "c:penny",
+        talk: (api) => api.flag("clueCoil") ? "PENNY|Nobody ordered a coil, hon. I'd remember. I remember everything." : api.has("po7s") ? "c:pennyPO"
+          : api.flag("gotPO7") ? "PENNY|Form PO-7. Signed. By a PI. Your PI's the one behind the door that says AFTER THE 15TH, hon? Slide it under. During a deadline they sign anything." : "c:penny",
         use: "Nobody touches Penny." },
       morris: { look: "Penny is standing on her chair. She has not stopped saying RAT." } },
     cabinet: { label: "purchase order cabinet", day: { look: "PURCHASE ORDERS 1968–PRESENT. Locked. Penny has the key, and Penny has rules.", use: "PENNY|Form PO-7, hon." },
@@ -385,10 +402,11 @@ export const HS = {
           if (out.feud) api.score("fogFeud", 1);
           if (out.printed && !api.flag("printed")) { api.flag("printed", true); api.flag("printTitle", out.paper.title); api.give("printout"); api.score("printed", 2);
             return "Gus takes the printout off the printer. He doesn't fully know what it is. It looked important.\n\nGUS|Every press, a new paper. Consciousness. Nostalgia. Brunch. None of it was ever done."; }
+          if (!api.flag("printed")) return "Gus logs off without printing anything.\n\nGUS|Nell's going to want something she can hold. GENERATE, then PRINT. Then get out.";
           return out.generated ? "Gus logs off. The machine is still warm. It writes papers. It writes Preston." : null; } } },
     gainpanel: { label: "second monitor",
       night: { look: "A second monitor. GAIN CONTROLLER · SUBJECT: P.V. · STATUS: LISTENING. A dial, and a green bar rising and falling like breathing.",
-        use: (api) => api.die("Gus turns the dial, just a little.\n\nThree floors away, Preston sits bolt upright and begins to recite the Methods section of every paper ever written. So, it turns out, does Gus.\n\nSecurity finds you both at 6 AM, on page 14,000 of Statistical Analysis.") } },
+        use: (api) => !api.flag("dialWarned") ? (api.flag("dialWarned", true), "Gus reaches for the dial. The green bar stops rising and falling, and holds, as if it's waiting to see what he'll do.\n\nGUS|…Nope. Not turning a dial labeled SUBJECT: P.V. Not yet, anyway.") : api.die("Gus turns the dial, just a little.\n\nThree floors away, Preston sits bolt upright and begins to recite the Methods section of every paper ever written. So, it turns out, does Gus.\n\nSecurity finds you both at 6 AM, on page 14,000 of Statistical Analysis.") } },
     printer: { label: "printer", night: { look: "A sleek printer that has never once jammed. Preston's whole life, in one object." } },
     oat: { label: "carton", night: { look: "ADAPTOGENIC OAT SYNERGY. Ingredients: oats, synergy.", use: "Gus does not drink the synergy." } },
     poster: { label: "poster", night: { look: "A motivational poster: a rowing team at sunrise. SYNERGY. Someone has drawn a tiny circle inside a circle on the coxswain's hat.", score: { look: ["posterSeal", 1] } } },
@@ -417,7 +435,9 @@ export const WITH = {
 /* ---------------- helpers for the puzzles ---------------- */
 async function calendar(api) {
   if (api.flag("clueCalendar")) return "Preston Valu: zero sessions. You've seen enough.";
-  if (!api.flag("heliumAlarm")) return "TESS|Eyes off the calendar.";
+  if (!api.flag("heliumAlarm")) return api.flag("morrisJoined")
+    ? "TESS|Eyes off the calendar.\n\nTess won't leave this console for anything short of an emergency. Behind it, a bundle of warm wires. Morris likes warm wires."
+    : "TESS|Eyes off the calendar.";
   if (api.has("thermos")) return "As you lean over the console, the thermos in your bag tugs toward the magnet room.\n\nTESS (FROM INSIDE)|METAL! IN! THE! LOCKER!";
   await api.readout(CALENDAR(), "Six months of bookings. Tess's QA. Gus, 2:30 AM, every night. The Adline Lab. A 'mock calibration' every Friday at 23:59, booked by nobody.\n\nAnd Preston Valu: never. Not once. Not one session.");
   api.flag("clueCalendar", true); api.flag("heliumAlarm", false); api.score("clueCalendar", 3); api.refresh();
@@ -428,6 +448,8 @@ async function readIndex(api) {
   api.flag("sawIndex", true); api.score("index", 1); return null;
 }
 function avalanche(api) {
+  if (!api.flag("binderWarned")) { api.flag("binderWarned", true);
+    return "You hook a finger on a binder. The shelf groans. The whole wall leans an inch toward you, thinks about it, and leans back.\n\nETHEL|Shh! Not at random. The shelves are load-bearing. Look it up in the Binder of Binders."; }
   return api.die("You pull a binder at random. The shelf holds a brief meeting and votes to let go.\n\nForty years of continuing review come down on you. You are found three days later under the minutes of a 1987 amendment.\n\nETHEL: Shh.");
 }
 

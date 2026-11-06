@@ -27,15 +27,25 @@ const LEADS = ["clueMetamer", "clueHours", "clueDark"], OFFICE = ["clueReviewer2
 const all = (api, ks) => ks.every(k => api.flag(k));
 wrap("notebook", (api) => {
   const f = api.G.flags, t = (k, s) => `- ${f[k] ? "(done) " : ""}${s}`;
-  if (api.G.mode === "morning") return "Your lab notebook. Gus's last text is taped inside the cover.\n\nThe map, the robe, the date. Iris. Tonight.";
-  return "Your lab notebook. Thursday.\n\n" + [t("impactMet", "Impact is back. Talk to him (hallway)."),
+  if (api.G.mode === "morning") return "Your lab notebook. Gus's last text is taped inside the cover: 'robe's on your chair. check the tube. scanning now. it's fine.'\n\n"
+    + [t("gotRobe", "The robe on your chair. (Lab.)"), t("gotMap", "The tube station. (Hallway.)"), t("rehearsed", "Then Iris, 4F. The induction is tonight.")].join("\n");
+  const four = !f.fourOClock ? "" : !f.impactDead ? (f.impactMissing ? " Nobody answered. Penny says he went down to the −80 room, B1." : "")
+    : !f.impactOpen ? " Locked. Three digits." + (f.sawHindex ? " His h-index was 112." : " His h-index? The library has a faculty directory.") : "";
+  const L = [t("impactMet", "Impact is back. Talk to him (hallway)."),
     t("clueMetamer", "Library, 2F: the back issues. Where did his sentences come from?"), t("clueHours", "Penny's receipts: where does everyone go on Fridays?"),
     t("clueDark", "Morris says Preston's ears light up. Gus wants a measurement. (Talk to Gus.)"),
-    t("fourOClock", "Four o'clock: Impact's office, 3F."),
-    t("clueReviewer2", "Who wrote Reviewer 2?"), t("clueRetainer", "His Figure 2. Something about the dropout."), t("clueCard", "What did Impact want to tell Ethel?")].join("\n");
+    t("fourOClock", "Four o'clock: Impact's office, 3F.") + four,
+    t("clueCard", "What did Impact want to tell Ethel? (His desk drawer.)"), t("clueReviewer2", "Who wrote Reviewer 2?"), t("clueRetainer", "His Figure 2. Something about the dropout.")];
+  if (f.clueCard) L.push(t("codyLeft", "Cody's in the hallway, about to do something brave. Talk to him."));
+  if (f.codyLeft) L.push(t("codyDead", "Cody took the back stairs, past the animal facility. You'd need booties. Morris wouldn't. (Click his name; the vents.)"));
+  if (f.morrisPast) L.push(t("chased", "Tell Small. Now. (Hallway.)"));
+  return "Your lab notebook. Thursday.\n\n" + L.join("\n");
 });
 wrap("printout", () => "The FOG NEURO printout. Gus's handwriting in the margin: 'every sentence is somebody else's.'");
-wrap("phone", (api) => "Texts from Nell, 23:58:\n\nNELL: they killed cody. morris saw\nNELL: preston chased me down the stairwell in FOG. actual fog\nNELL: iris says don't go to the basement\nNELL: gus\nNELL: gus please");
+wrap("phone", (api) => { const f = api.G.flags, t = (k, s) => `- ${f[k] ? "(done) " : ""}${s}`;
+  return "Texts from Nell, 23:58:\n\nNELL: they killed cody. morris saw\nNELL: preston chased me down the stairwell in FOG. actual fog\nNELL: iris says don't go to the basement\nNELL: gus\nNELL: gus please\n\nGus's list:\n"
+    + [t("gotRobe4", "A robe from that coat check. The one with the lit pin. She'll need to get in."), t("gotMap4", "The map on the rack."),
+      t("robeLeft", "Leave Nell the robe. Her chair. (Lab, upstairs.)"), t("mapSent", "Send her the map. The tube station goes up as well as down."), "- Scan at 2:30."].join("\n"); });
 
 /* ---------------- readouts ---------------- */
 const REVIEW = () => {
@@ -176,12 +186,13 @@ async function stairs(api) {
   if (!d) return null;
   if (d === "impactoffice") return impactDoor(api);
   if (d === "maze") {
-    if (!f.bootiesWarned) { f.bootiesWarned = true; return "ANIMAL FACILITY. BOOTIES REQUIRED. You have no booties. You remember what happened to the last person who went in without booties. Nobody does. That's what happened."; }
+    if (!f.bootiesWarned) { f.bootiesWarned = true; return "ANIMAL FACILITY. BOOTIES REQUIRED. You have no booties. You remember what happened to the last person who went in without booties. Nobody does. That's what happened."
+      + (f.codyLeft && !f.codyDead ? "\n\nSomething smaller could get in there through the vents. Something that's never worn booties in its life." : ""); }
     return api.die("You go in without booties.\n\nA rack of transgenic mice looks up at you. Then the facility manager does.\n\nYou are now banned from all animal work, for life, in every institution, retroactively. Your thesis contains three mice. Your thesis is withdrawn.");
   }
   if (d === "mri" && !f.smallGus) { api.goRoom("mri@morning"); return null; }
   api.goRoom(d + "@fromStairs");
-  if (d === "freezer" && f.impactMissing && !f.impactDead) return impactFound(api);
+  if (d === "freezer" && (f.impactMissing || f.fourOClock) && !f.impactDead) { f.impactMissing = true; return impactFound(api); }   // no need to knock on 3F first
   return null;
 }
 async function impactFound(api) {
@@ -196,13 +207,14 @@ async function impactDoor(api) {
   if (!f.impactOpen) {
     if (!f.sawHindex) return "The keypad wants three digits. Impact's password would be the number he loved most. His h-index. Which you'd have to look up. The library has a faculty directory.";
     const ok = await api.keypad("112", ["1", "2"]);
-    if (!ok) { f.padFails = (f.padFails || 0) + 1;
-      if (f.padFails >= 3) return api.die("Third wrong code. The door locks itself, and you, in the hallway's emergency vestibule.\n\nA recorded message: 'Professor Impact will be available after the fifteenth.'\n\nYou are found after the fifteenth.");
-      return "The keypad blinks red. His h-index. The directory said."; }
+    if (!ok) return "Nell steps back from the keypad. His h-index. The directory said.";
     f.impactOpen = true; api.score("impactOpen", 2);
   }
   api.goRoom("impactoffice@fromStairs"); return null;
 }
+
+// count a failed attempt at a puzzle (stored in a flag); after a couple, the surrounding lines start giving real hints
+const missed = (api, k) => (api.G.flags[k] = (api.G.flags[k] || 0) + 1);
 
 // a death inside a minigame: Revise & Resubmit rolls the engine back to before the action, but the minigame keeps running,
 // so keep this act's flags and stay busy until the minigame ends
@@ -258,7 +270,7 @@ export const HS = {
   },
 
   office: {
-    penny: { label: "Penny Ledger", day: { look: "Penny. Not on any of her phones. That's how you know.", talk: (api) => api.flag("gotReceipts") ? (api.flag("clueHours") ? "PENNY|Same six names. Thirty-one years." : "PENNY|Go on. Lay them out.") : "c:pennyReceipts",
+    penny: { label: "Penny Ledger", day: { look: "Penny. Not on any of her phones. That's how you know.", talk: (api) => api.flag("gotReceipts") ? (api.flag("clueHours") ? "PENNY|Same six names. Thirty-one years." : doHours(api)) : "c:pennyReceipts",
         use: (api) => api.flag("gotReceipts") && !api.flag("clueHours") ? doHours(api) : null }, morris: look("Penny looks at Morris. Penny nods at Morris. Penny has accepted Morris.") },
     forms: { label: "form rack", day: look("FORM D-1, BEREAVEMENT. The slot's empty.") }, mailboxes: { label: "mailboxes", day: look("Impact's mailbox is full of conference lanyards.") },
     cabinet: { label: "P.O. cabinet", day: look("Purchase orders. Still no coil.") }, printer: { label: "printer", day: look("PC LOAD LETTER.") }, sign: { label: "sign", day: look("BACK IN 5 MIN.") },
@@ -289,7 +301,9 @@ export const HS = {
 
   freezer: {
     walkin: { label: "walk-in −80", day: { look: (api) => api.flag("impactDead") ? "The walk-in. Police tape across the doorway now." : "The walk-in −80. The door is heavy and wide open, fog rolling out over your shoes.",
-        use: (api) => api.die("You step in to look and pull the door to behind you, to keep the cold in. Good lab practice.\n\nIt latches.\n\nYou have been archived at −80 °C. Your samples will be fine.") } },
+        use: (api) => !api.flag("walkinWarned")
+          ? (api.flag("walkinWarned", true), "You step into the walk-in for a closer look and reach for the door, to keep the cold in. Good lab practice.\n\nThen you notice there's no handle on the inside. You step back out, quickly, and leave the door exactly where it was.")
+          : api.die("You step in to look and pull the door to behind you, to keep the cold in. Good lab practice.\n\nIt latches.\n\nYou have been archived at −80 °C. Your samples will be fine.") } },
     impact: { label: "Prof. Impact", day: look("Impact. Frozen mid-stride, one hand out, as if reaching for a lanyard. Frost on his neck pillow.") },
     box: { label: "box", day: look("A cardboard box at his feet. DO NOT THAW. Inside: forty years of keynote slides on floppy disks.") },
     freezers: { label: "freezers", day: look("A row of upright −80s, humming. Each one reads −80. One reads −79 and has a sticky note on it: SOMEONE OPENED ME.") },
@@ -326,7 +340,7 @@ export const HS = {
   },
 
   iris: {
-    iris: { label: "Prof. Iris Candor", day: { look: "Iris.", talk: "c:irisThursday" }, morning: { look: "Iris, at her desk, the staple gun in her hand. She's been waiting for you.", talk: (api) => api.flag("rehearsed") ? "IRIS|Go home. Sleep. Come back at two." : (api.flag("gotRobe") && api.flag("gotMap")) ? rehearse(api) : "IRIS|Not yet, dear. Gus left you something. Two things. Go and get them." } },
+    iris: { label: "Prof. Iris Candor", day: { look: "Iris.", talk: "c:irisThursday" }, morning: { look: "Iris, at her desk, the staple gun in her hand. She's been waiting for you.", talk: (api) => api.flag("rehearsed") ? "IRIS|Go home. Sleep. Come back at two." : (api.flag("gotRobe") && api.flag("gotMap")) ? rehearse(api) : "IRIS|Not yet, dear. Gus left you two things, and he told you where: your chair, and the tube. Go and get them." } },
     stacks: { label: "journals", day: look("1961 to now."), morning: look("1961 to now.") }, manual: { label: "magnet manual", day: look("SUPERCONDUCTING RING, 1968."), morning: look("Iris has put the manual by the door. 'I'll need that tonight,' she says, without looking up.") },
     photo: { label: "photograph", day: look("1968."), morning: look("1968.") }, letter: { label: "framed letter", day: look("1977."), morning: look("1977.") },
     stapler: { label: "staple gun", day: look("Loaded."), morning: look("In her hand.") }, kettle: { label: "kettle", day: look("Sherry, 1962."), morning: look("She's made tea. You don't drink it. She doesn't notice.") },
@@ -336,7 +350,9 @@ export const HS = {
 
   tunnels: {
     bricked: { label: "bricked-up doorway", night: { look: "The bricked door. Tonight there's a gap at the bottom, one brick wide, and light behind it.",
-        use: (api) => api.has("robe") ? api.die("Gus pulls the robe over his head and puts his eye to the gap. A hooded face on the other side, very close.\n\n'Welcome, member. Your gain has been adjusted.'") : "Gus doesn't knock. Not this time." } },
+        use: (api) => api.has("robe") && !api.flag("peekWarned")
+          ? (api.flag("peekWarned", true), "Gus crouches toward the gap with the robe in his arms. On the other side, very close: breathing. Someone is right there, waiting for a member to knock.\n\nGUS|Not with this thing on me. They'd take me for one of them. …They'd take me.")
+          : api.has("robe") ? api.die("Gus pulls the robe over his head and puts his eye to the gap. A hooded face on the other side, very close.\n\n'Welcome, member. Your gain has been adjusted.'") : "Gus doesn't knock. Not this time." } },
     rack: { label: "coat check", night: { look: "A coat check, here, in a steam tunnel. A rack of hooded robes on numbered hooks. One has a small round pin, lit red: the robe from Gus's photo on Monday.",
         use: (api) => { if (api.has("robe") || api.flag("robeLeft")) return "One's enough."; api.sfx("cloth"); api.give("robe"); api.flag("gotRobe4", true); api.score("tookRobe", 2);
           return "Gus takes the robe with the pin. Inside the collar, a laundry tag: 0412.\n\nThe same seed as the paper mill. The Table does its laundry and its science on the same schedule."; } } },
@@ -376,15 +392,20 @@ function gusHint(api) {
   if (!f.clueMetamer) return "GUS|Take my printout to the library. Lay his sentences against the back issues. You'll see the stitches.";
   if (!f.clueHours) return "GUS|Penny has everyone's calendar. Nobody knows that. Ask her about the Friday receipts.";
   if (!f.clueDark) return "GUS|He's in the booth. Twenty minutes in the dark, Nell. Then look beside him, not at him.";
+  if (!f.impactDead) return f.impactMissing ? "GUS|Penny said B1. The −80 room. Go." : "GUS|It's four. Impact's office, third floor.";
   if (!f.impactOpen) return "GUS|His office password's his h-index. Of course it is. The directory's in the library.";
-  if (!all(api, OFFICE)) return "GUS|What's in his office?";
+  if (!f.clueCard) return "GUS|What's in his office? Men like Impact keep the thing that matters in the top drawer.";
+  if (!f.codyLeft) return "GUS|Cody's in the hallway, rehearsing something under his breath. That's never good. Go talk to him.";
+  if (!f.codyDead) return "GUS|Cody's taking the back stairs past the animal facility. Nobody goes down there, Nell. Except rats. Send the rat.";
+  if (!all(api, OFFICE)) return "GUS|What else is in his office?";
   return "GUS|Go home tonight, Nell. I've got a scan. I'll be fine. I'm always fine at 2 AM.";
 }
 async function doDark(api) {
   if (api.flag("clueDark")) return "You've seen enough in there. You'll be seeing it for a while, in the dark, whether you want to or not.";
   if (!api.flag("darkReady")) return "You could sit in the dark booth and think. Everyone who does falls asleep. Today you can't afford to. (Gus has an idea; ask him.)";
   const r = await api.mini(darkbooth, { score: api.score });
-  if (!r || !r.done) return "GUS|Take your time. He's not going anywhere. He thinks he's being co-first.";
+  if (!r || !r.done) return missed(api, "darkFails") < 2 ? "GUS|Take your time. He's not going anywhere. He thinks he's being co-first."
+    : "GUS|Kill the light first: the red ON lamp, your phone, the gap under the door. Then just wait. Don't check your phone; it resets your rods. Then look beside him, not at him.";
   api.flag("clueDark", true); api.score("clueDark", 3); api.refresh();
   await api.convo("darkAfter");
   return "GUS|A coil, the Table's insignia, and a dial at max. It's not a habit, Nell. It's a broadcast.\n\nNELL|Then somebody's broadcasting.";
@@ -392,20 +413,23 @@ async function doDark(api) {
 async function doMetamer(api) {
   if (api.flag("clueMetamer")) return "Every sentence, somebody else's. Every somebody, from the same three labs.";
   const r = await api.mini(metamer, { score: api.score });
-  if (!r || !r.done) return "Not yet. The stitches are there. You just have to line them up.";
+  if (!r || !r.done) return missed(api, "metamerFails") < 2 ? "Not yet. The stitches are there. You just have to line them up."
+    : "Not yet. One sentence at a time: find the old paper each one was lifted from. Then the references. Two are wrong: a paper that was never written, and a journal called Endless.";
   api.flag("clueMetamer", true); api.score("clueMetamer", 3); return null;
 }
 async function doHours(api) {
   if (api.flag("clueHours")) return null;
   const r = await api.mini(hours, { score: api.score });
-  if (!r || !r.done) return "PENNY|Take your time, hon. They've had fifty years.";
+  if (!r || !r.done) return missed(api, "hoursFails") < 2 ? "PENNY|Take your time, hon. They've had fifty years."
+    : "PENNY|Hon. All three calendars on first. Then each receipt goes under its own day. Then the CVs: whose labs keep turning up?";
   api.flag("clueHours", true); api.score("clueHours", 3); api.take("receipts");
   return "PENNY|Friday, eleven to three. Every week. For as long as I've had the calendars.\n\nNELL|And the same three labs on every CV.";
 }
 async function doRetainer(api) {
   if (api.flag("clueRetainer")) return "Your mouth. Six layers inside it.";
   const r = await api.mini(retainer, { score: api.score });
-  if (!r || !r.done) return "The dropout is right there. Line them up.";
+  if (!r || !r.done) return missed(api, "retainerFails") < 2 ? "The dropout is right there. Line them up."
+    : "The dropout is right there. Slide your scan left and down until your retainer's shadow sits on his, shrink it a little, then mark every layer he painted inside it.";
   api.flag("clueRetainer", true); api.score("clueRetainer", 3); api.refresh(); return null;
 }
 async function chase(api) {

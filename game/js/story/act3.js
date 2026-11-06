@@ -1,7 +1,7 @@
 // ACT III — Wednesday: MAJOR REVISIONS. Four proofs (Nell + Morris, Gus at his desk), Dana, the faculty meeting
 // (THE NOD, and Quorum "dies"), Iris; then Gus in the steam tunnels. Design: docs/ACT3.md.
 import { seg, segC, chip, chipW } from "../gfx.js";
-import { ITEMS, VIV, dendro } from "./act1.js";
+import { ITEMS, VIV, dendro, boothNap } from "./act1.js";
 import "./act2.js";   // Act II's items (printout, …) and look-wrappers
 import { ceiling } from "../minigames/ceiling.js";
 import { overlay } from "../minigames/overlay.js";
@@ -29,9 +29,14 @@ wrap("notebook", (api) => {
   const f = api.G.flags, t = (k, s) => `- ${f[k] ? "(done) " : ""}${s}`;
   if (f.quorumDead) return "Your lab notebook. Today's last line, in handwriting you don't recognize as your own:\n\nTHE FACULTY ANSWER THE MOTION FROM TWO AGO. QUORUM IS DEAD. NOBODY MOVED TO ADJOURN.\n\nAnd under it: the old woman on four.";
   return "Your lab notebook. Today: prove the Big Finding is fake. Not suspicious. Fake.\n\n"
-    + [t("proofGrim", "Table 1: brain predicts behaviour at r = .94. Gus says that's impossible. (His desk.)"), t("proofOverlay", "Figure 3: the two participants look… familiar. (Your monitor.)"),
-      t("proofLogs", "Who used the GPU cluster? Rex knows. Rex wants coffee. (Kitchen.)"),
-      t("proofGLM", "Replicate it. Need Preston's stimulus log, which is in the Impact Lab. Nell can't get in." + (f.morrisHint3 ? " Morris can." : ""))].join("\n")
+    + [t("proofGrim", "Table 1: brain predicts behaviour at r = .94. Gus says that's impossible. (Click Gus: TABLE 1.)"), t("proofOverlay", "Figure 3: the two participants look… familiar. (Your monitor.)"),
+      t("proofLogs", "Who used the GPU cluster? Rex knows. Rex wants coffee. (Kitchen.)" + (f.proofLogs ? ""
+        : f.rexLogin ? " You have his login. The terminal's in the server room, B1. (Stairwell.)"
+        : f.descaled ? " The machine says READY. A mug, a coffee, Rex."
+        : api.has("can") ? " The machine says DESCALE. Gus's can is pH 2.4. That's basically descaler."
+        : f.rexAsked ? " The machine has said DESCALE since 2012. Something acidic would fix that. Gus keeps an emergency can on his desk." : "")),
+      t("proofGLM", "Replicate it. Need Preston's stimulus log, which is in the Impact Lab. " + (f.proofGLM ? "" : api.has("log") ? "Morris dragged it to your drawer. Your monitor: THE REPLICATION."
+        : "Nell can't get in." + (f.morrisHint3 ? " Morris can. (Click his name, then a vent.)" : "")))].join("\n")
     + (proofs(api) === 4 && !f.meetingOpen ? "\n\nAll four. Take it to Ethel Bord, Research Integrity, 2F." : "")
     + (f.meetingOpen && !f.quorumDead ? "\n\nFaculty meeting, 3F. New Business." : "");
 });
@@ -265,14 +270,16 @@ async function stairs(api) {
 async function doGrim(api) {
   if (api.flag("proofGrim")) return "GUS|Three correlations above the ceiling, from voxels picked for correlating. I'd frame it, but frames are evidence too.";
   const r = await api.mini(ceiling, { score: api.score });
-  if (!r.done) return "GUS|Take your time. Table 1 isn't going anywhere. It's above the ceiling. It can't go anywhere.";
+  if (!r.done) return missed(api, "grimFails") < 2 ? "GUS|Take your time. Table 1 isn't going anywhere. It's above the ceiling. It can't go anywhere."
+    : "GUS|Cheat sheet. One: the ceiling comes from his own reliability panels, S2A and S2C, not head motion and not pizza. Two: any bar above .60 beats the ceiling, and three of them do. Three: find the methods sentence where he picks voxels by how well they correlate with attention. Then watch it work on pure noise.";
   api.flag("proofGrim", true); api.score("proofGrim", 2);
   return "GUS|A measure can't agree with anything better than it agrees with itself. His do. That's not a finding, Nell. That's a selection procedure. Nobody checks. That's why it works.";
 }
 async function doOverlay(api) {
   if (api.flag("proofOverlay")) return "Participant 7 and participant 12. One brain, two names.";
   const r = await api.mini(overlay, { score: api.score });
-  if (!r.matched) return "Not yet. They're the same. You can feel it. You need to see it.";
+  if (!r.matched) return missed(api, "overlayFails") < 2 ? "Not yet. They're the same. You can feel it. You need to see it."
+    : "Not yet.\n\nGUS (OVER YOUR SHOULDER)|Mirror it first. Then a quarter turn. Fraud is lazy, Nell. It never does more than two things to a picture.";
   api.flag("proofOverlay", true); api.score("proofOverlay", 2); return null;
 }
 async function doGLM(api) {
@@ -300,6 +307,9 @@ async function meeting(api) {
   return null;
 }
 
+// count a failed attempt at a puzzle (stored in a flag); after a couple, the surrounding lines start giving real hints
+const missed = (api, k) => (api.G.flags[k] = (api.G.flags[k] || 0) + 1);
+
 // a death inside a minigame: Revise & Resubmit rolls the engine back to before the action, but the minigame keeps running,
 // so keep this act's flags and stay busy until the minigame ends
 const dieKeep = (api) => async (t) => { const keep = { ...api.G.flags }; await api.die(t); Object.assign(api.G.flags, keep); api.G.busy = true; return "revise"; };
@@ -318,7 +328,7 @@ export const HS = {
       night: { look: "IS ANY OF IT REAL? And under it, in Gus's hand: NO." } },
     adline: { label: "Prof. Adline's office", day: { look: "AFTER THE 15TH.", talk: "PROF. ADLINE (THROUGH THE DOOR)|Nell! I heard about the thermos! Can it wait until after the fifteenth?" },
       morris: { look: "Scribbling, inside." }, night: { look: "Dark. Even grant panic sleeps." } },
-    booth: { label: "dark booth", day: { look: "The dark booth.", use: (api) => api.die("You sit in the dark booth, just to think for a minute.\n\nYou wake up a ninth-year postdoc. Rex brings you a coffee. He seems pleased."), go: openConsole },
+    booth: { label: "dark booth", day: { look: "The dark booth.", use: boothNap("You sit in the dark booth, just to think for a minute.\n\nYou wake up a ninth-year postdoc. Rex brings you a coffee. He seems pleased."), go: openConsole },
       morris: { look: "MORRIS|No." }, night: { look: "The dark booth. Gus doesn't need it to be dark. Gus is dark.", go: openConsole } },
     gusdesk: { label: "Gus's desk", day: { look: "Gus's desk. Four empty cans of NULL HYPOTHESIS and one full one, his emergency can.",
         use: (api) => { if (api.has("can") || api.flag("descaled")) return "GUS|That's my last one. Don't make it weird."; api.give("can"); api.flag("gotDrink", true); api.refresh(); api.score("can", 1);
@@ -373,7 +383,8 @@ export const HS = {
   },
 
   ethics: {
-    ethel: { label: "Ethel Bord", day: { look: "Ethel Bord, among her binders. Today she has a black one.", talk: (api) => proofs(api) === 4 ? (api.flag("meetingOpen") ? "ETHEL|Three o'clock. Third floor. New Business. Sit near the door." : "c:ethelNew") : "c:ethelEarly" } },
+    ethel: { label: "Ethel Bord", day: { look: "Ethel Bord, among her binders. Today she has a black one.", talk: (api) => proofs(api) === 4 ? (api.flag("meetingOpen") ? "ETHEL|Three o'clock. Third floor. New Business. Sit near the door." : "c:ethelNew")
+          : api.flag("ethelEarly") ? `ETHEL|Evidence. Not feelings. You have ${proofs(api)} of 4. Binders can count.` : (api.flag("ethelEarly", true), "c:ethelEarly") } },
     index: { label: "Binder of Binders", day: { look: "The Binder of Binders. There's now an entry for VALU, P.: SEE ALSO: CONCERNS (PENDING)." } },
     shelfA: { label: "shelf A", day: { look: "Binders A to F." } }, shelfB: { label: "shelf B", day: { look: "Binders G to M." } }, shelfC: { label: "shelf C", day: { look: "Binders N to Q." } },
     shelfR: { label: "shelf R", day: { look: "RISING STARS (SPECIAL). R-12's gap is still there." } },
@@ -390,7 +401,8 @@ export const HS = {
     pc: { label: "Preston's PC", day: { look: "Preston's PC. Logged in, as always. FOG NEURO is minimized. The taskbar shows 41 papers in progress." },
       morris: { look: "MORRIS|Gus already did the computer. I do binders.", use: "Morris walks across the keyboard. A paper on the neural basis of brunch appears. Morris backs away." } },
     gainpanel: { label: "second monitor", day: { look: "The second monitor. A dial and a green bar. The bar pulses." },
-      morris: { look: "Morris's head itches so hard his ear folds over. The green bar pulses in time with it.", use: (api) => api.die("Morris paws the dial.\n\nSomewhere in the building, Preston recites the Methods section of every paper ever written. So does Morris. He's still going.") } },
+      morris: { look: "Morris's head itches so hard his ear folds over. The green bar pulses in time with it.", use: (api) => !api.flag("dialWarned")
+        ? (api.flag("dialWarned", true), "Morris puts a paw on the dial. His implant buzzes like a dentist's drill. The green bar holds its breath.\n\nMORRIS|Pal. Every hair on my body just voted no. I'm taking my paw back.") : api.die("Morris paws the dial.\n\nSomewhere in the building, Preston recites the Methods section of every paper ever written. So does Morris. He's still going.") } },
     printer: { label: "printer", day: { look: "Preston's printer. It works. Of course it works." },
       morris: { look: "Preston's printer. The output tray has a stack of drafts, and on top, something on heavy cream paper.", use: invite } },
     oat: { label: "oat synergy", day: { look: "Adaptogenic oat synergy." }, morris: { look: "MORRIS|I'm not drinking that, pal. I eat garbage. I have standards." } },
@@ -404,12 +416,15 @@ export const HS = {
         talk: (api) => api.has("coffee") ? "c:rexCoffee" : api.flag("rexLogin") ? "REX|There's a society, Nell. Under forty. Nobody believes me." : api.flag("rexAsked") ? "REX|Coffee. From the machine. Then we talk." : "c:rexFirst" },
       morris: { look: "REX|Don't. Don't even, rat." } },
     espresso: { label: "espresso machine", day: { look: (api) => api.flag("descaled") ? "The espresso machine. READY. A green light nobody in this building has ever seen." : "The espresso machine. A blinking chip: DESCALE. Rex says it's said that since 2012.",
-        use: (api) => api.flag("descaled") ? (api.has("mug") ? brew(api) : "It's ready. You need a mug.") : "DESCALE. It won't do anything else. It's been waiting for someone to listen." },
+        use: (api) => api.flag("descaled") ? (api.has("mug") ? brew(api) : "It's ready. You need a mug. There's a mug tree.")
+          : "DESCALE. It won't do anything else. It's been waiting for someone to listen." + (api.has("can") ? "\n\nYou're carrying something with a pH of 2.4. Just saying." : "") },
       morris: { look: "MORRIS|There's fourteen years of limescale in there, pal. I can hear it." }, night: { look: "The espresso machine, READY in the dark." } },
     mugs: { label: "mug tree", day: { look: "The mug tree. WORLD'S OKAYEST PI. I ♥ P < .05. A mug shaped like a brain that nobody uses.",
         use: (api) => { if (api.has("mug") || api.has("coffee") || api.flag("rexLogin")) return "One mug at a time. Kitchen rules."; api.give("mug"); api.flag("gotMug", true); api.refresh(); return "You take WORLD'S OKAYEST PI."; } },
       morris: { look: "Morris can't reach." } },
-    fridge: { label: "fridge", day: { look: "The fridge. A note: DO NOT DRINK — SAMPLE. On a carton of oat milk.", use: (api) => api.die("You drink the oat milk. It wasn't oat milk.\n\nYou are now part of somebody's control group. Your data will be excluded.") },
+    fridge: { label: "fridge", day: { look: "The fridge. A note: DO NOT DRINK — SAMPLE. On a carton of oat milk.", use: (api) => !api.flag("fridgeWarned")
+        ? (api.flag("fridgeWarned", true), "You open the fridge. A carton of oat milk, with a note taped to it: DO NOT DRINK — SAMPLE.\n\nIt looks like oat milk. It smells like oat milk. You close the fridge before you can find out what else it is.")
+        : api.die("You drink the oat milk. It wasn't oat milk.\n\nYou are now part of somebody's control group. Your data will be excluded.") },
       morris: { look: "MORRIS|I've been in there. Don't." } },
     board: { label: "corkboard", day: { look: "WHO TOOK MY OAT SYNERGY. CLEAN YOUR MUG (THIS MEANS YOU, P.V.). And a typed card: WHO KEEPS BOOKING THE OLD B-LEVEL ROOM ON FRIDAYS? Nobody's answered." },
       morris: { look: "Too high." } },
@@ -437,7 +452,9 @@ export const HS = {
 
   tunnels: {
     bricked: { label: "bricked-up doorway", night: { talk: overhear, look: "A doorway, bricked up. Scratched into the bricks: a circle seated around a smaller circle. Through the mortar, voices, all together: THE AUTHORS SHOULD CONSIDER… THE AUTHORS SHOULD CONSIDER…",
-        use: (api) => (api.sfx("knock"), api.die("Gus knocks.\n\nThe chanting stops.\n\nA brick slides out. A hooded face. A voice, kindly: 'The authors are invited to resubmit. In person.'\n\nGus is never seen at 2 AM again.")) } },
+        use: (api) => !api.flag("knockWarned")
+        ? (api.flag("knockWarned", true), "Gus raises his knuckles to the brick. The chanting goes on, very close, very many.\n\nGUS|…Knock on the cult's door. At 2 AM. Alone. Gus, buddy. Think about that for a second.")
+        : (api.sfx("knock"), api.die("Gus knocks.\n\nThe chanting stops.\n\nA brick slides out. A hooded face. A voice, kindly: 'The authors are invited to resubmit. In person.'\n\nGus is never seen at 2 AM again.")) } },
     tube: { label: "tube line", night: { look: "The pneumatic tube line along the ceiling. It runs toward the bricked door and through it.",
         use: (api) => { if (api.flag("canisterLive")) return "Rattling. Closer. Get the hatch."; api.flag("canisterLive", true); api.refresh();
           return "Gus puts his ear to the tube. Silence. Then, very far away and getting closer: a rattle.\n\nSomething's coming down."; } } },
@@ -458,7 +475,9 @@ export const HS = {
 
   conference: {
     quorum: { label: "Prof. Quorum", day: { look: (api) => api.flag("quorumDead") ? "Prof. Quorum, face down on the agenda. His cufflinks are still lit." : "Prof. Quorum, Department Chair. Bow tie. White hair. Officially thirty-nine. His cufflinks are small round tables.",
-        talk: (api) => api.flag("quorumDead") ? "He doesn't answer. Nobody else notices." : api.die("QUORUM|Ms. Null! Just the person. We need a student on the Curriculum Committee.\n\nYou open your mouth. The motion carries.\n\nYou have been appointed to the Curriculum Committee. Your research career is over.") } },
+        talk: (api) => api.flag("quorumDead") ? "He doesn't answer. Nobody else notices."
+          : !api.flag("quorumWarned") ? (api.flag("quorumWarned", true), "You catch Quorum's eye. He brightens, like a man spotting a free student.\n\nETHEL (WHISPERING)|Don't. He's been looking for a student for the Curriculum Committee since 1994. Sit down. The student rep chair. By the door.")
+          : api.die("QUORUM|Ms. Null! Just the person. We need a student on the Curriculum Committee.\n\nYou open your mouth. The motion carries.\n\nYou have been appointed to the Curriculum Committee. Your research career is over.") } },
     faculty: { label: "senior faculty", day: { look: (api) => api.flag("quorumDead") ? "Six senior faculty, nodding on schedule around a dead chair." : "Six senior faculty. They nod in perfect unison, every so often, then go still. Tenure does that to a person. Something does." } },
     ethel: { label: "Ethel Bord", day: { look: "Ethel, taking the minutes. In a binder.", talk: (api) => api.flag("quorumDead") ? "c:ethelAfter" : "ETHEL|Shh. Sit near the door." } },
     gus: { label: "Gus", day: { look: "Gus, in a borrowed tie, already watching the faculty.", talk: "GUS|Watch their heads, not his mouth." } },
@@ -470,7 +489,9 @@ export const HS = {
 
   iris: {
     iris: { label: (api) => api.flag("irisNamed") ? "Prof. Iris Candor" : "the old woman", day: { look: (api) => api.flag("irisNamed") ? "Iris Candor, 88. Her staple gun is never more than a foot from her hand." : "The old woman from journal club. Back row, since 1961.",
-        talk: (api) => api.flag("irisDone") ? "IRIS|Go home, dear. Lock your door." : api.flag("irisNamed") ? "c:irisTruth" : "c:irisMeet" } },
+        talk: async (api) => { if (api.flag("irisDone")) return "IRIS|Go home, dear. Lock your door.";
+          if (!api.flag("irisNamed")) await api.convo("irisMeet");   // straight on into the truth: no second TALK needed
+          return "c:irisTruth"; } } },
     stacks: { label: "journals", day: { look: "Towers of journals from 1961 on. Every issue. Some of the reviewer names are underlined. Some are circled. A few are crossed out." } },
     manual: { label: "magnet manual", day: { look: "A fat manual: SUPERCONDUCTING RING, OPERATOR'S GUIDE, 1968. The margins are full of handwriting. Hers.", score: { look: ["manual", 1] } } },
     photo: { label: "photograph", day: { look: "1968. A young woman in safety goggles next to a ring magnet as big as a room, grinning like she's just won an argument.", score: { look: ["photo68", 1] } } },

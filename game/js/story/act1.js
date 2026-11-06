@@ -51,7 +51,7 @@ export const CONVOS = {
   iris: { L: "nell", R: "iris", score: ["iris", 2], lines: [
     ["R", "Young lady."], ["L", "Me?"], ["R", "Ask him who reviewed it."], ["L", "Who reviewed… his paper?"],
     ["R", "Mm. And while you're at it, ask yourself who reviewed yours."], ["N", "She goes back to her crossword. It's in pen."],
-  ] },
+  ], after: (api) => api.flag("irisMet", true) },
 
   morrisCeiling: { L: "nell", R: "morris", score: ["morrisD", 1], lines: [
     ["R", "Psst. Pal. Up here."],
@@ -97,6 +97,13 @@ export const CONVOS = {
   ], after: (api) => { api.flag("officeHours", true); api.refresh(); } },
 };
 
+// the dark booth's SIT IN (Acts I–III): the first time in an act it's a warning; the second time you sleep through your career
+export const boothNap = (deathText) => (api) => {
+  if (!api.flag("boothWarned")) { api.flag("boothWarned", true);
+    return "You sit down in the dark booth, just for a minute, to think. Your eyes adjust. Your thoughts slow. Your eyelids begin drafting a formal complaint.\n\nYou get out while you still can. Sit in there again and you won't."; }
+  return api.die(deathText);
+};
+
 /* ---------------- hotspots, by room → id → shift ---------------- */
 const tubeDay = { look: "The building's old pneumatic tube. A canister just went by, marked B3.\n\nThere is no B3.", use: "Empty. A sticker inside the hatch reads B3. There is no B3.", score: { look: ["tube", 1] } };
 const tubeNight = { look: "The canisters are rattling. Going down. Past the basement.\n\nThere is no \"past the basement.\"",
@@ -108,12 +115,13 @@ export const HS = {
     screen: { label: "projector screen",
       day: { look: "Preston's slide: a close-up of cortex, six layers, each one perfectly resolved. Error bars so small they'd embarrass a ruler. The methods say 7T.\n\nThe building has a 3T.", use: "You cannot use a slide. You can only envy it.", score: { look: ["screen", 1] } },
       night: { look: "Dark. The faint ghost of six cortical layers is burned into the screen.", use: "Gus wipes the screen. The ghost stays." } },
-    preston: { label: "Preston", day: { look: "Preston \"P.\" Valu. Third-year. First author. Rising Star. Never takes his earbuds out, not even for pizza.", talk: "c:preston", use: "Hands off. He's networking." } },
+    preston: { label: "Preston", day: { look: "Preston \"P.\" Valu. Third-year. First author. Rising Star. Never takes his earbuds out, not even for pizza.",
+      talk: (api) => api.flag("recorded") ? "PRESTON|Nell! Love that you're still here. Let's circle back. Let's circle forward." : "c:preston", use: "Hands off. He's networking." } },
     lectern: { label: "lectern", day: { look: "The lectern. Its microphone has been on since 2009.", use: "Preston is using it. Aggressively." },
       night: { look: "The lectern. Someone left one index card on it: THE AUTHORS SHOULD CONSIDER…", use: "Gus photographs the card for Nell. Then pockets it. Evidence is evidence." } },
     quorum: { label: "Prof. Quorum", day: { look: "Prof. Quorum, the Department Chair. Front row, as always. Round cufflinks. Expensive.", talk: "PROF. QUORUM|Not now, Ms. Null. We're about to lose quorum.", use: "Touching the Chair is a committee matter." } },
     faculty: { label: "senior faculty", day: { look: "The senior faculty, nodding in perfect unison.\n\nTenure does that to a person.", talk: "They nod. In unison.", use: "They nod. In unison." } },
-    iris: { label: "old woman", day: { look: "An elderly woman in the back row: silver bun, cardigan, pearls. She has attended journal club since 1961. Nobody knows who she is.", talk: "c:iris", use: "She swats your hand away with surprising speed." } },
+    iris: { label: "old woman", day: { look: "An elderly woman in the back row: silver bun, cardigan, pearls. She has attended journal club since 1961. Nobody knows who she is.", talk: (api) => api.flag("irisMet") ? "THE OLD WOMAN|Ask him who reviewed it, dear. Then ask yourself." : "c:iris", use: "She swats your hand away with surprising speed." } },
     pizza: { label: "pizza",
       day: { look: (api) => api.flag("pizzaGone") ? "Crumbs. A grease map of journal clubs past." : "Journal club pizza. Monday's is edible. By Thursday it is a biohazard.",
         use: (api) => { if (api.has("slice")) return "You already have a slice. Pace yourself."; if (api.flag("fedMorris")) return "You've had enough. Morris has had enough."; api.give("slice"); api.score("pizza", 1); return "You take a slice of pepperoni. It sags with the weight of its own expectations."; } },
@@ -171,7 +179,7 @@ export const HS = {
       night: { look: "Prof. Adline's office. Still a light on. Still on the phone. It's 2 AM.", use: "Gus knocks. \"AFTER THE 15TH!\"" } },
     booth: { label: "dark booth",
       day: { look: "The dark-adapted psychophysics booth. Twenty minutes in there and your eyes can detect a single photon. Ten more and you're asleep.",
-        use: (api) => api.die("You sit in the dark-adapted booth to think. Your eyes adjust. Your thoughts slow. Your eyelids lose the argument.\n\nYou wake up three years later. You are a 9th-year. Your committee has retired."), go: openConsole },
+        use: boothNap("You sit in the dark-adapted booth to think. Your eyes adjust. Your thoughts slow. Your eyelids lose the argument.\n\nYou wake up three years later. You are a 9th-year. Your committee has retired."), go: openConsole },
       night: { look: "The dark booth. Darker at night, somehow.", use: "Gus doesn't sit in the dark booth. Gus has seen things in there.", go: openConsole } },
     brett: { label: "Brett", day: { look: "Brett, from your stats section. He has a question. He always has a question.", talk: "c:brett", use: "You offer Brett a high five. He wasn't expecting it. Neither were you." } },
   },

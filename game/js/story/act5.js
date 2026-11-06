@@ -25,7 +25,10 @@ wrap("notebook", (api) => {
   const f = api.G.flags, t = (k, s) => `- ${f[k] ? "(done) " : ""}${s}`;
   if (api.G.mode === "day") return "Your lab notebook. Today's page says DEFENSE, 2 PM, and nothing else. Everything else is on the slides.";
   return "Your lab notebook, by phone light. Tonight:\n\n" + [t("passOK", "NELL: get past the doorkeeper (the robe, the phrase, Iris's card)."), t("echoPassed", "NELL: take a seat at the Round Table. Answer the Echo."),
-    t("magnetCharged", "IRIS: cold-start the 1968 magnet (the power plant)."), t("archiveSent", "MORRIS: the Archive, up the tube, to Ethel."), t("supportsOut", "MORRIS: then up the riser, to the floor under the 3T. (Click a name, or Tab, to switch.)")].join("\n");
+    t("magnetCharged", "IRIS: cold-start the 1968 magnet (the power plant)."),
+    t("archiveSent", "MORRIS: the Archive, up the tube, to Ethel." + (f.reelsDone && !f.archiveSent ? " Not enough got through. He can go again." : "")),
+    t("supportsOut", "MORRIS: then up the riser, to the floor under the 3T. (Click a name, or Tab, to switch.)")].join("\n")
+    + (ready(api) && !f.climax ? "\n\nEveryone's in place. IRIS: up the service stair." : "");
 });
 
 /* ---------------- conversations ---------------- */
@@ -69,13 +72,16 @@ async function doDefense(api) {
 }
 const ready = (api) => api.flag("echoPassed") && api.flag("magnetCharged") && api.flag("supportsOut");
 async function doEcho(api) {
-  if (api.flag("echoPassed")) return ready(api) ? climax(api) : "The Board waits for its Chair to finish reading the minutes. You have a few minutes. Somebody should be turning on a magnet.";
+  if (api.flag("echoPassed")) return ready(api) ? (!api.flag("archiveSent") && !api.flag("archiveNudged")
+      ? (api.flag("archiveNudged", true), "You could sit back down now. But Morris hasn't got enough of the Archive up to Ethel, and without it, all of this is just a story. He could make another run. (Or sit down again and go on.)")
+      : climax(api)) : "The Board waits for its Chair to finish reading the minutes. You have a few minutes. Somebody should be turning on a magnet.";
   if (!api.flag("passOK")) return "You're not in yet.";
   await api.say("You take an empty seat at the Round Table, inside the iron ring. Twelve hoods. At the head of the table, a hood that sits very straight, like a man who was declared dead on Wednesday.\n\nA gavel. Then the Echo begins.");
   const r = await api.mini(echo, { mode: "induction", morris: true, score: api.score, blip: api.blip, die: dieKeep(api),
     onSeat: (i) => { for (let k = 0; k < 12; k++) api.pose("seat" + k, k === i ? 1 : 0); } }, "glmwrap");
   for (let k = 0; k < 12; k++) api.pose("seat" + k, 0);
-  if (!r || !r.passed) return "You stand up from the table, slowly, as if to stretch. Nobody stops you. Nobody has to. The seat will wait.";
+  if (!r || !r.passed) return "You stand up from the table, slowly, as if to stretch. Nobody stops you. Nobody has to. The seat will wait."
+    + (missed(api, "echoFails") < 2 ? "" : "\n\nIRIS (IN YOUR HEAD)|Two back, dear. SECONDED only when the phrase matches the one two turns ago. Who says it doesn't matter. Ignore the gavel. And if he advances the Echo, count three until he brings it back.");
   api.flag("echoPassed", true); api.score("echoPassed", 4);
   await api.say("THE CORRESPONDING AUTHOR|The motion carries.\n\nTwelve hoods nod, as one.");
   if (ready(api)) return climax(api);
@@ -84,24 +90,29 @@ async function doEcho(api) {
 async function doSupports(api) {
   if (api.flag("supportsOut")) return "MORRIS|It's up there on nothing but habit, pal. Somebody tell the lady with the switch.";
   const r = await api.mini(supports, { score: api.score, die: dieKeep(api), onBolts: (b) => { api.G.flags.bolts = b; } });
-  if (!r || !r.done) return "MORRIS|Breather. Then back to the bolts.";
+  if (!r || !r.done) return missed(api, "supportsFails") < 2 ? "MORRIS|Breather. Then back to the bolts."
+    : "MORRIS|Breather. Note to self: opposite corners, pal. Northwest, southeast, northeast, southwest, and round again. If it leans, the green ones bring it back.";
   api.flag("supportsOut", true); api.score("supportsOut", 4); api.refresh();
   return "MORRIS|Done, pal. When that lady throws her switch, that whole thing's coming down to say hello." + (api.flag("echoPassed") && api.flag("magnetCharged") ? "\n\nMORRIS|Iris! Go!" : "");
 }
 async function doBreakers(api) {
   if (api.flag("magnetCharged")) return "The needles are in the green. The ring upstairs is drinking current.";
   const r = await api.mini(breakers, { score: api.score, onBreak: (o) => { api.G.flags.brk = o; } });
-  if (!r || !r.done) return "IRIS|Again. The manual is wrong. I'm not.";
+  if (!r || !r.done) return missed(api, "breakerFails") < 2 ? "IRIS|Again. The manual is wrong. I'm not."
+    : "IRIS|Again. My pencil, dear, in the margin: A, C, D, B, E, F. Then wait for the charge. You don't rush a 1968 magnet.";
   api.flag("magnetCharged", true); api.score("magnetCharged", 4); api.refresh();
   return "The meters climb. Somewhere above, iron starts to hum.\n\nIRIS|Fifty-eight years. Still starts on the first try. Mostly." + (api.flag("echoPassed") ? "\n\nIRIS|The girl is seated. Up the stair." : "\n\nIRIS|Now we wait for the girl to take her seat.");
 }
 async function doReels(api) {
-  if (api.flag("reelsDone")) return "MORRIS|Sent what I could, pal.";
+  if (api.flag("archiveSent")) return "MORRIS|Sent what I could, pal. Ethel's got her reading.";
+  // a short run isn't final: Morris can go back to the shelves until enough of the Archive reaches Ethel
+  if (api.flag("reelsDone")) await api.say("MORRIS|Not enough got to Ethel, pal. There's more on the shelves. One more run. Dial first: ETHEL BORD, 2F.");
   const r = await api.mini(reels, { score: api.score, seconds: 90 });
   api.flag("reelsDone", true);
-  const n = (r && r.sent) || 0; api.flag("reelsSent", n);
+  const n = (r && r.sent) || 0; api.G.flags.reelsSent = Math.max(n, api.G.flags.reelsSent || 0);
   if (n >= 3) { api.flag("archiveSent", true); api.score("archiveSent", 5); return "MORRIS|Membership. Panels. Reviews. Boards. All going up, pal. Second floor. Ethel's going to need a bigger binder."; }
-  return n ? "MORRIS|Got some of it up the tube, pal. Not all. Not enough." : "MORRIS|I sent the sherry inventory. Twice. I panicked.";
+  return (n ? "MORRIS|Got some of it up the tube, pal. Not all. Not enough." : "MORRIS|I sent the sherry inventory. Twice. I panicked.")
+    + "\n\nMORRIS|I could go again. Or I could go up the riser and do the floor. Ethel's best ending needs three reels, minimum.";
 }
 
 /* ---------------- the climax and the endings ---------------- */
@@ -114,9 +125,8 @@ async function climax(api) {
   G.flags.unhooded = true; api.refresh(); api.sfx("cloth"); api.sfx("sting");
   await api.say("Professor Quorum. Not dead. Never dead. A little pale, as if he spent Wednesday afternoon face down on an agenda. A chain of gold medals around his neck, fifty years of them.\n\nQUORUM|Thirty-nine. Still.");
   await api.convo("quorumOffer");
-  const c = await api.chooseFrom("QUORUM'S OFFER", [["yes", "\"YES.\""], ["maybe", "\"CAN I THINK ABOUT IT?\""], ["no", "\"NO.\""]]);
-  if (c === "yes") return ending(api, "inducted");
-  if (c === "maybe" || !c) return ending(api, "deskreject");
+  const bad = await offer(api);
+  if (bad) return ending(api, bad, { shown: true });
   await api.say("NELL|No.\n\nNELL|And give him back. Preston. Take them out of his ears.\n\nQUORUM|Ms. Null. You're in a sealed room, under a building, inside a magnet that hasn't been switched on since 1971.");
   await api.say("A voice from the service stair:\n\nIRIS|1968, Pembroke. I commissioned it. Do keep up.");
   G.flags.irisHere = true; api.refresh(); api.sfx("step", { room: "chamber" });
@@ -146,8 +156,23 @@ const ENDINGS = {
   deskreject: { title: "DESK REJECT", chip: "THE INDUCTION SUCCEEDED", bodies: "BODIES 05.", next: "THE END.",
     epilogue: "QUORUM|Of course. Take all the time you need.\n\nQUORUM|You'll have plenty of it on the Curriculum Committee.\n\nPreston gets the job. Nell is appointed to the curriculum committee, effective immediately, for life. She is still on it." },
 };
-async function ending(api, which) {
+// Quorum's offer. NEVER MIND isn't an answer (he waits). YES and CAN I THINK ABOUT IT? play their endings, then offer
+// Revise & Resubmit back to the offer, like any death, so a bad answer doesn't cost the player all of Act V.
+async function offer(api) {
+  for (;;) {
+    let c; do c = await api.chooseFrom("QUORUM'S OFFER", [["yes", "\"YES.\""], ["maybe", "\"CAN I THINK ABOUT IT?\""], ["no", "\"NO.\""]]); while (!c);
+    if (c === "no") return null;
+    const which = c === "yes" ? "inducted" : "deskreject";
+    await api.say(ENDINGS[which].epilogue);
+    let k; do k = await api.chooseFrom(ENDINGS[which].title + ". IS THAT YOUR DECISION?", [["end", "THE END"], ["revise", "REVISE & RESUBMIT"]]); while (!k);
+    if (k === "end") return which;
+    api.sfx("revise");
+    await api.say("Revised and resubmitted. Reviewer 2 is still out there.\n\nQuorum is still smiling, with his hand out.\n\nQUORUM|Well, Ms. Null?");
+  }
+}
+async function ending(api, which, { shown = false } = {}) {
   Object.assign(END, ENDINGS[which]);
+  if (shown) END.epilogue = "";   // already played, before the choice to revise
   api.flag("ending", which);
   if (which === "accepted") {
     await api.say(END.epilogue);
@@ -156,6 +181,9 @@ async function ending(api, which) {
   }
   api.endAct(); return null;
 }
+
+// count a failed attempt at a puzzle (stored in a flag); after a couple, the surrounding lines start giving real hints
+const missed = (api, k) => (api.G.flags[k] = (api.G.flags[k] || 0) + 1);
 
 // a death inside a minigame: Revise & Resubmit rolls the engine back to before the action, but the minigame keeps running,
 // so keep this act's flags and stay busy until the minigame ends
@@ -200,8 +228,12 @@ export const HS = {
     panel: { label: "breaker panel", night: { look: "Six breakers, A to F, the size of loaves of bread.", use: doBreakers } },
     manual: { label: "manual", night: look("SUPERCONDUCTING RING, OPERATOR'S GUIDE, 1968. The printed procedure is wrong. The margins aren't.") },
     meters: { label: "meters", night: look("Analog meters. Their needles are trembling, like they remember.") },
-    knife: { label: "knife switch", night: { look: "The plant's own knife switch. MAIN SUPPLY.", use: (api) => api.flag("magnetCharged") ? "IRIS|Not this one, dear. The one that matters is upstairs by the ring." : api.die("Iris throws the main switch before the breakers are set.\n\nThe 1968 supply comes on at once. So does every light in Boston, briefly. Then none of them.\n\nIRIS: Well. That's never happened before. Except once.") } },
-    stair: { label: "service stair", night: { look: "Up to the chamber.", go: (api) => !api.flag("magnetCharged") ? "IRIS|Not until the magnet's charged." : !api.flag("echoPassed") ? "IRIS|Not until the girl's in her seat." : !api.flag("supportsOut") ? "IRIS|Not until the rat's done with the floor. He knows what I mean." : climax(api) } },
+    knife: { label: "knife switch", night: { look: "The plant's own knife switch. MAIN SUPPLY.", use: (api) => api.flag("magnetCharged") ? "IRIS|Not this one, dear. The one that matters is upstairs by the ring."
+        : !api.flag("knifeWarned") ? (api.flag("knifeWarned", true), "Iris puts her hand on the main switch, and stops.\n\nIRIS|No. Breakers first, or I black out the Eastern Seaboard. Again. The panel, Iris.")
+        : api.die("Iris throws the main switch before the breakers are set.\n\nThe 1968 supply comes on at once. So does every light in Boston, briefly. Then none of them.\n\nIRIS: Well. That's never happened before. Except once.") } },
+    stair: { label: "service stair", night: { look: "Up to the chamber.", go: (api) => !api.flag("magnetCharged") ? "IRIS|Not until the magnet's charged." : !api.flag("echoPassed") ? "IRIS|Not until the girl's in her seat." : !api.flag("supportsOut") ? "IRIS|Not until the rat's done with the floor. He knows what I mean."
+        : !api.flag("archiveSent") && !api.flag("archiveNudged") ? (api.flag("archiveNudged", true), "IRIS|One thing, dear, before I climb. Without the Archive on Ethel's desk, all of this is just a story. The rat could make another run. Or we go now.")
+        : climax(api) } },
     tunnel: { label: "tunnel", night: look("The way she came. Iris doesn't go back.") },
   },
   crawlspace: {
@@ -234,14 +266,17 @@ function brassGavel(api) {
 async function doorkeeper(api) {
   const f = api.G.flags;
   if (f.passOK) return "The doorkeeper doesn't move. It doesn't need to.";
-  if (!f.robeOn) return "The doorkeeper doesn't look at you. You're not dressed for it. (Gus's robe.)";
+  if (!f.robeOn) return "The doorkeeper doesn't look at you. You're not dressed for it.\n\nGus's robe is in your bag. (Click it: PUT ON.)";
   await api.say("A HOOD|The authors should consider…");
   const p = await api.chooseFrom("THE AUTHORS SHOULD CONSIDER…", [["a", "…FURTHER RESEARCH."], ["b", "…ADDITIONAL CONTROLS."], ["c", "…A CAREER IN INDUSTRY."]]);
   if (!p) return null;
   if (p === "c") return api.die("NELL: …a career in industry.\n\nSilence. Then, from every hood at once: 'Desk reject.'\n\nYour application has been forwarded to industry. Industry did not ask for it.");
   if (p === "b") return "A HOOD|…\n\nThe hood tilts, very slightly. Not wrong. Not right. It waits.";
   await api.say("A HOOD|Further research is needed.\n\nA HOOD|Your date of birth.");
-  const d = await api.chooseFrom("YOUR DATE OF BIRTH.", [["card", "SHOW IRIS'S CARD (BORN 1987)"], ["truth", "TELL THE TRUTH"]]);
+  let d = await api.chooseFrom("YOUR DATE OF BIRTH.", [["card", "SHOW IRIS'S CARD (BORN 1987)"], ["truth", "TELL THE TRUTH"]]);
+  if (d === "truth" && !f.truthWarned) { f.truthWarned = true;
+    await api.say("You open your mouth to tell the truth. Iris's card is in your pocket, warm. She fixed the year for a reason. In this room, the truth gets checked against a table.\n\nA HOOD|…Your date of birth.");
+    d = await api.chooseFrom("YOUR DATE OF BIRTH.", [["card", "SHOW IRIS'S CARD (BORN 1987)"], ["truth", "TELL THE TRUTH"]]); }
   if (!d) return null;
   if (d === "truth") return api.die("You tell the truth. The doorkeeper does the arithmetic.\n\nA HOOD: Wizened.\n\nThe hoods turn, all of them. You are retired on the spot. Your gain is set to zero. You will nod in faculty meetings for the rest of your career.");
   f.passOK = true; api.take("idcard"); api.score("passOK", 3); api.sfx("door");
