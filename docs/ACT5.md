@@ -1,0 +1,92 @@
+# Act V — Friday: DECISION (design and build spec)
+
+*Story logic: `game/js/story/act5.js`. New rooms: `defense.js`, `antechamber.js`, `chamber.js`, `plant.js`, `tubehub.js`. Minigames: `defense.js` (minigame, `js/minigames/`), `echo.js` (mode `induction`), `breakers.js`, `reels.js`, `crossref.js`. Iris becomes playable.*
+
+**Question:** Can they be stopped?
+Day and night merge. Part 1 is Laura Bow's courtroom; Part 2 is Gabriel Knight's lair, played Day-of-the-Tentacle style with three characters.
+
+---
+
+## Flow
+
+### Part 1, 14:00: the Defense
+1. **Card:** FRIDAY · ACT V DECISION · SEMINAR 101 · 14:00. Nell's inventory: notebook, recorder, the robe (from her chair), Gus's map (from the tube).
+2. **The defense room (Seminar 101):** a committee table. Prof. Adline, Ethel Bord, Det. Small, and an empty chair with a QUORUM placard. A lectern for Nell, and a projector screen. Preston sits in the front row in a suit, waiting for his job talk (same room, next slot), earbuds dark. In the back row, where she's sat since 1961: Iris.
+3. **THE DEFENSE** (`defense.js`): the committee asks five questions. For each, Nell presents evidence cards from her week, in an order that convinces. Wrong or weak cards cost credibility (a meter); the right ones raise it.
+   1. "Was the study run?" (calendar, purchase orders, IRB, clipboard)
+   2. "Are the data real?" (GRIM, Figure 3, GPU logs, the replication)
+   3. "Whose data are they?" (the retainer)
+   4. "Who wrote the review?" (Reviewer 2's typos)
+   5. "Why would anyone do this?" (the invitation, the missing hours, the metamer, Impact's card)
+
+   The final score is the h-index carried into the finale.
+4. **The turn:** the moment Nell names Preston, his earbuds flare. He stands up and says, flatly, *"The authors thank the reviewers for their insightful comments,"* and walks out toward the basement. The committee is convinced of the fraud, but not of a secret society: *"Extraordinary claims, Ms. Null."* Iris, from the back: "Then bring them extraordinary evidence. Tonight."
+5. **Card:** FRIDAY NIGHT · 23:40 · STEAM TUNNELS. The palettes merge (night palette, all three characters). Cast: **Nell, Iris, Morris** (HUD chips; switch with Tab).
+
+### Part 2, midnight: the Induction in B3
+Three routes, three rooms, one finale.
+
+**Nell → antechamber → chamber.**
+- **antechamber:** a robe rack, portraits of members (every plaque says AGE 39), a hooded doorkeeper at the inner door. Nell must be wearing Gus's robe: USE robe on Nell, or the doorkeeper won't even look. Passphrase: the doorkeeper says "THE AUTHORS SHOULD CONSIDER…" and Nell picks the response (three options: "FURTHER RESEARCH IS NEEDED" is right; "…ADDITIONAL CONTROLS" earns a hood tilt; "…A CAREER IN INDUSTRY" is death). Age check: "Your date of birth." She shows Iris's forged card (Iris gives it at the start: her own 1962 card with the year scratched to 1987). Admitting she's 40+ is a death.
+- **chamber:** the Round Table. Twelve hooded seats around the giant iron ring of the old magnet, with lamps. The Gain Controller console on a plinth, Preston in a hood beside it, earbuds glowing. Quorum at the head, hooded. **THE INDUCTION** (`echo.js`, mode `induction`: a dual 2-back over phrases and speaking seats; it escalates to 3-back when Quorum "advances the Echo"). Pass: "The motion carries." Fail: death 16 (hoods close in).
+
+**Iris → plant.**
+- **plant:** the old power plant room for the 1960s magnet. Breaker panel, a big knife switch, a dusty operator's manual on a lectern (her own 1968 margin notes). THE COLD START (`breakers.js`): the manual's printed order is wrong; her margin notes correct it. Throw the breakers in the corrected order, watching the needle. Then the charge climbs (`magnetCharged`). Then Iris walks up the service stair to the chamber.
+
+**Morris → tubehub.**
+- **tubehub:** every pneumatic line in the building ends here, in a ceiling of brass pipes. Beyond an arch is the Archive: shelves of reel-to-reel tapes. THE ARCHIVE (`reels.js`): pick the reels that prove the network (MEMBERSHIP ROLLS, PANEL SCORES, REVIEWER 2 REPORTS, EDITORIAL BOARDS) from decoys (HOLIDAY PARTY 1983, SHERRY INVENTORY, …), load them into canisters, and address each canister to ETHEL BORD (2F) on the brass dial, all before the magnet ramps (a timer that starts when Iris throws the last breaker). (`archiveSent`.)
+
+**The climax** (in the chamber, when `echoPassed && magnetCharged`):
+1. The Board calls the induction to order with the skull gavel. Quorum unhoods: not dead, still officially 39. He makes the Hunt's final offer to its quarry. Three answers:
+   - "Yes." → **INDUCTED** ending.
+   - "Can I think about it?" → **DESK REJECT** ending ("Of course. Think about it on the curriculum committee.").
+   - "No." → continue.
+2. **Iris arrives** up the service stair: *"I told you in 1974."* She staples Quorum's robe to the Round Table.
+3. Iris throws the knife switch beside the ring: *"I commissioned this magnet in 1968. I've waited a long time to turn it back on."* The ring ramps to full field. Cufflinks, hood clasps and earbuds fly to the ring; the Gain Controller is ripped off its console; Preston's earbuds go, and he's free. The LTM drives beside the Archive are wiped.
+4. Quorum, wearing fifty years of gold awards: *"Fifty years of honors. All of them ferromagnetic."* He rises to the top, straight into the ring.
+5. **Endings:** `archiveSent` → **ACCEPTED** (the best ending, with THE CROSS-REFERENCE epilogue); otherwise **MAJOR REVISIONS**. Then the coda.
+
+### Epilogue: THE CROSS-REFERENCE (Accepted only, `crossref.js`)
+Ethel's office, the reels transcribed. Membership rolls in one column, fifty years of grant panels and editorial boards in the other. Draw lines between the same names. The lines form a network so dense it looks like a brain. That's the proof Iris described.
+
+## Deaths (Act V)
+- Doorkeeper: answer "…A CAREER IN INDUSTRY." *"Your application has been forwarded to industry."*
+- Age check: admit you're over forty: death 17.
+- Fail the Echo: death 16.
+- Iris: throw the knife switch before the breakers are set: *"The 1968 supply comes on at once. So does every light in Boston. Briefly."*
+- Morris: ride a canister yourself (death 19 variant): *"Morris has been delivered to the Registrar."*
+- Stand near the ring with metal when the switch is thrown (Nell, if she picked up the gavel): death 18.
+
+---
+
+## Build spec
+
+### Engine
+- Iris becomes a playable character in Act V: `FIGURE.iris` (walking figure, slow, with the staple gun) and `CHIP.iris = ["IRIS", "fV"]`.
+- In Act V, `G.mode` is `"day"` for Part 1 and `"night"` for Part 2.
+
+### Rooms
+**defense** (new) "SEMINAR 101 · DEFENSE". It reuses the look of Room 101 (one-point, rows of chair backs): a committee table front-left facing the room, with Adline, Ethel, Small and an empty chair with a QUORUM placard; Nell's lectern front-right; a projector screen on the back wall reading NULL RESULTS, A DEFENSE; Preston in the front row (earbuds, `#preston` blank parts); Iris in the back row (head and staple gun only). Hotspots: `committee`, `adline`, `ethel`, `small`, `quorumchair`, `lectern` (USE: BEGIN THE DEFENSE), `screen`, `preston`, `iris`, `door`. Entry `start`. After `G.flags.defenseDone`, Preston's seat is empty.
+
+**antechamber** (new) "B3 · ANTECHAMBER". Night. A low vaulted room (one-point), a rack of robes (left), a wall of member portraits with plaques AGE 39 (back), the inner door with the insignia (back right), a hooded doorkeeper beside it, a lectern with a guest book, and the tunnel doorway (left, the way in). Hotspots: `rack`, `portraits`, `book`, `doorkeeper`, `inner` (the inner door; go to the chamber), `tunnel` (go back). Entries `fromTunnels`, `fromChamber`.
+
+**chamber** (new) "B3 · THE ROUND TABLE". The centerpiece: the giant iron ring of the 1960s magnet seen in perspective (an ellipse ring with wireframe coil windings), a round table inside it, twelve hooded seats around it (simple hoods, each seat with a small lamp that can be lit: pose groups `seat0`…`seat11`, each `<g class="pz" data-g="seatN" data-i="1">` lit and `data-i="0"` unlit), Quorum at the head (hood; unhooded variant when `G.flags.unhooded`, gold medals), the Gain Controller console on a plinth (dial, green bar), Preston hooded beside it (earbuds lit `((( )))`), the skull gavel on the table, the knife switch on the wall by the service stair (right), the service stair (right). When `G.flags.finale`: draw the ring "on": every small metal thing flying in toward the ring as speed dashes. Hotspots: `table` (TAKE YOUR SEAT), `quorum`, `console`, `preston`, `gavel`, `switch`, `stair`, `door` (back to the antechamber). Entries `fromAntechamber`, `fromStair`.
+
+**plant** (new) "B3 · POWER PLANT". The old magnet supply: tall cabinets with analog meters (needles), a breaker panel with six big breakers labeled A–F (drawn up/down from `G.flags.brk` string e.g. "CADBEF"), a giant knife switch, conduit, the manual on a lectern, a service stair up (to the chamber). Hotspots: `panel`, `manual`, `meters`, `knife`, `stair`, `tunnel`. Entries `fromTunnels`, `fromStair`.
+
+**tubehub** (new) "B3 · TUBE HUB". A vaulted ceiling of brass tubes converging on a central dial (a big brass destination dial), canisters in a rack, an arch through to the Archive shelves of reels, the LTM drive rack (lights blinking) beside the arch. Hotspots: `dial`, `canisters`, `archive`, `ltm`, `pipe` (the pipe Morris came from), `arch`. Entry `fromPipes`.
+
+### Cast and portraits
+- **Iris walking figure** (the playable one): 88, slow, cardigan ROBE, hair INK bun, glasses BRASS, staple gun SIGNAL in hand. Same frame and poses as the other walkers (`ap0/ap1/ap2`).
+- **Quorum unhooded standing** at the head of the table, gold medals in BRASS, and his robe.
+- **Hooded member seated** (for the twelve seats; simple) and **the doorkeeper** (standing hood).
+- **Preston hooded** with lit earbuds.
+- **Committee seated:** Adline, Ethel (reuse), Small (seated variant), plus the empty QUORUM chair.
+- Portraits: `adline` "PROF. ADLINE", `hood` "A HOODED MEMBER" (a hood with a black opening, an insignia pin lit), `quorumUnhooded` (reuse `quorum` with a hood pushed back), `irisPlay` is just `irisNamed`.
+
+### Minigames
+- **defense.js:** the Laura Bow interrogation. Five questions, a hand of evidence cards (only the ones the player actually has; pass `{ evidence: [ids] }`), a credibility meter, committee reactions. Resolves `{ credibility, order }`.
+- **echo.js** (mode `induction`): a dual 2-back over phrases (SECONDED, key S) and seats (KNOCK, key K) on the chamber's twelve lamps; 3-back after two errors in a row; three hoods turned = fail. Resolves `{ passed, dprime }`.
+- **breakers.js:** the manual page (printed steps plus handwritten margin notes that correct them) and the six breakers; throwing one out of order sparks and resets; a needle climbs. Resolves `{ done }`.
+- **reels.js:** pick the four damning reels from twelve, address each canister on the brass dial to ETHEL BORD, and send; there's a countdown. Resolves `{ sent: n }`.
+- **crossref.js:** two columns of names; draw lines; the network emerges. Resolves `{ done }`.
