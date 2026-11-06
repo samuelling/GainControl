@@ -50,15 +50,25 @@ const SIGNIN = () => {
   });
   return s + seg("CHECKED IN BY: CODY (AT VENDING MACHINE)", 214, 270, 5, "sM", .9);
 };
+// the 3T's booking sheet, as Tess's console shows it: this week's bookings, then six months of totals, then a search
 const CALENDAR = () => {
-  let s = `<rect class="k sW" x="120" y="34" width="400" height="262"/>` + seg("3T SCANNER BOOKINGS   JAN - JUN", 136, 46, 8, "sW", 1.2);
-  const rows = [["TESS (QA)", "sB", 26], ["G. IAN 2:30A", "sV", 40], ["ADLINE LAB", "sG", 9], ["MOCK CALIBRATION FRI 23:59", "sM", 24], ["P. VALU", "sR", 0]];
-  rows.forEach(([n, c, k], i) => {
-    const y = 78 + i * 42; s += seg(n, 136, y, 6, c, 1);
-    for (let j = 0; j < 26; j++) if (j < k) s += `<rect class="hl ${c}" x="${300 + j * 8}" y="${y - 1}" width="5" height="9"/>`;
-    if (k === 0) s += seg("NONE.  NOT ONE SESSION.", 300, y, 6, "sR", 1);
-  });
-  return s + seg("BOOKED BY NOBODY: THE FRIDAY 23:59 BLOCK", 136, 284, 4.6, "sM", .8);
+  let s = `<rect class="k sW" x="96" y="22" width="448" height="300"/>` + seg("3T SCANNER BOOKINGS", 112, 34, 9, "sW", 1.3) + seg("WEEK OF OCT 26", 400, 36, 6, "sM", 1)
+    + `<path class="hl sW" d="M112,52 L528,52"/>`;
+  const wk = [["MON-SUN 02:30", "G. IAN", "NIGHT SESSION. EVERY NIGHT.", "sB"],
+    ["MON 07:00", "T. LA", "QA: PHANTOM, SNR, GHOSTING", "sA"],
+    ["MON 14:00", "ADLINE LAB", "RETINOTOPY, 3 SUBJECTS", "sG"],
+    ["WED 10:00", "ADLINE LAB", "ATTENTION AND CONTRAST", "sG"],
+    ["THU 06:30", "T. LA", "HELIUM TOP-UP. DO NOT BOOK.", "sA"],
+    ["FRI 23:59", "(NO NAME)", "MOCK CALIBRATION. 4 HRS.", "sM"]];
+  wk.forEach(([when, who, what, c], k) => { const y = 62 + k * 20;
+    s += seg(when, 112, y, 6, "sW", 1) + seg(who, 222, y, 6, c, 1) + seg(what, 310, y, 6, k === 5 ? "sM" : "sW", .9); });
+  s += `<path class="hl sM" d="M112,186 L528,186"/>` + seg("JAN - JUN  SESSIONS", 112, 194, 5, "sM", .8);
+  // six months: Gus every night, Tess's QA twice a week, the mock calibration every Friday, Adline's lab now and then
+  const tot = [["G. IAN", 181, "sB"], ["T. LA (QA)", 52, "sA"], ["MOCK CAL.", 26, "sM"], ["ADLINE LAB", 34, "sG"], ["P. VALU", 0, "sR"]];
+  tot.forEach(([who, n, c], k) => { const y = 208 + k * 15;
+    s += seg(who, 112, y, 5.5, c, .9) + seg(String(n).padStart(2, "0"), 196, y, 5.5, c, .9);
+    if (n) s += `<rect class="hl ${c}" x="224" y="${y}" width="${(n / 181 * 300).toFixed(1)}" height="6"/>`; else s += seg("NONE. NOT ONE SESSION.", 224, y, 5.5, "sR", 1); });
+  return s + `<rect class="hl sR" x="380" y="270" width="148" height="40"/>` + seg("SEARCH: VALU", 388, 278, 5.5, "sW", .9) + seg("0 RESULTS", 388, 294, 8, "sR", 1.3);
 };
 const INDEX = () => {
   let s = `<rect class="k sW" x="160" y="34" width="320" height="262"/>` + seg("THE BINDER OF BINDERS", 180, 48, 9, "sW", 1.3);
