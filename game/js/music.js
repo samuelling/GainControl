@@ -11,8 +11,9 @@
 // chord under it. Off-beat passing tones may step, and are always played short. music.trace() logs every pitched
 // note against its chord so a test can prove it (and /tmp/harm2.mjs checks the tables).
 //
-// THE BANDS. Act I day is the light version: an OP-1 square pluck, a bouncy bass, a small drum machine, marimba
-// answers. Act II day is a bossa (marimba, rim clave, shaker, organ stabs, a flute bridge). Act III day is angular
+// THE BANDS. The game opens on a Rhodes (the title and Act I day): the tune on electric piano over syncopated Rhodes
+// chords, a soft bass and a lazy, lightly swung beat. The OP-1 arrives in Act II: the square pluck and its arpeggios
+// over a bossa (rim clave, shaker, marimba answers). Act III day is angular
 // (muted brass with octave leaps, broken beat, woodblocks, brass stabs). Act IV day is restless (a sixteenth-note
 // ostinato, driving hats, a pulsing bass). Act V day is a march. Nights are sparse: a music box and a ticking clock
 // (I), vibes in a slow brushed shuffle (II), the FM bell over a heartbeat (III), the bell low with brass and the
@@ -112,6 +113,19 @@ function vibes(m, t, v, out, x = {}) {             // sine + a soft fourth parti
   lfo.connect(ld); ld.connect(tm.gain); a.connect(g); b.connect(gb); g.connect(tm); gb.connect(tm); tm.connect(out);
   for (const o of [a, b, lfo]) { o.start(t); o.stop(t + d + .1); }
 }
+// a Rhodes (tine electric piano): an FM pair at 1:1 whose index starts high and falls (the bark of the tine), a quiet
+// high tine ping on the strike, a long warm decay, and the suitcase amp's tremolo
+function rhodes(m, t, v, out, x = {}) {
+  const d = x.short ? .3 : Math.max(.7, Math.min(2.4, (x.dur || 1) * 1.4)); tr(m, !x.short);
+  const f = hz(m), car = osc("sine", f), mod = osc("sine", f), mi = C.createGain(), g = C.createGain();
+  const ping = osc("sine", f * 7.02), pg = C.createGain(), tm = C.createGain(), lfo = osc("sine", 4.6), ld = C.createGain(), lp = C.createBiquadFilter();
+  const bark = f * (1.4 + 1.6 * Math.min(1, v * 6));                 // harder notes bark more
+  mi.gain.setValueAtTime(bark, t); mi.gain.exponentialRampToValueAtTime(f * .18, t + .22);
+  env(g, t, .004, v, d); env(pg, t, .001, v * .06, .05);
+  lp.type = "lowpass"; lp.frequency.value = 3200; tm.gain.value = .84; ld.gain.value = .16;
+  mod.connect(mi); mi.connect(car.frequency); car.connect(g); ping.connect(pg); g.connect(lp); pg.connect(lp); lp.connect(tm); lfo.connect(ld); ld.connect(tm.gain); tm.connect(out);
+  for (const o of [car, mod, lfo]) { o.start(t); o.stop(t + d + .1); } ping.start(t); ping.stop(t + .08);
+}
 function box(m, t, v, out, x = {}) {               // a music box: a high sine tine with a quick twelfth on the strike
   const f = hz(m + 12), d = x.short ? .14 : .9; tr(m + 12, !x.short);
   const a = osc("sine", f), b = osc("sine", f * 3), g = C.createGain(), gb = C.createGain();
@@ -209,6 +223,7 @@ const INST = {
   brass: { f: brass, v: .5, oct: -12 },
   organ: { f: (m, t, v, o, x) => organ([m], t, x.short ? .1 : x.dur || .35, v, o, x.short ? .008 : .03), v: .45, oct: -12 },
   flute: { f: flute, v: .62, oct: 0 },
+  rhodes: { f: rhodes, v: 1.05, oct: -12 },          // the tune an octave down, in the electric piano's warm middle
 };
 // play a tune note: non-chord tones (only ever off the beat) are played short, as passing tones
 function voice(name, m, t, v, out, x = {}) {
@@ -224,9 +239,11 @@ function hold(arr, bar, k, q) { let n = 1; while (k + n < 8 && (arr[bar][k + n] 
 // q (night: the tune on the beats only), bass / drums / comp patterns, compAll (comp under the tune too), swing,
 // angular (octave leaps in the tune), fx (room extras), vel (tune loudness), tempo (at the act's own dread)
 const BANDS = {
-  title: { tempo: 96, lead: "vibes", leadV: "pluck", leadB: "brass", ctr: "organ", hand: "bell", bass: "title", drums: "title", comp: "arp" },
-  d1: { tempo: 104, lead: "pluck", leadB: "marimba", ctr: "marimba", hand: "marimba", bass: "bounce", drums: "bounce", comp: "arp" },
-  d2: { tempo: 100, lead: "marimba", leadB: "flute", ctr: "vibes", hand: "flute", bass: "bossa", drums: "bossa", comp: "stab", compAll: true },
+  // the game opens on a Rhodes (title, Act I): the tune on electric piano, syncopated Rhodes chords, a soft bass, a lazy beat
+  title: { tempo: 90, lead: "rhodes", leadV: "rhodes", leadB: "vibes", ctr: "vibes", hand: "rhodes", bass: "two", drums: "title", comp: "rhodes", compAll: true, swing: .18 },
+  d1: { tempo: 92, lead: "rhodes", leadV: "rhodes", leadB: "flute", ctr: "vibes", hand: "vibes", bass: "two", drums: "soft", comp: "rhodes", compAll: true, swing: .2 },
+  // the OP-1 arrives in Act II: the square pluck and its arpeggios, over the bossa
+  d2: { tempo: 100, lead: "pluck", leadV: "pluck", leadB: "marimba", ctr: "marimba", hand: "marimba", bass: "bossa", drums: "bossa", comp: "arp", compAll: true },
   d3: { tempo: 97, lead: "brass", leadV: "pluck", leadB: "organ", ctr: "marimba", hand: "marimba", bass: "angular", drums: "broken", comp: "bstab", compAll: true, angular: true, stacc: true },
   d4: { tempo: 96, lead: "vibes", leadV: "brass", leadB: "pluck", ctr: "organ", hand: "brass", bass: "pulse8", drums: "restless", comp: "ostinato", compAll: true },
   d5: { tempo: 92, lead: "brass", leadV: "bell", leadB: "organ", ctr: "brass", hand: "bell", bass: "pulse8", drums: "march", comp: "arp" },
@@ -321,6 +338,11 @@ function drumStep(name, i, bar, sec, t) {
       if (!light && (i === 4 || i === 12)) clap(t, .08);
       if (full && bar % 4 === 3 && i >= 13) clap(t, .04);
       if (i % 4 === 0) hat(t, .04); break;
+    case "soft":                                            // laid back: kick on 1 and the and-of-3, rim on 2 and 4, quiet hats
+      if (i === 0 || (!light && i === 10)) kick(t, .3);
+      if (!light && (i === 4 || i === 12)) rim(t, .045);
+      if (i % 2 === 0 && !light) hat(t, i % 4 === 2 ? .04 : .018);
+      if (full && bar % 4 === 3 && i === 14) rim(t, .025); break;
     case "title":
       if (i === 0) kick(t, .3); if (i % 4 === 2) hat(t, .04); if (i === 12 && bar % 4 === 3) clap(t, .07); break;
     case "clock": if (i % 4 === 0) wood(t, .06, (i / 4) % 2 ? 1150 : 1500); break;   // tick, tock
@@ -340,6 +362,11 @@ function compStep(name, s, i, bar, ch, root, t, spb, g) {
     case "haze": if (i === 0) organ([...ch, root + 12], t, spb * 15, .02 * g, B.arp, 1.2); break;
     case "mbox": if (i % 4 === 0) box(ch[(i / 4) % n] + (i >= 8 ? 12 : 0), t, .07 * g, B.arp); break;
     case "sparse": if (i % 8 === 0) box(ch[(bar * 2 + i / 8) % n], t, .07 * g, B.arp); break;
+    case "rhodes": {                                        // chord tones only, voiced in the middle; never on top of the tune
+      const hit = { 0: [spb * 6, .05], 6: [spb * 1.2, .032], 10: [spb * 4, .04] }[i];
+      if (hit) for (const m of ch) rhodes(m - 12, t, hit[1] * g, B.arp, { dur: hit[0], short: hit[0] < spb * 2 });
+      if (i === 0) rhodes(root + 12, t, .03 * g, B.arp, { dur: spb * 8 }); break;
+    }
   }
 }
 function fxStep(fx, s, i, ch, root, t) {
