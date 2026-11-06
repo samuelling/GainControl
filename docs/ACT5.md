@@ -93,7 +93,7 @@ Ethel's office, the reels transcribed. Membership rolls in one column, fifty yea
 
 ### Minigames
 - **defense.js:** the Laura Bow interrogation. Five questions, a hand of evidence cards (only the ones the player actually has; pass `{ evidence: [ids] }`), a credibility meter, committee reactions. Resolves `{ credibility, order }`.
-- **echo.js** (mode `induction`): a dual 2-back over phrases (SAME WORDS, key W) and seats (SAME SEAT, key S) on the chamber's twelve lamps; 3-back after three errors in a row (for six turns); suspicion fades after three clean answers; three hoods turned = fail. Resolves `{ passed, dprime }`.
+- **echo.js** (mode `induction`): a single 2-back over phrases (SECONDED, key S or SPACE); the twelve seats light as members speak, staging only; 3-back after three errors in a row (for six turns); suspicion fades after three clean answers; three hoods turned = fail. Resolves `{ passed, dprime }`.
 - **breakers.js:** the manual page (printed steps plus handwritten margin notes that correct them) and the six breakers; throwing one out of order sparks and resets; a needle climbs. Resolves `{ done }`.
 - **reels.js:** pick the four damning reels from twelve, address each canister on the brass dial to ETHEL BORD, and send; there's a countdown. Resolves `{ sent: n }`.
 - **supports.js:** THE SUPPORTS (see the crawlspace, above). `supports(el, { die, score })` → `{ done, tries }`.

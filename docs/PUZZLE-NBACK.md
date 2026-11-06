@@ -47,18 +47,18 @@ That's the first time anyone sees the Table's control over the faculty, and it s
 When Nell tells Iris the plan, Iris recognizes the nodding at once.
 > IRIS: "The Echo. We did it in 1962 with sherry. You answer the phrase that comes back around after one other. Miss two and they look at you. Miss three and you're quarry."
 
-**Practice with stakes but no death:** Iris runs the Echo herself, in peer-review boilerplate this time ("THE AUTHORS SHOULD CONSIDER…", "THE SAMPLE SIZE IS SMALL…", "THE AUTHORS SHOULD CONSIDER…"). Nell answers **SAME WORDS** at the right moments (out loud, "seconded"). Each miss or false alarm earns a click of Iris's staple gun near Nell's sleeve. Three clicks and Iris starts over: *"Again. In 1974 I did this hungover."*
+**Practice with stakes but no death:** Iris runs the Echo herself, in peer-review boilerplate this time ("THE AUTHORS SHOULD CONSIDER…", "THE SAMPLE SIZE IS SMALL…", "THE AUTHORS SHOULD CONSIDER…"). Nell answers **"SECONDED."** at the right moments. Each miss or false alarm earns a click of Iris's staple gun near Nell's sleeve. Three clicks and Iris starts over: *"Again. In 1974 I did this hungover."*
 
 **Iris also warns about the hard part:**
 > IRIS: "At an induction, the Board watches *who* speaks, too. If the same seat speaks as two turns ago, you knock the table. Phrase and seat, both at once. And if the Corresponding Author suspects someone, he 'advances the Echo.' Three back. Nobody likes that."
 
-She drills seats with her own office chairs: she moves between them as she speaks, and Nell knocks when she lands in the chair she used two turns earlier. Then both together. It's practice for a dual n-back, without anyone saying so. (+2 for passing each drill.)
+The second drill is the same rule, faster, over grant-panel phrases and then the toasts.
 
 ## 3. THE INDUCTION (Act V, B3)
 
 The real thing, under Gus's robe, at the Round Table: twelve hooded seats around the old magnet ring.
-- **Phrase stream:** Board members speak peer-review boilerplate, one per turn. Answer **SAME WORDS** (key W, or the button in the dialogue box) when the phrase matches two back.
-- **Seat stream:** each turn a different seat's lamp lights as its occupant speaks. Knock (key K, or click the table) when the seat matches two back.
+- **Phrase stream:** Board members speak peer-review boilerplate, one per turn. Answer **SECONDED** (key S or SPACE, or the button) when the phrase matches two back (three, when the Echo is advanced). This is the only response.
+- **Seats:** each turn a seat's lamp lights as its occupant speaks. Staging only: where a phrase is said never matters. (An earlier dual-task version scored the seats too; it was cut as too esoteric.)
 - **Silence is correct** when neither matches. Most turns, the right answer is nothing.
 - **Suspicion meter:** each miss or false alarm turns a hood toward Nell (drawn as poses: hoods swivel one notch at a time). Three errors in a row and Quorum leans in: *"Let us advance the Echo."* It becomes 3-back for the next stretch.
 - **Three hoods turned:** death #16. *"The authors have failed to address the reviewers' concerns."* The hoods close in. Revise & Resubmit puts Nell back at the start of the Echo.
@@ -74,7 +74,6 @@ The real thing, under Gus's robe, at the Round Table: twelve hooded seats around
 |---|---|---|
 | Working memory (n-back) | "Juggling: every new thing lands and the oldest one drops. You only keep the last two in the air." | The Nod, the Rehearsal, the Induction |
 | Load | "Three back is much harder than two. Every extra ball counts." | Quorum "advances the Echo" |
-| Dual tasks | "Doing two at once (what was said and who said it) is harder than either alone." | Iris's chair drill; the Round Table seats |
 | Signal detection | "Count your hits and your false alarms. Saying 'now' all the time catches everything and proves nothing." | Nell's d′ in the notebook |
 | Brain training hype | "Getting better at the game doesn't make you smarter at everything else. People have claimed it does." | The Table's unreplicated 1979 paper |
 
@@ -95,7 +94,7 @@ The real thing, under Gus's robe, at the Round Table: twelve hooded seats around
 ## Teaching the Echo (added)
 The rule is easy to state and hard to picture, so the game now shows it before asking for it:
 - **Worked examples (`LESSONS` in `echo.js`).** Before each rehearsal drill, Iris walks through one example a turn at a time on a strip of turn cards. The current card is lit, an arc runs back two turns (green when it matches), and the verdict appears as a chip: SAME WORDS W, SAME SEAT S, both, or SAY NOTHING. Each example includes the trap, a repeat of the *previous* turn, which doesn't count ("ONE BACK DOESN'T COUNT"). The rehearsal has two drills. Drill 1 covers phrases. The chairs are taught by example only, with no drill of their own, and drill 2 is both streams on two rows. After drill 2 there's a three-back example in case Quorum advances the Echo. The induction opens with Nell running the both-streams example in her head.
-- **Buttons that say what they mean.** The buttons are named for what they detect: SAME WORDS and SAME SEAT, each with "as 2 turns ago" beneath (keys W and S); "seconded" and the knock are only the in-room flourish, and a reminder sits beside them: "otherwise say nothing". Both update to 3 when the Echo is advanced.
+- **Buttons that say what they mean.** One button: SECONDED, with "same words as 2 turns ago" beneath (keys S or SPACE), and a reminder sits beside them: "otherwise say nothing". Both update to 3 when the Echo is advanced.
 - **Errors that explain themselves (rehearsal only).** After a miss or false alarm, Iris's jab is followed by what actually happened, e.g. *Two turns ago was "further research is needed". This was "the conclusions do not follow".* A false alarm in the first two turns gets *there's no turn two back*. The induction gives no hints, only hoods turning.
 
-- **Two drills, not three.** The chairs-only drill was cut to shorten Act IV: after drill 1, Iris introduces the chairs with a worked example and goes straight into both at once.
+- **One task.** The seat stream (KNOCK) and its chair drill were cut: the Echo is a single n-back over phrases, 2-back, advancing to 3-back. Drill 1 is peer review; drill 2 is the grant panel and the toasts.

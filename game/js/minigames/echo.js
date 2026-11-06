@@ -1,7 +1,7 @@
 // THE ECHO (Act IV, THE REHEARSAL; Act V, THE INDUCTION). The Round Table's oldest ritual is a working-memory test.
-// Phrases of peer-review boilerplate come around the table, one per turn: answer SAME WORDS (W) when the phrase is the
-// one from two turns ago. Seats speak in turn: SAME SEAT (S) when the seat that speaks is the one from two turns ago.
-// The buttons are named for what they detect; "seconded" and the knock on the table are only how it looks in the room.
+// Phrases of peer-review boilerplate come around the table, one per turn: say SECONDED (S or SPACE) when the phrase is
+// the one from two turns ago (three, once the Corresponding Author advances the Echo). One task, one answer. The seats
+// still light as members speak, but only as staging: where something is said doesn't matter, only what.
 // Silence is correct otherwise. Nobody ever calls it a dual 2-back.
 //
 //   echo(el, { mode: "rehearsal" | "induction", pace, seed, score, die, onSeat, onTurn, blip, morris })
@@ -46,7 +46,7 @@ const R = {
   introA: [
     L("IRIS", "The Echo. We did it in 1962 with sherry. You answer the phrase that comes back around after one other."),
     L("IRIS", "Miss two and they look at you. Miss three and you're quarry."),
-    L("IRIS", "I'll be the Board. When the same words come back from two turns ago, press SAME WORDS. Out loud it comes out as 'seconded'. Otherwise you sit there and look tenured."),
+    L("IRIS", "I'll be the Board. When the same words come back from two turns ago, you say SECONDED. Press S. Otherwise you sit there and look tenured."),
     L("NELL", "And the staple gun?"),
     L("IRIS", "Motivation."),
   ],
@@ -63,21 +63,11 @@ const R = {
     L("IRIS", "They'd have seen that. They see everything except their own data.")],
   hit: [L("IRIS", "Mm."), L("IRIS", "Correct. Don't look pleased, they hate that."), L("IRIS", "Good."), L("IRIS", "Yes. Like a man with a named chair.")],
   passA: [L("IRIS", "Fine. You'd pass for an associate professor. From the back of the room.")],
-  introB: [
-    L("IRIS", "At an induction, the Board watches who speaks, too. If the same seat speaks as two turns ago, press SAME SEAT. In the room, that's a knock on the table."),
-    L("IRIS", "These are my chairs. SAME SEAT when I sit where I sat two turns ago. My knees have one more drill in them."),
-    L("NELL", "That one's the staple gun's chair."),
-    L("IRIS", "Today it's the kettle's. Watch the chairs, not my face."),
-  ],
-  goB: L("IRIS", "Watch where I land."),
-  faB: [L("IRIS", "I didn't sit there two turns ago. I'd remember. I'm the one with the hip."), L("IRIS", "Wrong chair, dear.")],
-  missB: [L("IRIS", "Same chair as two ago. You sat there like furniture."), L("IRIS", "I came back to that chair. You didn't notice. They would.")],
-  passB: [L("IRIS", "Good. My hip says that's enough chairs for one century.")],
   introC: [
-    L("IRIS", "Now both. What was said, and who said it. Phrase and seat, both at once."),
-    L("IRIS", "Two things at once is harder than either one alone. That isn't a theory. That's every faculty meeting since 1961."),
+    L("IRIS", "Again. The grant panel, then the toasts. The Board ends every meeting with toasts; it's the only item anyone remembers."),
+    L("IRIS", "Same rule. Same words as two turns ago: SECONDED. Faster, this time."),
   ],
-  goC: L("IRIS", "Both. Begin."),
+  goC: L("IRIS", "Grant panel. Begin."),
   passC: [
     L("IRIS", "There. Their founders published that the Echo makes you smarter. 1979. Nobody has ever replicated it."),
     L("NELL", "Does it? Make you smarter?"),
@@ -105,11 +95,11 @@ const R = {
   introI: [
     L("NARRATOR", "Twelve lamps. Twelve hoods. A ring of iron the size of a carousel, and the faint smell of sherry."),
     L("QUORUM", "The Echo. As it was in 1962, and as it shall be."),
-    L("NELL", "Same words as two back: SAME WORDS. Same seat as two back: SAME SEAT. Otherwise, silence. Otherwise, silence."),
+    L("NELL", "Same words as two back: SECONDED. Otherwise, silence. Otherwise, silence."),
   ],
   recapI: [L("NELL", "(Iris's office, in my head. Turn one: nothing to compare.)"), L("NELL", "(Turn two: nothing yet.)"),
-    L("NELL", "(Turn three: the words came back from two turns ago. SAME WORDS.)"), L("NELL", "(Turn four: words and seat both came back. Both.)"),
-    L("NELL", "(Turn five: neither. Sit still.)"), L("NELL", "(Turn six: only the seat. SAME SEAT.)")],
+    L("NELL", "(Turn three: the words came back from two turns ago. SECONDED.)"), L("NELL", "(Turn four: two back again. SECONDED.)"),
+    L("NELL", "(Turn five: new words. Sit still.)"), L("NELL", "(Turn six: the same as ONE back, not two. The trap. Sit still.)")],
   retryI: [L("NARRATOR", "The lamps go dark. The Board settles its robes. Someone pours another sherry."), L("QUORUM", "The Echo. Again, from the beginning.")],
   turn: [L("NARRATOR", "A hood turns toward you."), L("NARRATOR", "That hood is looking straight at you now."), L("NARRATOR", "Another hood turns."),
     L("NARRATOR", "Two of them are looking at you now."), L("NARRATOR", "A third hood turns. Slowly."), L("NARRATOR", "Three hoods.")],
@@ -179,36 +169,19 @@ function placeCatches(len, kinds, rnd, offset = 0) {
 // matches) and the verdict; `trap` steps also show the one-back repeat that doesn't count.
 const LESSON_P = ["THE SAMPLE SIZE IS SMALL", "THE NOVELTY IS UNCLEAR", "THE SAMPLE SIZE IS SMALL", "THE NOVELTY IS UNCLEAR", "FURTHER RESEARCH IS NEEDED", "FURTHER RESEARCH IS NEEDED"];
 export const LESSONS = {
-  phrase: { n: 2, rows: [{ label: "WHAT IS SAID", key: "W", verb: "SAME WORDS", items: LESSON_P }], lines: [
+  phrase: { n: 2, rows: [{ label: "WHAT IS SAID", key: "S", verb: "SECONDED", items: LESSON_P }], lines: [
     L("IRIS", "Watch first. Turn one: a phrase. There's nothing two turns back yet, so you say nothing."),
     L("IRIS", "Turn two. Still nothing two turns back. Nothing."),
-    L("IRIS", "Turn three. Look back TWO turns: the same phrase. That's the echo. Press SAME WORDS (W)."),
-    L("IRIS", "Turn four. Two back is 'the novelty is unclear'. Same again. SAME WORDS."),
+    L("IRIS", "Turn three. Look back TWO turns: the same phrase. That's the echo. Say SECONDED. Press S."),
+    L("IRIS", "Turn four. Two back is 'the novelty is unclear'. Same again. SECONDED."),
     L("IRIS", "Turn five: 'further research is needed'. Two back was 'the sample size'. Different. Nothing."),
     L("IRIS", "Turn six: 'further research' again. But it matches ONE turn back, not two. That's the trap. Nothing."),
   ], after: [L("IRIS", "So: every turn, compare it with the turn before last. Keep the last two in your head. A new one comes in, the oldest drops out. Like juggling.")] },
-  seat: { n: 2, rows: [{ label: "WHERE I SIT", key: "S", verb: "SAME SEAT", items: ["WINDOW", "KETTLE", "WINDOW", "DESK", "WINDOW", "WINDOW"] }], lines: [
-    L("IRIS", "Same game, with chairs. Turn one: the window chair. Nothing to compare yet."),
-    L("IRIS", "Turn two: the kettle chair. Nothing yet."),
-    L("IRIS", "Turn three: the window again. Two turns ago I sat at the window. Press SAME SEAT (S)."),
-    L("IRIS", "Turn four: the desk. Two back was the kettle. Nothing."),
-    L("IRIS", "Turn five: the window. Two back: the window. SAME SEAT."),
-    L("IRIS", "Turn six: the window again, but that's ONE back. The trap. Nothing."),
-  ], after: [L("IRIS", "Watch where I land, not what I say. The words don't matter in this one.")] },
-  both: { n: 2, rows: [{ label: "WHAT IS SAID", key: "W", verb: "SAME WORDS", items: ["THE AIMS ARE INTERDEPENDENT", "ENTHUSIASM WAS DAMPENED", "THE AIMS ARE INTERDEPENDENT", "ENTHUSIASM WAS DAMPENED", "THE BUDGET IS NOT JUSTIFIED", "THE RIGOR IS NOT DESCRIBED"] },
-      { label: "WHERE I SIT", key: "S", verb: "SAME SEAT", items: ["WINDOW", "KETTLE", "DESK", "KETTLE", "WINDOW", "KETTLE"] }], lines: [
-    L("IRIS", "Now both, and they don't care about each other. Turn one: nothing to compare."),
-    L("IRIS", "Turn two: nothing yet."),
-    L("IRIS", "Turn three: the phrase echoes, the chair doesn't. SAME WORDS only."),
-    L("IRIS", "Turn four: phrase echoes AND the chair echoes. Both: S and K."),
-    L("IRIS", "Turn five: neither. Silence."),
-    L("IRIS", "Turn six: a new phrase, but the kettle chair echoes. SAME SEAT only."),
-  ], after: [L("IRIS", "Two separate questions every turn. What was said two turns ago? Where was it said two turns ago?")] },
-  three: { n: 3, rows: [{ label: "WHAT IS SAID", key: "W", verb: "SAME WORDS", items: ["I REMAIN UNCONVINCED", "THE NOVELTY IS UNCLEAR", "THE SAMPLE SIZE IS SMALL", "I REMAIN UNCONVINCED", "THE SAMPLE SIZE IS SMALL"] }], lines: [
+  three: { n: 3, rows: [{ label: "WHAT IS SAID", key: "S", verb: "SECONDED", items: ["I REMAIN UNCONVINCED", "THE NOVELTY IS UNCLEAR", "THE SAMPLE SIZE IS SMALL", "I REMAIN UNCONVINCED", "THE SAMPLE SIZE IS SMALL"] }], lines: [
     L("IRIS", "If he advances the Echo, it's three back. Turn one."),
     L("IRIS", "Turn two."),
     L("IRIS", "Turn three. Still nothing three back."),
-    L("IRIS", "Turn four: the same as THREE turns ago. SAME WORDS."),
+    L("IRIS", "Turn four: the same as THREE turns ago. SECONDED."),
     L("IRIS", "Turn five: matches two back, not three. Nothing. Juggle three now."),
   ], after: [] },
 };
@@ -237,7 +210,7 @@ export function lessonSVG({ kind, step, recap }) {
     } else verdicts.push("");
   });
   const v = verdicts.filter(Boolean), vy = two ? 130 : 196;
-  if (step >= n) o += v.length ? v.map((t, i) => chip(t, 320 - (v.length * 84) / 2 + i * 90, vy, 8, t.startsWith("SAME WORDS") ? "fG" : "fA")).join("") : chip("SAY NOTHING", 320 - chipW("SAY NOTHING", 8) / 2, vy, 8, "fW");
+  if (step >= n) o += v.length ? v.map((t, i) => chip(t, 320 - (v.length * 84) / 2 + i * 90, vy, 8, t.startsWith("SECONDED") ? "fG" : "fA")).join("") : chip("SAY NOTHING", 320 - chipW("SAY NOTHING", 8) / 2, vy, 8, "fW");
   return o;
 }
 
@@ -507,7 +480,7 @@ function nellLayer(S) {
   if (S.knock) s += `<path class="k sK" d="M288,222 C288,214 300,212 304,218 C306,224 300,228 292,228 Z"/>` + arcs(310, 220, 1, "hl sW", 3, .7) + arcs(282, 220, -1, "hl sW", 3, .7) + seg("SAME SEAT", 254, 196, 10, "sA", 1.2);
   else s += `<path class="k sK" d="M286,224 C284,218 294,214 300,218 C303,221 300,226 292,226 Z"/>`;
   s += `<path class="k sK" d="M354,224 C356,218 346,214 340,218 C337,221 340,226 348,226 Z"/>`;
-  if (S.seconded) s += chip("SAME WORDS", 330, 196, 8, "fG");
+  if (S.seconded) s += chip("SECONDED", 330, 196, 8, "fG");
   return s;
 }
 // the close camera: the same drawing, cropped on Quorum's end and enlarged; .cz keeps the line weights apparent
@@ -560,7 +533,7 @@ function overhead(S) {
     return o; };
   items.push({ y: OV.cy, svg: table });
   items.sort((a, b) => a.y - b.y).forEach(it => s += it.svg());
-  if (S.seconded) s += chip("SAME WORDS", 344, 222, 8, "fG");
+  if (S.seconded) s += chip("SECONDED", 344, 222, 8, "fG");
   return s;
 }
 const ADV = "THE ECHO IS ADVANCED  -  THREE BACK";
@@ -576,7 +549,7 @@ const DRILLS = {
   B: { name: ["DRILL 2", "THE CHAIRS"], streams: { phrase: false, seat: true }, base: .9, catches: ["canister", "misfire"], between: ["kettle"],
     legs: [{ len: 7, tempo: [1, 1, .85, .75, .7, 1.4, 1.5], cue: { 3: "fast", 5: "slow" } },
       { len: 6, tempo: [1.3, 1, .82, .72, .7, 1], cue: { 2: "fast" } }] },
-  C: { name: ["DRILL 2", "BOTH AT ONCE"], streams: { phrase: true, seat: true }, base: 1.05, catches: ["sneeze", "phone", "kettle"], between: ["toast"],
+  C: { name: ["DRILL 2", "THE TOASTS"], streams: { phrase: true, seat: false }, base: 1.05, catches: ["sneeze", "phone", "kettle"], between: ["toast"],
     legs: [{ len: 6, set: "GRANT", tempo: [1, 1, .9, .82, .78, 1.35, 1.4], cue: { 3: "fast", 5: "slow" } },
       { len: 6, set: "TOAST", tempo: [1.2, 1, .9, .84, .8, .8, 1], cue: { 3: "fast" } }] },
 };
@@ -701,8 +674,7 @@ export function echo(el, opts = {}) {
       else if (S.inter) ctl = `<div class="eb go" data-b="skip">SKIP <small>ENTER</small></div>`;
       else if (cur || S.len) {
         const back = S.n === 3 ? "3" : "2";
-        if (S.streams.phrase) ctl += `<div class="eb s ${cur && cur.saidS ? "used" : ""}" data-b="s">SAME WORDS <small>W</small><em>AS ${back} TURNS AGO</em></div>`;
-        if (S.streams.seat) ctl += `<div class="eb k ${cur && cur.saidK ? "used" : ""}" data-b="k">SAME SEAT <small>S</small><em>AS ${back} TURNS AGO</em></div>`;
+        if (S.streams.phrase) ctl += `<div class="eb s ${cur && cur.saidS ? "used" : ""}" data-b="s">SECONDED <small>S · SPACE</small><em>SAME WORDS AS ${back} TURNS AGO</em></div>`;
         ctl += `<span class="erule">OTHERWISE<br>SAY NOTHING</span>`;
       }
       ctl += `<span class="etl">HITS <b>${sum.hits}</b> · MISSES <b>${sum.misses}</b> · FALSE ALARMS <b>${sum.fa}</b> · SILENCES <b>${sum.cr}</b></span>`;
@@ -751,7 +723,7 @@ export function echo(el, opts = {}) {
       cur.err++;
       if (mode === "rehearsal") {
         S.staples++; S.click = true; blip([180, 120]); sfx("staple"); later(() => { S.click = false; draw(); }, 520);
-        const pool = S.stage === "B" || (S.stage === "C" && stream === "seat") ? (kind === "fa" ? R.faB : R.missB) : (kind === "fa" ? R.fa : R.miss);
+        const pool = kind === "fa" ? R.fa : R.miss;
         S.coach = kind === "catch" ? R.catchFA[cur.catch] : explain(pick(pool, lineN++), stream, kind);
         if (S.staples >= 4) S.abort = true;
       } else {
@@ -832,7 +804,7 @@ export function echo(el, opts = {}) {
       cur.open = false;
       if (sP) { if (pT && !cur.saidS) { T.phrase.misses++; error("phrase", "miss"); } else if (!pT && !cur.saidS) T.phrase.cr++; }
       if (S.abort) return cur;
-      if (sS) { if (sT && !cur.saidK) { T.seat.misses++; error("seat", "miss"); } else if (!sT && !cur.saidK) T.seat.cr++; }
+      if (sS && S.streams.seat) { if (sT && !cur.saidK) { T.seat.misses++; error("seat", "miss"); } else if (!sT && !cur.saidK) T.seat.cr++; }
       draw();
       return cur;
     }
@@ -915,12 +887,8 @@ export function echo(el, opts = {}) {
       await interlude([card("THE REHEARSAL", "DRILL 1", "THE PHRASES")]);
       await drill("A");
       score("echoPhrases", 2); S.len = 0; await talk(R.passA);
-      // the chairs are taught, not drilled: a worked example, then straight into both at once
-      S.stage = "B"; S.chair = 2; S.set = null; await talk(R.introB);
-      await lesson("seat");
-      S.stage = "C"; await walkTo(2); await talk(R.introC);
-      await lesson("both");
-      await interlude([card("THE REHEARSAL", "DRILL 2", "BOTH AT ONCE")]);
+      S.stage = "C"; S.chair = 2; S.set = null; await talk(R.introC);
+      await interlude([card("THE REHEARSAL", "DRILL 2", "THE TOASTS")]);
       await drill("C");
       score("echoBoth", 2); S.len = 0; S.set = null; await walkTo(2); await talk(R.passC);
       await lesson("three");
@@ -984,14 +952,14 @@ export function echo(el, opts = {}) {
         const others = SEATS.map((_, i) => i).filter(i => i !== QSEAT);
         for (let i = others.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [others[i], others[j]] = [others[j], others[i]]; }
         Object.assign(S, { n: 2, turn: 0, len: 0, susp: 0, hoods: {}, hoodOrder: others.slice(0, 3), closing: false, abort: false, seat: null, phrase: null,
-          streams: { phrase: true, seat: true }, cam: "wide", reading: 0, late: false, lateWalk: null, sniff: 0, pTwitch: 0, qSpeak: false, minutes: false,
+          streams: { phrase: true, seat: false }, cam: "wide", reading: 0, late: false, lateWalk: null, sniff: 0, pTwitch: 0, qSpeak: false, minutes: false,
           hum: 0, humPulse: 0, gutter: 0, candles: ["lit", "lit", "lit", "lit"], burn: 0, fx: null, twitch: 0, sneeze: 0 });
         T = { phrase: tally(), seat: tally() }; cur = null; draw();
         // the roll call: each lamp lights once, around the table
         for (let i = 0; i < N_SEATS; i++) { S.seat = i; sfx("echoLamp"); draw(); await wait(110); }
         S.seat = null; draw();
         await talk(tries === 1 ? R.introI : R.retryI);
-        if (tries === 1) await lesson("both", R.recapI, true);
+        if (tries === 1) await lesson("phrase", R.recapI, true);
         let g = 0, streak = 0, clean = 0, deep = 0, advanced = false;
         // after every turn or catch: suspicion relaxes after three clean answers; three errors in a row advance the Echo
         const after = async (c, t, isTurn) => {
@@ -1049,8 +1017,7 @@ export function echo(el, opts = {}) {
       if (k === "escape") { e.preventDefault(); S.paused = true; draw(); return; }
       if ((k === "enter" || k === " ") && S.go) { e.preventDefault(); S.go(); return; }
       if ((k === "enter" || k === " ") && S.inter) { e.preventDefault(); S.skip = true; return; }
-      if (k === "w") { e.preventDefault(); answer("s"); }      // SAME WORDS
-      if (k === "s") { e.preventDefault(); answer("k"); }      // SAME SEAT
+      if (k === "s" || k === " ") { e.preventDefault(); answer("s"); }      // SECONDED
     };
     function finish(result) {
       if (!alive) return;
