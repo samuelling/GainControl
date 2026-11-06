@@ -32,6 +32,7 @@ This file is both the design and the contract between the art (rooms, figures, p
 - **Preston in the hallway** (day, by the Rising Stars wall), networking at no one. TALK: he's solved a new Big Question since yesterday; mid-pitch his earbuds pulse and his face goes blank ("fog neuro… Cog. Cog neuro."). If Morris is in the room, his itch spikes. (+2, `prestonBlank`.)
 - **Dana Outlier** (day, in the hallway by the Impact Lab door, before she's "excluded"): Preston never comes in before noon, leaves at 23:40 on Fridays, and the elevator "doesn't go down that far." (+1, `danaTalk`.)
 - **Rex's legend** (kitchen, once he has his coffee): "There's a secret society. Under forty. I applied at 39 and 11 months. They said my CV was *too old*."
+- **The invitation** (Impact Lab, Morris: USE the printer). Preston's NRT invitation on cream paper: a Revelation of unpublished work, no minutes, never on a CV, retire at forty, a receipt that calls it an "invited talk", and RSVP with your date of birth so they can check you aren't "wizened." (+3, `invite`.) It echoes through Rex (he sent his DOB; the reply was one word), Iris ("It was 1974. I was the reason."), Penny (the same six faculty file the same "invited talk" receipt every fall) and Preston ("a Revelation… nobody writes it down").
 - **Kitchen corkboard:** "WHO KEEPS BOOKING THE OLD B-LEVEL ROOM ON FRIDAYS" (no reply).
 
 **Deaths (Act III):**

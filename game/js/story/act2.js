@@ -436,7 +436,7 @@ async function morning(api) {
 /* ---------------- act structure ---------------- */
 export const TITLE = ["ACT II", "UNDER REVIEW"];
 export const END = { title: "END OF ACT II", chip: "UNDER REVIEW", bodies: "BODIES 01.", next: "NEXT: WEDNESDAY.  ACT III  MAJOR REVISIONS",
-  epilogue: "Below the basement, a canister arrives at the round table. Inside: an index card, typed.\n\nTHE AUTHORS SHOULD CONSIDER THE GRAD STUDENT AND HER LABMATE. BEFORE FRIDAY.\n\nTo be continued.",
+  epilogue: "Below the basement, a canister arrives at a round table. Inside: an index card, typed.\n\nQUARRY: N. NULL. STATUS: UNDER REVIEW.\n\nTo be continued.",
   thanks: "THANKS FOR PLAYING ACTS I AND II" };
 
 export async function check(api) {

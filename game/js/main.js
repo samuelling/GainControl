@@ -4,8 +4,12 @@ import * as FIG from "./figures.js";
 import { PORTRAIT } from "./portraits.js";
 import * as A1 from "./story/act1.js";
 import * as A2 from "./story/act2.js";
+import * as A3 from "./story/act3.js";
+import { PORTRAITS_A } from "./cast/act3a.js";
+import { PORTRAITS_B } from "./cast/act3b.js";
 import { keypad } from "./minigames/keypad.js";
 import { fogNeuro } from "./minigames/fogneuro.js";
+import { applyOverrides, rewriteSay, jumpFromHash } from "./tools/overrides.js";
 import seminar from "./rooms/seminar.js";
 import hall from "./rooms/hallway.js";
 import lab from "./rooms/lab.js";
@@ -13,11 +17,17 @@ import mri from "./rooms/mri.js";
 import office from "./rooms/office.js";
 import ethics from "./rooms/ethics.js";
 import impact from "./rooms/impact.js";
+import kitchen from "./rooms/kitchen.js";
+import server from "./rooms/server.js";
+import tunnels from "./rooms/tunnels.js";
+import conference from "./rooms/conference.js";
+import iris from "./rooms/iris.js";
 
-const ROOMS = { seminar, hall, lab, mri, office, ethics, impact };
-const ACTS = { 1: A1, 2: A2 };
+const ROOMS = { seminar, hall, lab, mri, office, ethics, impact, kitchen, server, tunnels, conference, iris };
+Object.assign(PORTRAIT, PORTRAITS_A, PORTRAITS_B);
+const ACTS = { 1: A1, 2: A2, 3: A3 };
 const ITEMS = A1.ITEMS;                                   // shared; later acts add to it
-const CONVOS = Object.assign({}, A1.CONVOS, A2.CONVOS);
+const CONVOS = Object.assign({}, A1.CONVOS, A2.CONVOS, A3.CONVOS);
 const AUD = FIG.AUD;
 const $ = (s, r = document) => r.querySelector(s);
 const svg = $("#game"), frame = $("#frame"), hover = $("#hover"), msg = $("#msg");
@@ -36,6 +46,7 @@ const G = {
   get clock() { const h = Math.floor(this.min / 60) % 24, m = this.min % 60; return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0"); },
 };
 const R = () => ROOMS[G.room];
+const invX = (i, n) => 174 + i * (n > 4 ? 100 / (n - 1) : 30);   // the inventory squeezes to fit before the DAY readout
 const ACT = () => ACTS[G.act];
 const HS = () => ACT().HS;
 const KEY = () => (G.char === "morris" ? "morris" : G.mode);          // which version of a hotspot applies
@@ -127,8 +138,9 @@ function hud() {
   s += seg("INVENTORY", 164, 300, 4.2, "sM", .8);
   const inv = G.inv[G.char] || [];
   if (!inv.length && G.char === "morris") s += seg("CHEEKS FULL OF PEPPERONI", 164, 324, 3.8, "sM", .8);
-  inv.forEach((id, i) => { const x = 174 + i * 30, y = 327;
-    s += `<g data-item="${id}" style="cursor:pointer">${G.using === id ? `<rect class="hl sA" x="${x - 13}" y="${y - 15}" width="26" height="30"/>` : ""}${ITEMS[id].g(x, y)}<rect x="${x - 13}" y="${y - 15}" width="26" height="30" fill="transparent"/></g>`; });
+  const sc = inv.length > 4 ? .8 : 1;
+  inv.forEach((id, i) => { const x = invX(i, inv.length), y = 327, w = 26 * sc, h = 30 * sc;
+    s += `<g data-item="${id}" style="cursor:pointer">${G.using === id ? `<rect class="hl sA" x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}"/>` : ""}<g transform="translate(${x},${y}) scale(${sc}) translate(${-x},${-y})">${ITEMS[id].g(x, y)}</g><rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" fill="transparent"/></g>`; });
   const day = DAYNAMES[G.mode === "morning" ? G.act + 1 : G.act];
   s += seg("DAY", 290, 300, 4.2, night ? "sG" : "sB", .8) + seg(day, 290, 308, 20, night ? "sG" : "sB", 1.4);
   s += seg("TIME", 336, 300, 4.2, "sW", .8) + seg(G.clock, 336, 308, 20, "sW", 1.4);
@@ -162,12 +174,23 @@ function typeInto(el, html, speed, onTick) {
 }
 // speaker colors for quoted one-liners ("WHO|text")
 const SPEAKER = [["MORRIS", "K"], ["PRESTON", "R"], ["BRETT", "B"], ["THE OLD WOMAN", "V"], ["GUS", "B"], ["NELL", "G"], ["TESS", "A"], ["PENNY", "B"],
-  ["ETHEL", "V"], ["CODY", "R"], ["DET", "W"], ["PROF. ADLINE", "W"]];
+  ["ETHEL", "V"], ["CODY", "R"], ["DET", "W"], ["SMALL", "W"], ["PROF. ADLINE", "W"],
+  ["REX", PORTRAITS_B.rex.chip.slice(1)], ["DANA", PORTRAITS_B.dana.chip.slice(1)], ["QUORUM", PORTRAITS_A.quorum.chip.slice(1)], ["IRIS", "V"]];
 const colorOf = (who) => (SPEAKER.find(([k]) => who.startsWith(k)) || [0, "A"])[1];
+// a response may hold several paragraphs, each optionally "WHO|…": each speaker gets their own box
 async function say(text) {
   if (!text) return;
+  text = rewriteSay(text);
+  const chunks = [];
+  for (const para of String(text).split("\n\n")) {
+    const m = para.match(/^([A-Z][A-Z0-9 .,'()\-]*)\|([\s\S]*)$/), who = m ? m[1] : "", body = m ? m[2] : para;
+    const last = chunks[chunks.length - 1];
+    if (last && last.who === who && !m) last.body += "\n\n" + body; else chunks.push({ who, body });
+  }
+  for (const c of chunks) await sayOne(c.who, c.body);
+}
+async function sayOne(who, body) {
   G.busy = true; hover.classList.remove("show");
-  let who = "", body = text; if (text.includes("|")) [who, body] = text.split("|");
   const c = who ? colorOf(who) : "W";
   msg.innerHTML = `${who ? `<span class="who" style="background:var(--${c})">${esc(who)}</span><br>` : ""}<span class="t" style="color:var(--${c})"></span><span class="more">CLICK ▸</span>`;
   msg.classList.add("show");
@@ -187,6 +210,7 @@ function mount(side, id) {
   return el;
 }
 async function speak(c, els, [side, raw, fx]) {
+  raw = rewriteSay(raw);
   PF.L.classList.toggle("speaking", side === "L"); PF.R.classList.toggle("speaking", side === "R");
   let text = raw, sub = ""; if (raw.includes("|")) [text, sub] = raw.split("|");
   const who = dlg.querySelector(".who"), txt = dlg.querySelector(".txt");
@@ -231,6 +255,7 @@ async function runConvo(key) {
       if (ch.score) addScore(...ch.score);
       if (ch.correct || !line.retry) break;
       left = left.filter(x => x !== ch);
+      if (!left.length) break;
     }
   }
   blinkTimers.forEach(clearTimeout); blinkTimers = [];
@@ -284,6 +309,7 @@ function chooseFrom(title, opts) {
   });
 }
 function die(text) {
+  text = rewriteSay(text);
   return new Promise(resolve => {
     G.busy = true; hover.classList.remove("show"); closeChooser();
     const d = $("#death");
@@ -363,6 +389,13 @@ const api = {
   status: (t, ms) => { G.status = t; hud(); clearTimeout(G.statusT); G.statusT = setTimeout(() => { G.status = ""; hud(); }, ms); },
   use: (id) => { const u = HS()[G.room][id][KEY()].use; return typeof u === "function" ? u(api) : u; },
   hud: () => hud(),
+  pose: (g, i) => poseSet(g, i),
+  // a full-screen minigame in #panel: fn(el, opts) → Promise; cls adds layout classes (e.g. "glmwrap", "nodmode")
+  mini: async (fn, opts = {}, cls = "") => {
+    const p = $("#panel"); G.busy = true; hover.classList.remove("show"); closeChooser();
+    if (cls) p.classList.add(...cls.split(" ")); p.classList.add("show");
+    try { return await fn(p, opts); } finally { p.className = ""; p.innerHTML = ""; G.busy = false; }
+  },
 };
 // a response: string | "c:convo" | function(api) → any of those, or a promise
 async function respond(r) {
@@ -373,7 +406,7 @@ async function respond(r) {
 }
 async function afterAction() {
   G.min += 1; if (G.room === "seminar" && !G.busy) refresh(); else hud();   // the room clock is part of the drawing
-  const t = await ACT().check(api); if (t) await say(t);
+  const t = await ACT().check(api); if (t) await respond(t);
 }
 
 /* ================================================================ *
@@ -391,7 +424,7 @@ function optionsFor(t) {
   if (h.look) o.push(["look", L.look || "LOOK"]);
   if (h.talk) o.push(["talk", L.talk || "TALK"]);
   if (h.use) o.push(["use", L.use || "USE"]);
-  if (typeof h.go === "string") o.push(["go", L.go || L.use || "GO"]);
+  if (typeof h.go === "string" || typeof h.go === "function") o.push(["go", L.go || L.use || "GO"]);
   else if (h.go) for (const k of Object.keys(h.go)) o.push(["go:" + k, L[k] || ("GO " + k.toUpperCase())]);
   return o.slice(0, 4);
 }
@@ -457,7 +490,7 @@ svg.addEventListener("click", (e) => {
     const id = it.dataset.item;
     if (G.using && G.using !== id) { G.using = null; hud(); say("You hold them together. Nothing. They don't even seem to like each other."); return; }
     if (G.using === id) { G.using = null; hud(); return; }
-    openChooser({ type: "item", id }, 174 + G.inv[G.char].indexOf(id) * 30, 327); return;
+    openChooser({ type: "item", id }, invX(G.inv[G.char].indexOf(id), G.inv[G.char].length), 327); return;
   }
   const p = svgPoint(e); if (p.y > 290) return;
   const id = hsFrom(e.target);
@@ -522,7 +555,7 @@ setInterval(() => {
  *  AMBIENT POSE CLOCKS
  * ================================================================ */
 function poseSet(group, i) { document.querySelectorAll(`#game [data-g="${group}"]`).forEach(el => el.classList.toggle("on", +el.dataset.i === i)); }
-const clocks = { nod: 800, tail: 650, parm: 1700, brett: 900, phone: 1100, saver: 1500, hum: 420, alarm: 380, wave: 520, type: 260, jam: 700 };
+const clocks = { blink: 300, drip: 600, tube: 450, chant: 700, nod: 800, tail: 650, parm: 1700, brett: 900, phone: 1100, saver: 1500, hum: 420, alarm: 380, wave: 520, type: 260, jam: 700 };
 for (const [g, ms] of Object.entries(clocks)) { let i = 0; setInterval(() => poseSet(g, i ^= 1), ms); }
 (function flicker() { poseSet("flicker", Math.random() < .25 ? 1 : 0); setTimeout(flicker, 90 + Math.random() * 600); })();
 (function blank() { const p = $("#preston"); if (p && G.mode === "day" && !G.busy) { p.classList.add("blank"); setTimeout(() => p.classList.remove("blank"), 700); }
@@ -541,17 +574,21 @@ setInterval(() => document.querySelectorAll("#game .needle").forEach(n => { cons
  * ================================================================ */
 window.GC = { G, api, act, itemAct, useItemOn, loadRoom, walkTo, runConvo, switchTo, startAct };   // for testing
 async function start() {
+  await applyOverrides(ACTS, ITEMS);
+  if (await jumpFromHash()) return;
   const h = location.hash;
   if (h === "#night") { G.flags = { recorded: true, officeHours: true, fedMorris: true, morrisMoved: true, noteReady: true, noteRead: true };
     shift({ mode: "night", char: "gus", room: "hall", entry: "start", min: 133 }); return; }
   if (h === "#act2") { await startAct(2, { fresh: true, skipCard: true }); return; }
   if (h === "#act2night") { await startAct(2, { fresh: true }); await A2.debugNight(api); return; }
+  if (h === "#act3") { await startAct(3, { fresh: true, skipCard: true }); return; }
+  if (h === "#act3night") { await startAct(3, { fresh: true, skipCard: true }); await A3.debugNight(api); return; }
   loadRoom("seminar", "start");
   const unlocked = +(localStorage.getItem("gaincontrol.act") || 1);
   const choice = await showCard(`${centered("GAIN CONTROL", 92, 44, "sW", 2.2)}${cchip("A MURDER MYSTERY WITH ERROR BARS", 160, 7, "fR")}
-    ${button("1", "ACT I  SUBMISSION", 150, 214, 160, true)}${button("2", "ACT II  UNDER REVIEW", 330, 214, 160, unlocked >= 2)}
+    ${button("1", "ACT I  SUBMISSION", 60, 214, 160, true)}${button("2", "ACT II  UNDER REVIEW", 240, 214, 160, unlocked >= 2)}${button("3", "ACT III  MAJOR REVISIONS", 420, 214, 160, unlocked >= 3)}
     ${centered(unlocked >= 2 ? "PICK AN ACT" : "START WITH ACT I, OR JUMP AHEAD", 258, 4.6, "sM", .8)}`, { buttons: true });
-  if (choice === "2") { await startAct(2, { fresh: true }); return; }
+  if (choice === "2" || choice === "3") { await startAct(+choice, { fresh: true }); return; }
   await startAct(1, { fresh: true });
 }
 start();

@@ -137,3 +137,35 @@
   /* switching characters: the inactive name chip is a real button */
   #hud .charchip:hover rect.hl { fill: var(--W); stroke: var(--W); }
   #hud .charchip:hover path { stroke: #000; }
+
+  /* ---- Act III minigames (GRIM, overlay, THE NOD) ---- */
+  #panel .coachline { font-size: 1.6cqw; line-height: 1.25; padding: .6cqw 0; border-top: .1cqw solid var(--D); flex: none; min-height: 4.6cqw; }
+  #panel .who, .nodbar .who { display: inline-block; color: #000; font-weight: 600; font-size: 1.1cqw; padding: 0 .4cqw; margin-right: .5cqw; vertical-align: .15cqw; }
+  #panel .grimbody { display: flex; gap: 2cqw; flex: 1 1 0; min-height: 0; padding: .8cqw 0; }
+  #panel .grim table { border-collapse: collapse; font-size: 1.7cqw; flex: none; align-self: flex-start; }
+  #panel .grim th { font-size: 1.05cqw; color: var(--M); font-weight: 500; text-align: left; padding: 0 1.2cqw .3cqw 0; letter-spacing: .08em; }
+  #panel .grim td { padding: .25cqw 1.2cqw .25cqw 0; border-top: .08cqw solid var(--D); cursor: pointer; }
+  #panel .grim .num { text-align: right; font-variant-numeric: tabular-nums; }
+  #panel .grim tr[data-row]:hover td { color: var(--G); } #panel .grim tr.sel td { color: var(--A); }
+  #panel .grim .mark { min-width: 9cqw; font-size: 1.2cqw; } #panel .okc { color: var(--G); } #panel .badc { color: #000; background: var(--R); padding: 0 .3cqw; font-weight: 600; }
+  #panel .calc { flex: 1; display: flex; flex-direction: column; gap: .6cqw; border-left: .1cqw solid var(--D); padding-left: 1.4cqw; }
+  #panel .calc svg { position: relative; width: 100%; height: auto; }
+  #panel .keys { display: flex; flex-wrap: wrap; gap: .6cqw; align-items: center; } #panel .keys .gap { width: 1.2cqw; }
+  #panel button.red { background: var(--R); }
+  #panel svg.ovsvg { position: relative; width: 100%; flex: 1 1 0; min-height: 0; }
+  #panel .ovl .pB path, #panel .ovl .pB circle { stroke: var(--B); } #panel .ovl .pA path, #panel .ovl .pA circle { stroke: var(--A); }
+  #panel .ovl .pG path, #panel .ovl .pG circle { stroke: var(--G); }
+  #panel .ovl .blob { stroke-width: 1.5; } #panel .ovl .dot { stroke-width: 1.2; fill: none; }
+  #panel .ovl .ov { opacity: .85; }
+  #panel.nodmode { background: transparent; pointer-events: none; }
+  .nodbar { position: absolute; left: 0; right: 0; bottom: 0; height: 31%; background: rgba(0,0,0,.9); border-top: .14cqw solid var(--W);
+    display: grid; grid-template-columns: 1fr 26cqw; grid-template-rows: auto 1fr auto; padding: .8cqw 1.4cqw; gap: .4cqw 1.4cqw;
+    text-transform: uppercase; pointer-events: auto; color: var(--W); }
+  .nodbar .motion { font-size: 2.4cqw; line-height: 1.15; grid-column: 1; } .nodbar .mn { color: var(--M); font-size: .7em; }
+  .nodbar .coachline { font-size: 1.6cqw; line-height: 1.25; grid-column: 1; }
+  .nodbar .nlog { grid-column: 2; grid-row: 1 / 4; font-size: 1.15cqw; line-height: 1.35; color: var(--M); border-left: .1cqw solid var(--D); padding-left: 1cqw; overflow: hidden; }
+  .nodbar .nlog .lt { color: var(--G); font-weight: 600; margin-bottom: .2cqw; } .nodbar .nlog .y { color: var(--W); } .nodbar .nlog b { color: #000; background: var(--V); padding: 0 .3cqw; }
+  .nodbar .ctl { grid-column: 1; display: flex; gap: 1.2cqw; align-items: center; }
+  .nodbar button { font: 600 1.8cqw "Saira Condensed", sans-serif; letter-spacing: .06em; background: var(--G); color: #000; border: 0; padding: .2cqw 1.4cqw; cursor: pointer; }
+  .nodbar button:disabled { background: var(--D); cursor: default; } .nodbar button small { font-size: .6em; }
+  .nodbar .tally { font-size: 1.2cqw; color: var(--M); letter-spacing: .06em; }

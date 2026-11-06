@@ -42,6 +42,7 @@ Nell Null is a fifth-year grad student whose dissertation keeps coming up null. 
 - **Feeder labs.** Members come overwhelmingly from a few elite departments and labs, the same handful of names on every Rising Stars wall. Anyone who doesn't "fit in" never gets invited back, and nobody tells them why.
 - **No criticism, ever.** Inside the Table, a member's work is never seriously questioned. Outside it, members are relentless. Kind review for the in-group and Reviewer 2 for everyone else.
 - **The Archive and the long game.** The society keeps extensive records: membership rolls, every review, every grant score. The point is that members go on to sit on grant panels, editorial boards and hiring committees, where they keep favoring each other for the rest of their careers. Cross-reference the membership rolls with fifty years of panel rosters and you can see the whole field being steered. That cross-reference is Nell's final, damning piece of evidence.
+- **The invitation.** Recruits get a warm, jokey letter on cream paper. It says the Table was founded by rebels against the Establishment (it is now the Establishment). It promises collegial irreverence, a Friday dinner, wine and "evening entertainment". Each new member must give a **Revelation**: ten minutes of unpublished work, read to the people who will later review it. There are no minutes and no program, and membership never goes on a CV. Members retire at forty, "the empirically determined age" for quiet agreement. A receipt can be provided calling it an "invited talk" for reimbursement. The after-dinner slides "must now be clean. Mostly." To accept, you reply with your **date of birth**, so they can make sure you aren't "wizened." It reads like fun. That's the point. Morris finds Preston's in Act III; Iris kept hers; Rex sent his DOB and got one word back. *(The NRT and its letter are fictional; the tone is drawn from the kind of age-gated, off-the-record invitations that still circulate.)*
 - **Selection without consent.** You're never told you're a candidate. The Board watches you for years and then sets you a test: a single line to cross. **Preston's initiation test was Nell's paper.** The Board had Impact route the review to Preston, and stealing the data was how he proved himself.
 - **Retirement at 40.** It used to mean leaving the club. In the NRT it means your gain is turned to zero. Retired members stay on as faculty: they sit through meetings blank-eyed, nod at every motion and say nothing new for the rest of their careers. *That explains a lot of faculty meetings.* Impact turned 41, tried to talk instead of retiring quietly, and was "retired" permanently. Quorum dodged it by forging his age.
 - **The Hunt.** Every year the society chooses an outsider as its **quarry**: someone promising and unconnected. Then it closes ranks with Reviewer 2 reports, triaged grants and job searches that go cold. **This year's quarry is Nell Null.** Her paper's rejection was the opening move, not bad luck.
@@ -190,6 +191,8 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 ---
 
 ### Act III — Wednesday: MAJOR REVISIONS (the midpoint)
+*Playable: room-by-room design and build spec in [ACT3.md](ACT3.md). The build keeps the four proofs, Dana, THE NOD, Quorum, Iris and the tunnels; the metamer overlay, the insignia tracing, the missing hours and the library move to Act IV.*
+
 **Question:** Why?
 
 **Day (Nell):** Nell investigates under suspicion, interrupted by Det. Small's interrogations. Gus, running on no sleep, is her methods partner at the desk.
@@ -462,6 +465,11 @@ INK `#e9e6ff` · SIGNAL `#ff3b5c` · COOL `#6b8cff` · ON `#00e39a` · SKIN `#ff
 - **Cody Credit:** backwards cap SIGNAL, PSY 101 tee BRASS, the sign-in clipboard INK. Chip SIGNAL.
 - **Det. Sgt. Small:** short hair INK, trench coat BRASS, tie SIGNAL, notebook INK. Chip INK.
 - **NRT members:** robes ROBE, insignia lit SIGNAL, gavel BRASS with an INK skull.
+- **Prof. Quorum:** white hair INK combed straight back, bushy INK brows, jowls SKIN, dark suit STRUCT, bow tie BRASS, insignia cufflinks lit SIGNAL. Chip BRASS (fifty years of gold medals; nobody else speaks in BRASS in Act III).
+- **Senior faculty (the six who nod):** gray hair STRUCT, skin SKIN, suits STRUCT, each with one mark: glasses INK, beard INK, bald (a SKIN dome with a STRUCT fringe), bun STRUCT, bow tie BRASS, turtleneck COOL. Blank stares; no chip (they never speak alone).
+- **Iris (named):** portrait chip ROBE, as before, under the name PROF. IRIS CANDOR.
+- **Dr. Rex Jected:** receding gray hair and stubble DIM, bags under the eyes SKIN, rumpled shirt INK with a loosened tie DIM, lanyard COOL with a BRASS badge reading 9, an empty INK mug. Chip DIM (the only unused chip color).
+- **Dana Outlier:** ponytail INK with one strand standing straight up, rain jacket BRASS, messenger bag DIM with a COOL bike helmet clipped to it, sneakers COOL (the ones in the EXCLUDED bin). Chip BRASS (shared with Tess, who is not in Act III).
 
 ### Point-and-click specifics
 - **Proportions:** everything in a room is sized against the walking characters (a chair back is about half a standing figure; a seated head matches a standing head).

@@ -23,7 +23,27 @@ function back(G) {
   const d = sideDoor(pp, 0, .56, .7, 108);
   s += `<g data-hs="door">${d.svg}${chip("HALL", d.a[0], d.a[1] - 14, 4.4, "fW")}${hit(...d.box)}</g>`;
   // the floor glows faintly under the desk: a strip light, like under the door outside
+  if (lit(G)) s += dayBack(G);
   return s;
+}
+
+// ---- Act III day: lights on, nobody home. Preston's stimulus log on the desk, a low vent grille on the right wall (Morris's way in).
+const lit = (G) => G.mode === "day" && (G.act || 1) >= 3;
+function dayBack(G) {
+  let s = [[230, 300], [340, 410]].map(([x1, x2]) => `<polygon class="hl sW" points="${poly(P(x1, 0, .56), P(x2, 0, .56), P(x2, 0, .66), P(x1, 0, .66))}"/>`).join("");
+  const v = [P(640, 248, .72), P(640, 248, .8), P(640, 270, .8), P(640, 270, .72)];
+  s += `<g data-hs="vent"><polygon class="k sW mech" points="${poly(...v)}"/>
+        ${[1, 2, 3, 4].map(i => { const t = i / 5; const a = [v[0][0] + (v[1][0] - v[0][0]) * t, v[0][1] + (v[1][1] - v[0][1]) * t], b = [v[3][0] + (v[2][0] - v[3][0]) * t, v[3][1] + (v[2][1] - v[3][1]) * t];
+          return `<path class="hl sW" d="M${a[0].toFixed(1)},${a[1].toFixed(1)} L${b[0].toFixed(1)},${b[1].toFixed(1)}"/>`; }).join("")}
+        ${hit(Math.min(v[0][0], v[1][0]) - 6, v[0][1] - 6, Math.abs(v[1][0] - v[0][0]) + 12, v[2][1] - v[0][1] + 12)}</g>`;
+  return s;
+}
+// the STIMULUS LOG binder, standing on the left end of the desk
+function logBinder(top) {
+  const x = 211, t = top - 9;
+  return `<g data-hs="log"><rect class="k sA mech" x="${x}" y="${t - 30}" width="22" height="30"/><path class="sA mech" d="M${x + 4},${t - 30} L${x + 4},${t}"/>
+    <rect class="k sA" x="${x + 7}" y="${t - 24}" width="13" height="13"/>${seg("STIM", x + 8.6, t - 22, 3, "sA", .5)}${seg("LOG", x + 8.6, t - 16.5, 3, "sA", .5)}
+    <path class="hl sW" d="M${x + 22},${t - 27} L${x + 25},${t - 26} L${x + 25},${t - 2} L${x + 22},${t - 1}"/>${hit(x - 4, t - 34, 30, 36)}</g>`;
 }
 
 // Preston's desk: the PC (FOG NEURO), the Gain Controller panel, a carton of oat synergy
@@ -32,6 +52,7 @@ function desk(G) {
   let s = `<path class="hl sM" d="M${x0 + 6},${top} L${x0 + 4},${y} M${x1 - 6},${top} L${x1 - 4},${y}"/>
     <polygon class="k sW" points="${x0},${top} ${x1},${top} ${x1 - 10},${top - 9} ${x0 + 10},${top - 9}"/>
     <path class="hl sA" d="M${x0 + 8},${y - 1} L${x1 - 8},${y - 1}"/>`;
+  if (lit(G) && !G.flags.gotLog) s += logBinder(top);
   // the main monitor
   const mx = 236, my = top - 62;
   s += `<g data-hs="pc"><path class="sW" d="M${mx + 44},${top - 9} L${mx + 44},${top - 16} M${mx + 32},${top - 9} L${mx + 56},${top - 9}"/>
@@ -69,16 +90,20 @@ function printer(G) {
 export default {
   id: "impact", name: "IMPACT LAB 116", pp,
   floor: { yMin: 240, yMax: 287, margin: 16 },
-  entries: { fromHall: [140, 248, 1] },
+  entries: { fromHall: [140, 248, 1], vent: [536, 264, -1] },
   draw(G) {
     return { back: back(G), sortables: [
       { depth: floorY(.66), svg: desk(G) },
       { depth: floorY(.8), svg: printer(G) },
     ] };
   },
-  stand: { pc: [282, 246], gainpanel: [366, 246], printer: [150, 268], oat: [410, 248], poster: [210, 246], door: [140, 248] },
+  stand: { pc: [282, 246], gainpanel: [366, 246], printer: [150, 268], oat: [410, 248], poster: [210, 246], door: [140, 248],
+    log: [222, 248], vent: [536, 264] },
   labels: {
     night: { pc: { use: "USE" }, gainpanel: { use: "TOUCH" }, printer: { use: "PRINT" }, oat: { use: "DRINK" }, poster: { use: "STRAIGHTEN" },
       door: { use: "GO OUT", go: "GO OUT" } },
+    day: { log: { use: "TAKE" }, pc: { use: "USE" }, gainpanel: { use: "TOUCH" }, printer: { use: "PRINT" }, oat: { use: "DRINK" }, poster: { use: "STRAIGHTEN" },
+      door: { use: "GO OUT", go: "GO OUT" }, vent: { use: "CLIMB IN" } },
+    morris: { log: { use: "DRAG OUT" }, vent: { use: "CLIMB IN", go: "SCURRY OUT" }, oat: { use: "LICK" }, printer: { use: "CRAWL IN" }, door: { go: "SCURRY OUT" } },
   },
 };

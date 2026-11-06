@@ -4,9 +4,10 @@ A point-and-click comedy murder mystery set in a university neuroscience departm
 
 A grad student suspects the department's rising star faked his breakthrough paper. Then people start dying.
 
-- **Play Acts I and II:** https://samuelling.github.io/GainControl/ (source in [game/](game/index.html)). The title screen lets you start at either act. Serve the folder over HTTP (the game uses ES modules), e.g. `cd game && python3 -m http.server`, then open http://localhost:8000.
+- **Play Acts I–III:** https://samuelling.github.io/GainControl/ (source in [game/](game/index.html)). The title screen lets you start at any unlocked act. Serve the folder over HTTP (the game uses ES modules), e.g. `cd game && python3 -m http.server`, then open http://localhost:8000.
+- **The Script Room (behind the scenes):** https://samuelling.github.io/GainControl/game/script.html. Read and edit every line of dialogue, hotspot and item, and see each act's logic as a graph of who sets which flag and what it unlocks. Edits are saved in your browser and the game uses them right away. EXPORT saves them as `overrides.json`; commit that file to `game/` and the edits become canon.
 - **Test scene, THE REPLICATION (a playable GLM):** https://samuelling.github.io/GainControl/game/glm.html. Design: [docs/PUZZLE-GLM.md](docs/PUZZLE-GLM.md).
 - **Test scene, THE FOG (stairwell):** https://samuelling.github.io/GainControl/game/stairwell.html, a 2AFC contrast staircase down a real stairwell. Design: [docs/PUZZLE-FOG.md](docs/PUZZLE-FOG.md).
-- Story bible: [docs/STORY.md](docs/STORY.md) · Act I design: [docs/ACT1.md](docs/ACT1.md)
+- Story bible: [docs/STORY.md](docs/STORY.md) · Act designs: [ACT1](docs/ACT1.md), [ACT2](docs/ACT2.md), [ACT3](docs/ACT3.md)
 - Style reference scene: [prototype/room-101](prototype/room-101/index.html)
 - Style sheet: [prototype/style-sheet](prototype/style-sheet/index.html)

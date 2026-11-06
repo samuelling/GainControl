@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gain Control — Script Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="js/tools/script.css">
+</head>
+<body>
+<header id="top">
+  <div class="brand"><svg id="logo" viewBox="0 0 230 28"></svg></div>
+  <nav id="views">
+    <button data-view="script" class="on">SCRIPT</button><button data-view="logic">LOGIC</button><button data-view="list">LIST</button>
+  </nav>
+  <label id="searchWrap"><input id="search" type="search" placeholder="SEARCH EVERY LINE, FLAG, ITEM…" autocomplete="off" spellcheck="false"></label>
+  <div class="tools">
+    <button id="changed" title="Show only lines you've changed">CHANGED <b id="nEdits">0</b></button>
+    <button id="export" title="Download overrides.json (commit it as game/overrides.json)">EXPORT</button>
+    <button id="import" title="Load an overrides.json">IMPORT</button>
+    <input id="importFile" type="file" accept=".json,application/json" hidden>
+    <button id="palette" title="Day / night palette">NIGHT</button>
+    <button id="caseBtn" title="Show text as typed, or in the game's all caps">Aa</button>
+  </div>
+</header>
+<aside id="side"></aside>
+<main id="main"><div id="loading">LOADING THE STORY BIBLE…</div></main>
+<div id="toast"></div>
+<script type="module" src="js/tools/script.js"></script>
+</body>
+</html>

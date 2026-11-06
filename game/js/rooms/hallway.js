@@ -1,8 +1,11 @@
 // FIRST-FLOOR HALLWAY, FECHNER HALL — the Rising Stars wall, the Friday 2 PM collision, the Impact Lab door.
 import { seg, chip, chipW, perspective, shell, sideDoor, hit } from "../gfx.js";
+import { smallFigure, AUD } from "../figures.js";
+import { prestonStanding, danaStanding } from "../cast/act3b.js";
 
 const pp = perspective(320, 140, 0.6);
-const { P, poly, FY } = pp;
+const { P, poly, FY, kAtY } = pp;
+let ACT = 1;   // the act last drawn: the stairs labels depend on it (Act III has five exits)
 
 function back(G) {
   let s = shell(pp, { rail: false });
@@ -65,22 +68,64 @@ function back(G) {
   // right wall: Adline Lab 114
   const lab = sideDoor(pp, 640, .64, .8, 108);
   s += `<g data-hs="lab">${lab.svg}${chip("114 ADLINE", lab.a[0] - 4, lab.a[1] - 14, 4.4, "fG")}${hit(...lab.box)}</g>`;
+  if (G.act === 3) s += act3Back(G);
   return s;
 }
+
+/* ---- Act III: the COFFEE door, Preston by the Rising Stars wall, Dana by the Impact Lab door, the EXCLUDED bin, Det. Small ---- */
+function act3Back(G) {
+  const kd = sideDoor(pp, 640, .86, .98, 108);
+  return `<g data-hs="kitchen">${kd.svg}${chip("COFFEE", kd.a[0] - 30, kd.a[1] - 14, 4.4, "fA")}
+    <path class="k sA" d="M${kd.a[0] - 4},${kd.a[1] - 13} L${kd.a[0] + 4},${kd.a[1] - 13} L${kd.a[0] + 3.4},${kd.a[1] - 5} L${kd.a[0] - 3.4},${kd.a[1] - 5} Z"/>
+    <path class="hl sA" d="M${kd.a[0] + 4},${kd.a[1] - 11} C${kd.a[0] + 7},${kd.a[1] - 11} ${kd.a[0] + 7},${kd.a[1] - 7} ${kd.a[0] + 3.6},${kd.a[1] - 7} M${kd.a[0] - 1},${kd.a[1] - 15} C${kd.a[0] + 1},${kd.a[1] - 17} ${kd.a[0] - 2},${kd.a[1] - 19} ${kd.a[0]},${kd.a[1] - 21}"/>
+    ${hit(...kd.box)}</g>`;
+}
+// a standing figure on the floor, scaled for its depth like the walkers, with a tight hit area
+const fig = (svg, x, y, w = 30, h = 128) => { const q = kAtY(y) * AUD; return { q, hit: hit((x - w * q / 2 * 1.6).toFixed(1), (y - h * q).toFixed(1), (w * q * 1.6).toFixed(1), (h * q + 2).toFixed(1)) }; };
+function bin(G, x, y) {
+  const q = kAtY(y) * AUD, gone = !!G.flags.danaGone;
+  const sneaker = (tx, ty, r) => `<g transform="translate(${tx},${ty}) rotate(${r})"><path class="k sB" d="M-5,0 L-5,-16 C-5,-21 4,-21 4,-16 L5,0 Z"/><path class="sW" d="M-6,-1 L6,-1"/><path class="hl sW" d="M-3,-11 L2,-11 M-3,-7 L2,-7"/></g>`;
+  return `<g data-hs="bin"><g transform="translate(${x},${y}) scale(${q.toFixed(3)})">
+    ${gone ? `<path class="k sM" d="M-12,-54 L-16,-78 L-6,-79 L-3,-54 Z"/><path class="k sM" d="M3,-54 L9,-80 L18,-77 L11,-54 Z"/>${sneaker(-11, -78, -8)}${sneaker(14, -78, 14)}` : ""}
+    <path class="k sB mech" d="M-21,0 L21,0 L24,-52 L-24,-52 Z"/><rect class="k sB mech" x="-27" y="-58" width="54" height="7"/>
+    <path class="hl sB" d="M-10,-40 L-4,-46 L2,-40 M6,-38 L3,-30 L-5,-30 M-12,-34 L-14,-28 L-8,-26"/>
+    ${chip("EXCLUDED", -22, -18, 6, "fW")}
+    ${gone ? `<g transform="rotate(-12)"><rect class="k sA" x="-34" y="-34" width="68" height="9"/>${seg("POLICE LINE", -26, -32, 5.4, "sA", 1)}</g>
+      <g transform="rotate(10)"><rect class="k sA" x="-34" y="-24" width="68" height="9"/>${seg("DO NOT CROSS", -28, -22, 5.4, "sA", 1)}</g>` : ""}
+    </g>${hit((x - 28 * q).toFixed(1), (y - (gone ? 100 : 60) * q).toFixed(1), (56 * q).toFixed(1), ((gone ? 100 : 60) * q + 2).toFixed(1))}</g>`;
+}
+function act3Sorts(G) {
+  const day = G.mode !== "night", out = [];
+  const BX = 188, BY = 282;
+  out.push({ depth: BY, svg: bin(G, BX, BY) });
+  if (day && !G.flags.prestonGone) { const x = 302, y = 250, f = fig("", x, y, 30, 172);
+    out.push({ depth: y, svg: `<g class="pt" id="preston" data-hs="preston">${prestonStanding(x, y, kAtY(y))}${f.hit}</g>` }); }
+  if (day && !G.flags.danaGone) { const x = 466, y = 252, f = fig("", x, y, 30, 176);
+    out.push({ depth: y, svg: `<g data-hs="dana">${danaStanding(x, y, kAtY(y))}${f.hit}</g>` }); }
+  if (G.flags.danaGone && !G.flags.danaClosed) { const x = 140, y = 276, f = fig("", x, y, 32, 160), q = f.q;
+    out.push({ depth: y, svg: `<g data-hs="small"><g transform="translate(${x},${y}) scale(${q.toFixed(3)}) translate(-160,-187)">${smallFigure()}</g>${f.hit}</g>` }); }
+  return out;
+}
+const STAIRS12 = { use: "OPEN", down: "GO DOWN", up: "GO UP" };
+const STAIRS3 = { use: "OPEN", down: "B1 MRI", server: "B1 SERVERS", up: "2F INTEGRITY", meeting: "3F MEETING", emeritus: "4F EMERITUS" };
+const MSTAIRS12 = { down: "SCURRY DOWN", up: "SCURRY UP" };
 
 export default {
   id: "hall", name: "HALLWAY 1F", pp,
   floor: { yMin: 240, yMax: 288, margin: 18 },
-  entries: { start: [300, 262, 1], from101: [172, 244, 1], fromLab: [536, 256, -1], fromStairs: [112, 258, 1], fromOffice: [72, 280, 1], fromImpact: [426, 246, 1] },
-  draw(G) { return { back: back(G), sortables: [] }; },
+  entries: { start: [300, 262, 1], from101: [172, 244, 1], fromLab: [536, 256, -1], fromStairs: [112, 258, 1], fromOffice: [72, 280, 1], fromImpact: [426, 246, 1], fromKitchen: [568, 280, -1] },
+  draw(G) { ACT = G.act || 1; return { back: back(G), sortables: G.act === 3 ? act3Sorts(G) : [] }; },
   stand: { door101: [172, 242], fountain: [214, 244], stars: [312, 242], board: [300, 246], impact: [426, 242], tube: [490, 244],
-    stairs: [104, 254], exitH: [104, 254], office: [52, 282], lab: [540, 256], vent: [378, 244] },
+    stairs: [104, 254], exitH: [104, 254], office: [52, 282], lab: [540, 256], vent: [378, 244],
+    kitchen: [572, 282], preston: [270, 262], dana: [438, 262], bin: [222, 282], small: [164, 286] },
   labels: {
     day: { door101: { use: "GO IN" }, fountain: { use: "DRINK" }, stars: { use: "STRAIGHTEN" }, board: { use: "MOVE FLYER" }, impact: { use: "KEYPAD" },
-      tube: { use: "OPEN HATCH" }, stairs: { use: "OPEN", down: "GO DOWN", up: "GO UP" }, office: { use: "KNOCK", go: "GO IN" }, lab: { use: "GO IN" }, exitH: { use: "TAP" } },
+      tube: { use: "OPEN HATCH" }, get stairs() { return ACT === 3 ? STAIRS3 : STAIRS12; }, office: { use: "KNOCK", go: "GO IN" }, lab: { use: "GO IN" }, exitH: { use: "TAP" },
+      kitchen: { use: "GO IN", go: "GO IN" }, preston: { use: "SHAKE HAND" }, bin: { use: "LOOK INSIDE" } },
     night: { door101: { use: "GO IN" }, fountain: { use: "DRINK" }, stars: { use: "STRAIGHTEN" }, board: { use: "TIDY" }, impact: { use: "TRY BADGE", go: "GO IN" },
-      tube: { use: "LISTEN" }, stairs: { use: "OPEN", down: "GO DOWN", up: "GO UP" }, office: { use: "OPEN" }, lab: { use: "GO IN" }, exitH: { use: "TAP" } },
-    morris: { vent: { use: "CLIMB IN" }, door101: { go: "SCURRY IN" }, lab: { go: "SCURRY IN" }, office: { go: "SCURRY IN" }, stairs: { down: "SCURRY DOWN", up: "SCURRY UP" },
+      tube: { use: "LISTEN" }, get stairs() { return ACT === 3 ? STAIRS3 : STAIRS12; }, office: { use: "OPEN" }, lab: { use: "GO IN" }, exitH: { use: "TAP" },
+      kitchen: { use: "GO IN", go: "GO IN" }, bin: { use: "LOOK INSIDE" } },
+    morris: { vent: { use: "CLIMB IN" }, door101: { go: "SCURRY IN" }, lab: { go: "SCURRY IN" }, office: { go: "SCURRY IN" }, get stairs() { return ACT === 3 ? STAIRS3 : MSTAIRS12; }, kitchen: { go: "SCURRY IN" }, bin: { use: "CLIMB IN" },
       tube: { use: "SNIFF" }, fountain: { use: "DRINK" }, stars: { use: "GNAW FRAME" } },
   },
 };
