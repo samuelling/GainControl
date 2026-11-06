@@ -38,17 +38,21 @@ const CSS = `
 #panel .screen.pc.p2 { transform: scale(1, .18); }
 #panel .screen.pc.p3 { transform: scale(1, .7); }
 .pc .pcbody { flex: 1 1 0; min-height: 0; display: flex; gap: 1.2cqw; padding: .6cqw 0; }
-.pc .menu { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: .8cqw 1.2cqw; align-content: start; overflow: auto; }
-.pc .grp { font-size: 1.15cqw; color: var(--M); letter-spacing: .12em; border-bottom: .08cqw solid var(--D); padding-bottom: .2cqw; margin-bottom: .2cqw; }
-.pc .col { display: flex; flex-direction: column; gap: .6cqw; }
-.pc .tile { border: .12cqw solid var(--W); padding: .5cqw .7cqw; cursor: pointer; background: #000; }
+.pc .menu { flex: 1; display: grid; grid-template-columns: .9fr 1.7fr 1.25fr 1.25fr; gap: .6cqw 1cqw; align-content: start; overflow: auto; }
+/* ILLUSIONS is the long column: its tiles run in two sub-columns under one heading */
+.pc .menu .col:nth-child(2) { display: grid; grid-template-columns: 1fr 1fr; gap: .45cqw .6cqw; align-content: start; }
+.pc .menu .col:nth-child(2) .grp { grid-column: 1 / -1; }
+.pc .grp { font-size: 1.15cqw; color: var(--M); letter-spacing: .12em; border-bottom: .08cqw solid var(--D); padding-bottom: .15cqw; margin-bottom: .1cqw; }
+.pc .col { display: flex; flex-direction: column; gap: .35cqw; }
+.pc .tile { border: .12cqw solid var(--W); padding: .3cqw .55cqw; cursor: pointer; background: #000; min-width: 0; }
 .pc .tile:hover { border-color: var(--G); } .pc .tile:hover .tt { color: var(--G); }
-.pc .tile .tt { font-size: 1.7cqw; font-weight: 600; line-height: 1.1; } .pc .tile .ts { font-size: 1.1cqw; color: var(--M); line-height: 1.2; margin-top: .2cqw; }
-.pc .tile .tb { font-size: 1.05cqw; color: var(--A); letter-spacing: .08em; }
+.pc .tile .tt { font-size: 1.5cqw; font-weight: 600; line-height: 1.08; } .pc .tile .ts { font-size: .95cqw; color: var(--M); line-height: 1.15; margin-top: .1cqw;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pc .tile .tb { font-size: .9cqw; color: var(--A); letter-spacing: .08em; }
 .pc .crt { flex: 1; position: relative; border: .12cqw solid var(--M); background: #000; min-width: 0; }
 .pc .crt canvas, .pc .crt svg.res { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .pc .crt svg.res { display: none; } .pc .crt.showres svg.res { display: block; } .pc .crt.showres canvas { visibility: hidden; }
-.pc .coachline { font-size: 1.55cqw !important; text-transform: none; min-height: 4.4cqw; }
+#panel .pc .coachline { font-size: 1.55cqw; text-transform: none; min-height: 2.4cqw; }
 .pc .coachline .txt { text-transform: uppercase; }
 .pc .bar { flex-wrap: wrap; row-gap: .4cqw; }
 .pc .bar button.k { background: #000; color: var(--W); border: .1cqw solid var(--W); }
@@ -111,9 +115,13 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
     /* ---------------- the menu ---------------- */
     function menu() {
       run = null; mode(""); status.textContent = done ? `${done} RUN${done > 1 ? "S" : ""} THIS SESSION` : ""; btns.innerHTML = ""; backB.textContent = standalone ? "ABOUT" : "CLOSE";
-      const groups = ["DEMOS", "CLASSICS", "PS 327 LABS"];
+      const groups = ["AMBIGUOUS", "ILLUSIONS", "CLASSICS", "PS 327 LABS"];
       body.innerHTML = `<div class="menu">${groups.map(g => `<div class="col"><div class="grp">${g}</div>${MODULES.filter(m => m.group === g).map(m =>
-        `<div class="tile" data-mod="${m.id}">${m.tag ? `<div class="tb">${m.tag}</div>` : ""}<div class="tt">${m.title}</div><div class="ts">${m.sub}</div></div>`).join("")}</div>`).join("")}</div>`;
+        `<div class="tile" data-mod="${m.id}">${m.tag ? `<div class="tb">${m.tag}</div>` : ""}<div class="tt">${m.title}</div></div>`).join("")}</div>`).join("")}</div>`;
+      // hovering a tile puts its one-liner on the console's line; leaving puts the greeting back
+      const greet = standalone ? "Pick a demo, a classic experiment or a lab. Everything runs here; results can be saved as CSV." : "The booth's computer. Somebody left it logged in as PS327. Pick a demo, a classic experiment or a lab.";
+      body.querySelectorAll(".tile").forEach(t => { const m = MODULES.find(x => x.id === t.dataset.mod);
+        t.addEventListener("pointerenter", () => { if (!run) say(`${m.title}: ${m.sub}`); }); t.addEventListener("pointerleave", () => { if (!run) say(greet); }); });
       say(standalone ? "Pick a demo, a classic experiment or a lab. Everything runs here; results can be saved as CSV." : "The booth's computer. Somebody left it logged in as PS327. Pick a demo, a classic experiment or a lab.");
     }
 

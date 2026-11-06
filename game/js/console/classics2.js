@@ -114,7 +114,7 @@ export const POSNER = { id: "posner", group: "CLASSICS", tag: "POSNER 1980", tit
   } };
 
 /* ---------------- Cooper & Shepard (1973): mental rotation ---------------- */
-export const ROTATION = { id: "rotation", group: "CLASSICS", tag: "SHEPARD & METZLER 1971 · COOPER & SHEPARD 1973", title: "Mental rotation",
+export const ROTATION = { id: "rotation", group: "CLASSICS", tag: "COOPER & SHEPARD 1973", title: "Mental rotation",
   sub: "Is the letter normal or mirror-reversed? The answer takes longer the further it's turned.",
   blurb: "A letter appears, rotated. Is it the normal letter (N) or its mirror image (M)? As fast as you can without mistakes.",
   instructions: { lines: ["A letter appears in the middle of the screen, rotated by some angle.", "Decide whether it is the normal letter or its mirror image. Answer as fast as you can without making mistakes."],
