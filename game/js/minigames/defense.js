@@ -143,6 +143,9 @@ const ADLINE_FALLBACK = { name: "PROF. ADLINE", chip: "fW", vb: "112 12 96 118",
   <g class="mouth-b"><path class="k sK" d="M154,73.5 C158,72.5 163,72.5 167,73.5 C165,78 156,78 154,73.5 Z"/></g>` };
 const PT = () => ({ ADLINE: PORTRAIT.adline || ADLINE_FALLBACK, ETHEL: PORTRAIT.ethel, SMALL: PORTRAIT.small, NELL: PORTRAIT.nell });
 
+// readable on a phone: stroke-alphabet text at size h, shrunk only if it would overflow width w
+const fit = (t, h, w) => Math.min(h, w / Math.max(1, segW(t, 1)));
+
 /* ---------------- style (once) ---------------- */
 const CSS = `
 .dfn svg.dfsvg { position: relative; width: 100%; flex: 1 1 0; min-height: 0; }
@@ -150,10 +153,11 @@ const CSS = `
 .dfn:not(.busy) [data-card]:hover .cb { stroke: var(--G); }
 .dfn:not(.busy) [data-card]:hover .ct path { stroke: var(--G); }
 .dfn .pdim { opacity: .45; }
-.dfn .coachline { font-size: 1.9cqw; line-height: 1.2; cursor: pointer; min-height: 5.4cqw; position: relative; }
-.dfn .coachline .who { font-size: 1.2cqw; }
-.dfn .coachline .nx { position: absolute; right: 0; bottom: .3cqw; font-size: 1.05cqw; color: var(--M); letter-spacing: .1em; }
-.dfn .status { color: var(--M); font-size: 1.3cqw; max-width: 70%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+#panel .screen.dfn { left: 2%; right: 2%; top: 2%; bottom: 2%; }
+.dfn .coachline { font-size: 2.2cqw; line-height: 1.2; cursor: pointer; min-height: 5.6cqw; position: relative; }
+.dfn .coachline .who { font-size: 1.5cqw; }
+.dfn .coachline .nx { position: absolute; right: 0; bottom: .3cqw; font-size: 1.3cqw; color: var(--M); letter-spacing: .1em; }
+.dfn .status { color: var(--M); font-size: 1.7cqw; max-width: 70%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .dfn .status b { color: var(--W); font-weight: 600; }
 `;
 function css() { if (document.getElementById("css-defense")) return; const s = document.createElement("style"); s.id = "css-defense"; s.textContent = CSS; document.head.appendChild(s); }
@@ -188,7 +192,7 @@ export function defense(el, { evidence = ALL, score = () => {} } = {}) {
       const p = PT()[who], talking = S.say && S.say[0] === who, dim = !talking && !(who === Q[S.qi]?.who && !S.end);
       return `<g class="${dim ? "pdim" : ""}"><rect class="k ${talking ? "sW" : "sD"} hl" x="${x}" y="${y}" width="${w}" height="${h}"/>
         <svg class="pt" data-pt="${who}" x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${p.vb}" preserveAspectRatio="xMidYMid slice">${p.svg()}</svg></g>
-        ${chip(p === PORTRAIT.nell ? "NELL NULL" : p.name, x, y + h + 3, 4.6, p.chip)}`;
+        ${chip(p === PORTRAIT.nell ? "NELL NULL" : p.name, x, y + h + 2, fit(p === PORTRAIT.nell ? "NELL NULL" : p.name, 6, w - 6), p.chip)}`;
     }
     function quorumChair(x, y, w, h) {
       const cx = x + w / 2;
@@ -196,50 +200,50 @@ export function defense(el, { evidence = ALL, score = () => {} } = {}) {
         <path class="sM" d="M${cx - 16},${y + 62} L${cx - 16},${y + 22} C${cx - 16},${y + 12} ${cx + 16},${y + 12} ${cx + 16},${y + 22} L${cx + 16},${y + 62}"/>
         <path class="hl sM" d="M${cx - 12},${y + 24} L${cx + 12},${y + 24} M${cx - 12},${y + 30} L${cx + 12},${y + 30}"/>
         <rect class="k sA" x="${cx - 18}" y="${y + 56}" width="36" height="12"/>${segC("QUORUM", cx, y + 59, 5.5, "sA", .9)}</g>
-        ${seg("(ABSENT)", x + 2, y + h + 4.4, 4.6, "sM", .8)}`;
+        ${seg("(ABSENT)", x + 2, y + h + 3.5, 6, "sM", .9)}`;
     }
     function card(id, i) {
       // two rows, as many columns as the hand needs (8 for 16 cards, 9 for 17–18)
       const cols = Math.max(8, Math.ceil(hand.length / 2)), pitch = 640 / cols, cw = pitch - 4;
       const c = CARDS[id], x = 2 + (i % cols) * pitch, y = 140 + Math.floor(i / cols) * 70, cx = x + cw / 2;
-      if (S.used[id]) return `<rect class="hl sD dash" x="${x}" y="${y}" width="${cw}" height="64"/>${segC("EXHIBIT " + S.used[id], cx, y + 29, 5, "sD", .8)}`;
+      if (S.used[id]) return `<rect class="hl sD dash" x="${x}" y="${y}" width="${cw}" height="64"/>${segC("EXHIBIT " + S.used[id], cx, y + 28, 6.5, "sD", .9)}`;
       const tried = S.tried[id], fl = S.flash === id;
       return `<g data-card="${id}"><rect class="k cb ${fl ? "sR" : c.k}" x="${x}" y="${y}" width="${cw}" height="64"/>
-        ${IC[id](cx, y + 20, tried ? "sD" : c.k)}<g class="ct">${segC(c.t, cx, y + 39, 5.2, tried ? "sM" : "sW", 1)}</g>${segC(c.s, cx, y + 50, 3.5, "sM", .7)}
+        ${IC[id](cx, y + 18, tried ? "sD" : c.k)}<g class="ct">${segC(c.t, cx, y + 35, fit(c.t, 7, cw - 6), tried ? "sM" : "sW", 1.15)}</g>${segC(c.s, cx, y + 50, fit(c.s, 5, cw - 5), "sM", .8)}
         ${tried ? `<path class="sR" d="M${x + cw - 10},${y + 4} L${x + cw - 4},${y + 10} M${x + cw - 4},${y + 4} L${x + cw - 10},${y + 10}"/>` : ""}
         ${fl ? star4(x + cw - 6, y + 6, 6, "sR") : ""}</g>`;
     }
     function meter() {
-      let s = seg("CREDIBILITY", 4, 104, 4, "sM", .7) + seg(String(Math.round(S.cred)).padStart(2, "0"), 4, 111, 15, "sW", 1.4);
+      let s = seg("CREDIBILITY", 4, 102, 5.2, "sM", .8) + seg(String(Math.round(S.cred)).padStart(2, "0"), 4, 111, 15, "sW", 1.4);
       if (S.delta) s += seg((S.delta > 0 ? "+" : "") + S.delta, 34, 111, 7, S.delta > 0 ? "sG" : "sR", 1.1);
       for (let k = 0; k < 25; k++) { const x = 60 + k * 13, lit = S.cred >= (k + 1) * 4;
         s += `<rect class="${lit ? "fG" : "hl sD"}" x="${x}" y="${lit ? 112 : 112}" width="10" height="14"/>`; }
       Q.forEach((q, k) => {
         const x = 410 + k * 46, done = k < S.qi, cur = k === S.qi && !S.end;
         const lab = "Q" + (k + 1) + " " + q.key;
-        if (q.last && S.end) s += chip(lab, x, 112, 5, "fR");
-        else if (done) s += chip(lab, x, 112, 5, S.skipped?.[k] ? "fM" : "fG");
-        else if (cur) s += chip(lab, x, 112, 5, "fA");
-        else s += `<rect class="hl sD" x="${x}" y="${112}" width="${chipW(lab)}" height="8.5"/>${seg(lab, x + 2.25, 113.75, 5, "sD", .9)}`;
+        if (q.last && S.end) s += chip(lab, x, 110, QH, "fR");
+        else if (done) s += chip(lab, x, 110, QH, S.skipped?.[k] ? "fM" : "fG");
+        else if (cur) s += chip(lab, x, 110, QH, "fA");
+        else s += `<rect class="hl sD" x="${x}" y="110" width="${chipW(lab)}" height="${QH * 1.7}"/>${seg(lab, x + QH * .45, 110 + QH * .35, QH, "sM", .9)}`;
       });
       return s;
     }
-    const chipW = (t) => segW(t, 5) + 4.5;
+    const QH = 6.4, chipW = (t) => segW(t, QH) + QH * .9;
     function screen() {
       const x = 270, w = 292, q = Q[S.qi];
       let s = `<rect class="hl sW" x="${x}" y="4" width="${w}" height="88"/>`;
       if (S.named) {
-        s += seg("CONCLUSION", x + 8, 10, 4.5, "sM", .8) + segC("PRESTON VALU", x + w / 2, 34, 22, "sR", 1.7);
+        s += seg("CONCLUSION", x + 8, 9, 6.5, "sM", .9) + segC("PRESTON VALU", x + w / 2, 34, 22, "sR", 1.7);
         return s;
       }
       if (!q) return s;
-      s += seg(`QUESTION ${S.qi + 1} OF 5`, x + 8, 10, 4.5, "sM", .8) + seg(`ASKED BY ${NAME[q.who]}`, x + w - 8 - segW(`ASKED BY ${NAME[q.who]}`, 4.5), 10, 4.5, "sM", .8);
-      s += segC(q.q, x + w / 2, 26, 13, S.end ? "sM" : "sW", 1.5);
+      s += seg(`QUESTION ${S.qi + 1} OF 5`, x + 8, 9, 6.5, "sM", .9) + seg(`ASKED BY ${NAME[q.who]}`, x + w - 8 - segW(`ASKED BY ${NAME[q.who]}`, 6.5), 9, 6.5, "sA", .9);
+      { const h = fit(q.q, 19, w - 16); s += segC(q.q, x + w / 2, 22 + (19 - h) / 2, h, S.end ? "sM" : "sW", 1.9); }
       // exhibits answering this question
       const ex = Object.keys(S.used).filter(id => S.used[id] && S.usedQ[id] === S.qi);
-      s += seg("EXHIBITS", x + 8, 52, 4, "sM", .7);
+      s += seg("EXHIBITS", x + 8, 50, 5.2, "sM", .8);
       ex.forEach((id, k) => { const ex0 = x + 12 + k * 46; s += `<rect class="k ${CARDS[id].k}" x="${ex0}" y="${60}" width="40" height="26"/>${IC[id](ex0 + 20, 73, CARDS[id].k)}`; });
-      if (q.last && S.end) s += segC("EXTRAORDINARY CLAIMS", x + w / 2 + 50, 68, 8, "sR", 1.1);
+      if (q.last && S.end) s += segC("EXTRAORDINARY CLAIMS", x + w / 2 + 50, 68, 9, "sR", 1.2);
       return s;
     }
     function draw() {
