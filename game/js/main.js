@@ -330,10 +330,39 @@ async function runConvo(key) {
  *  OVERLAYS: cards, readouts, choices, death
  * ================================================================ */
 const card = $("#card"), readout = $("#readout");
-function showCard(inner, { hold = 0, auto = 2600, buttons = false } = {}) {
+// crt: the card powers on like a CRT, the shut-off in reverse: a white dot, a line, a thin band, the picture.
+// Poses, not tweens; the card's fade is switched off so the dot appears on black at once.
+const CRT_POSES = [
+  [0, 0, `<circle class="fW" cx="320" cy="180" r="1.6"/>`, 70],
+  [0, 0, `<circle class="fW" cx="320" cy="180" r="3"/>`, 60],
+  [0, 0, `<path class="sW" style="stroke-width:1.5" d="M290,180 L350,180"/>`, 50],
+  [0, 0, `<path class="sW" style="stroke-width:1.5" d="M120,180 L520,180"/>`, 50],
+  [0, 0, `<path class="sW" style="stroke-width:2" d="M0,180 L640,180"/>`, 55],
+  [1, .07, `<path class="hl sW" d="M0,${180 - 12.6} L640,${180 - 12.6} M0,${180 + 12.6} L640,${180 + 12.6}"/>`, 55],
+  [1, .35, "", 55],
+  [1, .8, "", 50],
+  [1, 1, "", 0],
+];
+function crtOn() {
+  const g = card.querySelector("#crtg"), fx = card.querySelector("#crtfx"); if (!g || !fx) return;
+  card.style.transition = "none";
+  let i = 0;
+  const step = () => {
+    const [vis, sy, glyph, ms] = CRT_POSES[i];
+    g.setAttribute("visibility", vis ? "visible" : "hidden");
+    g.setAttribute("transform", `translate(0 180) scale(1 ${sy || .001}) translate(0 -180)`);
+    fx.innerHTML = glyph;
+    if (++i < CRT_POSES.length) setTimeout(step, ms); else { g.removeAttribute("transform"); setTimeout(() => { card.style.transition = ""; }, 50); }
+  };
+  step();
+}
+function showCard(inner, { hold = 0, auto = 2600, buttons = false, crt = false } = {}) {
   sfx.play("card");
   return new Promise(resolve => {
-    G.busy = true; card.innerHTML = `<rect width="640" height="360" fill="#000"/>${inner}`; card.classList.add("show");
+    G.busy = true;
+    card.innerHTML = crt ? `<rect width="640" height="360" fill="#000"/><g id="crtg" visibility="hidden">${inner}</g><g id="crtfx"></g>` : `<rect width="640" height="360" fill="#000"/>${inner}`;
+    if (crt) crtOn();
+    card.classList.add("show");
     let done = false; const t0 = Date.now();
     const hide = (e) => {
       if (done || Date.now() - t0 < hold) return;
@@ -441,7 +470,7 @@ const api = {
   take: (id) => { for (const m in G.inv) G.inv[m] = G.inv[m].filter(x => x !== id); if (G.using === id) G.using = null; hud(); },
   score: addScore, refresh, say, die, endAct, shift, switchTo, chooseFrom, blip,
   convo: runConvo,
-  card: (t1, t2, t3, f, ms = 2800) => showCard(dayCard(t1, t2, t3, f), { auto: ms }),
+  card: (t1, t2, t3, f, ms = 2800) => showCard(dayCard(t1, t2, t3, f), { auto: ms + 500, crt: true }),
   bigCard: (inner, opts) => showCard(inner, opts), centered, cchip, button,
   readout: showReadout,
   keypad: (code, lit) => { G.busy = true; return keypad(readout, code, lit).finally(() => { G.busy = false; }); },

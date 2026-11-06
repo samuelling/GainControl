@@ -71,8 +71,7 @@ function screen({ unlocked = 1, title = "GAIN CONTROL", titleCls = "w", menuWord
     const m = new Map(); text(m, label, c, r, menuWord ? "r" : (unlocked >= +id || id === "1" ? "w" : "m"));
     return { id, r, c, m, w: textW(label) };
   });
-  const foot = unlocked >= 2 ? "PICK AN ACT" : "START WITH ACT I, OR JUMP AHEAD";
-  text(map, foot, 6, NR - 9, "m");
+  if (unlocked < 2) text(map, "START WITH ACT I, OR JUMP AHEAD", 6, NR - 9, "m");   // first visit only
   const fullRow = full ? (() => { const m = new Map(); text(m, "FULLSCREEN", NC - 6 - textW("FULLSCREEN"), NR - 9, "m"); return m; })() : null;
   return { map, rows, fullRow };
 }
