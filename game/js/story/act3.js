@@ -278,7 +278,7 @@ async function doGLM(api) {
   if (api.flag("proofGLM")) return "ATTEND = IGNORE. You don't need to run it again. You'll run it again tonight anyway.";
   if (!api.has("log")) return "GUS|We need his timing. The stimulus log. It's in 116.";
   await api.say("Gus rolls his chair over. He has the raw data. You have Preston's log. Time to replicate the Big Finding.");
-  await api.mini(glm, { score: api.score, die: async (t) => { await api.die(t); return "revise"; } }, "glmwrap");
+  await api.mini(glm, { score: api.score, die: dieKeep(api) }, "glmwrap");
   api.flag("proofGLM", true); api.score("proofGLM", 2); api.take("log");
   return "GUS|It's not a small effect. It's no effect.\n\nNELL|So the fancy layers?\n\nGUS|Painted on.";
 }
@@ -298,6 +298,10 @@ async function meeting(api) {
   await api.convo("ethelAfter");
   return null;
 }
+
+// a death inside a minigame: Revise & Resubmit rolls the engine back to before the action, but the minigame keeps running,
+// so keep this act's flags and stay busy until the minigame ends
+const dieKeep = (api) => async (t) => { const keep = { ...api.G.flags }; await api.die(t); Object.assign(api.G.flags, keep); api.G.busy = true; return "revise"; };
 
 /* ---------------- hotspots ---------------- */
 const officeFlavor = (t) => ({ day: { look: t }, morris: { look: t } });
@@ -559,6 +563,7 @@ async function nightfall(api) {
   api.shift({ mode: "night", char: "gus", room: "server", entry: "night", min: 111, cast: ["gus"] });
   await api.say("Gus Ian, 1:51 AM. The puddle under the equipment-room door has grown since last night. It's running the wrong way. Downhill, but toward somewhere that shouldn't be there.");
 }
+export const MAXSCORE = 60;
 export const TITLE = ["ACT III", "MAJOR REVISIONS"];
 export const END = { title: "END OF ACT III", chip: "MAJOR REVISIONS", bodies: "BODIES 02.  PLUS ONE CHAIR.", next: "NEXT: THURSDAY.  ACT IV  REBUTTAL",
   epilogue: "Nell isn't chasing a cheater anymore.\n\nShe's being hunted.\n\nDET. SGT. SMALL (TO NOBODY, IN HIS CAR): Two more bodies. Still underpowered.\n\nTo be continued.",

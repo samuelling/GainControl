@@ -2,6 +2,7 @@
 import { seg, chip, chipW, perspective, shell, sideDoor, hit } from "../gfx.js";
 import { smallFigure, AUD } from "../figures.js";
 import { prestonStanding, danaStanding } from "../cast/act3b.js";
+import { impactStanding, codyStanding } from "../cast/act4.js";
 
 const pp = perspective(320, 140, 0.6);
 const { P, poly, FY, kAtY } = pp;
@@ -68,7 +69,7 @@ function back(G) {
   // right wall: Adline Lab 114
   const lab = sideDoor(pp, 640, .64, .8, 108);
   s += `<g data-hs="lab">${lab.svg}${chip("114 ADLINE", lab.a[0] - 4, lab.a[1] - 14, 4.4, "fG")}${hit(...lab.box)}</g>`;
-  if (G.act === 3) s += act3Back(G);
+  if (G.act === 3 || G.act === 4) s += act3Back(G);   // the COFFEE door stays in Act IV (Rex steps out of it in the chase)
   return s;
 }
 
@@ -106,26 +107,42 @@ function act3Sorts(G) {
     out.push({ depth: y, svg: `<g data-hs="small"><g transform="translate(${x},${y}) scale(${q.toFixed(3)}) translate(-160,-187)">${smallFigure()}</g>${f.hit}</g>` }); }
   return out;
 }
+/* ---- Act IV: Prof. Impact by the Rising Stars wall (neck pillow, carry-on, phone) until both leads are done;
+        Cody (no clipboard) by the tube station once Nell has Impact's card, until he goes. No bin, no Preston. ---- */
+function act4Sorts(G) {
+  const out = [], f = G.flags;
+  if (G.mode === "night") return out;
+  if (!f.impactDead && (!f.impactMet || !f.clueHours || !f.clueMetamer)) { const x = 284, y = 252, q = kAtY(y) * AUD;
+    out.push({ depth: y, svg: `<g data-hs="prof">${impactStanding(x, y, kAtY(y))}${hit((x - 70 * q).toFixed(1), (y - 172 * q).toFixed(1), (114 * q).toFixed(1), (172 * q + 2).toFixed(1))}</g>` }); }
+  if (f.clueCard && !f.codyLeft) { const x = 474, y = 252, fg = fig("", x, y, 32, 176);
+    out.push({ depth: y, svg: `<g data-hs="cody">${codyStanding(x, y, kAtY(y))}${fg.hit}</g>` }); }
+  return out;
+}
 const STAIRS12 = { use: "OPEN", down: "GO DOWN", up: "GO UP" };
 const STAIRS3 = { use: "OPEN", down: "B1 MRI", server: "B1 SERVERS", up: "2F INTEGRITY", meeting: "3F MEETING", emeritus: "4F EMERITUS" };
+const STAIRS4 = { ...STAIRS3, library: "2F LIBRARY", impactoffice: "3F IMPACT", freezer: "B1 -80 ROOM", maze: "B1 ANIMALS", iris: "4F EMERITUS" };
+const stairsL = () => ACT === 3 ? STAIRS3 : ACT === 4 ? STAIRS4 : STAIRS12;
 const MSTAIRS12 = { down: "SCURRY DOWN", up: "SCURRY UP" };
 
 export default {
   id: "hall", name: "HALLWAY 1F", pp,
   floor: { yMin: 240, yMax: 288, margin: 18 },
   entries: { start: [300, 262, 1], from101: [172, 244, 1], fromLab: [536, 256, -1], fromStairs: [112, 258, 1], fromOffice: [72, 280, 1], fromImpact: [426, 246, 1], fromKitchen: [568, 280, -1] },
-  draw(G) { ACT = G.act || 1; return { back: back(G), sortables: G.act === 3 ? act3Sorts(G) : [] }; },
+  draw(G) { ACT = G.act || 1; return { back: back(G), sortables: G.act === 3 ? act3Sorts(G) : G.act === 4 ? act4Sorts(G) : [] }; },
   stand: { door101: [172, 242], fountain: [214, 244], stars: [312, 242], board: [300, 246], impact: [426, 242], tube: [490, 244],
     stairs: [104, 254], exitH: [104, 254], office: [52, 282], lab: [540, 256], vent: [378, 244],
-    kitchen: [572, 282], preston: [270, 262], dana: [438, 262], bin: [222, 282], small: [164, 286] },
+    kitchen: [572, 282], preston: [270, 262], dana: [438, 262], bin: [222, 282], small: [164, 286],
+    prof: [318, 262], cody: [444, 264] },
   labels: {
     day: { door101: { use: "GO IN" }, fountain: { use: "DRINK" }, stars: { use: "STRAIGHTEN" }, board: { use: "MOVE FLYER" }, impact: { use: "KEYPAD" },
-      tube: { use: "OPEN HATCH" }, get stairs() { return ACT === 3 ? STAIRS3 : STAIRS12; }, office: { use: "KNOCK", go: "GO IN" }, lab: { use: "GO IN" }, exitH: { use: "TAP" },
-      kitchen: { use: "GO IN", go: "GO IN" }, preston: { use: "SHAKE HAND" }, bin: { use: "LOOK INSIDE" } },
+      tube: { use: "OPEN HATCH" }, get stairs() { return stairsL(); }, office: { use: "KNOCK", go: "GO IN" }, lab: { use: "GO IN" }, exitH: { use: "TAP" },
+      kitchen: { use: "GO IN", go: "GO IN" }, preston: { use: "SHAKE HAND" }, bin: { use: "LOOK INSIDE" },
+      prof: { talk: "TALK", use: "SHAKE HAND" }, cody: { talk: "TALK" } },
     night: { door101: { use: "GO IN" }, fountain: { use: "DRINK" }, stars: { use: "STRAIGHTEN" }, board: { use: "TIDY" }, impact: { use: "TRY BADGE", go: "GO IN" },
-      tube: { use: "LISTEN" }, get stairs() { return ACT === 3 ? STAIRS3 : STAIRS12; }, office: { use: "OPEN" }, lab: { use: "GO IN" }, exitH: { use: "TAP" },
+      tube: { use: "LISTEN" }, get stairs() { return stairsL(); }, office: { use: "OPEN" }, lab: { use: "GO IN" }, exitH: { use: "TAP" },
       kitchen: { use: "GO IN", go: "GO IN" }, bin: { use: "LOOK INSIDE" } },
-    morris: { vent: { use: "CLIMB IN" }, door101: { go: "SCURRY IN" }, lab: { go: "SCURRY IN" }, office: { go: "SCURRY IN" }, get stairs() { return ACT === 3 ? STAIRS3 : MSTAIRS12; }, kitchen: { go: "SCURRY IN" }, bin: { use: "CLIMB IN" },
+    morris: { vent: { use: "CLIMB IN" }, door101: { go: "SCURRY IN" }, lab: { go: "SCURRY IN" }, office: { go: "SCURRY IN" }, get stairs() { return ACT === 3 || ACT === 4 ? STAIRS3 : MSTAIRS12; }, kitchen: { go: "SCURRY IN" }, bin: { use: "CLIMB IN" },
+      prof: { use: "SNIFF THE BAG" }, cody: { use: "SNIFF" },
       tube: { use: "SNIFF" }, fountain: { use: "DRINK" }, stars: { use: "GNAW FRAME" } },
   },
 };

@@ -3,6 +3,10 @@
 import { seg, segC, chip, perspective, shell, sideDoor, hit, arcs } from "../gfx.js";
 import { AUD } from "../figures.js";
 import { irisSeated } from "../cast/act3a.js";
+import { visitorChair, irisStapleGun } from "../cast/act4b.js";
+
+// Act IV, Friday morning: a second chair set opposite the desk (for the rehearsal), and the staple gun in Iris's hand
+const friday = (G) => G.act === 4 && G.mode === "morning";
 
 // cramped: a near back wall
 const pp = perspective(320, 130, 0.56);
@@ -82,7 +86,8 @@ function desk(G) {
     <path class="hl sB" d="M${x0 + 16},${top - 7} L${x0 + 40},${top - 7} M${x0 + 16},${top - 9.5} L${x0 + 40},${top - 9.5}"/>
     <path class="sA" d="M${x0 + 21},${top - 12} L${x0 + 21},${top - 16} M${x0 + 27},${top - 12} L${x0 + 28},${top - 15} M${x0 + 35},${top - 12} L${x0 + 34},${top - 17}"/>
     ${hit(x0 + 10, top - 20, 36, 18)}</g>`;
-  // the staple gun, loaded
+  // the staple gun, loaded: on the desk, or (Friday morning) in Iris's hand
+  if (friday(G)) return s + `<g data-hs="stapler">${irisStapleGun(cx + 4, floorY(.68) - 8, .68)}${hit(cx - 2, top - 26, 32, 20)}</g>`;
   const sx = x1 - 40;
   s += `<g data-hs="stapler"><path class="k sR" d="M${sx},${top - 4} L${sx + 16},${top - 4} L${sx + 16},${top - 7} L${sx + 13},${top - 7} L${sx + 12},${top - 10} L${sx + 2},${top - 10} L${sx},${top - 7} Z"/>
     <path class="sR" d="M${sx + 3},${top - 10} L${sx + 9},${top - 14} L${sx + 12},${top - 10}"/><circle class="fR" cx="${sx + 14.5}" cy="${top - 5.5}" r=".8"/>
@@ -90,18 +95,25 @@ function desk(G) {
   return s;
 }
 
+// the visitor's chair, opposite Iris, its back to us
+const CX = 372, CY = 270;
+function chair() {
+  const k = kAtY(CY), q = k * AUD;
+  return `<g data-hs="chair">${visitorChair(CX, CY, k)}${hit(CX - 40 * q, CY - 92 * q, 80 * q, 92 * q + 2)}</g>`;
+}
+
 export default {
   id: "iris", name: "EMERITUS OFFICE 4F", pp,
   floor: { yMin: 252, yMax: 287, margin: 16 },
   entries: { fromStairs: [548, 274, -1] },
   draw(G) {
-    return { back: back(G), sortables: [{ depth: floorY(.74), svg: desk(G) }] };
+    return { back: back(G), sortables: [{ depth: floorY(.74), svg: desk(G) }, { depth: CY, svg: friday(G) ? chair(G) : "" }] };
   },
   stand: { iris: [326, 262], stacks: [150, 270], manual: [266, 262], photo: [318, 262], letter: [372, 262], stapler: [384, 262],
-    kettle: [470, 258], door: [552, 272] },
+    kettle: [470, 258], door: [552, 272], chair: [340, 278] },
   labels: {
     day: { iris: { use: "SHAKE HAND" }, stacks: { use: "PULL A VOLUME" }, manual: { use: "LEAF THROUGH" }, stapler: { use: "PICK UP" },
-      kettle: { use: "POUR" }, letter: { use: "READ" }, photo: { use: "LOOK CLOSER" }, door: { use: "GO OUT", go: "GO DOWN" } },
+      kettle: { use: "POUR" }, letter: { use: "READ" }, photo: { use: "LOOK CLOSER" }, door: { use: "GO OUT", go: "GO DOWN" }, chair: { use: "SIT DOWN" } },
     morris: { stacks: { use: "CLIMB" }, kettle: { use: "SNIFF" }, door: { go: "SCURRY DOWN" } },
     night: { door: { use: "GO OUT", go: "GO DOWN" } },
   },

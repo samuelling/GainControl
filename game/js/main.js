@@ -5,6 +5,11 @@ import { PORTRAIT } from "./portraits.js";
 import * as A1 from "./story/act1.js";
 import * as A2 from "./story/act2.js";
 import * as A3 from "./story/act3.js";
+import * as A4 from "./story/act4.js";
+import * as A5 from "./story/act5.js";
+import { PORTRAITS_4 } from "./cast/act4.js";
+import { PORTRAITS_5A } from "./cast/act5a.js";
+import { irisFigure } from "./cast/act5b.js";
 import { coda } from "./story/coda.js";
 import { PORTRAITS_A } from "./cast/act3a.js";
 import { PORTRAITS_B } from "./cast/act3b.js";
@@ -23,12 +28,22 @@ import server from "./rooms/server.js";
 import tunnels from "./rooms/tunnels.js";
 import conference from "./rooms/conference.js";
 import iris from "./rooms/iris.js";
+import library from "./rooms/library.js";
+import impactoffice from "./rooms/impactoffice.js";
+import freezer from "./rooms/freezer.js";
+import maze from "./rooms/maze.js";
+import defense from "./rooms/defense.js";
+import antechamber from "./rooms/antechamber.js";
+import chamber from "./rooms/chamber.js";
+import plant from "./rooms/plant.js";
+import tubehub from "./rooms/tubehub.js";
 
-const ROOMS = { seminar, hall, lab, mri, office, ethics, impact, kitchen, server, tunnels, conference, iris };
-Object.assign(PORTRAIT, PORTRAITS_A, PORTRAITS_B);
-const ACTS = { 1: A1, 2: A2, 3: A3 };
+const ROOMS = { seminar, hall, lab, mri, office, ethics, impact, kitchen, server, tunnels, conference, iris,
+  library, impactoffice, freezer, maze, defense, antechamber, chamber, plant, tubehub };
+Object.assign(PORTRAIT, PORTRAITS_A, PORTRAITS_B, PORTRAITS_4, PORTRAITS_5A);
+const ACTS = { 1: A1, 2: A2, 3: A3, 4: A4, 5: A5 };
 const ITEMS = A1.ITEMS;                                   // shared; later acts add to it
-const CONVOS = Object.assign({}, A1.CONVOS, A2.CONVOS, A3.CONVOS);
+const CONVOS = Object.assign({}, A1.CONVOS, A2.CONVOS, A3.CONVOS, A4.CONVOS, A5.CONVOS);
 const AUD = FIG.AUD;
 const $ = (s, r = document) => r.querySelector(s);
 const svg = $("#game"), frame = $("#frame"), hover = $("#hover"), msg = $("#msg");
@@ -51,9 +66,9 @@ const invX = (i, n) => 174 + i * (n > 4 ? 100 / (n - 1) : 30);   // the inventor
 const ACT = () => ACTS[G.act];
 const HS = () => ACT().HS;
 const KEY = () => (G.char === "morris" ? "morris" : G.mode);          // which version of a hotspot applies
-const DAYNAMES = { 1: "MON", 2: "TUE", 3: "WED" };
-const FIGURE = { nell: () => FIG.nellFigure(), gus: () => FIG.gusFigure(), morris: () => (FIG.morrisFigure ? FIG.morrisFigure() : FIG.nellFigure()) };
-const CHIP = { nell: ["NELL", "fG"], gus: ["GUS", "fB"], morris: ["MORRIS", "fK"] };
+const DAYNAMES = { 1: "MON", 2: "TUE", 3: "WED", 4: "THU", 5: "FRI", 6: "SAT" };
+const FIGURE = { nell: () => FIG.nellFigure(), gus: () => FIG.gusFigure(), morris: () => (FIG.morrisFigure ? FIG.morrisFigure() : FIG.nellFigure()), iris: () => irisFigure() };
+const CHIP = { nell: ["NELL", "fG"], gus: ["GUS", "fB"], morris: ["MORRIS", "fK"], iris: ["IRIS", "fV"] };
 
 let checkpoint = null;
 const SAVE_KEYS = ["act", "mode", "char", "room", "flags", "inv", "chars", "cast", "score", "min", "bodies"];
@@ -145,7 +160,7 @@ function hud() {
   const day = DAYNAMES[G.mode === "morning" ? G.act + 1 : G.act];
   s += seg("DAY", 290, 300, 4.2, night ? "sG" : "sB", .8) + seg(day, 290, 308, 20, night ? "sG" : "sB", 1.4);
   s += seg("TIME", 336, 300, 4.2, "sW", .8) + seg(G.clock, 336, 308, 20, "sW", 1.4);
-  s += seg("H-INDEX", 410, 300, 4.2, "sA", .8) + seg(String(G.score).padStart(2, "0"), 410, 308, 20, "sA", 1.4) + seg("/50", 432, 322, 7, "sM", 1);
+  s += seg("H-INDEX", 410, 300, 4.2, "sA", .8) + seg(String(G.score).padStart(2, "0"), 410, 308, 20, "sA", 1.4) + seg("/" + (ACT().MAXSCORE || 50), 432, 322, 7, "sM", 1);
   s += seg("BODIES", 462, 300, 4.2, "sR", .8) + seg(String(G.bodies).padStart(2, "0"), 462, 308, 20, "sR", 1.4);
   s += chip(G.status || R().name, 522, 300, 5.5, G.status === "RECORDING" ? "fR" : night ? "fG" : "fB");
   s += seg(ACT().TITLE[0], 522, 324, 4.2, "sM", .8) + seg(ACT().TITLE[1], 522, 333, 7, "sW", 1.1);
@@ -177,7 +192,7 @@ function typeInto(el, html, speed, onTick) {
 const SPEAKER = [["MORRIS", "K"], ["PRESTON", "R"], ["BRETT", "B"], ["THE OLD WOMAN", "V"], ["GUS", "B"], ["NELL", "G"], ["TESS", "A"], ["PENNY", "B"],
   ["ETHEL", "V"], ["CODY", "R"], ["DET", "W"], ["SMALL", "W"], ["PROF. ADLINE", "W"],
   ["THE CORRESPONDING AUTHOR", "R"], ["A HOOD", "V"], ["ANOTHER HOOD", "V"], ["A THIRD HOOD", "V"], ["A YOUNGER HOOD", "A"], ["THE REAL RECORD", "A"],
-  ["REX", PORTRAITS_B.rex.chip.slice(1)], ["DANA", PORTRAITS_B.dana.chip.slice(1)], ["QUORUM", PORTRAITS_A.quorum.chip.slice(1)], ["IRIS", "V"]];
+  ["IMPACT", PORTRAITS_4.impact.chip.slice(1)], ["REX", PORTRAITS_B.rex.chip.slice(1)], ["DANA", PORTRAITS_B.dana.chip.slice(1)], ["QUORUM", PORTRAITS_A.quorum.chip.slice(1)], ["IRIS", "V"]];
 const colorOf = (who) => (SPEAKER.find(([k]) => who.startsWith(k)) || [0, "A"])[1];
 // a response may hold several paragraphs, each optionally "WHO|…": each speaker gets their own box
 async function say(text) {
@@ -586,12 +601,18 @@ async function start() {
   if (h === "#act2night") { await startAct(2, { fresh: true }); await A2.debugNight(api); return; }
   if (h === "#act3") { await startAct(3, { fresh: true, skipCard: true }); return; }
   if (h === "#act3night") { await startAct(3, { fresh: true, skipCard: true }); await A3.debugNight(api); return; }
+  if (h === "#act4") { await startAct(4, { fresh: true, skipCard: true }); return; }
+  if (h === "#act4night") { await startAct(4, { fresh: true, skipCard: true }); await A4.debugNight(api); return; }
+  if (h === "#act4morning") { await startAct(4, { fresh: true, skipCard: true }); await A4.debugMorning(api); return; }
+  if (h === "#act5") { await startAct(5, { fresh: true, skipCard: true }); return; }
+  if (h === "#act5night") { await startAct(5, { fresh: true, skipCard: true }); await A5.debugNight(api); return; }
   loadRoom("seminar", "start");
   const unlocked = +(localStorage.getItem("gaincontrol.act") || 1);
   const choice = await showCard(`${centered("GAIN CONTROL", 92, 44, "sW", 2.2)}${cchip("A MURDER MYSTERY WITH ERROR BARS", 160, 7, "fR")}
-    ${button("1", "ACT I  SUBMISSION", 60, 214, 160, true)}${button("2", "ACT II  UNDER REVIEW", 240, 214, 160, unlocked >= 2)}${button("3", "ACT III  MAJOR REVISIONS", 420, 214, 160, unlocked >= 3)}
-    ${centered(unlocked >= 2 ? "PICK AN ACT" : "START WITH ACT I, OR JUMP AHEAD", 258, 4.6, "sM", .8)}`, { buttons: true });
-  if (choice === "2" || choice === "3") { await startAct(+choice, { fresh: true }); return; }
+    ${button("1", "ACT I  SUBMISSION", 60, 200, 160, true)}${button("2", "ACT II  UNDER REVIEW", 240, 200, 160, unlocked >= 2)}${button("3", "ACT III  MAJOR REVISIONS", 420, 200, 160, unlocked >= 3)}
+    ${button("4", "ACT IV  REBUTTAL", 150, 232, 160, unlocked >= 4)}${button("5", "ACT V  DECISION", 330, 232, 160, unlocked >= 5)}
+    ${centered(unlocked >= 2 ? "PICK AN ACT" : "START WITH ACT I, OR JUMP AHEAD", 272, 4.6, "sM", .8)}`, { buttons: true });
+  if (["2", "3", "4", "5"].includes(choice)) { await startAct(+choice, { fresh: true }); return; }
   await startAct(1, { fresh: true });
 }
 start();

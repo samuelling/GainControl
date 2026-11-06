@@ -2,10 +2,12 @@
 import { seg, chip, perspective, shell, sideDoor, hit, arcs } from "../gfx.js";
 import { brettFigure, morrisPeek, smallFigure, AUD } from "../figures.js";
 import { gusSeated } from "../cast/act3a.js";
+import { nellChair } from "../cast/act4b.js";
 
 const pp = perspective(320, 130, 0.45);
 const { P, poly, kAtY, FY } = pp;
-const act3day = (G) => G.act === 3 && G.mode === "day";
+const act3day = (G) => (G.act === 3 || G.act === 4) && G.mode === "day";   // Gus at his desk, Acts III and IV
+const meeting = (G) => G.act === 3 && G.flags.meeting;                       // Act III: he leaves for the faculty meeting
 let cur = null;   // the last state drawn (labels that differ by act read it)
 
 function back(G) {
@@ -92,20 +94,27 @@ function gusDesk3(G, x, y, t) {
     ${G.flags.gotDrink ? "" : `<path class="k sG" d="M${x + 22},${t + 2} L${x + 22},${t - 13} L${x + 29},${t - 13} L${x + 29},${t + 2} Z"/><path class="hl sG" d="M${x + 22},${t - 10} L${x + 29},${t - 10} M${x + 23.5},${t - 6} L${x + 27.5},${t - 4}"/>`}
     <rect class="k sA" x="${x - 40}" y="${t - 7}" width="8" height="6" transform="rotate(-8 ${x - 36} ${t - 4})"/>
     ${hit(x - 46, t - 2, 98, y - t + 2)}</g>
-    <g data-hs="${G.flags.meeting ? "gusdesk" : "gus"}"><polygon class="k sV" points="${lx - 14},${t + 2} ${lx + 14},${t + 2} ${lx + 13},${t - 15} ${lx - 13},${t - 15}"/>
+    <g data-hs="${meeting(G) ? "gusdesk" : "gus"}"><polygon class="k sV" points="${lx - 14},${t + 2} ${lx + 14},${t + 2} ${lx + 13},${t - 15} ${lx - 13},${t - 15}"/>
     <circle class="hl sV" cx="${lx}" cy="${t - 7}" r="3"/><path class="hl sV" d="M${lx - 2},${t - 7} C${lx - 1},${t - 10} ${lx + 1},${t - 10} ${lx + 2},${t - 7}"/>
     <path class="sV" d="M${lx - 16},${t + 2} L${lx + 16},${t + 2}"/>${hit(lx - 16, t - 17, 32, 19)}</g>`;
 }
 // Act III day: Gus at his desk (until he leaves for the faculty meeting), and Det. Sgt. Small waiting by the door
 function gus3(G) {
-  if (!act3day(G) || G.flags.meeting) return "";
+  if (!act3day(G) || meeting(G)) return "";
   const k = .72, y = P(0, FY, k)[1], x = P(470, FY, .78)[0] - 22;
   return `<g data-hs="gus">${gusSeated(x, y, k)}${hit(x - 20, y - 132 * k * AUD, 40, 132 * k * AUD - 40)}</g>`;
 }
 function small3(G) {
-  if (!act3day(G) || G.flags.smallLab) return "";
+  if (G.act !== 3 || G.mode !== "day" || G.flags.smallLab) return "";
   const y = 256, x = 100, s = kAtY(y) * AUD;
   return `<g data-hs="small"><g transform="translate(${x},${y}) scale(${s},${s}) translate(-160,-187)">${smallFigure()}</g>${hit(x - 22, y - 128 * s, 44, 128 * s + 4)}</g>`;
+}
+// Act IV: Nell's desk chair, pulled out to the right of her desk. Friday morning: Gus has left the Table's robe draped over it
+const CH = [306, 268];
+function chair4(G) {
+  if (G.act !== 4) return "";
+  const [x, y] = CH, k = kAtY(y), q = k * AUD, robe = G.mode === "morning" && !G.flags.gotRobe;
+  return robe ? `<g data-hs="robe">${nellChair(x, y, k, true)}${hit(x - 52 * q, y - 100 * q, 104 * q, 100 * q + 2)}</g>` : nellChair(x, y, k);
 }
 function brett(G) {
   if ((G.act && G.act !== 1) || G.mode !== "day" || G.flags.officeHours) return "";
@@ -121,6 +130,7 @@ export default {
     cur = G;
     return { back: back(G), sortables: [
       { depth: 250, svg: brett(G) },
+      { depth: CH[1], svg: chair4(G) },
       { depth: 256, svg: small3(G) },
       { depth: P(0, FY, .72)[1], svg: gus3(G) },
       { depth: P(0, FY, .78)[1], svg: otherDesk(G) },
@@ -128,11 +138,11 @@ export default {
     ] };
   },
   stand: { monitor: [246, 284], drawer: [246, 284], whiteboard: [262, 212], adline: [380, 212], door: [106, 274], booth: [520, 252], brett: [262, 262], vent: [314, 210], gusdesk: [414, 268],
-    gus: [372, 268], small: [150, 268] },
+    gus: [372, 268], small: [150, 268], robe: [280, 284] },
   labels: {
     day: { get monitor() { return cur && cur.act === 3 ? { use: "WORK" } : { use: "RERUN" }; },
       gus: { talk: "TALK", use: "TABLE 1" }, small: { talk: "TALK" }, drawer: { use: "OPEN" }, whiteboard: { use: "ERASE" }, adline: { use: "KNOCK" }, door: { use: "GO OUT" }, booth: { use: "SIT IN" }, brett: { use: "HIGH FIVE" },
-      gusdesk: { use: "SNOOP" } },
+      gusdesk: { use: "SNOOP" }, robe: { use: "TAKE" } },
     morris: { vent: { use: "CLIMB IN" }, drawer: { use: "HIDE IN" }, door: { go: "SCURRY OUT" }, gusdesk: { use: "RAID" }, monitor: { use: "WALK ON KEYS" } },
     night: { monitor: { use: "TAP KEY" }, drawer: { use: "OPEN" }, whiteboard: { use: "ERASE" }, adline: { use: "KNOCK" }, door: { use: "GO OUT" }, booth: { use: "SIT IN" } },
   },

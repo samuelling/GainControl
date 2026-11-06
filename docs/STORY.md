@@ -223,6 +223,8 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 ---
 
 ### Act IV — Thursday: REBUTTAL
+*Playable: build spec in [ACT4.md](ACT4.md).*
+
 **Question:** Who's pulling Preston's strings?
 
 **Day (Nell):** Nell fights back.
@@ -247,6 +249,8 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 ---
 
 ### Act V — Friday: DECISION
+*Playable: build spec in [ACT5.md](ACT5.md).*
+
 Day and night merge. The finale comes in two halves: Laura Bow's courtroom, then Gabriel Knight's lair.
 
 **Part 1, afternoon: the Defense.** Nell's thesis defense is scheduled at the same time as Preston's job talk, across the hall. Nell turns her defense into the accusation. The committee is Adline, Ethel Bord, Det. Small and an empty chair for Quorum.
@@ -471,6 +475,8 @@ INK `#e9e6ff` · SIGNAL `#ff3b5c` · COOL `#6b8cff` · ON `#00e39a` · SKIN `#ff
 - **Iris (named):** portrait chip ROBE, as before, under the name PROF. IRIS CANDOR.
 - **Dr. Rex Jected:** receding gray hair and stubble DIM, bags under the eyes SKIN, rumpled shirt INK with a loosened tie DIM, lanyard COOL with a BRASS badge reading 9, an empty INK mug. Chip DIM (the only unused chip color).
 - **Dana Outlier:** ponytail INK with one strand standing straight up, rain jacket BRASS, messenger bag DIM with a COOL bike helmet clipped to it, sneakers COOL (the ones in the EXCLUDED bin). Chip BRASS (shared with Tess, who is not in Act III).
+- **Prof. Maximilian Impact:** silver hair INK swept back, skin SKIN with crow's feet (the tan, from smiling at podiums), the keynote grin INK, suit STRUCT, airline neck pillow ROBE, a lanyard COOL of keynote badges (front one BRASS, reading KEY), a STRUCT rolling carry-on with a BRASS tag, phone INK. Rattled in Act IV: a COOL bead of sweat at the temple. Frozen variant: pinpoint stare, open mouth, COOL icicles and INK frost sparkles. Chip BRASS (gold badges; Tess and Dana, who share it, are gone by Act IV).
+- **Prof. Dee Adline:** hair INK in a messy bun skewered by three pens (SIGNAL, COOL, ON), reading glasses COOL pushed up on her head, worried brows, wide eyes with SKIN bags under them, a cardigan COOL, and a BRASS sticky note on her shoulder reading 15. Chip COOL (Gus, who shares it, is gone by Act V).
 
 ### Point-and-click specifics
 - **Proportions:** everything in a room is sized against the walking characters (a chair back is about half a standing figure; a seated head matches a standing head).

@@ -2,10 +2,14 @@
 // Morning (Act II): police tape across the window, Nell's thermos stuck to the face of the magnet, Det. Small and Gus.
 import { seg, segC, chip, chipW, perspective, shell, sideDoor, hit, arcs } from "../gfx.js";
 import { tessAtConsole, tessFar, codySeated, smallFigure, gusFigure, standOnly, AUD } from "../figures.js";
+import { gusInBore, smallHatInHand } from "../cast/act4b.js";
 
 const pp = perspective(320, 130, 0.45);
 const { P, poly, kAtY, FY } = pp;
 const floorY = (k) => P(0, FY, k)[1];
+// Friday morning (Act IV): no thermos, no tape. Gus is in the bore, and Det. Small has his hat in his hand
+const friday = (G) => G.act === 4 && G.mode === "morning";
+let cur = null;   // the last state drawn (stand points that differ by act read it)
 
 function back(G) {
   const morning = G.mode === "morning", alarm = !!G.flags.heliumAlarm && !morning;
@@ -27,7 +31,8 @@ function back(G) {
   // Tess through the window, fussing at the magnet (helium alarm)
   if (alarm) s += `<g data-hs="tessfar">${tessFar(262, 168, .4)}${hit(244, 112, 36, 58)}</g>`;
   // morning: the thermos on the face of the magnet, police tape over the glass
-  if (morning) s += `<g pointer-events="none"><g transform="rotate(-58 300 128)">
+  if (friday(G)) s += `<g data-hs="gus">${gusInBore(326, 128)}<path class="hl sM" d="M246,96 L262,90 M246,104 L274,92 M398,170 L412,164"/>${hit(304, 108, 44, 60)}</g>`;
+  else if (morning) s += `<g pointer-events="none"><g transform="rotate(-58 300 128)">
         <path class="k sA" d="M294,118 L306,118 L307,138 C307,141 293,141 293,138 Z"/>${seg("NELL", 295.5, 124, 4, "sA", .7)}</g>${arcs(284, 128, -1, "sA", 3, .6)}
         <g transform="rotate(-6 326 112)"><rect class="k sA" x="226" y="106" width="200" height="11"/>${seg("POLICE LINE  DO NOT CROSS", 236, 108.5, 6, "sA", .9)}</g>
         <g transform="rotate(7 326 146)"><rect class="k sA" x="226" y="140" width="200" height="11"/>${seg("DO NOT CROSS  POLICE LINE", 236, 142.5, 6, "sA", .9)}</g></g>`;
@@ -102,17 +107,19 @@ export default {
   floor: { yMin: 238, yMax: 287, margin: 16 },
   entries: { fromStairs: [132, 242, 1], morning: [318, 272, 1] },
   draw(G) {
-    const morning = G.mode === "morning";
+    const morning = G.mode === "morning", a4 = friday(G);
+    cur = G;
     return { back: back(G), sortables: [
       { depth: floorY(.64), svg: consoleRow(G) },
       { depth: 268, svg: cody(G) },
-      { depth: 264, svg: morning ? standing("small", smallFigure(), 252, 264, 1) : "" },
-      { depth: 262, svg: morning ? standing("gus", standOnly(gusFigure()), 404, 262, -1) : "" },
+      { depth: 264, svg: a4 ? `<g data-hs="small">${smallHatInHand(252, 264, kAtY(264))}${hit(230, 264 - 128 * kAtY(264) * AUD, 44, 128 * kAtY(264) * AUD + 4)}</g>`
+        : morning ? standing("small", smallFigure(), 252, 264, 1) : "" },
+      { depth: 262, svg: morning && !a4 ? standing("gus", standOnly(gusFigure()), 404, 262, -1) : "" },
     ] };
   },
   stand: { window: [318, 242], tess: [394, 244], tessfar: [300, 242], calendar: [432, 244], locker: [508, 246], sign: [290, 242],
     console: [320, 244], wires: [460, 238], vent: [64, 274], cody: [146, 272], door: [132, 242], magnetdoor: [204, 240],
-    small: [296, 268], gus: [366, 266] },
+    small: [296, 268], get gus() { return cur && friday(cur) ? [326, 242] : [366, 266]; } },
   labels: {
     day: { locker: { use: "PUT METAL IN" }, calendar: { use: "READ" }, door: { use: "GO UP", go: "GO UP" }, magnetdoor: { use: "OPEN" },
       window: { use: "KNOCK" }, console: { use: "PRESS" }, sign: { use: "READ" } },

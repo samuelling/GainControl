@@ -2,6 +2,7 @@
 // with the NRT insignia scratched into it (chanting through the brick); along the ceiling, a pneumatic tube line with an access
 // hatch at reachable height; a leaking pipe joint; a big valve wheel (red herring); the door back to the server room.
 import { seg, chip, perspective, hit, arcs } from "../gfx.js";
+import { robeOnHook } from "../cast/act4b.js";
 
 const pp = perspective(320, 150, 0.16);
 const { P, poly, ln, kAtY, FY, KB } = pp;
@@ -56,8 +57,56 @@ function bricked(G) {
     s += `<g class="pz on" data-g="chant" data-i="0">${arcs(m[0] + 8, m[1], 1, "sR", 2, .9)}${arcs(n[0] - 6, n[1], -1, "sR", 2, .9)}${seg("THE AUTHORS SHOULD CONSIDER", 196, 150, 3.4, "sM", .5)}</g>
       <g class="pz" data-g="chant" data-i="1">${arcs(m[0] + 8, m[1], 1, "sR", 3, 1.1)}${arcs(n[0] - 6, n[1], -1, "sR", 3, 1.1)}${seg("THE AUTHORS SHOULD CONSIDER", 200, 158, 3.4, "sM", .5)}</g>`;
   }
+  if (G.act === 4) s += gap();
   const xs = fr.map(p => p[0]), ys = fr.map(p => p[1]);
   return s + hit(Math.min(...xs) - 2, Math.min(...ys) - 2, Math.max(...xs) - Math.min(...xs) + 4, Math.max(...ys) - Math.min(...ys) + 4) + `</g>`;
+}
+
+// Act IV: someone has pulled bricks out of the bottom of the doorway (a stepped gap, two loose bricks on the floor)
+function gap() {
+  const st = [[.53, FY], [.53, 248], [.545, 248], [.545, 234], [.555, 234], [.555, 220], [.575, 220], [.575, 234], [.585, 234], [.585, FY]];
+  const g = st.map(([k, Y]) => P(0, Y, k));
+  const brick = (X, k, w) => { const a = P(X, FY, k), b = P(X + w, FY, k), c = P(X + w, FY - 12, k), d = P(X, FY - 12, k);
+    return `<polygon class="k sM mech" points="${poly(a, b, c, d)}"/>`; };
+  return `<polygon class="k sM mech" points="${poly(...g)}"/>${ln(P(0, 226, .565), P(0, FY - 2, .565), "hl sD")}${brick(30, .62, 24)}${brick(70, .66, 24)}`;
+}
+
+// Act IV: the Table's coat check, free-standing on the floor beside the bricked door. A rail of hooks with robes
+// (one wearing the lit pin from Gus's Act I photo), a reel-to-reel tape on a hook at the right end (PANEL SCORES 1983),
+// and a hand-drawn tunnel map pinned to the left upright, B3 circled.
+const RK = .6, RX = [112, 282], RBAR = 182;
+function coatCheck(G) {
+  const y0 = P(0, FY, RK)[1], [xl, xr] = RX.map(X => P(X, 0, RK)[0]), yb = P(0, RBAR, RK)[1], L = (FY - 10 - RBAR) * RK;
+  let s = `<g data-hs="rack">
+    ${ln([xl, yb - 4], [xl, y0], "sW")}${ln([xr, yb - 4], [xr, y0], "sW")}${ln([xl - 2, yb], [xr + 16, yb], "sW")}
+    <path class="hl sW" d="M${fx(xl - 8)},${fx(y0)} L${fx(xl + 8)},${fx(y0)} M${fx(xr - 8)},${fx(y0)} L${fx(xr + 8)},${fx(y0)}"/>
+    <circle class="hl sW" cx="${fx(xl)}" cy="${fx(yb - 6)}" r="1.6"/><circle class="hl sW" cx="${fx(xr)}" cy="${fx(yb - 6)}" r="1.6"/>`;
+  const n = 4, step = (xr - xl) / (n + .2);
+  for (let i = 0; i < n; i++) s += robeOnHook(xl + step * (i + .6), yb, L, i === 2);
+  s += hit(fx(xl - 4), fx(yb - 10), fx(xr - xl + 8), fx(y0 - yb + 14)) + `</g>`;
+  // the reel, on a hook off the end of the rail
+  if (!G.flags.gotReel) {
+    const rx = xr + 12, ry = yb + 12, r = 8;
+    s += `<g data-hs="reel"><path class="sW" d="M${fx(rx)},${fx(yb)} L${fx(rx)},${fx(ry - r - 1)}"/>
+      <circle class="k sB" cx="${fx(rx)}" cy="${fx(ry)}" r="${r}"/><circle class="hl sB" cx="${fx(rx)}" cy="${fx(ry)}" r="${r - 2.4}"/><circle class="hl sB" cx="${fx(rx)}" cy="${fx(ry)}" r="1.4"/>
+      ${[0, 1, 2].map(i => { const a = i * 2.094 - 1.571; return `<circle class="hl sB" cx="${fx(rx + Math.cos(a) * 3.6)}" cy="${fx(ry + Math.sin(a) * 3.6)}" r="1.3"/>`; }).join("")}
+      <path class="hl sW" d="M${fx(rx + r - 1)},${fx(ry + 2)} L${fx(rx + r + 3)},${fx(ry + 7)}"/>
+      <rect class="k sW" x="${fx(rx - 3)}" y="${fx(ry + r + 3)}" width="22" height="13"/>
+      ${seg("PANEL SCORES", rx - 1.4, ry + r + 4.6, 2, "sW", .45)}${seg("1983", rx - 1.4, ry + r + 8.4, 5.4, "sW", .9)}
+      ${hit(fx(rx - r - 3), fx(yb - 2), fx(2 * r + 18), fx(r * 2 + 30))}</g>`;
+  }
+  // the map, pinned to the left upright: hand-drawn tunnels, B3 circled
+  if (!G.flags.gotMap) {
+    const mx = xl - 7, my = yb + 14;
+    s += `<g data-hs="map"><g transform="rotate(-6 ${fx(mx + 11)} ${fx(my + 9)})"><rect class="k sW" x="${fx(mx)}" y="${fx(my)}" width="22" height="18"/>
+      <path class="hl sW" d="M${fx(mx + 3)},${fx(my + 5)} C${fx(mx + 7)},${fx(my + 4)} ${fx(mx + 10)},${fx(my + 6)} ${fx(mx + 13)},${fx(my + 5)} L${fx(mx + 13)},${fx(my + 13)} C${fx(mx + 9)},${fx(my + 14)} ${fx(mx + 6)},${fx(my + 12)} ${fx(mx + 3)},${fx(my + 13)}
+        M${fx(mx + 8)},${fx(my + 5)} L${fx(mx + 8.5)},${fx(my + 13)} M${fx(mx + 13)},${fx(my + 9)} C${fx(mx + 15)},${fx(my + 10)} ${fx(mx + 16)},${fx(my + 12)} ${fx(mx + 15.5)},${fx(my + 14)}"/>
+      ${seg("B3", mx + 14.2, my + 12.6, 2.6, "sW", .5)}<ellipse class="hl sR" cx="${fx(mx + 16)}" cy="${fx(my + 13.9)}" rx="3.6" ry="2.8" transform="rotate(-12 ${fx(mx + 16)} ${fx(my + 13.9)})"/>
+      <path class="hl sR" d="M${fx(mx + 4)},${fx(my + 9)} L${fx(mx + 6)},${fx(my + 9)} M${fx(mx + 9)},${fx(my + 9.5)} L${fx(mx + 11)},${fx(my + 9.5)} M${fx(mx + 13.5)},${fx(my + 11)} L${fx(mx + 14)},${fx(my + 11.5)}"/></g>
+      <circle class="fA" cx="${fx(mx + 11)}" cy="${fx(my + 1.5)}" r="1.2"/>
+      ${hit(fx(mx - 3), fx(my - 3), 28, 26)}</g>`;
+  }
+  return s;
 }
 
 // the pneumatic tube line along the ceiling; a canister rattling along it (pose group "tube") while canisterLive
@@ -130,10 +179,12 @@ export default {
   id: "tunnels", name: "STEAM TUNNELS", pp,
   floor: { yMin: 236, yMax: 287, margin: 16 },
   entries: { fromServer: [578, 280, -1] },
-  draw(G) { return { back: corridor() + pipes() + bricked(G) + tube(G) + hatch(G) + valve() + backDoor(), sortables: [] }; },
-  stand: { bricked: [152, 244], tube: [380, 252], hatch: [522, 262], pipes: [440, 246], valve: [96, 282], back: [578, 280] },
+  draw(G) { return { back: corridor() + pipes() + bricked(G) + (G.act === 4 ? coatCheck(G) : "") + tube(G) + hatch(G) + valve() + backDoor(), sortables: [] }; },
+  stand: { bricked: [152, 244], tube: [380, 252], hatch: [522, 262], pipes: [440, 246], valve: [96, 282], back: [578, 280],
+    rack: [246, 246], reel: [290, 246], map: [200, 248] },
   labels: {
-    night: { bricked: { use: "KNOCK", talk: "LISTEN" }, hatch: { use: "OPEN" }, back: { go: "BACK", use: "BACK" }, valve: { use: "TURN" }, pipes: { use: "TOUCH" }, tube: { use: "LISTEN" } },
+    night: { bricked: { use: "KNOCK", talk: "LISTEN" }, hatch: { use: "OPEN" }, back: { go: "BACK", use: "BACK" }, valve: { use: "TURN" }, pipes: { use: "TOUCH" }, tube: { use: "LISTEN" },
+      rack: { use: "PUT ONE ON" }, reel: { use: "TAKE" }, map: { use: "TAKE" } },
     day: { bricked: { use: "KNOCK", talk: "LISTEN" }, hatch: { use: "OPEN" }, back: { go: "BACK", use: "BACK" }, valve: { use: "TURN" }, pipes: { use: "TOUCH" }, tube: { use: "LISTEN" } },
     morris: { bricked: { use: "SNIFF" }, back: { go: "SCURRY BACK" }, pipes: { use: "LICK" } },
   },
