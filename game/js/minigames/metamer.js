@@ -1,6 +1,8 @@
 // THE METAMER (Act IV, the library). Six sentences of the Big Finding against the back issues. Each sentence is an older
 // paper's claim in newer words: match by meaning, not by text. When all six are matched, the source labs light up (the
 // same three feeder labs). Then CHECK THE REFERENCES: two of the eight citations aren't on any shelf.
+// Every wrong pair says what each side claims. Hint ladder per sentence: 2 misses, Nell points at the idea to look for;
+// 4, Morris lights the card. References: 2 wrong, how to check; 4, the two fakes are marked in brass.
 // Everything here is fictional: papers, people, journals, labs. Resolves { done, wrong }.
 import { seg } from "../gfx.js";
 
@@ -59,6 +61,20 @@ const LINES = {
   ok: [["MORRIS", "Same claim, fancier hat."], ["NELL", "Lifted. Re-spelled, re-dated, same idea."], ["MORRIS", "Old words, new suit, pal."],
     ["NELL", "That's the source. He didn't even change the order of the argument."], ["MORRIS", "That one's been through the wash a few times."]],
   near: ["NELL", "Same shelf, different claim. Read it again."],
+  // a wrong pair, said plainly: what the card claims, and what the sentence claims
+  mismatch: (c, s) => ["NELL", `That card is about ${GIST[SRC[c].s]}. Sentence ${s + 1} is about ${GIST[s]}. Different claims.`],
+  // the ladder: two misses on a sentence, a pointer; four, the card itself
+  hint: [
+    ["NELL", "Sentence 1: attention gets to V1, but nobody knows at what depth. Look for an old card that grants the first part and says nobody's answered the second."],
+    ["NELL", "Sentence 2 is the method: a reading at depth after depth, surface to white matter. Look for somebody lowering an electrode in stages."],
+    ["NELL", "Sentence 3: feedback ends in the top layer and the deep ones. Look for fibres from the higher areas ending in the outermost and lowest laminae."],
+    ["NELL", "Sentence 4: the input layer doesn't move. 'Geniculate' is the thalamus, so the geniculate-recipient lamina is layer 4. Find the one that's 'indifferent.'"],
+    ["NELL", "Sentence 5: two bumps with a quiet middle, called a signature. Look for 'two peaks' and a 'fingerprint.'"],
+    ["NELL", "Sentence 6: overturn the old view, then ask for money. Look for the card that wants another decade of support."],
+  ],
+  show: (c) => ["MORRIS", `This one, pal. ${SRC[c].au} ${SRC[c].yr}. It's lit up. Click it.`],
+  refHint: ["NELL", "Check each one against the shelf: authors, year, journal, pages. Two have no card at all."],
+  refShow: ["MORRIS", "The two I've marked, pal. Look at the years and the journal. Nobody's shelving those."],
   labs: ["NELL", "Six sentences, six back issues, three labs. The Hindex Lab, the Sinecure Group, the Quorum Lab. Every single one."],
   labs2: ["MORRIS", "The feeder labs. Same names on every Rising Stars wall, pal."],
   refs: ["NELL", "Now his references. Eight citations. Everything real should be on this shelf."],
@@ -68,6 +84,8 @@ const LINES = {
   done: ["NELL", "It's a collage of the Table's own work. And its real author list is a partial membership roll."],
   done2: ["MORRIS", "So the paper's a family reunion. Who brought the potato salad?"],
 };
+const GIST = ["an open question: where in the cortex attention arrives", "the method: measuring at depth after depth", "feedback ending in the top and deep layers",
+  "the input layer staying put", "a two-peaked 'signature' of top-down gain", "overturning the old view, and asking for more money"];
 const COL = { NELL: "G", MORRIS: "K", GUS: "B", PENNY: "B", NARRATOR: "W" };
 const CSS = `
 .metamer .mbody { flex: 1 1 0; min-height: 0; display: grid; grid-template-columns: 33% 1fr; gap: 1.4cqw; padding: .7cqw 0; }
@@ -106,7 +124,8 @@ const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
 export function metamer(el, { score = () => {} } = {}) {
   injectStyle("mg-metamer", CSS);
   return new Promise(resolve => {
-    const S = { stage: 1, sel: null, matched: SENTS.map(() => null), wrong: 0, say: LINES.intro, flagged: {}, done: false, okN: 0, flash: -1 };
+    const S = { stage: 1, sel: null, matched: SENTS.map(() => null), wrong: 0, say: LINES.intro, flagged: {}, done: false, okN: 0, flash: -1,
+      miss: SENTS.map(() => 0), show: SENTS.map(() => false), refMiss: 0 };
     const timers = [];
     const later = (ms, fn) => timers.push(setTimeout(() => { fn(); draw(); }, ms));
     const cardOf = (s) => S.matched[s];                    // shelf index matched to sentence s
@@ -116,7 +135,8 @@ export function metamer(el, { score = () => {} } = {}) {
     const coach = () => { const [w, t] = S.say; if (S.say !== spoken) { spoken = S.say; window.SFX && window.SFX.voice(w, true); } return `<span class="who" style="background:var(--${COL[w]})">${w}</span><span style="color:var(--${COL[w]})">${t}</span>`; };
     function card(c) {
       const x = SRC[c], s = sentOf(c), lit = S.stage === 2 || allMatched();
-      const cls = ["card", s >= 0 ? "ok" : "", S.sel && S.sel.side === "c" && S.sel.i === c ? "sel" : "", lit && x.s < 0 ? "dim" : "", S.flash === c ? "flash" : ""].join(" ");
+      const shown = S.stage === 1 && x.s >= 0 && s < 0 && S.show[x.s];   // the ladder's last rung: the card lights up
+      const cls = ["card", s >= 0 ? "ok" : "", S.sel && S.sel.side === "c" && S.sel.i === c ? "sel" : "", lit && x.s < 0 ? "dim" : "", S.flash === c || shown ? "flash" : ""].join(" ");
       const lab = x.lab ? LABS[x.lab] : [x.labName, "M"];
       const labHtml = lit && x.lab ? `<span class="lab lit" style="background:var(--${lab[1]})">${lab[0]}</span>` : `<span class="lab">${lab[0]}</span>`;
       return `<div class="${cls}" data-c="${c}"><div class="meta">${s >= 0 ? `<span class="num">${s + 1}</span>` : ""}
@@ -129,13 +149,13 @@ export function metamer(el, { score = () => {} } = {}) {
         return `<div class="sent ${ok ? "ok" : ""} ${sel ? "sel" : ""}" data-s="${i}"><span class="num">${i + 1}</span><span>${t}</span></div>`;
       }).join("");
       return `<div class="colhd">REFERENCES  ·  CLICK THE ONES THAT DON'T EXIST</div>` + REFS.map((r, i) =>
-        `<div class="ref ${S.flagged[i] ? "fake" : ""}" data-r="${i}"><span class="num">${i + 1}</span><span>${r.t}</span>${S.flagged[i] ? `<span class="flag">NOT ON ANY SHELF</span>` : ""}</div>`).join("");
+        `<div class="ref ${S.flagged[i] ? "fake" : ""}" data-r="${i}"${S.refMiss >= 4 && r.src === null && !S.flagged[i] ? ` style="border-color:var(--A);color:var(--A)"` : ""}><span class="num">${i + 1}</span><span>${r.t}</span>${S.flagged[i] ? `<span class="flag">NOT ON ANY SHELF</span>` : ""}</div>`).join("");
     }
     function draw() {
       const nFake = Object.keys(S.flagged).length;
       const status = S.stage === 1 ? `${S.matched.filter(v => v !== null).length} / 6 MATCHED` : `${nFake} / 2 FOUND`;
       const hd = S.stage === 1
-        ? seg("THE METAMER", 16, 10, 18, "sW", 1.6) + seg("SIX SENTENCES  ·  THE BACK ISSUES  ·  MATCH BY MEANING", 196, 17, 5, "sM", .8)
+        ? seg("THE METAMER", 16, 10, 18, "sW", 1.6) + seg("CLICK A SENTENCE, THEN THE BACK ISSUE THAT MAKES THE SAME CLAIM", 196, 17, 5, "sM", .8)
         : seg("REFERENCES", 16, 10, 18, "sW", 1.6) + seg("EVERY REAL CITATION SHOULD BE ON THE SHELF", 182, 17, 5, "sM", .8);
       el.innerHTML = `<div class="screen metamer ${S.stage === 2 ? "stage2" : ""}">
         <svg class="t hd" viewBox="0 0 640 40">${hd}</svg>
@@ -153,9 +173,11 @@ export function metamer(el, { score = () => {} } = {}) {
         if (allMatched()) { S.say = LINES.labs; sfx("chime"); later(2800, () => { if (S.stage === 1) S.say = LINES.labs2; }); }
       } else {
         S.wrong++; sfx("bad");
-        const x = SRC[c];
-        if (x.s < 0) { S.say = ["NELL", x.no]; if (x.nw) later(2400, () => { if (S.say[1] === x.no) S.say = [x.nw, x.nx]; }); }
-        else S.say = LINES.near;
+        const x = SRC[c], n = ++S.miss[s];
+        if (n >= 4) { S.show[s] = true; S.say = LINES.show(SRC.findIndex(y => y.s === s)); }
+        else if (n >= 2) S.say = LINES.hint[s];
+        else if (x.s < 0) { S.say = ["NELL", x.no]; if (x.nw) later(2400, () => { if (S.say[1] === x.no) S.say = [x.nw, x.nx]; }); }
+        else S.say = LINES.mismatch(c, s);
       }
     }
     function pick(side, i) {
@@ -177,7 +199,8 @@ export function metamer(el, { score = () => {} } = {}) {
           later(3200, () => { S.say = LINES.done; }); later(7000, () => { S.say = LINES.done2; });
         }
       } else {
-        S.wrong++; S.say = LINES.real(r.src); S.flash = r.src; sfx("bad");
+        S.wrong++; S.refMiss++; S.flash = r.src; sfx("bad");
+        S.say = S.refMiss >= 4 ? LINES.refShow : S.refMiss >= 2 ? ["NELL", `${LINES.real(r.src)[1]} ${LINES.refHint[1]}`] : LINES.real(r.src);
         later(1400, () => { S.flash = -1; });
       }
       draw();

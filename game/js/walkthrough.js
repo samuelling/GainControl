@@ -113,9 +113,9 @@ export const WALKTHROUGH = {
       { t: "With all four proofs: stairwell, OPEN, 2F RESEARCH INTEGRITY. TALK to Ethel Bord. Misconduct goes under New Business.", flag: "meetingOpen" },
       { t: "Stairwell, OPEN, 3F FACULTY MEETING.", flag: "meeting" },
       { t: "AVOID: TALK to Prof. Quorum. Ethel warns you once; the second time you're appointed to the Curriculum Committee (death)." },
-      { t: "Click the student rep chair and choose SIT DOWN. THE NOD: just watch the first twelve motions.", flag: "nodDone" },
+      { t: "Click the student rep chair and choose SIT DOWN. THE NOD: just watch the first ten motions.", flag: "nodDone" },
       { t: "Then press NOW (or Space) whenever the motion read is the same as the one two motions earlier, before the heads nod. Wrong calls cost you.", flag: "nodDone" },
-      { t: "Catch all but one of the repeats (at least three) with at most one false alarm, or the round repeats. Then press ADJOURN?", flag: "nodDone" },
+      { t: "Each round is eight motions with three repeats: call at least two of them before the heads nod, with at most one wrong call. After mistakes Gus underlines the motion from two ago, then elbows you on each repeat; after three failed rounds he waves you through. Then press ADJOURN?", flag: "nodDone" },
       { t: "Ethel sends you to the fourth floor.", flag: "irisOpen" },
       { t: "Stairwell, OPEN, 4F EMERITUS OFFICE. TALK to the old woman. She introduces herself.", flag: "irisNamed" },
       { t: "The talk goes straight on. When you choose, pick 'What does this have to do with me?' Night falls.", flag: "irisDone" },
@@ -146,7 +146,7 @@ export const WALKTHROUGH = {
     { name: "LEAD: THE MISSING HOURS (MAIN OFFICE 1F)", steps: [
       { t: "Hallway, main office, GO IN. TALK to Penny Ledger: she gives you the expense receipts.", flag: "gotReceipts" },
       { t: "TALK to Penny again (or USE expense receipts ON her, or RING BELL).", flag: "clueHours" },
-      { t: "Turn on all three calendars: PRESTON, IMPACT, QUORUM. File each receipt: click it, then its day column (OCT 26 is MON 26 … OCT 31 is SAT 31).", flag: "clueHours" },
+      { t: "Turn on all three calendars: PRESTON, IMPACT, QUORUM. File the three INVITED TALK receipts: click one, then its day column (OCT 30 23:10 goes on FRI 30; OCT 31 00:40 and 01:30 go on SAT 31). The other receipts are optional.", flag: "clueHours" },
       { t: "COMPARE CVS. Click THE HINDEX LAB, SINECURE GROUP and QUORUM LAB. Then DONE.", flag: "clueHours" },
     ] },
     { name: "LEAD: THE DARK (DARK BOOTH, LAB)", steps: [
@@ -163,7 +163,7 @@ export const WALKTHROUGH = {
       { t: "Stairwell, OPEN, 3F PROF. IMPACT. Keypad: 112 (his h-index, from the library directory).", flag: "impactOpen" },
       { t: "Click the desk drawer and choose OPEN: Impact's expired membership card. This brings Cody to the hallway.", flag: "clueCard" },
       { t: "OPTIONAL (story clue; the act advances without it): click Impact's laptop and choose READ THE REVIEW.", flag: "clueReviewer2" },
-      { t: "OPTIONAL (story clue): framed Figure 2, OVERLAY YOUR SCAN. Press ← 4 times, ↓ 3 times, SCALE − 5 times; click all six painted layers. DONE.", flag: "clueRetainer" },
+      { t: "OPTIONAL (story clue): framed Figure 2, OVERLAY YOUR SCAN. Press ← 3 times, ↓ 2 times, SCALE − 4 times (it snaps into register); click all six painted layers. DONE.", flag: "clueRetainer" },
     ] },
     { name: "CODY, AND THE FOG", steps: [
       { t: "In the hallway, TALK to Cody (by the tube station).", flag: "codyLeft" },

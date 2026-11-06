@@ -2,6 +2,9 @@
 // Quorum's. Lay the calendars over each other and the one block all three leave empty, FRI 23:00–03:00, lights up.
 // File the receipts on their days: every receipt from that night is the same INVITED TALK template. Then the CVs side
 // by side: click the labs all three share. Resolves { done }.
+// Only the three receipts from the free block have to be filed (the rest are optional jokes). A wrong day names the right
+// column; a second wrong try on the same receipt files it for you. CVs: 2 wrong clicks, Penny says how to read them;
+// 4, the shared labs are marked in brass.
 import { seg, segC, chip } from "../gfx.js";
 
 const DAYS = ["MON 26", "TUE 27", "WED 28", "THU 29", "FRI 30", "SAT 31", "SUN 1"];
@@ -46,7 +49,11 @@ const LINES = {
   three: ["NELL", "One hole. Friday, eleven at night to three in the morning. All three of them, empty."],
   three2: ["PENNY", "Every week, hon. Quorum's calendar has that hole back to 1979."],
   pick: ["PENNY", "Put it on its day, hon."],
-  wrongDay: (r) => ["PENNY", `Read the date, hon. That one's ${DATES[r.day]}.`],
+  wrongDay: (r) => ["PENNY", `Read the date, hon. That one's ${DATES[r.day]}: the ${DAYS[r.day]} column.`],
+  filedFor: (r) => ["PENNY", `Here, hon. ${DATES[r.day]} goes under ${DAYS[r.day]}. I've been filing these for thirty years.`],
+  needCals: ["NELL", "Those three are all from Friday night. Now turn on all three calendars: when are all three of them free?"],
+  cvHint: ["PENNY", "Read across, hon. Each CV lists its labs in blue. You want the ones that turn up on all three, whatever the year."],
+  cvShow: ["PENNY", "I've marked them for you, hon. The ones on every CV. Click them."],
   talk: ["NELL", "Invited talk. No venue. Friday night."],
   night: ["NELL", "Every receipt from that night says INVITED TALK. Same template, same total, same typo. 'Entertainmnet.'"],
   night2: ["PENNY", "And I approved every one. It's a form. Compare their CVs, hon. I printed those too."],
@@ -83,6 +90,7 @@ const CSS = `
 .hours .cv .lab.found { color: #000; background: var(--G); border: 0; padding: 0 .3cqw; cursor: default; font-weight: 600; }
 .hours .cv .lab.nope { color: var(--R); border-color: var(--R); }
 .hours button.cal { min-width: 7cqw; }
+.hours rect[data-day]:hover { stroke: var(--A); stroke-width: .8; }
 .hours .gp1, .hours.p1 .gp0 { display: none; } .hours.p1 .gp1 { display: inline; }
 `;
 function injectStyle(id, css) { if (document.getElementById(id)) return; const s = document.createElement("style"); s.id = id; s.textContent = css; document.head.appendChild(s); }
@@ -98,7 +106,7 @@ export function hours(el, { score = () => {} } = {}) {
   injectStyle("mg-hours", CSS);
   return new Promise(resolve => {
     const S = { on: { P: false, I: false, Q: false }, placed: RECEIPTS.map(() => false), sel: -1, say: LINES.intro, stage: "cal", night: false,
-      found: {}, nope: null, done: false, pose: 0, saidThree: false };
+      found: {}, nope: null, done: false, pose: 0, saidThree: false, dayMiss: RECEIPTS.map(() => 0), cvMiss: 0 };
     const timers = []; const later = (ms, fn) => timers.push(setTimeout(() => { fn(); draw(); }, ms));
     const onKeys = () => Object.keys(S.on).filter(k => S.on[k]);
     const allOn = () => onKeys().length === 3;
@@ -139,6 +147,8 @@ export function hours(el, { score = () => {} } = {}) {
       });
       // click targets: one per day column, while a receipt is in hand
       if (S.sel >= 0) for (let d = 0; d < 7; d++) s += `<rect data-day="${d}" x="${X0 + d * CW}" y="${Y0 - 6}" width="${CW}" height="${24 * RH + 6}" fill="transparent" style="cursor:pointer"/>`;
+      // after a wrong day, the right column is outlined
+      if (S.sel >= 0 && S.dayMiss[S.sel]) { const d = RECEIPTS[S.sel].day; s += `<rect class="hl dash sA" x="${X0 + d * CW + .5}" y="${Y0 - 5.5}" width="${CW - 1}" height="${24 * RH + 5}" fill="none" pointer-events="none"/>`; }
       return s;
     }
     function receipts() {
@@ -152,7 +162,7 @@ export function hours(el, { score = () => {} } = {}) {
     function cvs() {
       return `<div class="cvs">${CVS.map(cv => { const c = CALS[cv.who];
         return `<div class="cv"><div class="nm" style="color:var(--${c.col})">${cv.name}</div><div class="rl">${cv.role}</div>
-          ${cv.rows.map(([y, t, lab]) => `<div class="row"><span class="yr">${y}</span><span>${t}${lab ? `, <span class="lab ${S.found[lab] ? "found" : ""} ${S.nope === lab ? "nope" : ""}" data-lab="${lab}">${LABN[lab]}</span>` : ""}</span></div>`).join("")}</div>`; }).join("")}</div>`;
+          ${cv.rows.map(([y, t, lab]) => `<div class="row"><span class="yr">${y}</span><span>${t}${lab ? `, <span class="lab ${S.found[lab] ? "found" : ""} ${S.nope === lab ? "nope" : ""}" data-lab="${lab}"${S.cvMiss >= 4 && SHARED.includes(lab) && !S.found[lab] ? ` style="color:var(--A);border-color:var(--A)"` : ""}>${LABN[lab]}</span>` : ""}</span></div>`).join("")}</div>`; }).join("")}</div>`;
     }
     function draw() {
       const nPlaced = S.placed.filter(Boolean).length, nFound = Object.keys(S.found).length;
@@ -173,9 +183,15 @@ export function hours(el, { score = () => {} } = {}) {
           ${S.stage === "cal" && S.night ? `<button data-b="cv">COMPARE CVS</button>` : ""}
           <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
     }
-    function checkNight() {
-      if (S.night || !allOn() || !S.placed.every(Boolean)) return;
-      S.night = true; S.say = LINES.night; sfx("stamp"); later(3600, () => { if (S.stage === "cal") S.say = LINES.night2; });
+    // the night only needs the receipts that fall in the free block; the others are optional
+    const talksFiled = () => RECEIPTS.every((r, i) => !r.talk || S.placed[i]);
+    function checkNight(fromFile) {
+      if (S.night || !talksFiled()) return;
+      if (!allOn()) { if (fromFile) S.say = LINES.needCals; return; }
+      S.night = true; sfx("stamp");
+      // if the third calendar just went on, let "one hole" (and Penny's 1979) be read first
+      const first = S.say === LINES.three ? 6000 : 0, go = () => { S.say = LINES.night; later(3600, () => { if (S.stage === "cal" && S.say === LINES.night) S.say = LINES.night2; }); };
+      if (first) later(first, go); else go();
     }
     function toggle(k) {
       S.on[k] = !S.on[k]; sfx("toggle", { on: S.on[k] });
@@ -188,9 +204,13 @@ export function hours(el, { score = () => {} } = {}) {
     }
     function file(d) {
       const r = RECEIPTS[S.sel];
-      if (d !== r.day) { S.say = LINES.wrongDay(r); sfx("bad"); return; }
+      if (d !== r.day) {
+        sfx("bad");
+        if (++S.dayMiss[S.sel] < 2) { S.say = LINES.wrongDay(r); return; }
+        S.placed[S.sel] = true; S.sel = -1; S.say = LINES.filedFor(r); sfx("paper"); checkNight(true); return;
+      }
       S.placed[S.sel] = true; S.sel = -1; S.say = r.talk ? LINES.talk : r.line; sfx("paper");
-      checkNight();
+      checkNight(true);
     }
     function labClick(k) {
       if (S.found[k] || S.done) return;
@@ -199,7 +219,9 @@ export function hours(el, { score = () => {} } = {}) {
         if (Object.keys(S.found).length === 3) { S.done = true; score("hours", 4); later(2600, () => { S.say = LINES.done; }); later(7000, () => { S.say = LINES.done2; }); }
       } else {
         const who = CVS.filter(cv => cv.rows.some(r => r[2] === k)).map(cv => CALS[cv.who].name[0] + CALS[cv.who].name.slice(1).toLowerCase());
-        S.say = LINES.miss(k, who.join(" and ")); S.nope = k; sfx("bad"); later(1200, () => { S.nope = null; });
+        const n = ++S.cvMiss, where = who.join(" and ");
+        S.say = n >= 4 ? LINES.cvShow : n >= 2 ? ["PENNY", `${LABN[k]} is only on ${where}. ${LINES.cvHint[1]}`] : LINES.miss(k, where);
+        S.nope = k; sfx("bad"); later(1200, () => { S.nope = null; });
       }
     }
     const onClick = (e) => {

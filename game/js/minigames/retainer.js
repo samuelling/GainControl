@@ -2,6 +2,9 @@
 // dropout over the palate, where the metal sits. Preston's Figure 2 is the same slice, "upscaled": smoothed, bigger, and with
 // six neat cortical layers painted into the dropout, where there is no brain at all. Nudge and scale the figure over the
 // scan until they register, then click the six layers inside the hole. Resolves { done }.
+// Every nudge says which way is still off. Within one step of every setting it snaps into register. Hint ladder: two
+// nudges the wrong way (or 20 moves), Nell counts out the presses left; four (or 30 moves), Morris lines it up. In the
+// close-up a click anywhere in the hole marks the nearest unmarked layer.
 import { seg, segC } from "../gfx.js";
 
 /* ---------------- the slice (one midsagittal head, facing left, in a 200 × 200 box) ---------------- */
@@ -67,12 +70,26 @@ const LINES = {
   how: ["NELL", "His Figure 2 is 'upscaled.' Lay it over mine. Nudge it and scale it until they register."],
   far: ["NELL", "Not yet. Line up the skull first."],
   close: ["NELL", "Closer. The folds are starting to line up."],
+  // what's still off, biggest first, in the player's own buttons
+  off: { L: "It's too far left. Nudge it →.", R: "It's too far right. Nudge it ←.", U: "It sits too high. Nudge it ↓.", D: "It sits too low. Nudge it ↑.",
+    big: "His figure's bigger than my scan. SCALE −.", small: "Now it's smaller than my scan. SCALE +." },
+  count: (t) => ["NELL", `From here: ${steps(t)}. Then they'll register.`],
+  snap: ["MORRIS", "Gimme that, pal. ...There. Skull on skull."],
+  inHole: ["NELL", "The stripes inside the black hole. Click each one."],
   match: ["NELL", "They register. Same skull, same folds, same hole in the same place."],
   zoom: ["NELL", "And in the hole, where there's no brain at all, six perfect layers. Show me every one."],
   marks: { 1: ["NELL", "One. Painted on."], 3: ["MORRIS", "That's a lot of brain for a mouth, pal."], 5: ["NELL", "Five. He didn't even make them crooked."] },
   done: ["NELL", "That's not his data. That's my mouth."],
   done2: ["NELL", "His sub-01 had my null. Because his sub-01 is me."],
 };
+// the presses left to register, e.g. "← ×4, ↓ ×3, SCALE − ×5"
+function steps({ dx, dy, s }) {
+  const o = [], n = (v, st) => Math.round(Math.abs(v) / st);
+  if (dx) o.push(`${dx > 0 ? "←" : "→"} ×${n(dx, STEP)}`); if (dy) o.push(`${dy > 0 ? "↑" : "↓"} ×${n(dy, STEP)}`);
+  if (Math.abs(s - 1) > 1e-6) o.push(`SCALE ${s > 1 ? "−" : "+"} ×${n(s - 1, SSTEP)}`);
+  return o.join(", ");
+}
+const err = ({ dx, dy, s }) => (dx / 14) ** 2 + (dy / 14) ** 2 + ((s - 1) / 0.12) ** 2;
 const COL = { NELL: "G", MORRIS: "K", GUS: "B", PENNY: "B", NARRATOR: "W" };
 const CSS = `
 .retainer svg.rtsvg { position: relative; inset: auto; width: 100%; flex: 1 1 0; min-height: 0; }
@@ -97,7 +114,7 @@ const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
 export function retainer(el, { score = () => {} } = {}) {
   injectStyle("mg-retainer", CSS);
   return new Promise(resolve => {
-    const S = { t: { ...START }, moves: 0, say: LINES.intro, reg: false, zoom: false, marked: FAKE.map(() => false), done: false };
+    const S = { t: { ...START }, moves: 0, say: LINES.intro, reg: false, zoom: false, marked: FAKE.map(() => false), done: false, away: 0, helped: false };
     const timers = []; const later = (ms, fn) => timers.push(setTimeout(() => { fn(); draw(); }, ms));
     let spoken = null;
     const coach = () => { const [w, t] = S.say; if (S.say !== spoken) { spoken = S.say; window.SFX && window.SFX.voice(w, true); } return `<span class="who" style="background:var(--${COL[w]})">${w}</span><span style="color:var(--${COL[w]})">${t}</span>`; };
@@ -142,11 +159,36 @@ export function retainer(el, { score = () => {} } = {}) {
       else return;
       S.moves++;
       if (b[0] === "S") sfx("scale", { up: b === "S+" }); else sfx("nudge", { f: 700 + 120 * "LRUD".indexOf(b) });
-      if (t.dx === 0 && t.dy === 0 && Math.abs(t.s - 1) < 1e-6) {
-        S.reg = true; S.say = LINES.match; sfx("chime"); score("retainerReg", 2);
-        later(2600, () => { S.zoom = true; S.say = LINES.zoom; sfx("whoosh"); });
-      } else { const p = regScore(t); S.say = S.moves === 1 ? LINES.how : p >= 50 ? LINES.close : LINES.far; }
+      if (err(t) > S.lastErr) S.away++;
+      S.lastErr = err(t);
+      // close enough on every setting: it snaps into register (registration software does that)
+      if (Math.abs(t.dx) <= STEP && Math.abs(t.dy) <= STEP && Math.abs(t.s - 1) <= SSTEP + 1e-6) register();
+      else if (S.away >= 4 || S.moves >= 30) { S.helped = true; S.say = LINES.snap; register(); }
+      else if (S.away >= 2 || S.moves >= 20) S.say = LINES.count(t);
+      else S.say = ["NELL", `${regScore(t) >= 50 ? "Closer." : "Not yet."} ${offBy(t)}`];
       draw();
+    }
+    function offBy(t) {
+      const e = [["x", (t.dx / 14) ** 2], ["y", (t.dy / 14) ** 2], ["s", ((t.s - 1) / 0.12) ** 2]].sort((a, b) => b[1] - a[1])[0][0], o = LINES.off;
+      return e === "x" ? (t.dx < 0 ? o.L : o.R) : e === "y" ? (t.dy < 0 ? o.U : o.D) : (t.s > 1 ? o.big : o.small);
+    }
+    function register() {
+      S.t = { dx: 0, dy: 0, s: 1 }; S.reg = true; sfx("chime"); if (!S.helped) score("retainerReg", 2);
+      if (S.helped) later(2200, () => { S.say = LINES.match; }); else S.say = LINES.match;
+      later(S.helped ? 4800 : 2600, () => { S.zoom = true; S.say = LINES.zoom; sfx("whoosh"); });
+    }
+    // a click in the close-up that missed the thin lines: mark the nearest unmarked layer, if it was inside the hole
+    function nearest(e) {
+      const sv = el.querySelector("svg.w3"); if (!sv || !S.zoom || S.done) return false;
+      const m = sv.getScreenCTM(); if (!m) return false;
+      const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
+      if (p.x < 6 || p.x > 82 || p.y < 93 || p.y > 169) return false;          // outside the close-up
+      const inHole = ((p.x - HC[0]) / (HR[0] * 1.25)) ** 2 + ((p.y - HC[1]) / (HR[1] * 1.25)) ** 2 <= 1;
+      if (!inHole) { S.say = LINES.inHole; draw(); return true; }
+      const yAt = (i) => 122.5 + i * 4.3 + 3.6 * (1 - i * 0.09) * Math.sin((p.x - 25) / 46 * Math.PI * 2);
+      const free = FAKE.map((_, i) => i).filter(i => !S.marked[i]).sort((a, b) => Math.abs(yAt(a) - p.y) - Math.abs(yAt(b) - p.y));
+      if (free.length) mark(free[0]);
+      return true;
     }
     function mark(i) {
       if (!S.zoom || S.marked[i] || S.done) return;
@@ -158,6 +200,7 @@ export function retainer(el, { score = () => {} } = {}) {
     const onClick = (e) => {
       const t = e.target.closest ? e.target : null; if (!t) return;
       const l = t.closest("[data-layer]"); if (l) { mark(+l.dataset.layer); return; }
+      if (nearest(e)) return;
       const b = t.closest("button[data-b]"); if (!b || b.disabled) return;
       if (b.dataset.b === "off") finish(); else move(b.dataset.b);
     };
@@ -170,6 +213,7 @@ export function retainer(el, { score = () => {} } = {}) {
       timers.forEach(clearTimeout); el.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey);
       el.classList.remove("show"); el.innerHTML = ""; resolve({ done: S.done });
     }
+    S.lastErr = err(S.t);
     el.classList.add("show"); draw();
     el.addEventListener("click", onClick); window.addEventListener("keydown", onKey);
     later(2800, () => { if (S.say === LINES.intro) S.say = LINES.intro2; });

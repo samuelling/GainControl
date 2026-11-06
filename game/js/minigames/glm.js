@@ -67,6 +67,8 @@ const FORKS = ["NEW ROI: 'V1-ISH'", "DROP RUN 2", "MORE SMOOTHING", "EXCLUDE OUT
 const FORK_P = [.48, .31, .27, .19, .22, .14, .11, .09, .12, .08, .07, .06, .051, .049];
 
 const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
+const clock = (t) => `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
+const ROWN = { A: "ATTEND", I: "IGNORE" };
 
 export function glm(root, opts = {}) {
   const die = opts.die || (async () => "revise");
@@ -76,10 +78,29 @@ export function glm(root, opts = {}) {
     const S = {
       stage: 0, blocks: { A: [], I: [] }, shift: 0, hrf: false, k: { A: 0.5, I: 0.5, B: 0 }, lampSeen: false, solved: false,
       showContrast: false, layerFit: false, tells: { clean: false, copy: false, veins: false }, forks: 0, coach: [], done: false, total: 0,
+      // the hint ladder, one counter per step: wrong CHECK IT / LINED UP / THAT'S THE FIT presses, and knob turns
+      miss: { log: 0, align: 0, fit: 0 }, turns: 0, logHint: false, knobHint: false, helped: {},
     };
     root.innerHTML = `<svg class="t glm" viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg"></svg><div class="coach"></div>`;
     const svg = root.querySelector("svg"), coachEl = root.querySelector(".coach");
     const add = (key, n) => { score(key, n); S.total += n; };
+    // the best knob settings on the knobs' own 0.05 steps, and "close enough": every knob within one step of the
+    // least-squares answer (or leftovers within 2% of the minimum), so the lamp is always reachable by hand
+    const r05 = (v) => Math.round(v / 0.05) * 0.05;
+    const BEST = () => ({ A: +r05(D.fit.beta[0]).toFixed(2), I: +r05(D.fit.beta[1]).toFixed(2), B: +r05(D.fit.beta[2]).toFixed(2) });
+    const fitOK = (rss) => rss <= D.fit.rss * 1.02 || ["A", "I", "B"].every((k, i) => Math.abs(S.k[k] - D.fit.beta[i]) <= 0.0501);
+    // what's wrong with the entered blocks, against the log as written
+    function logDiff() {
+      const want = { A: LOG_ONSETS.filter((_, j) => j % 2 === 0), I: LOG_ONSETS.filter((_, j) => j % 2 === 1) };
+      if (!S.blocks.A.length && !S.blocks.I.length) return "Nothing entered yet. Click the cell where each block starts: ATTEND in the green row, IGNORE in the blue one.";
+      for (const row of ["A", "I"]) for (const o of S.blocks[row]) if (!want[row].includes(o)) {
+        const other = row === "A" ? "I" : "A";
+        return want[other].includes(o) ? `The block at ${clock(o)} is in the wrong row. The log says that one's ${ROWN[other]}.`
+          : `There's a ${ROWN[row]} block at ${clock(o)}. The log doesn't have one there. Click it to remove it.`;
+      }
+      for (const row of ["A", "I"]) for (const o of want[row]) if (!S.blocks[row].includes(o)) return `${ROWN[row]} at ${clock(o)} is missing. ${S.blocks.A.length + S.blocks.I.length} of 8 blocks so far.`;
+      return "That's not what the log says. Read the times again.";
+    }
 
     /* ---------- coach (Gus teaches, Nell reacts) ---------- */
     function coach(who, text) {
@@ -124,7 +145,8 @@ export function glm(root, opts = {}) {
     }
     function plotFrame() {
       let s = `<path class="hl sD" d="M${X0},${Y0 - 6} L${X0},${Y1 + 4} L${X1},${Y1 + 4}"/>`;
-      for (let t = 0; t <= 256; t += 32) s += `<path class="hl sD" d="M${tx(t)},${Y1 + 4} L${tx(t)},${Y1 + 7}"/>` + segC(`${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`, tx(t), Y1 + 9, 4, "sM", .7);
+      for (let t = 0; t <= 256; t += 16) { const major = t % 32 === 0;
+        s += `<path class="hl sD" d="M${tx(t)},${Y1 + 4} L${tx(t)},${Y1 + (major ? 7 : 5.5)}"/>` + segC(clock(t), tx(t), Y1 + 9, major ? 4 : 3.4, major ? "sM" : "sD", .7); }
       s += seg("V1 SIGNAL", X0, Y0 - 16, 4.4, "sW", .8) + seg("% CHANGE", X0 + 48, Y0 - 16, 4.4, "sM", .8);
       s += `<path class="hl dash sD" d="M${X0},${yv(0)} L${X1},${yv(0)}"/>`;
       return s;
@@ -135,7 +157,8 @@ export function glm(root, opts = {}) {
       for (let t = 0; t < 256; t += 8) {
         for (const [row, yy, cls] of [["A", y, "sG"], ["I", y + 18, "sB"]]) {
           const on = onsetsOf(row).some(o => t >= o && t < o + 16);
-          s += `<rect class="${on ? "f" + cls.slice(1) : "hl sD"}" fill="${on ? "" : "transparent"}" x="${tx(t) + .8}" y="${yy}" width="${tx(8) - tx(0) - 1.6}" height="12" data-cell="${row}:${t}" style="cursor:${S.stage === 0 ? "pointer" : "default"}"/>`;
+          const ghost = !on && S.logHint && S.stage === 0 && LOG_ONSETS.filter((_, j) => j % 2 === (row === "A" ? 0 : 1)).some(o => t >= o && t < o + 16);
+          s += `<rect class="${on ? "f" + cls.slice(1) : ghost ? "hl dash sA" : "hl sD"}" fill="${on ? "" : "transparent"}" x="${tx(t) + .8}" y="${yy}" width="${tx(8) - tx(0) - 1.6}" height="12" data-cell="${row}:${t}" style="cursor:${S.stage === 0 ? "pointer" : "default"}"/>`;
         }
       }
       return s;
@@ -153,6 +176,10 @@ export function glm(root, opts = {}) {
     function knob(id, label, cls, x, y, v, lo, hi) {
       const a = (-135 + 270 * (v - lo) / (hi - lo)) * Math.PI / 180, r = 17;
       let s = `<g data-knob="${id}" style="cursor:ns-resize"><circle class="k ${cls}" cx="${x}" cy="${y}" r="${r}"/>`;
+      if (S.knobHint && S.stage === 3) {   // hint: a brass tick where the knob should point
+        const best = BEST()[id], b = (-135 + 270 * (best - lo) / (hi - lo)) * Math.PI / 180;
+        s += `<path class="sA" d="M${x + (r + 2) * Math.sin(b)},${y - (r + 2) * Math.cos(b)} L${x + (r + 9) * Math.sin(b)},${y - (r + 9) * Math.cos(b)}"/>`;
+      }
       for (let i = 0; i <= 10; i++) { const b = (-135 + 27 * i) * Math.PI / 180; s += `<path class="hl sD" d="M${x + (r + 3) * Math.sin(b)},${y - (r + 3) * Math.cos(b)} L${x + (r + 6) * Math.sin(b)},${y - (r + 6) * Math.cos(b)}"/>`; }
       s += `<path class="${cls}" d="M${x},${y} L${x + (r - 3) * Math.sin(a)},${y - (r - 3) * Math.cos(a)}"/><circle cx="${x}" cy="${y}" r="${r + 8}" fill="transparent"/></g>`;
       s += segC(label, x, y + 26, 4.4, cls, .8) + segC(v.toFixed(2), x, y + 34, 7, "sW", 1.1);
@@ -195,7 +222,8 @@ export function glm(root, opts = {}) {
     function stageControls() {
       const st = S.stage;
       if (st === 0) return btn("clear", "CLEAR", 520, 246, 80, "o") + btn("check", "CHECK IT", 520, 270, 80, "w");
-      if (st === 1) return btn("left", "< EARLIER", 496, 246, 64, "o") + btn("right", "LATER >", 564, 246, 64, "o") + btn("aligned", "LINED UP", 520, 270, 80, "w");
+      if (st === 1) return btn("left", "< EARLIER", 496, 246, 64, "o") + btn("right", "LATER >", 564, 246, 64, "o") + btn("aligned", "LINED UP", 520, 270, 80, "w")
+        + seg("SHIFT", 496, 296, 4.4, "sM", .8) + seg(`${S.shift > 0 ? "+" : ""}${S.shift * TR} SEC`, 524, 293, 8, S.shift ? "sA" : "sW", 1.1);
       if (st === 2) return `<g transform="translate(560,264)">${hrfIcon()}</g>` + btn("stamp", "STAMP THE HRF", 470, 246, 130, "w");
       const { xa, xi } = model(), rss = RSS(D.y, xa, xi, [S.k.A, S.k.I, S.k.B]);
       let s = knob("A", "ATTEND", "sG", 74, 262, S.k.A, 0, 2) + knob("I", "IGNORE", "sB", 164, 262, S.k.I, 0, 2) + knob("B", "BASELINE", "sW", 254, 262, S.k.B, -1, 1);
@@ -300,9 +328,12 @@ export function glm(root, opts = {}) {
     function cellClick(row, t) {
       if (S.stage !== 0) return;
       const list = S.blocks[row], hit = list.findIndex(o => t >= o && t < o + 16);
-      if (hit >= 0) { list.splice(hit, 1); sfx("cancel"); }
-      else { const other = row === "A" ? "I" : "A"; if (t + 16 > 256 || list.length >= 4) { sfx("nudge", { f: 300 }); return; }
-        if ([...list, ...S.blocks[other]].some(o => t < o + 16 && o < t + 16)) { sfx("nudge", { f: 300 }); return; } list.push(t); sfx("select"); }
+      if (hit >= 0) { const o = list[hit]; list.splice(hit, 1); sfx("cancel"); coach("NELL", `${ROWN[row]} block at ${clock(o)} removed.`); }
+      else { const other = row === "A" ? "I" : "A";
+        if (t + 16 > 256) { sfx("nudge", { f: 300 }); coach("GUS", "A block is 16 seconds. That one would run off the end of the scan."); return; }
+        if (list.length >= 4) { sfx("nudge", { f: 300 }); coach("GUS", `That's already four ${ROWN[row]} blocks. Click one to remove it first.`); return; }
+        if ([...list, ...S.blocks[other]].some(o => t < o + 16 && o < t + 16)) { sfx("nudge", { f: 300 }); coach("GUS", "That overlaps a block that's already there. One condition at a time."); return; }
+        list.push(t); sfx("select"); coach("NELL", `${ROWN[row]} from ${clock(t)} to ${clock(t + 16)}. ${S.blocks.A.length + S.blocks.I.length} of 8.`); }
       draw();
     }
     const KR = { A: [0, 2], I: [0, 2], B: [-1, 1] };
@@ -310,22 +341,47 @@ export function glm(root, opts = {}) {
       if (S.k[id] !== was) sfx("ktick", { v: (S.k[id] - lo) / (hi - lo) }); afterKnob(); }
     function afterKnob() {
       if (S.stage === 3) { const { xa, xi } = model(), rss = RSS(D.y, xa, xi, [S.k.A, S.k.I, S.k.B]);
-        if (rss <= D.fit.rss * 1.02 && !S.lampSeen) { S.lampSeen = true; sfx("lamp"); add("fitByHand", 3); coach("GUS", "That's it. The leftovers can't get much smaller. You just ran a GLM by hand. Press THAT'S THE FIT."); } }
+        if (fitOK(rss) && !S.lampSeen) { S.lampSeen = true; sfx("lamp"); add("fitByHand", 3); coach("GUS", "That's it. The leftovers can't get much smaller. You just ran a GLM by hand. Press THAT'S THE FIT."); }
+        // lots of turning and no lamp: the ladder climbs by itself
+        else if (!S.lampSeen && ++S.turns === 70 && !S.knobHint) { S.knobHint = true; coach("GUS", "You're going round in circles. I've marked where each knob wants to point, in brass."); } }
+      draw();
+    }
+    function knobAdvice() {
+      const b = D.fit.beta, off = [["A", b[0]], ["I", b[1]], ["B", b[2]]].map(([k, v]) => [k, v - S.k[k]]).sort((p, q) => Math.abs(q[1]) - Math.abs(p[1]))[0];
+      const name = { A: "ATTEND", I: "IGNORE", B: "BASELINE" }[off[0]];
+      return `${name} is ${off[1] > 0 ? "too low. Turn it up" : "too high. Turn it down"}. ${off[0] === "B" ? "That one slides the whole fit up and down." : "That one sets how tall its humps are."}`;
+    }
+    function fitHelp() {
+      S.k = BEST(); S.lampSeen = true; S.helped.fit = true; sfx("lamp");
+      coach("GUS", `Here. ATTEND ${S.k.A.toFixed(2)}, IGNORE ${S.k.I.toFixed(2)}, BASELINE ${S.k.B.toFixed(2)}. See how short the red lines got? That's the fit. Press THAT'S THE FIT.`);
       draw();
     }
     async function press(id) {
       if (id === "clear") { S.blocks = { A: [], I: [] }; sfx("cancel"); draw(); return; }
       if (id === "check") {
-        if (!matchesLog()) { sfx("bad"); coach("GUS", "That's not what the log says. Four ATTEND blocks, four IGNORE blocks, 16 seconds each. Read the times again."); return; }
-        add("log", 2); S.stage = 1; sfx("good");
+        if (!matchesLog()) {
+          const n = ++S.miss.log; sfx("bad");
+          if (n >= 4) {   // the answer: Gus types it in
+            S.blocks = { A: LOG_ONSETS.filter((_, j) => j % 2 === 0), I: LOG_ONSETS.filter((_, j) => j % 2 === 1) }; S.helped.log = true; S.logHint = false;
+            coach("GUS", "Scoot. I'll type. …There: his log, exactly as he wrote it. ATTEND at 0:16, 1:20, 2:24, 3:28. IGNORE in between. CHECK IT."); draw(); return;
+          }
+          if (n >= 2 && !S.logHint) { S.logHint = true; coach("GUS", `${logDiff()} I've outlined where his blocks go, in brass.`); draw(); return; }
+          coach("GUS", logDiff()); draw(); return;
+        }
+        if (!S.helped.log) add("log", 2); S.stage = 1; sfx("good");
         if (aligned()) { add("timing", 2); add("timingBonus", 1); S.stage = 2; coach("NELL", "The log is in scanner time. The data start after four dummy scans, so I took eight seconds off every block before I entered them."); }
         else coach("GUS", "Now lay your blocks over the data. Look at where the signal rises, and where your blocks start.");
         draw(); return;
       }
       if (id === "left" || id === "right") { S.shift += id === "left" ? -1 : 1; sfx("nudge", { f: id === "left" ? 780 : 980 }); draw(); return; }
       if (id === "aligned") {
-        if (!aligned()) { sfx("bad"); coach("GUS", S.shift === 0 ? "Look: the signal starts climbing before your blocks even begin. Every block is late by the same amount. Read the bottom of his log." : "Closer. Slide them until every block starts exactly where the stimulus did. Each click is one scan, two seconds."); return; }
-        add("timing", 2); S.stage = 2; sfx("good");
+        if (!aligned()) {
+          const n = ++S.miss.align; sfx("bad");
+          if (n >= 4) { S.shift = -4; S.helped.align = true; coach("GUS", "Four clicks earlier. Eight seconds. Watch: now every block starts where the signal does. Press LINED UP."); draw(); return; }
+          if (n >= 2) { coach("GUS", `His note: DUMMIES. Four dummy scans thrown away, two seconds each: eight seconds. You're at ${S.shift * TR > 0 ? "+" : ""}${S.shift * TR}. Go to -8.`); return; }
+          coach("GUS", S.shift === 0 ? "Look: the signal starts climbing before your blocks even begin. Every block is late by the same amount. Read the bottom of his log." : S.shift > 0 ? "Wrong way. The signal starts before your blocks. Go EARLIER." : "Closer. Slide them until every block starts exactly where the stimulus did. Each click is one scan, two seconds."); return;
+        }
+        if (!S.helped.align) add("timing", 2); S.stage = 2; sfx("good");
         coach("NELL", "Dummies. The scanner throws away the first four volumes, eight seconds, and his log counts from the scanner start. The data clock and the scanner clock aren't the same clock.");
         draw(); return;
       }
@@ -335,7 +391,12 @@ export function glm(root, opts = {}) {
         draw(); return;
       }
       if (id === "next4") {
-        if (!S.lampSeen) { sfx("cancel"); coach("GUS", "Not yet. Watch the leftovers: the red lines between the data and your fit. Make them as short as you can."); return; }
+        if (!S.lampSeen) {
+          const n = ++S.miss.fit; sfx("cancel");
+          if (n >= 4) { fitHelp(); return; }
+          if (n >= 3) { S.knobHint = true; coach("GUS", "I've marked where each knob wants to point, in brass. Turn them to the marks."); draw(); return; }
+          coach("GUS", n >= 2 ? knobAdvice() : "Not yet. Watch the leftovers: the red lines between the data and your fit. Make them as short as you can."); return;
+        }
         S.stage = 4; sfx("select"); coach("GUS", "Now let MATLAB do it. It does exactly what you just did, but instantly. That's all 'running a GLM' means."); draw(); return;
       }
       if (id === "solve") {
@@ -360,6 +421,11 @@ export function glm(root, opts = {}) {
       if (id === "fork") {
         const i = S.forks++; sfx("compute");
         if (i === 0) coach("GUS", "Nell. That button is how this whole building got here.");
+        else if (i === 10 || i === 12) {   // fair warning before the fourteenth
+          const p = String(FORK_P[i]).replace("0.", ".");
+          coach("GUS", i === 10 ? `${FORKS[i]}: P = ${p}. Nell, every one of these is another test. Keep clicking and one WILL come up significant. That's what the button is for.`
+            : `${FORKS[i]}: P = ${p}. Stop. The next one comes in under .05, and then you'll believe it. Everybody in this building did.`);
+        }
         else coach("NELL", `${FORKS[i]}…  P = ${String(FORK_P[i]).replace("0.", ".")}`);
         if (i === 13) {
           coach("NELL", "P = .049. It's… significant?");
