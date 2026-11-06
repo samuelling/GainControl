@@ -11,6 +11,7 @@ import { PORTRAITS_4 } from "./cast/act4.js";
 import { PORTRAITS_5A } from "./cast/act5a.js";
 import { irisFigure } from "./cast/act5b.js";
 import { coda } from "./story/coda.js";
+import { credits } from "./story/aftermath.js";
 import { PORTRAITS_A } from "./cast/act3a.js";
 import { PORTRAITS_B } from "./cast/act3b.js";
 import { keypad } from "./minigames/keypad.js";
@@ -454,6 +455,7 @@ async function endAct() {
   if (E.epilogue) await say(E.epilogue);
   if (ACTS[G.act + 1]) { await startAct(G.act + 1); return; }
   await coda(api);                                         // the real record, after the last act
+  await credits(api, { score: G.score });                  // and the credits roll
   await showCard(`${centered("GAIN CONTROL", 120, 34, "sW", 2)}${cchip(E.thanks, 186, 7, "fG")}${centered("CLICK TO RETURN TO THE TITLE", 232, 5, "sM", .9)}`, { hold: 800, auto: 0 });
   location.hash = ""; location.reload();
 }

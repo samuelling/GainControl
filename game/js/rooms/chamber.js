@@ -12,10 +12,18 @@
 // G.flags.crash (wins over creak): the 3T lies smashed into the Round Table under a ragged hole in the ceiling (bent rebar,
 // dangling conduit, the chilled water pouring), the table split, the ring dented, the console crushed, the hoods knocked
 // over, Quorum's feet and a few gold medals sticking out of the bore, Morris peeking down over the edge of the hole.
+// THE CLIMAX, shown (act5.js steps these and refreshes; poses, not tweens):
+//   G.flags.irisAt = [lat, z, pose]  Iris on the floor (walking poses 1/2, standing 0); behind the ring she's drawn among
+//                                    the seats so the iron covers her legs, in front of it as a sortable
+//   G.flags.preAt = [lat, z] | "gone"   Preston bolting for the door
+//   G.flags.swPose = 1               the knife switch halfway up (0 off; G.flags.finale = thrown)
+//   G.flags.fx = { k, i }            one-shot cutscene frames: gavel (0 raised, 1 struck), staple (KCHK at the hem),
+//                                    fall (the 3T at three heights, 2 = impact), bore (Quorum dragged into it, 0..2)
 import { seg, segW, segC, chip, chipW, perspective, hit, arcs, star4, onQuad } from "../gfx.js";
 import { AUD, morrisPeek } from "../figures.js";
 import { insignia } from "../cast/act3a.js";
 import { hoodSeated, hoodStanding, prestonHooded, quorumUnhooded } from "../cast/act5a.js";
+import { irisFigure } from "../cast/act5b.js";
 
 /* ---- camera: eye height E above the floor, viewing distance D (k = D / z). Matches perspective(): kAtY(y) = D / z ---- */
 const VPY = 90, E = 200, D = 420;
@@ -216,7 +224,7 @@ function stair(G) {
 const SW = { lat: 300, z: 610 };
 function knifeSwitch(G) {
   const k = kz(SW.z), [x, y] = W(SW.lat, 0, SW.z), s = k;
-  const thrown = !!G.flags.finale;
+  const thrown = !!G.flags.finale, mid = !thrown && G.flags.swPose === 1;
   const X = (dx) => x + dx * s, Y = (h) => y - h * s;
   let o = `<g data-hs="switch">
     <path class="sM mech" d="M${f(X(-6))},${f(Y(0))} L${f(X(-6))},${f(Y(70))} M${f(X(6))},${f(Y(0))} L${f(X(6))},${f(Y(70))}"/><path class="hl sM" d="M${f(X(-18))},${f(Y(0))} L${f(X(18))},${f(Y(0))}"/>
@@ -230,6 +238,9 @@ function knifeSwitch(G) {
     o += `<path class="k sW" d="M${f(X(-24))},${f(Y(134))} L${f(X(24))},${f(Y(134))} L${f(X(24))},${f(Y(128))} L${f(X(-24))},${f(Y(128))} Z"/>
       <path class="k sW" d="M${f(X(-4))},${f(Y(128))} L${f(X(-4))},${f(Y(116))} L${f(X(4))},${f(Y(116))} L${f(X(4))},${f(Y(128))}"/>
       ${star4(X(-16), Y(152), 4 * s + 2, "sG")}${star4(X(16), Y(154), 3 * s + 2, "sG")}${arcs(X(30), Y(150), 1, "sG", 2, .7)}${arcs(X(-30), Y(150), -1, "sG", 2, .7)}`;
+  } else if (mid) {           // halfway: the blades straight out, a spark jumping to the jaws
+    [-16, 0, 16].forEach(dx => { o += `<path class="sA" d="M${f(X(dx))},${f(Y(108))} L${f(X(dx * 1.05))},${f(Y(130))}"/>`; });
+    o += `<path class="k sW" d="M${f(X(-25))},${f(Y(132))} L${f(X(25))},${f(Y(132))} L${f(X(25))},${f(Y(126))} L${f(X(-25))},${f(Y(126))} Z"/>${star4(X(0), Y(144), 3 * s + 2, "sG")}`;
   } else {
     [-16, 0, 16].forEach(dx => { o += `<path class="sA" d="M${f(X(dx))},${f(Y(108))} L${f(X(dx * 1.1))},${f(Y(78))}"/>`; });
     o += `<path class="k sW" d="M${f(X(-26))},${f(Y(82))} L${f(X(26))},${f(Y(82))} L${f(X(26))},${f(Y(76))} L${f(X(-26))},${f(Y(76))} Z"/>
@@ -278,7 +289,9 @@ function consoleGroup(G) {
   return s;
 }
 function prestonGroup(G) {
-  const [x, y] = W(PRE.lat, 0, PRE.z), k = kz(PRE.z), q = k * AUD;
+  if (G.flags.preAt === "gone") return "";
+  const at = Array.isArray(G.flags.preAt) ? G.flags.preAt : null;
+  const [x, y] = W(at ? at[0] : PRE.lat, 0, at ? at[1] : PRE.z), k = kz(at ? at[1] : PRE.z), q = k * AUD;
   return `<g data-hs="preston">${prestonHooded(x, y, k, !!G.flags.finale)}${hit(x - 26 * q, y - 182 * q, 52 * q, 182 * q)}</g>`;
 }
 
@@ -291,6 +304,54 @@ function footSeat(G) {
   const [lx, ly] = c(0, h, FOOT.z - r);
   return `<g data-hs="table"><path class="sD" d="${legs}"/><polygon class="k sW" points="${pts(top)}"/>
     ${chip("GUEST", lx - 11, ly + 3, 3.6, "fW")}${hit(x - 26 * k, ly - 12, 52 * k, y - ly + 14)}</g>`;
+}
+
+/* ---- the climax, shown ---- */
+const figAt = (lat, z, svg, pose = 0) => { const [x, y] = W(lat, 0, z), q = kz(z) * AUD;
+  return `<g transform="translate(${f(x - 160 * q)},${f(y - 187 * q)}) scale(${q.toFixed(3)})"><g class="fp${pose}">${svg}</g></g>`; };
+const irisBehind = (G) => G.flags.irisAt && G.flags.irisAt[1] > 700;
+function irisNow(G) { const a = G.flags.irisAt; return a ? `<g style="pointer-events:none">${figAt(a[0], a[1], irisFigure(), a[2] || 0)}</g>` : ""; }
+function cutscene(G) {
+  const fx = G.flags.fx; if (!fx) return "";
+  let s = "";
+  if (fx.k === "gavel") {            // the skull gavel at the head of the table: raised, then struck (BANG)
+    const [x, y] = W(-14, RH, RZ + 150), k = kz(RZ + 150) * 1.4, up = fx.i === 0;
+    const hx = x + 30 * k, hy = y - 4 * k, gx = up ? x - 4 * k : x - 26 * k, gy = up ? y - 46 * k : y - 6 * k;
+    s += `<path class="sA" style="stroke-width:2" d="M${f(hx)},${f(hy - 18 * k)} L${f(gx)},${f(gy)}"/>
+      <rect class="k sA" x="${f(gx - 9 * k)}" y="${f(gy - 6 * k)}" width="${f(18 * k)}" height="${f(12 * k)}" transform="rotate(${up ? -30 : 0} ${f(gx)} ${f(gy)})"/>
+      <circle class="fW" cx="${f(gx)}" cy="${f(gy)}" r="${f(1.6 * k)}"/>`;
+    if (up) s += `<path class="hl sW" d="M${f(gx - 14 * k)},${f(gy - 8 * k)} L${f(gx - 20 * k)},${f(gy - 18 * k)} M${f(gx - 4 * k)},${f(gy - 12 * k)} L${f(gx - 6 * k)},${f(gy - 24 * k)}"/>`;
+    else s += star4(gx, gy + 6 * k, 9, "sW") + arcs(gx - 22 * k, gy, -1, "sW", 3, 1.1) + arcs(gx + 22 * k, gy, 1, "sW", 3, 1.1) + segC("BANG", gx, gy - 40 * k, 12, "sW", 1.4);
+  }
+  if (fx.k === "staple") {           // three staples through the hem of Quorum's robe, into the Table
+    const [x, y] = W(30, HEAD.h + 6, HEAD.z - 30), dx = [-14, 0, 14][fx.i % 3];
+    s += star4(x + dx, y, 7, "sR") + segC("KCHK", x + dx, y - 26, 8, "sR", 1.1);
+    for (let j = 0; j <= fx.i % 3; j++) s += `<path class="sW" d="M${f(x + [-14, 0, 14][j] - 3)},${f(y + 2)} L${f(x + [-14, 0, 14][j] - 3)},${f(y - 2)} L${f(x + [-14, 0, 14][j] + 3)},${f(y - 2)} L${f(x + [-14, 0, 14][j] + 3)},${f(y + 2)}"/>`;
+  }
+  if (fx.k === "fall") {             // the 3T coming through: a wireframe cylinder at three fixed heights, then the impact
+    // the housing, as it lies after the crash: a rounded box with the bore through it, seen end-on
+    const h = [255, 165, 70][fx.i], R = 112, z0 = HC.z - 150, z1 = HC.z + 150, rc = 34;
+    const box = (z) => { const c = [[R - rc, R - rc, 0], [-(R - rc), R - rc, 1], [-(R - rc), -(R - rc), 2], [R - rc, -(R - rc), 3]];
+      return c.flatMap(([cx, cy, q]) => sweep(q * Math.PI / 2, (q + 1) * Math.PI / 2, 6, t => W(HC.lat + cx + rc * Math.cos(t), h + cy + rc * Math.sin(t), z))); };
+    const fr = box(z0), bk = box(z1), E = (x, y, z) => W(HC.lat + x, h + y, z);
+    s += `<polygon class="k sM" points="${pts(bk)}"/>
+      <path class="sW" d="${[[R, R - rc], [-R, R - rc], [R - rc, R], [-(R - rc), R], [R, -(R - rc)], [-R, -(R - rc)]].map(([x, y]) => line([E(x, y, z0), E(x, y, z1)])).join(" ")}"/>
+      <polygon class="k sW mech" points="${pts(fr)}"/><path class="hl sW" d="${line(sweep(0, TAU, 40, t => E(62 * Math.cos(t), 62 * Math.sin(t), z0)))}"/>
+      <path class="hl sM" d="${line(sweep(0, TAU, 40, t => E(48 * Math.cos(t), 48 * Math.sin(t), z0 + 60)))}"/>
+      ${chip("3T", ...W(HC.lat - 12, h + 84, z0), 6, "fA")}`;
+    if (fx.i < 2) { const top = E(0, R, z0); for (let j = -3; j <= 3; j++) s += `<path class="hl sW" d="M${f(top[0] + j * 26)},${f(top[1] - 18 - Math.abs(j) * 6)} L${f(top[0] + j * 26)},${f(top[1] - 58 - Math.abs(j) * 6)}"/>`; }
+    else { const [cx, cy] = W(HC.lat, RH, HC.z - 160);
+      s += segC("WHUMP", 320, 54, 26, "sR", 2) + arcs(cx - 200, cy - 10, -1, "sW", 4, 2) + arcs(cx + 200, cy - 10, 1, "sW", 4, 2);
+      for (let j = 0; j < 14; j++) s += `<circle class="fM" cx="${f(cx - 220 + j * 34)}" cy="${f(cy - 20 - (j * 37 % 40))}" r="1.4"/>`; }
+  }
+  if (fx.k === "bore") {             // the medals go, and Quorum with them: off the dais, into the scanner, feet first
+    const P = [[0, 150, HEAD.z - 40], [0, 175, HEAD.z - 170], [8, 140, HEAD.z - 280]][fx.i];
+    const [x, y] = W(P[0], P[1], P[2]), k = kz(P[2]);
+    s += `<g transform="rotate(${[-20, -60, -88][fx.i]} ${f(x)} ${f(y - 90 * k * AUD)})">${quorumUnhooded(x, y, k, true)}</g>`;
+    for (let j = 0; j < 7; j++) s += `<circle class="fA" cx="${f(x - 40 + j * 13 + fx.i * 6)}" cy="${f(y - 70 * k - (j % 3) * 9)}" r="2.2"/>`;
+    s += `<path class="hl sW" d="M${f(x - 30)},${f(y - 150 * k)} L${f(x - 30)},${f(y - 210 * k)} M${f(x + 26)},${f(y - 140 * k)} L${f(x + 26)},${f(y - 200 * k)}"/>`;
+  }
+  return `<g style="pointer-events:none">${s}</g>`;
 }
 
 /* ---- the finale: the ring is on. Things fly to it as speed dashes; what's arrived is stuck to the iron. ---- */
@@ -631,6 +692,7 @@ function back(G) {
     seats += crash ? knocked(sp, i) : hoodSeated(sp.x, sp.y, sp.k, !on);
   });
   if (!headDone) seats += head(G);
+  if (irisBehind(G)) seats += irisNow(G);
   s += busbars(G);
   s += seats + `<g data-hs="table">${ringHalf(false, on)}</g>`;
   s += `<g data-hs="table">${poleFace(G)}${hit(...tableBox())}</g>`;
@@ -664,6 +726,8 @@ export default {
       { depth: yS(STAIR.z1), svg: stair(G) },
       { depth: yS(FOOT.z), svg: footSeat(G) },
       { depth: 999, svg: G.flags.finale ? `<g style="pointer-events:none">${finale(G)}</g>` : "" },
+      { depth: G.flags.irisAt ? yS(G.flags.irisAt[1]) : 0, svg: G.flags.irisAt && !irisBehind(G) ? irisNow(G) : "" },
+      { depth: 1000, svg: cutscene(G) },
     ] };
   },
   stand: { table: [320, 268], quorum: [300, 256], console: [236, 262], preston: [150, 262], gavel: [330, 256],

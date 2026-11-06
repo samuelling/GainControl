@@ -46,6 +46,8 @@
   #actor[data-pose="0"] .ap1, #actor[data-pose="0"] .ap2,
   #actor[data-pose="1"] .ap0, #actor[data-pose="1"] .ap2,
   #actor[data-pose="2"] .ap0, #actor[data-pose="2"] .ap1 { display: none; }
+  /* the same poses for figures drawn inside a room (cutscenes): wrap the figure in <g class="fpN"> */
+  .fp0 .ap1, .fp0 .ap2, .fp1 .ap0, .fp1 .ap2, .fp2 .ap0, .fp2 .ap1 { display: none; }
   .pt .mouth-b { display: none; } .pt.mo .mouth-b { display: inline; } .pt.mo .mouth-a { display: none; }
   .pt .eyes-closed { display: none; } .pt.bl .eyes-closed { display: inline; } .pt.bl .eyes-open { display: none; }
   .pt .blank-only { display: none; } .pt.blank .blank-only { display: inline; } .pt.blank .normal-only { display: none; }

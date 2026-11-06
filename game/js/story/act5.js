@@ -9,6 +9,7 @@ import { breakers } from "../minigames/breakers.js";
 import { reels } from "../minigames/reels.js";
 import { crossref } from "../minigames/crossref.js";
 import { supports } from "../minigames/supports.js";
+import { aftermath } from "./aftermath.js";
 
 /* ---------------- items ---------------- */
 Object.assign(ITEMS, {
@@ -116,35 +117,64 @@ async function doReels(api) {
 }
 
 /* ---------------- the climax and the endings ---------------- */
+// THE CLIMAX, shown rather than told: every event happens on screen in stepped poses (see chamber.js), with short
+// captions between them. Iris climbs out of the service stair and crosses the floor; three staples; she walks back and
+// throws the switch in three poses; the ring wakes; the ceiling gives; Preston bolts, Nell runs, Iris holds the door;
+// the 3T comes through in three drops; the medals take Quorum into the bore.
 async function climax(api) {
-  const G = api.G; if (G.flags.climax) return null; G.flags.climax = true;
+  const G = api.G, F = G.flags; if (F.climax) return null; F.climax = true;
   if (G.char !== "nell") api.switchTo("nell");
   G.cast = ["nell"];
   if (G.room !== "chamber") api.goRoom("chamber@fromAntechamber");
-  api.sfx("gavel"); await api.say("The minutes end. A gavel: brass, with a small skull set into the head.\n\nTHE CORRESPONDING AUTHOR|Before the induction, the Hunt.\n\nThe hood at the head of the table goes back.");
-  G.flags.unhooded = true; api.refresh(); api.sfx("cloth"); api.sfx("sting");
-  await api.say("Professor Quorum. Not dead. Never dead. A little pale, as if he spent Wednesday afternoon face down on an agenda. A chain of gold medals around his neck, fifty years of them.\n\nQUORUM|Thirty-nine. Still.");
+  const frame = async (k, i, ms) => { F.fx = { k, i }; api.refresh(); await api.wait(ms); };
+  const endFx = () => { F.fx = null; api.refresh(); };
+  const shake = async (n = 4, px = 6) => { const el = document.getElementById("frame"); if (!el) return;
+    for (let i = 0; i < n; i++) { el.style.transform = `translate(${i % 2 ? -px : px}px, ${i % 3 === 1 ? px / 2 : -px / 2}px)`; await api.wait(55); } el.style.transform = ""; };
+  const walkIris = async (path, ms = 150) => { for (let n = 0; n < path.length; n++) { F.irisAt = [...path[n], n === path.length - 1 ? 0 : 1 + n % 2]; api.refresh(); if (n % 2) api.sfx("step", { room: "chamber" }); await api.wait(ms); } };
+
+  // the gavel, twice
+  await api.say("The minutes end.");
+  for (const i of [0, 1, 0, 1]) { await frame("gavel", i, i ? 380 : 260); if (i) { api.sfx("gavel"); shake(2, 3); } }
+  endFx();
+  await api.say("THE CORRESPONDING AUTHOR|Before the induction, the Hunt.\n\nThe hood at the head of the table goes back.");
+  F.unhooded = true; api.refresh(); api.sfx("cloth"); api.sfx("sting");
+  await api.say("Professor Quorum. Not dead. Never dead. A chain of gold medals round his neck, fifty years of them.\n\nQUORUM|Thirty-nine. Still.");
   await api.convo("quorumOffer");
   const bad = await offer(api);
   if (bad) return ending(api, bad, { shown: true });
   await api.say("NELL|No.\n\nNELL|And give him back. Preston. Take them out of his ears.\n\nQUORUM|Ms. Null. You're in a sealed room, under a building, inside a magnet that hasn't been switched on since 1971.");
-  await api.say("A voice from the service stair:\n\nIRIS|1968, Pembroke. I commissioned it. Do keep up.");
-  G.flags.irisHere = true; api.refresh(); api.sfx("step", { room: "chamber" });
-  api.sfx("staple"); await api.say("Iris Candor comes up the last step at eighty-eight years old and exactly the right speed.\n\nIRIS|I told you in 1974.\n\nQuorum stands. Iris crosses the floor, raises the staple gun, and staples the hem of his robe to the Round Table. Twice. Three times, for 1974.");
-  await api.say("IRIS|I've waited a long time to turn it back on.\n\nShe throws the knife switch.");
-  G.flags.finale = true; api.refresh(); api.sfx("ramp"); api.sfx("zap");
-  await api.wait(900);
-  await api.say("The ring wakes up.\n\nHood clasps first: a sound like hail going the wrong way. Cufflinks. Belt buckles. Every earbud in the room. The Gain Controller tears off its console and hits the ring with a noise the building will remember.\n\nPreston's earbuds leave his ears like two small birds.");
-  await api.say("PRESTON|…Nell?\n\nPRESTON|Nell, I— what did I— I stole your data. I wrote the review. I don't think I've had a thought of my own in three years.\n\nNELL|I know. Later. You're going to write a confession. Your first paper in years.");
-  G.flags.creak = true; api.refresh(); api.sfx("creak");
-  await api.say("Above the Round Table, the ceiling makes a sound like a ship.\n\nThe ring has found something. Two floors up, on a pad held up by nothing but habit, sits a magnet that has never once been turned off.\n\nDust. Then water, Gus's leak, raining onto the Table. A crack runs across the ceiling and keeps going.");
-  await api.say("MORRIS (FROM THE PIPES)|Pal! PAL! It's coming! I'd move!\n\nIRIS|Door. Now.\n\nNell grabs Preston by the hood and runs. Iris is already in the doorway, which at eighty-eight is the most impressive thing anyone has ever seen.");
-  G.flags.crash = true; G.flags.quorumUp = true; api.refresh(); api.sfx("crash");
+  await api.say("IRIS (FROM THE STAIR)|1968, Pembroke. I commissioned it. Do keep up.");
+  // Iris comes up the service stair and crosses the room to the head of the table, at exactly the right speed
+  F.irisHere = true;
+  await walkIris([[380, 640], [360, 700], [335, 770], [310, 845], [285, 920], [250, 990], [205, 1040], [150, 1070], [95, 1088], [60, 1092]], 210);
+  await api.say("IRIS|I told you in 1974.");
+  for (const i of [0, 1, 2]) { api.sfx("staple"); await frame("staple", i, 420); }
+  endFx();
+  await api.say("Three staples through the hem of his robe, into the Round Table. One for 1974.\n\nIRIS|I've waited a long time to turn it back on.");
+  // back across the room to the knife switch
+  await walkIris([[95, 1088], [170, 1062], [235, 1010], [285, 940], [300, 860], [290, 780], [270, 710], [240, 640], [230, 604]], 170);
+  F.swPose = 1; api.refresh(); api.sfx("clunk"); await api.wait(380);
+  F.finale = true; F.swPose = 0; api.refresh(); api.sfx("ramp"); api.sfx("zap"); await shake(6, 7);
   await api.wait(700);
-  await api.say("The 3T comes through the ceiling.\n\nSix tonnes of superconductor, still humming, lands on the Round Table. The Table splits. The Gain Controller is a coin. The gavel is never found.\n\nGus's scanner. His 2:30 slot.");
-  await api.say("Quorum is still stapled to his chair, and he's wearing fifty years of gold.\n\nQUORUM|Fifty years of honors.\n\nQUORUM|All of them ferromagnetic.\n\nThe staples give. The medals go. Quorum goes with them, feet first, straight into the bore.\n\nAfter fifty years on the Table, he's finally been scanned.");
-  await api.say("Through the arch, the LTM's drives sit in the field of two magnets at once. Their lights go out one by one. The mill forgets everything it ever learned.\n\nWhat isn't gone is on paper, in a canister, on the second floor.\n\nMORRIS (LOOKING DOWN THROUGH THE HOLE)|…Did I do that? I did that.");
-  return ending(api, G.flags.archiveSent ? "accepted" : "major");
+  await api.say("The ring wakes up. Hood clasps, cufflinks, every earbud in the room: all of it, to the iron.\n\nPreston's earbuds leave his ears like two small birds.");
+  await api.say("PRESTON|…Nell? I stole your data. I wrote the review. I don't think I've had a thought of my own in three years.\n\nNELL|I know. Later. You're going to write a confession. Your first paper in years.");
+  // the ceiling gives
+  F.creak = true; api.refresh(); api.sfx("creak"); await shake(5, 4); await api.wait(500); api.sfx("creak"); await shake(4, 5);
+  await api.say("Above the Table, something enormous is coming through the ceiling.\n\nMORRIS (FROM THE PIPES)|Pal! PAL! It's coming! I'd move!\n\nIRIS|Door. Now.");
+  // everyone runs: Preston for the door, Iris already there, Nell after them
+  F.irisAt = [-385, 612, 0];
+  const run = (async () => { for (const p of [[-300, 600], [-345, 604], [-385, 600]]) { F.preAt = p; api.refresh(); await api.wait(160); } F.preAt = "gone"; api.refresh(); })();
+  await Promise.all([run, api.walk(80, 268)]);
+  // the 3T comes through
+  for (const i of [0, 1]) { await frame("fall", i, 170); api.sfx(i ? "crash" : "creak"); }
+  F.crash = true; F.quorumUp = true; F.creak = false; await frame("fall", 2, 120); await shake(8, 9); await api.wait(500);
+  endFx();
+  await api.say("Six tonnes of superconductor, still humming, on the Round Table. The Table splits. The Gain Controller is a coin.\n\nGus's scanner. His 2:30 slot.");
+  await api.say("QUORUM|Fifty years of honors.\n\nQUORUM|All of them ferromagnetic.");
+  for (const i of [0, 1, 2]) { await frame("bore", i, 240); if (i === 2) api.sfx("crash"); }
+  endFx(); await shake(3, 3);
+  await api.say("After fifty years on the Table, he's finally been scanned.\n\nMORRIS (LOOKING DOWN THROUGH THE HOLE)|…Did I do that? I did that.");
+  return ending(api, F.archiveSent ? "accepted" : "major");
 }
 const ENDINGS = {
   accepted: { title: "ACCEPTED", chip: "THE BEST ENDING", bodies: "BODIES 05.  ONE QUORUM, ARRESTED.", next: "THE TABLE IS DISSOLVED.",
@@ -175,10 +205,11 @@ async function ending(api, which, { shown = false } = {}) {
   if (shown) END.epilogue = "";   // already played, before the choice to revise
   api.flag("ending", which);
   if (which === "accepted") {
-    await api.say(END.epilogue);
+    await api.say("Monday. Ethel Bord's office. The reels, transcribed: fifty years of membership rolls.\n\nIRIS|This is the part they never thought anyone would do. It's just matching.");
     await api.mini(crossref, { score: api.score });
-    END.epilogue = "Nell lays the membership rolls next to fifty years of grant panels and editorial boards, and the pattern is undeniable.\n\nThe NRT is exposed and dissolved. Quorum is arrested, at thirty-nine; the charge sheet is amended. Half a century of Reviewer 2 reports are unsealed.\n\nPreston confesses to stealing Nell's data and to running the mill. All 31 of his papers are retracted; the retraction notices are the first thing he's written himself in years.\n\nNell's original paper, null and all, is published. It's dedicated to Gus Ian, with a methods section he would have called 'fine.'\n\nNell passes her defense. She gets the job.\n\nAlpha lives on Nell's desk now. The mister comes on at nine.\n\nIris watches it on the news, puts down the staple gun, and finally retires.";
   }
+  // what happened next, shown as a montage of short animated cards rather than told
+  if (which === "accepted" || which === "major") { await aftermath(api, which); END.epilogue = ""; }
   api.endAct(); return null;
 }
 
