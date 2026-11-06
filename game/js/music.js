@@ -1,23 +1,23 @@
 // MUSIC: one theme, arranged by the drama. Synthesized live with WebAudio, scheduled a step ahead (16th notes).
 //
-// The theme is eight bars in D minor (i–VI–III–VII, then i–VI–iv–V). Like Gabriel Knight's bookstore theme, the day
+// The theme is eight bars in D minor (i–VI–III–VII, then i–VI–iv–V). Every melody note on a beat is a chord tone, in every arrangement (/tmp/harm.mjs checks it). Like Gabriel Knight's bookstore theme, the day
 // arrangement is the light version of it: an OP-1-ish square pluck with a little delay, a bouncy triangle bass, a
 // small drum machine, and breathing room (every third pass drops the tune for a quiet arpeggio). Night is the same
 // tune, slower, on a soft FM bell, over a pad, no drums, a clock ticking.
 //
 // DREAD (0–1) rises with the act, with night, with going underground, and at the climax. As it rises: the drums
 // thin out, a dark detuned pad fades in and closes its filter, a throb arrives (the distant knock of the MRI, on the
-// beat, then doubled), a tritone drone sits under the root, the tempo drags, and the tune drops an octave into the
+// beat, then doubled), the pad sinks an octave and doubles its root, the tempo drags, and the tune drops an octave into the
 // murk. music.scene({ act, mode, room, flags, title }) retargets it; music.glitch() is a stab for the title screen.
 import { sfx } from "./sfx.js";
 
 const THEME = [   // 8 bars × 8 eighth notes (MIDI, null = rest)
-  [74, null, 69, null, 65, 69, 74, 76], [77, null, 74, null, 70, null, 69, null], [72, null, 69, 65, 69, null, 72, 74], [76, null, null, 74, 72, null, 67, null],
-  [74, null, 69, null, 65, 69, 74, 77], [79, null, 77, null, 74, null, 70, null], [69, null, 67, null, 70, null, 74, null], [73, null, 76, null, 69, null, null, null],
+  [74, null, 69, null, 65, 69, 74, 76], [77, null, 74, null, 70, null, 65, null], [72, null, 69, 65, 69, null, 72, 74], [76, null, null, 74, 72, null, 67, null],
+  [74, null, 69, null, 65, 69, 74, 77], [79, null, 77, null, 74, null, 70, null], [67, null, 70, null, 74, null, 70, null], [73, null, 76, null, 69, null, null, null],
 ];
 const ROOTS = [38, 46, 41, 36, 38, 46, 43, 45];                     // D2 Bb2 F2 C2 D2 Bb2 G2 A2
-const CHORDS = [[62, 65, 69], [58, 62, 65], [60, 65, 69], [60, 64, 67], [62, 65, 69], [58, 62, 65], [58, 62, 67], [57, 61, 64]];
-const NIGHT_ROOTS = [38, 46, 43, 45, 38, 46, 43, 45], NIGHT_CHORDS = [CHORDS[0], CHORDS[1], CHORDS[6], CHORDS[7], CHORDS[0], CHORDS[1], CHORDS[6], CHORDS[7]];
+const CHORDS = [[62, 65, 69], [58, 62, 65], [60, 65, 69], [60, 64, 67], [62, 65, 69], [58, 62, 65, 67], [58, 62, 67], [57, 61, 64]];
+const NIGHT_ROOTS = ROOTS, NIGHT_CHORDS = CHORDS;   // night re-voices the same harmony; it never re-harmonises the tune
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 const UNDER = new Set(["tunnels", "antechamber", "chamber", "plant", "tubehub", "crawlspace", "freezer", "maze", "server"]);
 
@@ -105,9 +105,9 @@ function scheduleStep(s, t) {
     if (i === 0 || i === 8 || (i === 10 && bar % 2)) kick(t, .4);
     if (i % 4 === 2) hat(t, .07); if (i === 12 && bar % 2) clap(t, .1);
   } else if (i % 4 === 0) hat(t, .03);                 // night: a clock ticking
-  // pad: one chord a bar; with real dread, a tritone under the root and, later, a cluster
+  // pad: one chord a bar; with real dread, the root doubled inside it and, later, the whole chord an octave down (dark, still in key)
   if (i === 0 && (night || d > .25)) {
-    const ch = chords[bar].map(m => m - 12), extra = d > .6 ? [roots[bar] + 6] : [], clu = d > .82 ? [ch[0] + 1] : [];
+    const ch = chords[bar].map(m => m - 12), extra = d > .6 ? [roots[bar] + 12] : [], clu = d > .82 ? ch.map(m => m - 12) : [];
     pad([...ch, ...extra, ...clu], t, spb * 16, .045, 300 + 1700 * (1 - d));
   }
   // the throb: the MRI, two floors away, on the beat; doubled when it's close
