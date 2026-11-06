@@ -138,18 +138,34 @@ function pipe() {
     ${hit(fx(top[0] - 8), 40, 30, fx(mouth[1] + 16 - 40))}</g>`;
 }
 
+// the riser: a brass pipe standing on the floor by the right wall and going straight up through the vault, toward the 3T
+function riser() {
+  const x = 556, w = 12, top = 0, foot = 266, mouth = 236;
+  return `<g data-hs="riser">${tubeLine([x, top], [x, mouth - 6], w, "sA")}
+    ${[30, 90, 150].map(y => `<path class="hl sA" d="M${x - w / 2 - 2},${y} L${x + w / 2 + 2},${y}"/>`).join("")}
+    <path class="hl sD" d="M${x + w / 2 + 2},90 L${x + 36},92 M${x + w / 2 + 2},30 L${x + 52},31"/>
+    <path class="k sA mech" d="M${x - w / 2},${mouth - 6} L${x - w / 2},${foot - 4} L${x + w / 2},${foot - 4} L${x + w / 2},${mouth - 6} Z"/>
+    <ellipse class="k sA" cx="${x}" cy="${foot - 2}" rx="${w}" ry="3"/>
+    <rect class="k sA mech" x="${x - w / 2 - 3}" y="${mouth - 8}" width="${w + 6}" height="4"/>
+    <ellipse class="k sA" cx="${x - w / 2 - 1}" cy="${mouth + 10}" rx="2" ry="7"/><ellipse class="hl sA" cx="${x - w / 2 - 1}" cy="${mouth + 10}" rx=".8" ry="4.4"/>
+    <path class="sA" d="M${x - w / 2 - 1},${mouth + 3} L${x - w / 2 - 7},${mouth + 1} L${x - w / 2 - 7},${mouth + 17} L${x - w / 2 - 1},${mouth + 17}"/>
+    <path class="sA" d="M${x},${top + 52} L${x},${top + 40} M${x - 4},${top + 44} L${x},${top + 40} L${x + 4},${top + 44}"/>
+    ${chip("UP: 3T", x - 34, 58, 4, "fA")}
+    ${hit(x - 40, 40, w + 50, foot - 36)}</g>`;
+}
+
 export default {
   id: "tubehub", name: "B3 · TUBE HUB", pp,
   floor: { yMin: 230, yMax: 287, margin: 16 },
-  entries: { fromPipes: [64, 280, 1] },
+  entries: { fromPipes: [64, 280, 1], fromRiser: [530, 272, -1] },
   draw(G) {
-    return { back: room() + archive(G) + arch() + ltm(G) + dial(G) + canisters() + pipe(), sortables: [] };
+    return { back: room() + archive(G) + arch() + ltm(G) + dial(G) + canisters() + pipe() + riser(), sortables: [] };
   },
-  stand: { dial: [236, 240], canisters: [104, 262], archive: [352, 236], arch: [352, 236], ltm: [438, 240], pipe: [64, 280] },
+  stand: { dial: [236, 240], canisters: [104, 262], archive: [352, 236], arch: [352, 236], ltm: [438, 240], pipe: [64, 280], riser: [530, 272] },
   labels: {
     morris: { dial: { use: "SEND" }, archive: { use: "PICK REELS" }, ltm: { use: "CHEW" }, canisters: { use: "CLIMB IN" }, arch: { go: "GO THROUGH" },
-      pipe: { go: "BACK UP THE PIPE" } },
+      pipe: { go: "BACK UP THE PIPE" }, riser: { go: "UP TO THE 3T" } },
     night: { dial: { use: "SEND" }, archive: { use: "PICK REELS" }, ltm: { use: "CHEW" }, canisters: { use: "OPEN ONE" }, arch: { go: "GO THROUGH" },
-      pipe: { go: "BACK" } },
+      pipe: { go: "BACK" }, riser: { go: "UP TO THE 3T" } },
   },
 };

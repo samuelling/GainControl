@@ -8,6 +8,7 @@ import { echo } from "../minigames/echo.js";
 import { breakers } from "../minigames/breakers.js";
 import { reels } from "../minigames/reels.js";
 import { crossref } from "../minigames/crossref.js";
+import { supports } from "../minigames/supports.js";
 
 /* ---------------- items ---------------- */
 Object.assign(ITEMS, {
@@ -24,7 +25,7 @@ wrap("notebook", (api) => {
   const f = api.G.flags, t = (k, s) => `- ${f[k] ? "(done) " : ""}${s}`;
   if (api.G.mode === "day") return "Your lab notebook. Today's page says DEFENSE, 2 PM, and nothing else. Everything else is on the slides.";
   return "Your lab notebook, by phone light. Tonight:\n\n" + [t("passOK", "NELL: get past the doorkeeper (the robe, the phrase, Iris's card)."), t("echoPassed", "NELL: take a seat at the Round Table. Answer the Echo."),
-    t("magnetCharged", "IRIS: cold-start the 1968 magnet (the power plant)."), t("archiveSent", "MORRIS: the Archive, up the tube, to Ethel. (Click a name, or Tab, to switch.)")].join("\n");
+    t("magnetCharged", "IRIS: cold-start the 1968 magnet (the power plant)."), t("archiveSent", "MORRIS: the Archive, up the tube, to Ethel."), t("supportsOut", "MORRIS: then up the riser, to the floor under the 3T. (Click a name, or Tab, to switch.)")].join("\n");
 });
 
 /* ---------------- conversations ---------------- */
@@ -66,8 +67,9 @@ async function doDefense(api) {
   await api.convo("verdict");
   await nightfall(api); return null;
 }
+const ready = (api) => api.flag("echoPassed") && api.flag("magnetCharged") && api.flag("supportsOut");
 async function doEcho(api) {
-  if (api.flag("echoPassed")) return api.flag("magnetCharged") ? climax(api) : "The Board waits for its Chair to finish reading the minutes. You have a few minutes. Somebody should be turning on a magnet.";
+  if (api.flag("echoPassed")) return ready(api) ? climax(api) : "The Board waits for its Chair to finish reading the minutes. You have a few minutes. Somebody should be turning on a magnet.";
   if (!api.flag("passOK")) return "You're not in yet.";
   await api.say("You take an empty seat at the Round Table, inside the iron ring. Twelve hoods. At the head of the table, a hood that sits very straight, like a man who was declared dead on Wednesday.\n\nA gavel. Then the Echo begins.");
   const r = await api.mini(echo, { mode: "induction", score: api.score, blip: api.blip, die: dieKeep(api),
@@ -76,8 +78,15 @@ async function doEcho(api) {
   if (!r || !r.passed) return "You stand up from the table, slowly, as if to stretch. Nobody stops you. Nobody has to. The seat will wait.";
   api.flag("echoPassed", true); api.score("echoPassed", 4);
   await api.say("THE CORRESPONDING AUTHOR|The motion carries.\n\nTwelve hoods nod, as one.");
-  if (api.flag("magnetCharged")) return climax(api);
+  if (ready(api)) return climax(api);
   return "THE CORRESPONDING AUTHOR|We will pause for the reading of the minutes.\n\nA hood begins reading fifty years of minutes, aloud. You have time. Somebody has to start a magnet. (Switch to Iris.)";
+}
+async function doSupports(api) {
+  if (api.flag("supportsOut")) return "MORRIS|It's up there on nothing but habit, pal. Somebody tell the lady with the switch.";
+  const r = await api.mini(supports, { score: api.score, die: dieKeep(api), onBolts: (b) => { api.G.flags.bolts = b; } });
+  if (!r || !r.done) return "MORRIS|Breather. Then back to the bolts.";
+  api.flag("supportsOut", true); api.score("supportsOut", 4); api.refresh();
+  return "MORRIS|Done, pal. When that lady throws her switch, that whole thing's coming down to say hello." + (api.flag("echoPassed") && api.flag("magnetCharged") ? "\n\nMORRIS|Iris! Go!" : "");
 }
 async function doBreakers(api) {
   if (api.flag("magnetCharged")) return "The needles are in the green. The ring upstairs is drinking current.";
@@ -100,6 +109,7 @@ async function climax(api) {
   const G = api.G; if (G.flags.climax) return null; G.flags.climax = true;
   if (G.char !== "nell") api.switchTo("nell");
   G.cast = ["nell"];
+  if (G.room !== "chamber") api.goRoom("chamber@fromAntechamber");
   await api.say("The minutes end. A gavel: brass, with a small skull set into the head.\n\nTHE CORRESPONDING AUTHOR|Before the induction, the Hunt.\n\nThe hood at the head of the table goes back.");
   G.flags.unhooded = true; api.refresh();
   await api.say("Professor Quorum. Not dead. Never dead. A little pale, as if he spent Wednesday afternoon face down on an agenda. A chain of gold medals around his neck, fifty years of them.\n\nQUORUM|Thirty-nine. Still.");
@@ -115,17 +125,22 @@ async function climax(api) {
   G.flags.finale = true; api.refresh(); api.blip([110, 90, 70, 55]);
   await api.wait(900);
   await api.say("The ring wakes up.\n\nHood clasps first: a sound like hail going the wrong way. Cufflinks. Belt buckles. Every earbud in the room. The Gain Controller tears off its console and hits the ring with a noise the building will remember.\n\nPreston's earbuds leave his ears like two small birds.");
-  await api.say("PRESTON|…Nell?\n\nPRESTON|Nell, I— what did I— I stole your data. I wrote the review. I've never written anything else. I don't think I've had a thought of my own in three years.\n\nNELL|I know. Sit down. You're going to write a confession. Your first paper in years.");
-  G.flags.quorumUp = true; api.refresh();
-  await api.say("Quorum is stapled to the Table, and he's wearing fifty years of gold.\n\nQUORUM|Fifty years of honors.\n\nQUORUM|All of them ferromagnetic.\n\nThe staples give. The medals go. Quorum goes with them, rising, at last, to the top, and straight into the ring.");
-  await api.say("Beside the Archive, the LTM's drives sit inside the field. Their lights go out one by one. The mill forgets everything it ever learned. Fifty years of the Table's words, gone in a second.\n\nWhat isn't gone is on paper, in a canister, on the second floor.");
+  await api.say("PRESTON|…Nell?\n\nPRESTON|Nell, I— what did I— I stole your data. I wrote the review. I don't think I've had a thought of my own in three years.\n\nNELL|I know. Later. You're going to write a confession. Your first paper in years.");
+  G.flags.creak = true; api.refresh(); api.blip([60, 55, 50]);
+  await api.say("Above the Round Table, the ceiling makes a sound like a ship.\n\nThe ring has found something. Two floors up, on a pad held up by nothing but habit, sits a magnet that has never once been turned off.\n\nDust. Then water, Gus's leak, raining onto the Table. A crack runs across the ceiling and keeps going.");
+  await api.say("MORRIS (FROM THE PIPES)|Pal! PAL! It's coming! I'd move!\n\nIRIS|Door. Now.\n\nNell grabs Preston by the hood and runs. Iris is already in the doorway, which at eighty-eight is the most impressive thing anyone has ever seen.");
+  G.flags.crash = true; G.flags.quorumUp = true; api.refresh(); api.blip([90, 60, 40, 30, 25]);
+  await api.wait(700);
+  await api.say("The 3T comes through the ceiling.\n\nSix tonnes of superconductor, still humming, lands on the Round Table. The Table splits. The Gain Controller is a coin. The gavel is never found.\n\nGus's scanner. His 2:30 slot.");
+  await api.say("Quorum is still stapled to his chair, and he's wearing fifty years of gold.\n\nQUORUM|Fifty years of honors.\n\nQUORUM|All of them ferromagnetic.\n\nThe staples give. The medals go. Quorum goes with them, feet first, straight into the bore.\n\nAfter fifty years on the Table, he's finally been scanned.");
+  await api.say("Through the arch, the LTM's drives sit in the field of two magnets at once. Their lights go out one by one. The mill forgets everything it ever learned.\n\nWhat isn't gone is on paper, in a canister, on the second floor.\n\nMORRIS (LOOKING DOWN THROUGH THE HOLE)|…Did I do that? I did that.");
   return ending(api, G.flags.archiveSent ? "accepted" : "major");
 }
 const ENDINGS = {
   accepted: { title: "ACCEPTED", chip: "THE BEST ENDING", bodies: "BODIES 05.  ONE QUORUM, ARRESTED.", next: "THE TABLE IS DISSOLVED.",
     epilogue: "Monday. Ethel Bord's office. The reels, transcribed: fifty years of membership rolls. Iris brings the panel rosters. 'This is the part they never thought anyone would do,' she says. 'It's just matching.'" },
   major: { title: "MAJOR REVISIONS", chip: "THE TABLE IS STOPPED. THE ARCHIVE IS GONE.", bodies: "BODIES 05.", next: "NO PROOF.  NOT YET.",
-    epilogue: "The Table is stopped. Quorum is in the ring, and then in custody. But the magnet took the Archive with the mill, and without the rolls, it's a story.\n\nNell passes her defense, with major revisions.\n\nThe last shot: Gus's empty desk. His laptop is still on, still running a GLM. Somewhere in the walls, a canister rattles." },
+    epilogue: "The Table is stopped. Quorum is pulled out of the bore of a 3T, and then into custody. But the magnet took the Archive with the mill, and without the rolls, it's a story.\n\nNell passes her defense, with major revisions.\n\nThe last shot: Gus's empty desk. His laptop is still on, still running a GLM. Somewhere in the walls, a canister rattles." },
   inducted: { title: "INDUCTED", chip: "CONGRATULATIONS ON YOUR R01", bodies: "BODIES 05.  YOURS, SPIRITUALLY.", next: "THE END.",
     epilogue: "NELL|Yes.\n\nTwelve hoods applaud, softly, like a grant panel. Someone hands Nell a small velvet box. Inside: a pair of earbuds.\n\nThey fit perfectly. Everything does, now.\n\nCongratulations on your R01." },
   deskreject: { title: "DESK REJECT", chip: "THE INDUCTION SUCCEEDED", bodies: "BODIES 05.", next: "THE END.",
@@ -172,9 +187,10 @@ export const HS = {
   },
   chamber: {
     table: { label: "the Round Table", night: { look: "The Round Table, inside the iron ring. Twelve seats; one is empty. It's for you.", use: doEcho } },
-    quorum: { label: "the hood at the head", night: { look: (api) => api.flag("unhooded") ? "Quorum. Thirty-nine. Still." : "A hood at the head of the table, sitting very straight." } },
+    quorum: { label: (api) => api.flag("crash") ? "Quorum's feet" : "the hood at the head", night: { look: (api) => api.flag("crash") ? "Two shoes, toes up, sticking out of the bore of the 3T. A few gold medals stuck to the rim. He's still thirty-nine." : api.flag("unhooded") ? "Quorum. Thirty-nine. Still." : "A hood at the head of the table, sitting very straight." } },
     console: { label: "Gain Controller", night: look("The Gain Controller, on its plinth. A dial, and a green bar. The bar is at maximum. Next to it, Preston, hooded, very still.") },
     preston: { label: "Preston", night: look("Preston, under a hood, earbuds glowing through the fabric. He's looking at the console the way a dog looks at a door.") },
+    scanner: { label: "the 3T", night: look("The 3T, on the Round Table, still humming. THE MAGNET IS ALWAYS ON. Its bed is buckled. Gus's scanner. His 2:30 slot.") },
     gavel: { label: "gavel", night: look("The gavel. Brass, with a small skull set into the head. You decide not to think about whose.") },
     switch: { label: "knife switch", night: look("A big knife switch on the wall by the service stair. A brass plate: OPERATOR. 1968. In marker, small, underneath: I.C.") },
     stair: { label: "service stair", night: look("A service stair, going down. Iris is down there somewhere.") },
@@ -185,8 +201,14 @@ export const HS = {
     manual: { label: "manual", night: look("SUPERCONDUCTING RING, OPERATOR'S GUIDE, 1968. The printed procedure is wrong. The margins aren't.") },
     meters: { label: "meters", night: look("Analog meters. Their needles are trembling, like they remember.") },
     knife: { label: "knife switch", night: { look: "The plant's own knife switch. MAIN SUPPLY.", use: (api) => api.flag("magnetCharged") ? "IRIS|Not this one, dear. The one that matters is upstairs by the ring." : api.die("Iris throws the main switch before the breakers are set.\n\nThe 1968 supply comes on at once. So does every light in Boston, briefly. Then none of them.\n\nIRIS: Well. That's never happened before. Except once.") } },
-    stair: { label: "service stair", night: { look: "Up to the chamber.", go: (api) => !api.flag("magnetCharged") ? "IRIS|Not until the magnet's charged." : !api.flag("echoPassed") ? "IRIS|Not until the girl's in her seat." : climax(api) } },
+    stair: { label: "service stair", night: { look: "Up to the chamber.", go: (api) => !api.flag("magnetCharged") ? "IRIS|Not until the magnet's charged." : !api.flag("echoPassed") ? "IRIS|Not until the girl's in her seat." : !api.flag("supportsOut") ? "IRIS|Not until the rat's done with the floor. He knows what I mean." : climax(api) } },
     tunnel: { label: "tunnel", night: look("The way she came. Iris doesn't go back.") },
+  },
+  crawlspace: {
+    posts: { label: "jack posts", morris: { look: (api) => api.flag("supportsOut") ? "Four posts, no bolts. The pad's up there on nothing but habit." : "Four steel jack posts holding up the 3T's pad. Rust everywhere, streaked downhill from the leak. Three bolts each. Gus would have called this a structural finding.", use: doSupports } },
+    grating: { label: "grating", morris: look("Through the grating: the curved underside of the 3T, and a sticker, upside down from here: THE MAGNET IS ALWAYS ON. Morris's implant hums like a tuning fork.") },
+    chiller: { label: "chilled-water line", morris: { look: "The 3T's chilled-water line, tapped with a crude brass valve. A hose runs from it down through the floor. A tag on the valve: a circle seated around a smaller circle.", use: "Morris chews the hose. Water sprays everywhere. Fifty years of leak, now honest about it." } },
+    riser: { label: "riser pipe", morris: { look: "Back down to the tube hub.", go: "tubehub@fromRiser" } },
   },
   tubehub: {
     archive: { label: "the Archive", morris: { look: "Shelves of reel-to-reel tapes, floor to ceiling, through the arch. Fifty years of the Table.", use: doReels } },
@@ -194,6 +216,8 @@ export const HS = {
     canisters: { label: "canisters", morris: { look: "Canisters in a rack, ready.", use: "MORRIS|I'm not riding one, pal. I've seen what happens. Registrar." } },
     ltm: { label: "LTM drives", morris: { look: "The LTM's drive racks, blinking. Two, one, two.", use: "Morris chews through a cable. The lights stutter. Somewhere, a paper loses one sentence and gets better." } },
     pipe: { label: "pipe", morris: look("The pipe Morris came down. It goes up to every room in the building.") },
+    riser: { label: "riser pipe", morris: { look: "A riser pipe going straight up, wet on the outside. UP: 3T. It's the chilled-water line. It's been leaking down here for fifty years.",
+      go: (api) => api.flag("reelsDone") ? "crawlspace@fromHub" : "MORRIS|Archive first, pal. Ethel needs her reading." } },
     arch: { label: "arch", morris: look("An arch, with the insignia carved in the keystone.") },
   },
 };
@@ -237,7 +261,7 @@ export const END = { title: "THE END", chip: "DECISION", bodies: "", next: "", e
 
 export async function check(api) {
   const { G } = api, f = G.flags;
-  if (G.mode === "night" && f.echoPassed && f.magnetCharged && G.char === "iris" && !f.climax && !f.irisReady) { f.irisReady = true;
+  if (G.mode === "night" && f.echoPassed && f.magnetCharged && f.supportsOut && G.char === "iris" && !f.climax && !f.irisReady) { f.irisReady = true;
     return "IRIS|The girl's seated, and the ring's charged. Up the service stair."; }
   return null;
 }

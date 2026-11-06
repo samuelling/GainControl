@@ -37,9 +37,10 @@ import antechamber from "./rooms/antechamber.js";
 import chamber from "./rooms/chamber.js";
 import plant from "./rooms/plant.js";
 import tubehub from "./rooms/tubehub.js";
+import crawlspace from "./rooms/crawlspace.js";
 
 const ROOMS = { seminar, hall, lab, mri, office, ethics, impact, kitchen, server, tunnels, conference, iris,
-  library, impactoffice, freezer, maze, defense, antechamber, chamber, plant, tubehub };
+  library, impactoffice, freezer, maze, defense, antechamber, chamber, plant, tubehub, crawlspace };
 Object.assign(PORTRAIT, PORTRAITS_A, PORTRAITS_B, PORTRAITS_4, PORTRAITS_5A);
 const ACTS = { 1: A1, 2: A2, 3: A3, 4: A4, 5: A5 };
 const ITEMS = A1.ITEMS;                                   // shared; later acts add to it
