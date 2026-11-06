@@ -1,11 +1,10 @@
 // THE SUPPORTS (Act V, the crawlspace under the 3T; played by Morris). The magnet's concrete pad sits on four
 // rust-rotted steel jack posts (NW, NE, SW, SE), three bolts each. Click a bolt: Morris goes to it and gnaws or kicks
 // it out. Every bolt out tips the pad toward its post; a bullseye spirit level shows the tilt (the bubble rides to the
-// high side). Past the yellow ring it warns; past the red ring the pad drops early (death, then all bolts back in).
-// Tilt is a 2D vector: the sum over posts of (load given up by that post's removed bolts) × (post direction).
-// One post, chosen at random, is rotted through (weeping rust drips): its first bolt gives way much more than the
-// others, its last almost nothing, so every post still totals the same and the pad ends level when all twelve are out.
-// Alternate diagonal partners (NW then SE, NE then SW…) and it never leaves the yellow; strip one post and it drops.
+// high side). Tilt is a 2D vector: the sum over posts of (bolts out) × (post direction). All bolts are equal.
+// Kept simple on purpose: past the yellow ring it warns AND the bolts that would level it light up green; a bolt that
+// would tip it past the red ring, Morris refuses ("not that one, pal") and names the post to take instead. No early
+// drop, no randomness. Taking opposite corners in turn (NW then SE, NE then SW) never even reaches the yellow.
 // supports(el, { die(text) → Promise, score(key, n), onBolts(str) }) → Promise<{ done, tries }>
 // onBolts gets the bolts still in, per post, as a 4-char string in the order NW NE SW SE (e.g. "3321"), after each change.
 import { seg, segC, segW, chip, arcs, star4 } from "../gfx.js";
@@ -26,8 +25,8 @@ const DEATH = "Morris has been archived under six tonnes of superconductor. So h
 
 const LINES = {
   intro: [["MORRIS", "Under the 3T. Six tonnes of magnet on four rusty sticks. Pal, I have been waiting my whole life for this."],
-    ["NARRATOR", "Four jack posts, three bolts each. Fifty years of the Table's stolen chilled water have been running down them. One is weeping rust worse than the others."],
-    ["IRIS", "Kssh. Morris, dear. Bolts out, but keep it level. It comes down when I throw the switch, not before. Kssh."]],
+    ["NARRATOR", "Four jack posts, three bolts each, rotten with fifty years of the Table's stolen chilled water. Every bolt out tips the pad toward that corner."],
+    ["IRIS", "Kssh. Morris, dear. Bolts out, but keep the bubble in the middle. Opposite corners, one then the other. It comes down when I throw the switch, not before. Kssh."]],
   quips: [
     "This is the most fun I've had since the water maze. That's not saying much.",
     "Tastes like 1968. Iron, mostly. Little hint of indirect costs.",
@@ -38,9 +37,9 @@ const LINES = {
     "Hi-yah! Learned that kick from a postdoc. Different context.",
     "Listen to it creak. That's fifty years of tenure settling.",
   ],
-  rot: ["MORRIS", "Whoa! That one's rotten clean through, pal. It gave like a dean at an open bar."],
+  refuse: (post) => ["MORRIS", `Not that one, pal. One more from that corner and it comes down on the girl. Take one from ${post}.`],
   yellow: [["NARRATOR", "The bubble is past the yellow ring. The pad is listening."],
-    ["MORRIS", "Bubble rides to the high side, pal. So take the next bolt from under the bubble."]],
+    ["MORRIS", "Leaning, pal. The bolts lit up green are the ones that bring it back."]],
   groan: [
     "Hear that groan? That's the building asking for a sabbatical.",
     "Dust in my whiskers. Concrete dust. Delicious.",
@@ -102,7 +101,7 @@ const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
 export function supports(el, { die, score = () => {}, onBolts = () => {} } = {}) {
   css();
   return new Promise(resolve => {
-    const rot = Math.floor(Math.random() * 4);
+    const rot = -1;                                   // (an older version rotted one post at random; cut as too fiddly)
     const S = { bolts: POSTS.map(() => [1, 1, 1]), out: [0, 0, 0, 0], tries: 1, n: 0, lock: false, dying: false, closed: false,
       morris: { x: VX, y: P(VX, FLOOR, .82)[1], k: .82, face: 1, pose: "sit" }, drop: null, floor: [], creak: null, groan: false,
       fall: 0, amb: 0, yellowed: false, rotSeen: false, quip: 0, groanQ: 0, after: 0, done: false, say: LINES.intro[0], q: [] };
@@ -115,6 +114,11 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
     const tilt = () => tiltOf(S.out, rot);
     const mag = () => Math.hypot(...tilt());
     const bstr = () => S.out.map(n => 3 - n).join("");
+    const magIf = (q) => { const o = S.out.slice(); o[q]++; return Math.hypot(...tiltOf(o, rot)); };
+    const open = (q) => S.out[q] < 3;
+    const best = () => [0, 1, 2, 3].filter(open).sort((a, b) => magIf(a) - magIf(b))[0];
+    // once it leans past the yellow ring: the posts whose next bolt brings it back toward level
+    const helps = () => mag() < YELLOW ? [] : [0, 1, 2, 3].filter(q => open(q) && magIf(q) < mag() - .2);
 
     // the pad plane: world Y offset for a point (X, k), tipping down toward the tilt vector
     function dY(X, k, T = tilt(), gain = G) { const u = (X - VX) / 145, v = (k - .765) / .185; return gain * (T[0] * u + T[1] * v); }
@@ -209,8 +213,9 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
         const c = P(X, BOLTY[i] + sag, k), r = 4.4 * k;
         if (!S.bolts[p][i] || (S.fall && S.fall.p === p && S.fall.i === i)) { s += `<circle class="hl sD" cx="${f1(c[0])}" cy="${f1(c[1])}" r="${f1(r * .55)}"/>`; continue; }
         const hx = [0, 1, 2, 3, 4, 5].map(j => [c[0] + Math.cos(j * Math.PI / 3) * r, c[1] + Math.sin(j * Math.PI / 3) * r]);
-        const hr = Math.max(9, 17 * k);
-        s += `<g data-bolt="${p}${i}"><polygon class="k bh sW" points="${hx.map(pt).join(" ")}"/><circle class="hl bh sW" cx="${f1(c[0])}" cy="${f1(c[1])}" r="${f1(r * .45)}"/>
+        const hr = Math.max(9, 17 * k), hint = !S.done && !S.drop && helps().includes(p), bc = hint ? "sG" : "sW";
+        if (hint && i === BOLTY.findIndex((_, j) => S.bolts[p][j])) s += arcs(c[0] - 12 * k, c[1], -1, "sG", 2, k * .8) + arcs(c[0] + 12 * k, c[1], 1, "sG", 2, k * .8);
+        s += `<g data-bolt="${p}${i}"><polygon class="k bh ${bc}" points="${hx.map(pt).join(" ")}"/><circle class="hl bh ${bc}" cx="${f1(c[0])}" cy="${f1(c[1])}" r="${f1(r * .45)}"/>
           <rect x="${f1(c[0] - hr)}" y="${f1(c[1] - 8.5 * k - 1)}" width="${f1(hr * 2)}" height="${f1(17 * k + 2)}" fill="transparent"/></g>`;
       }
       return s;
@@ -297,7 +302,7 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
         <svg class="t hd" viewBox="0 0 640 40">${seg("THE SUPPORTS", 16, 10, 18, "sW", 1.6)}${seg("UNDER THE 3T  CRAWLSPACE B1-B3  FOUR JACK POSTS  THREE BOLTS EACH", 196, 17, 5, "sM", .8)}</svg>
         <svg class="t supsvg" viewBox="0 0 640 276">${scene()}</svg>
         <div class="coachline"></div>
-        <div class="bar"><span class="status">${S.done ? "ALL TWELVE OUT  ·  LEVEL" : S.dying ? "THE PAD IS COMING DOWN" : `${POSTS.map((t, p) => t + " " + (3 - S.out[p])).join("  ")}   ·   ATTEMPT ${S.tries}`}</span>
+        <div class="bar"><span class="status">${S.done ? "ALL TWELVE OUT  ·  LEVEL" : S.dying ? "THE PAD IS COMING DOWN" : `${POSTS.map((t, p) => t + " " + (3 - S.out[p])).join("  ")}   ·   KEEP THE BUBBLE IN THE MIDDLE`}</span>
           <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
       drawCoach();
     }
@@ -319,6 +324,10 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
     }
     async function pull(p, i) {
       if (S.lock || S.done || S.dying || !S.bolts[p][i]) return;
+      if (magIf(p) >= RED) {            // Morris won't: it would come down on Nell. He says which corner instead.
+        S.yellowed = true; say(LINES.refuse(POSTS[best()])); sfx("creak2", { m: RED }); S.creak = { p }; redrawScene(); later(700, () => { S.creak = null; redrawScene(); });
+        return;
+      }
       setLock(true);
       const m = S.morris, to = spotFor(p, i), from = { ...m };
       // hop over in fixed steps
@@ -347,8 +356,7 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
       later(900, () => { S.creak = null; redrawScene(); });
       if (total === 12) { finishRun(); return; }
       // say something
-      if (p === rot && S.out[p] === 1 && !S.rotSeen) { S.rotSeen = true; say(LINES.rot, ...(M >= YELLOW && !S.yellowed ? (S.yellowed = true, LINES.yellow.slice(1)) : [])); }
-      else if (M >= YELLOW && !S.yellowed) { S.yellowed = true; say(...LINES.yellow); }
+      if (M >= YELLOW && !S.yellowed) { S.yellowed = true; say(...LINES.yellow); }
       else if (S.groan) say(["MORRIS", LINES.groan[S.groanQ++ % LINES.groan.length]]);
       else say(["MORRIS", LINES.quips[S.quip++ % LINES.quips.length]]);
       setLock(false);
@@ -371,7 +379,7 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
     function finishRun() {
       S.done = true; S.lock = false;
       Object.assign(S.morris, { x: VX, y: P(VX, FLOOR, .82)[1], k: .82, face: 1, pose: "sit" });
-      score("supports", Math.max(1, 5 - S.tries)); sfx("chime");
+      score("supports", S.yellowed ? 3 : 4);   // full marks for never letting it lean into the yellow sfx("chime");
       draw(); say(...LINES.done);
     }
 

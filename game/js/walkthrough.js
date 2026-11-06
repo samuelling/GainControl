@@ -218,7 +218,7 @@ export const WALKTHROUGH = {
       { t: "Send MEMBERSHIP ROLLS, PANEL SCORES, REVIEWER 2 REPORTS and EDITORIAL BOARDS: click a reel, then SEND. Three or more reach Ethel for the best ending.", flag: "archiveSent" },
       { t: "OPTIONAL: as Morris, click the dead letters and choose OPEN IT: the brass gavel.", flag: "brassGavel" },
       { t: "MORRIS: riser pipe, UP TO THE 3T. Click the jack posts and choose LOOSEN THE BOLTS.", flag: "supportsOut" },
-      { t: "Find the post weeping rust. Pull a bolt from its diagonal partner, then the weeping post, then one each from the other two. Repeat three times.", flag: "supportsOut" },
+      { t: "Pull bolts from opposite corners in turn: NW, then SE, then NE, then SW, and round again. If the pad leans, the bolts lit green bring it back; Morris won't pull one that would drop it.", flag: "supportsOut" },
       { t: "AVOID: stripping one post. Past the red ring the pad drops early (death; Revise & Resubmit puts every bolt back)." },
     ] },
     { name: "THE DECISION", steps: [
