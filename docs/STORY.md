@@ -230,6 +230,7 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 
 **Day (Nell):** Nell fights back.
 - **Impact flies in** rattled, agrees to meet Nell at 4pm, and is found frozen in the -80 next to a box labeled DO NOT THAW.
+- **The dark booth:** the proof that Preston is being driven. The Gain Controller's earbuds leak trace photons, too few to see except with fully dark-adapted rods. Gus lures Preston into the Adline Lab's booth as a "pilot subject" (middle authorship), and after twenty minutes in perfect dark Nell, looking beside him rather than at him, sees the emission: a coil, the Table's insignia, and a gain dial pinned at maximum.
 - **Impact's office** (password: his h-index):
   - **Reviewer 2's report** on Nell's paper, in Preston's unmistakable style ("nueron," "utilize").
   - **The retainer.** Nell's own retainer artifact in Preston's figure, with six hallucinated cortical layers inside it. *"That's not his data. That's my mouth."* And the null from the replication clicks: *"His sub-01 had my null. Because his sub-01 is me."*

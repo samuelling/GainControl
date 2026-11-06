@@ -24,6 +24,7 @@ const CARDS = {
   hours: { t: "THE MISSING HOURS", s: "EVERY FRIDAY. SAME GAP.", k: "sV", d: "The first author, his PI and the Chair: the same Friday-night gap in every expense report, and the same feeder labs." },
   metamer: { t: "THE METAMER", s: "EVERY SENTENCE BORROWED", k: "sV", d: "The Big Finding, sentence by sentence: all lifted from older papers by the same few labs." },
   card: { t: "IMPACT'S NRT CARD", s: "EXPIRED. AGE 41.", k: "sV", d: "Prof. Impact's membership card. The Neuroscientific Round Table. Expired at 41." },
+  dark: { t: "THE DARK BOOTH", s: "HIS EARBUDS GLOW. DIAL AT MAX", k: "sG", d: "Twenty minutes dark-adapted, looking beside him: Preston's earbuds emit a few photons a second, in the shape of a coil, the Table's insignia and a gain dial pinned at maximum." },
   feud: { t: "THE FEUD SEED", s: "TWO RIVALS. ONE SEED.", k: "sV", d: "The famous feud with Dr. Polly Mick: both sides, written by the same model on the same nights." },
 };
 const ALL = Object.keys(CARDS);
@@ -45,6 +46,7 @@ const IC = {
   hours: (x, y, c) => `<circle class="${c}" cx="${x}" cy="${y}" r="10"/><path class="${c}" d="M${x},${y} L${x},${y - 6} M${x},${y} L${x + 4},${y + 2}"/><path class="hl sR" d="M${x + 7},${y - 7} A10,10 0 0 1 ${x + 10},${y}"/>`,
   metamer: (x, y, c) => `<circle class="${c}" cx="${x - 5}" cy="${y}" r="8"/><circle class="${c}" cx="${x + 5}" cy="${y}" r="8"/><path class="hl ${c}" d="M${x - 2},${y - 2} L${x + 2},${y - 2} M${x - 2},${y + 2} L${x + 2},${y + 2}"/>`,
   card: (x, y, c) => `<rect class="${c}" x="${x - 13}" y="${y - 8}" width="26" height="16" rx="1.5"/><circle class="${c}" cx="${x - 6}" cy="${y}" r="4.5"/><circle class="fR" cx="${x - 6}" cy="${y}" r="1.6"/>${seg("41", x + 1, y - 3, 6, c, .9)}`,
+  dark: (x, y, c) => `<circle class="hl ${c}" cx="${x}" cy="${y}" r="8"/><circle class="hl ${c}" cx="${x}" cy="${y}" r="3.2"/>${[[-11, -6], [10, -8], [-6, 9], [12, 5], [0, -12], [-13, 3], [7, 11]].map(([a, b]) => `<circle class="fW" cx="${x + a}" cy="${y + b}" r=".9"/>`).join("")}`,
   feud: (x, y, c) => `<path class="${c}" d="M${x - 13},${y} L${x - 3},${y} M${x - 7},${y - 4} L${x - 3},${y} L${x - 7},${y + 4} M${x + 13},${y} L${x + 3},${y} M${x + 7},${y - 4} L${x + 3},${y} L${x + 7},${y + 4}"/><path class="hl ${c}" d="M${x - 8},${y - 10} L${x},${y - 6} L${x + 8},${y - 10} M${x},${y - 6} L${x},${y - 2}"/>`,
 };
 
@@ -63,7 +65,7 @@ const Q = [
   { key: "REVIEW", who: "ADLINE", q: "WHO WROTE THE REVIEW?", w: { reviewer2: 2 },
     ask: [["ADLINE", "Your paper went out from my lab last spring and came back from Reviewer 2. Who wrote the review?"]],
     ok: [["SMALL", "A typo is a fingerprint. That one I believe."], ["ADLINE", "Impact's student. Nell, there's only one. Are you going to say a name?"], ["NELL", "At the end. It's a defense. You save the result for the end."]] },
-  { key: "WHY", who: "SMALL", q: "WHY WOULD ANYONE DO THIS?", w: { invite: 1, hours: 1, metamer: 1, card: 1, feud: 1, logs: 1 }, last: true,
+  { key: "WHY", who: "SMALL", q: "WHY WOULD ANYONE DO THIS?", w: { invite: 1, hours: 1, metamer: 1, card: 1, feud: 1, logs: 1, dark: 1 }, last: true,
     ask: [["SMALL", "Okay. Fraud, theft, a grudge review, and people keep dying near it. Why? Nobody does all that for one paper."]],
     ok: [] },
 ];
@@ -87,6 +89,7 @@ const NELL = {
   hours: ["The missing hours. The first author, his PI and our late Chair: the same blank every Friday night, in every expense report, for decades. The same three feeder labs on every CV."],
   metamer: ["The Big Finding is a metamer. Every sentence lifted from an older paper, and every older paper comes from the same few labs. The author list is a membership roll."],
   card: ["Professor Impact's membership card. The Neuroscientific Round Table. It expired when he turned forty-one. So did he."],
+  dark: ["Thursday, in our dark booth, after twenty minutes dark-adapted: Preston's earbuds give off light. A few photons a second, only rods can see it. A coil. The Table's insignia. And a dial at maximum. Someone is turning him up."],
   feud: ["The famous feud with Dr. Mick. Both sides written by the same model, with the same seed, on the same Friday nights. Two puppets, one hand."],
   "WHY:logs": ["The second job in the logs runs every Friday at midnight: a language model trained on /mnt/B3/archive. There is no B3. There's a B3."],
 };
@@ -196,13 +199,15 @@ export function defense(el, { evidence = ALL, score = () => {} } = {}) {
         ${seg("(ABSENT)", x + 2, y + h + 4.4, 4.6, "sM", .8)}`;
     }
     function card(id, i) {
-      const c = CARDS[id], x = 2 + (i % 8) * 80, y = 140 + Math.floor(i / 8) * 70, cx = x + 38;
-      if (S.used[id]) return `<rect class="hl sD dash" x="${x}" y="${y}" width="76" height="64"/>${segC("EXHIBIT " + S.used[id], cx, y + 29, 5, "sD", .8)}`;
+      // two rows, as many columns as the hand needs (8 for 16 cards, 9 for 17–18)
+      const cols = Math.max(8, Math.ceil(hand.length / 2)), pitch = 640 / cols, cw = pitch - 4;
+      const c = CARDS[id], x = 2 + (i % cols) * pitch, y = 140 + Math.floor(i / cols) * 70, cx = x + cw / 2;
+      if (S.used[id]) return `<rect class="hl sD dash" x="${x}" y="${y}" width="${cw}" height="64"/>${segC("EXHIBIT " + S.used[id], cx, y + 29, 5, "sD", .8)}`;
       const tried = S.tried[id], fl = S.flash === id;
-      return `<g data-card="${id}"><rect class="k cb ${fl ? "sR" : c.k}" x="${x}" y="${y}" width="76" height="64"/>
+      return `<g data-card="${id}"><rect class="k cb ${fl ? "sR" : c.k}" x="${x}" y="${y}" width="${cw}" height="64"/>
         ${IC[id](cx, y + 20, tried ? "sD" : c.k)}<g class="ct">${segC(c.t, cx, y + 39, 5.2, tried ? "sM" : "sW", 1)}</g>${segC(c.s, cx, y + 50, 3.5, "sM", .7)}
-        ${tried ? `<path class="sR" d="M${x + 66},${y + 4} L${x + 72},${y + 10} M${x + 72},${y + 4} L${x + 66},${y + 10}"/>` : ""}
-        ${fl ? star4(x + 70, y + 6, 6, "sR") : ""}</g>`;
+        ${tried ? `<path class="sR" d="M${x + cw - 10},${y + 4} L${x + cw - 4},${y + 10} M${x + cw - 4},${y + 4} L${x + cw - 10},${y + 10}"/>` : ""}
+        ${fl ? star4(x + cw - 6, y + 6, 6, "sR") : ""}</g>`;
     }
     function meter() {
       let s = seg("CREDIBILITY", 4, 104, 4, "sM", .7) + seg(String(Math.round(S.cred)).padStart(2, "0"), 4, 111, 15, "sW", 1.4);

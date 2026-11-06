@@ -8,6 +8,7 @@ import { hours } from "../minigames/hours.js";
 import { retainer } from "../minigames/retainer.js";
 import { stairwell } from "../minigames/stairwell.js";
 import { echo } from "../minigames/echo.js";
+import { darkbooth } from "../minigames/darkbooth.js";
 
 /* ---------------- items ---------------- */
 Object.assign(ITEMS, {
@@ -21,13 +22,14 @@ Object.assign(ITEMS, {
     g: (x, y) => `<rect class="sW" x="${x - 9}" y="${y - 8}" width="18" height="16"/><path class="hl sW" d="M${x - 6},${y + 4} L${x - 2},${y - 2} L${x + 3},${y + 2} L${x + 6},${y - 4}"/><circle class="hl sR" cx="${x + 5}" cy="${y - 3}" r="2.6"/>` },
 });
 const wrap = (id, fn) => { const old = ITEMS[id].look; ITEMS[id].look = (api) => api.G.act === 4 ? fn(api) : (typeof old === "function" ? old(api) : old); };
-const LEADS = ["clueMetamer", "clueHours"], OFFICE = ["clueReviewer2", "clueRetainer", "clueCard"];
+const LEADS = ["clueMetamer", "clueHours", "clueDark"], OFFICE = ["clueReviewer2", "clueRetainer", "clueCard"];
 const all = (api, ks) => ks.every(k => api.flag(k));
 wrap("notebook", (api) => {
   const f = api.G.flags, t = (k, s) => `- ${f[k] ? "(done) " : ""}${s}`;
   if (api.G.mode === "morning") return "Your lab notebook. Gus's last text is taped inside the cover.\n\nThe map, the robe, the date. Iris. Tonight.";
   return "Your lab notebook. Thursday.\n\n" + [t("impactMet", "Impact is back. Talk to him (hallway)."),
     t("clueMetamer", "Library, 2F: the back issues. Where did his sentences come from?"), t("clueHours", "Penny's receipts: where does everyone go on Fridays?"),
+    t("clueDark", "Morris says Preston's ears light up. Gus wants a measurement. (Talk to Gus.)"),
     t("fourOClock", "Four o'clock: Impact's office, 3F."),
     t("clueReviewer2", "Who wrote Reviewer 2?"), t("clueRetainer", "His Figure 2. Something about the dropout."), t("clueCard", "What did Impact want to tell Ethel?")].join("\n");
 });
@@ -61,6 +63,29 @@ export const CONVOS = {
     ["L", "How do you know about the rat?"],
     ["R", "Everybody knows about the rat. Four o'clock."],
   ], after: (api) => { api.flag("impactMet", true); api.refresh(); } },
+
+  // Gus's measurement: the Gain Controller leaks light, and only dark-adapted rods can see it
+  gusDark: { L: "nell", R: "gus", score: ["gusDark", 1], lines: [
+    ["R", "Morris says Preston's ears light up. Small says that's an anecdote from a rat. I want a measurement."],
+    ["L", "Of what?"],
+    ["R", "Of the earbuds. Anything that drives current through a coil next to living tissue leaks a little. Heat. Field. And light. A few photons a second. Ultraweak emission."],
+    ["L", "Nobody can see a few photons a second."],
+    ["R", "You can. After twenty minutes in perfect dark, your rods catch single photons. Hecht did it in 1942: a dim flash of about a hundred photons at the eye, half a dozen caught by rods, and people saw it."],
+    ["L", "So I'd need Preston in the dark booth for twenty minutes."],
+    ["R", "He's in there now. I told him you were piloting a rod study and needed a sub-01. Middle authorship."],
+    ["L", "He said yes to middle author?"],
+    ["R", "He said 'co-first?' I said 'we'll see.' He's been in there since nine, networking with the dark."],
+    ["R", "Don't look straight at him in there. Your fovea's got no rods. Look beside him."],
+  ], after: (api) => { api.flag("darkReady", true); api.refresh(); } },
+  darkAfter: { L: "nell", R: "preston", score: ["darkAfter", 1], lines: [
+    ["N", "The booth door opens. Preston steps out, blinking, delighted."],
+    ["R", "Great paradigm, Nell! Very… dark. Very minimal. Put me down as co-first. We'll fix the order in revisions."],
+    ["L", "Preston, how long have you had those earbuds?"],
+    ["R", "These? Since my invitation. They help me focus. Everything's so much clearer. I don't even have to decide things anymore, I just…", "blank"],
+    ["R", "…the authors should consider their position.", "blank"],
+    ["R", "Ha! Long week. Coffee? The machine's broken. Ha!"],
+    ["N", "He goes. His ears flicker green as he passes the door: two, one, two."],
+  ], after: (api) => { api.flag("darkDone", true); } },
 
   pennyReceipts: { L: "nell", R: "penny", score: ["pennyReceipts4", 1], lines: [
     ["R", "Hon. Sit. I've decided something."],
@@ -193,7 +218,10 @@ export const HS = {
     whiteboard: { label: "whiteboard", day: look("IS ANY OF IT REAL? NO. And new, in your writing: WHO IS PULLING THE STRINGS?"), morris: look("Too high."),
       night: look("WHO IS PULLING THE STRINGS? Gus writes underneath: THE ARCHIVE. B3."), morning: look("WHO IS PULLING THE STRINGS? And under it, in Gus's handwriting: THE ARCHIVE. B3.") },
     adline: { label: "Prof. Adline's office", day: { look: "AFTER THE 15TH. Today the door is open a crack.", talk: "PROF. ADLINE|Nell. I heard. All of it. Your defense is still tomorrow. I'll be there. I'll be there, Nell." }, morris: look("Typing."), night: look("Dark."), morning: { look: "Prof. Adline's door, open. She's at her desk, not typing.", talk: "PROF. ADLINE|Two o'clock. I'll be there. Gus would have hated it if we postponed." } },
-    booth: { label: "dark booth", day: look("The dark booth."), morris: look("No."), night: look("Dark."), morning: look("Dark.") },
+    booth: { label: "dark booth", day: { look: (api) => api.flag("clueDark") ? "The dark booth. Empty again. Gus's hoodie is still stuffed under the door."
+        : api.flag("darkReady") ? "The dark booth. The ON lamp is lit. From inside, muffled: Preston, practising his elevator pitch to nobody. 'Synergy… no. SYNERGY.'" : "The dark booth.",
+        use: doDark },
+      morris: look("MORRIS|No. I know what dark rooms are for in this building."), night: look("Dark."), morning: look("Dark.") },
     gusdesk: { label: "Gus's desk", day: look("Gus's desk. Cans. Notes. A map of the steam tunnels with B3 written on it and crossed out and written again."), morris: look("Morris sniffs. Cans."),
       night: look("His desk. He hasn't sat at it since Monday."), morning: look("Gus's desk. The mug that says I ♥ GAUSSIANS. Still half full.") },
     gus: { label: "Gus", day: { look: "Gus, at his desk. He's re-running your replication for the fourth time. Same answer.", talk: (api) => gusHint(api) },
@@ -342,11 +370,22 @@ export const HS = {
 function gusHint(api) {
   const f = api.G.flags;
   if (!f.impactMet) return "GUS|Impact's back. He's in the hallway, looking like a man who knows what forty-one means.";
+  if (!f.darkReady) return "c:gusDark";
   if (!f.clueMetamer) return "GUS|Take my printout to the library. Lay his sentences against the back issues. You'll see the stitches.";
   if (!f.clueHours) return "GUS|Penny has everyone's calendar. Nobody knows that. Ask her about the Friday receipts.";
+  if (!f.clueDark) return "GUS|He's in the booth. Twenty minutes in the dark, Nell. Then look beside him, not at him.";
   if (!f.impactOpen) return "GUS|His office password's his h-index. Of course it is. The directory's in the library.";
   if (!all(api, OFFICE)) return "GUS|What's in his office?";
   return "GUS|Go home tonight, Nell. I've got a scan. I'll be fine. I'm always fine at 2 AM.";
+}
+async function doDark(api) {
+  if (api.flag("clueDark")) return "You've seen enough in there. You'll be seeing it for a while, in the dark, whether you want to or not.";
+  if (!api.flag("darkReady")) return "You could sit in the dark booth and think. Everyone who does falls asleep. Today you can't afford to. (Gus has an idea; ask him.)";
+  const r = await api.mini(darkbooth, { score: api.score });
+  if (!r || !r.done) return "GUS|Take your time. He's not going anywhere. He thinks he's being co-first.";
+  api.flag("clueDark", true); api.score("clueDark", 3); api.refresh();
+  await api.convo("darkAfter");
+  return "GUS|A coil, the Table's insignia, and a dial at max. It's not a habit, Nell. It's a broadcast.\n\nNELL|Then somebody's broadcasting.";
 }
 async function doMetamer(api) {
   if (api.flag("clueMetamer")) return "Every sentence, somebody else's. Every somebody, from the same three labs.";
@@ -415,7 +454,7 @@ async function dawn(api) {
   api.shift({ mode: "morning", char: "nell", room: "mri", entry: "morning", min: 400, cast: ["nell"] });
   await api.say("Gus Ian was found at 6:15 by the morning tech.\n\nHe is in the 3T. The scan is still running.");
 }
-export const MAXSCORE = 90;
+export const MAXSCORE = 96;
 export const TITLE = ["ACT IV", "REBUTTAL"];
 export const END = { title: "END OF ACT IV", chip: "REBUTTAL", bodies: "BODIES 05.", next: "NEXT: FRIDAY.  ACT V  DECISION",
   epilogue: "Friday. 2 PM: Nell Null, thesis defense. 3 PM: Preston Valu, job talk. Midnight: an induction.\n\nShe's going to all three.",

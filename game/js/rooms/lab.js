@@ -37,7 +37,7 @@ function back(G) {
   const cx = (b.a[0] + b.b[0]) / 2;
   s += `<g data-hs="booth">${b.svg}
         ${[0, 1, 2, 3, 4].map(i => { const k = .6 + i * .045; const t = P(640, 92, k), u = P(640, FY, k); return `<path class="hl sV" d="M${t[0]},${t[1]} C${t[0] + 3},${(t[1] + u[1]) / 2 - 20} ${t[0] - 3},${(t[1] + u[1]) / 2 + 20} ${u[0]},${u[1]}"/>`; }).join("")}
-        ${chip("DARK BOOTH", cx - 22, b.a[1] - 16, 4.4, "fV")}<circle class="hl sR" cx="${b.b[0] - 8}" cy="${b.b[1] + 10}" r="2.2"/>${hit(...b.box)}</g>`;
+        ${chip("DARK BOOTH", cx - 22, b.a[1] - 16, 4.4, "fV")}<circle class="${G.flags.darkReady && !G.flags.clueDark ? "fR" : "hl sR"}" cx="${b.b[0] - 8}" cy="${b.b[1] + 10}" r="2.2"/>${hit(...b.box)}</g>`;
   return s;
 }
 
