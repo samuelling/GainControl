@@ -676,6 +676,14 @@ setInterval(() => document.querySelectorAll("#game .needle").forEach(n => { cons
 window.GC = { G, api, FULL, GUIDE, act, itemAct, useItemOn, loadRoom, walkTo, runConvo, switchTo, startAct };   // for testing
 async function start() {
   await applyOverrides(ACTS, ITEMS);
+  // a PLAY link from the Script Room lands straight in a scene. Browsers won't make a sound until the page has been
+  // tapped, so it gets the tap the title screen would have given it: a card, then the scene, with sound from the start.
+  const jm = /^#jump=([^&]+)/.exec(location.hash);
+  if (jm && !sfx.running) {
+    const [n, key = "day", room = ""] = decodeURIComponent(jm[1]).split(".");
+    const where = `ACT ${["", "I", "II", "III", "IV", "V"][+n] || n}  ${key.toUpperCase()}${room ? "  " + room.toUpperCase() : ""}`;
+    await showCard(`${centered("FROM THE SCRIPT ROOM", 118, 8, "sM", .9)}${centered(where, 146, 22, "sW", 1.6)}${cchip("TAP TO PLAY", 206, 8, "fG")}`, { auto: 0 });
+  }
   if (await jumpFromHash()) return;
   const h = location.hash;
   if (h === "#night") { G.flags = { recorded: true, officeHours: true, fedMorris: true, morrisMoved: true, noteReady: true, noteRead: true };
