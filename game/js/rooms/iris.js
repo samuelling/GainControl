@@ -49,6 +49,12 @@ function back(G) {
   [[40, .6, 15, "sM", ""], [92, .58, 11, "sD", ""], [146, .57, 9, "sW", "1961"], [40, .7, 18, "sD", ""], [104, .66, 12, "sW", "1974"],
     [30, .8, 14, "sM", ""], [92, .76, 9, "sW", "1977"]].forEach(([X, k, n, c, l]) => st += tower(X, k, n, c, l));
   s += `<g data-hs="stacks">${st}${hit(72, 158, 162, 102)}</g>`;
+  // (the real record, hidden) one issue sticks out of the 1977 tower, and a toy rocking chair sits on the window sill
+  {
+    const k = .76, x = P(92, 0, k)[0], y = floorY(k), q = k * AUD, w = 34 * q, h = 9 * q, yy = y - 5 * h + h * .2;
+    s += `<g data-hs="ap1977"><rect class="hl sA mech" x="${(x + w / 2 - 1).toFixed(1)}" y="${yy.toFixed(1)}" width="${(5 * q).toFixed(1)}" height="${(h * .55).toFixed(1)}"/>${hit(x + w / 2 - 2, yy - 2, 5 * q + 4, h * .55 + 4)}</g>`;
+  }
+  s += `<g data-hs="rocker"><path class="hl sM" d="M257,159.4 C259,160.6 265,160.6 267,159.4 M259,159.8 L260,154 M265,159.8 L264,154 M259.6,156 L264.6,156 M264,154 L265,149.5 M260,154 L261,149.5 M261,150.5 L265,150.5"/>${hit(254, 147, 16, 15)}</g>`;
   // the kettle and the sherry, on a filing cabinet against the back wall, right
   {
     const k = .58, y = floorY(k), x = P(516, 0, k)[0], top = y - 40;

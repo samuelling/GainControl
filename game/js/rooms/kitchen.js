@@ -21,6 +21,8 @@ function back(G) {
         <rect class="hl sG mech" x="200" y="122" width="22" height="14"/><path class="hl sG" d="M203,126 L219,126 M203,130 L214,130"/>
         <rect class="hl sM mech" x="226" y="112" width="11" height="22"/>
         <circle class="fR" cx="197" cy="91" r="1.2"/><circle class="fA" cx="211" cy="123" r="1.1"/><circle class="fB" cx="226" cy="91" r="1.1"/>${hit(174, 82, 68, 62)}</g>`;
+  // (the real record, hidden) a small folded card, half behind the board's frame, bottom-left
+  s += `<g data-hs="invite2018"><path class="hl sW" d="M177.5,135 L184.5,133.6 L185.4,139 L178.4,140.4 Z M178,137.7 L185,136.3"/>${hit(175, 131.5, 12, 11)}</g>`;
   // the fridge, standing in the back-right corner
   const fx = 418, fy0 = 106, fy1 = floorY(.54);
   s += `<g data-hs="fridge"><rect class="k sW mech" x="${fx}" y="${fy0}" width="46" height="${fy1 - fy0}"/><path class="sW mech" d="M${fx},${fy0 + 34} L${fx + 46},${fy0 + 34}"/>

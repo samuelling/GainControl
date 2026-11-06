@@ -35,6 +35,11 @@ This file is both the design and the contract between the art (rooms, figures, p
 - **The invitation** (Impact Lab, Morris: USE the printer). Preston's NRT invitation on cream paper: a Revelation of unpublished work, no minutes, never on a CV, retire at forty, a receipt that calls it an "invited talk", and RSVP with your date of birth so they can check you aren't "wizened." (+3, `invite`.) It echoes through Rex (he sent his DOB; the reply was one word), Iris ("It was 1974. I was the reason."), Penny (the same six faculty file the same "invited talk" receipt every fall) and Preston ("a Revelation… nobody writes it down").
 - **Kitchen corkboard:** "WHO KEEPS BOOKING THE OLD B-LEVEL ROOM ON FRIDAYS" (no reply).
 
+**The real record (secret, unhinted).** Three tiny objects that aren't fiction. Each opens a FROM THE REAL RECORD card with factual notes in our own words, with sources (+1 each; the notebook never mentions them):
+- `iris.ap1977`: one issue sticking out of the 1977 tower of journals. The real Psychological Round Table (1936): young, male, Eastern, out at forty. Gross's 1977 letter in *American Psychologist*.
+- `iris.rocker`: a toy rocking chair on the window sill. GUV, the *Gesellschaft für Unendliche Versuche*, the Midwestern spin-off of the early 1960s ("bad German for 'Society for Endless Research'"): it admitted women, and gave a miniature rocking chair at forty. Source: Shanteau et al. (eds.), *Decision Science and Technology* (1999).
+- `kitchen.invite2018`: a small folded card half behind the corkboard frame. A real 2018 invitation, with the sender's name removed: out at forty, Revelations, no minutes, not on CVs, RSVP with your date of birth.
+
 **Deaths (Act III):**
 - Drink from the espresso machine before it's descaled: *"You have consumed fourteen years of limescale. You are now load-bearing."*
 - Ask the LTM rack to write your dissertation (death 21).
