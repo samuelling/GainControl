@@ -154,11 +154,13 @@ const CSS = `
 .dfn:not(.busy) [data-card]:hover .ct path { stroke: var(--G); }
 .dfn .pdim { opacity: .45; }
 #panel .screen.dfn { left: 2%; right: 2%; top: 2%; bottom: 2%; }
-#panel .dfn .coachline { font-size: 3cqw; line-height: 1.12; cursor: pointer; min-height: 8.4cqw; position: relative; border: .16cqw solid var(--D);
-  padding: .7cqw 1.2cqw 1.6cqw; margin: .5cqw 0 .3cqw; text-transform: uppercase; }
+/* a fixed box: three lines at full size, never taller or shorter, so nothing else on the screen moves */
+#panel .dfn .coachline { font-size: 3cqw; line-height: 1.08; cursor: pointer; box-sizing: border-box; height: 12.4cqw; min-height: 0; flex: none; overflow: hidden;
+  position: relative; border: .16cqw solid var(--D); padding: .7cqw 1.2cqw 1.7cqw; margin: .5cqw 0 .3cqw; text-transform: uppercase; }
 #panel .dfn .coachline .who { font-size: 1.8cqw; vertical-align: .25em; margin-right: .5cqw; }
 .dfn .coachline .rest { visibility: hidden; }
 .dfn .coachline .nx { position: absolute; right: .8cqw; bottom: .3cqw; font-size: 1.3cqw; color: var(--M); letter-spacing: .1em; }
+#panel .dfn .bar { flex-wrap: nowrap; flex: none; }
 #panel .dfn .status { color: var(--M); font-size: 1.7cqw; max-width: 70%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .dfn .status b { color: var(--W); font-weight: 600; }
 `;
@@ -182,9 +184,11 @@ export function defense(el, { evidence = ALL, score = () => {} } = {}) {
       clearTimeout(T);
       while (S.q.length && typeof S.q[0] === "function") S.q.shift()();
       if (!S.q.length) { S.busy = false; draw(); return; }
-      S.busy = true; S.say = S.q.shift(); S.shown = 0; S.typing = true;
+      S.busy = true; S.say = S.q.shift(); S.shown = 0; S.typing = true; S.fs = 3;
       talkUntil = Infinity;
       draw();
+      { const box = el.querySelector(".coachline");   // a long line steps down a size or two rather than grow the box
+        for (const f of [3, 2.65, 2.35, 2.1]) { S.fs = f; box.style.fontSize = f + "cqw"; if (box.scrollHeight <= box.clientHeight + 1) break; } }
       const len = S.say[1].length;
       clearInterval(typeT);
       typeT = setInterval(() => {
@@ -271,7 +275,7 @@ export function defense(el, { evidence = ALL, score = () => {} } = {}) {
           ${hand.map(card).join("")}
           ${hand.length ? "" : segC("NO EVIDENCE. JUST CONFIDENCE.", 320, 200, 10, "sM", 1.1)}
         </svg>
-        <div class="coachline" style="${say ? `border-color:var(--${col})` : ""}">${say ? `<span class="who" style="background:var(--${col})">${NAME[say[0]] || say[0]}</span><span class="shown" style="color:var(--${col})">${say[1].slice(0, S.shown)}</span><span class="rest">${say[1].slice(S.shown)}</span>` : ""}${S.busy && !S.typing ? `<span class="nx">CLICK ▸</span>` : ""}</div>
+        <div class="coachline" style="font-size:${S.fs || 3}cqw;${say ? `border-color:var(--${col})` : ""}">${say ? `<span class="who" style="background:var(--${col})">${NAME[say[0]] || say[0]}</span><span class="shown" style="color:var(--${col})">${say[1].slice(0, S.shown)}</span><span class="rest">${say[1].slice(S.shown)}</span>` : ""}${S.busy && !S.typing ? `<span class="nx">CLICK ▸</span>` : ""}</div>
         <div class="bar"><span class="status">${S.hover || hint}</span>
           ${S.end ? `<button data-b="off" class="off">CONTINUE</button>` : `<button data-b="skip" class="off" ${S.busy ? "disabled" : ""}>NO FURTHER EVIDENCE</button>`}</div></div>`;
     }
