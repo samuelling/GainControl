@@ -134,3 +134,36 @@ export function titleGlitch(root, { sfx = () => {}, ...opts } = {}) {
   loop();
   return () => { alive = false; clearTimeout(t); };
 }
+
+// THE HANDOFF: the act you picked lights up, the takeover finally wins the screen, and the display collapses like a CRT
+// switching off (squash to a line, the line to a dot, the dot out). Poses, not tweens: a fixed run of frames.
+export async function titleExit(root, choice, { sfx = () => {}, ...opts } = {}) {
+  const set = (svg) => { const e = root.querySelector("#ttl"); if (e) e.innerHTML = svg; };
+  const wait = (ms) => new Promise(res => setTimeout(res, ms));
+  const bands = (n, amp) => { const s = {}; for (let k = 0; k < n; k++) { const r0 = Math.floor(Math.random() * NR), h = 3 + Math.floor(Math.random() * 10), d = (Math.random() < .5 ? -1 : 1) * (1 + Math.floor(Math.random() * amp * 1.6));
+    for (let rr = r0; rr < r0 + h; rr++) s[rr] = d; } return s; };
+  const flat = (S, recolor = {}) => { const m = new Map(S.map); for (const R of S.rows) for (const [k, v] of R.m) m.set(k, recolor[R.id] || v); return { map: m, rows: [], fullRow: null }; };
+  const B = screen(opts), pick = flat(B, { [choice]: "g" });
+  const idx = Math.max(0, +choice - 1);
+  const T = flat(screen({ ...opts, title: "GAIN CONTROLLED", titleCls: "r", menuWord: [0, 1, 2, 3, 4].map(i => (i === idx ? "ACCEPTED" : "OBEY")), lit: 1, showTable: true }));
+  // 1. the choice blinks green twice
+  for (const [S, ms] of [[pick, 90], [flat(B), 70], [pick, 90], [flat(B), 60], [pick, 140]]) { set(render(S)); await wait(ms); }
+  // 2. the takeover wins: bands slip, a red ghost, the title turns, noise climbs
+  sfx();
+  const Bt = flat(screen({ ...opts, showTable: true }), { [choice]: "g" });
+  const burst = [[Bt, { shift: bands(5, 3) }, 55], [Bt, { ghost: true, shift: bands(3, 2), noise: .01 }, 55], [T, { scan: 20, shift: bands(4, 3) }, 50],
+    [T, { scan: 48, ghost: true, noise: .02 }, 50], [T, { scan: 76, shift: bands(7, 5), noise: .04 }, 50], [T, { ghost: true, noise: .06, shift: bands(9, 6) }, 60],
+    [T, { noise: .09, shift: bands(12, 8) }, 60]];
+  for (const [S, o, ms] of burst) { set(render(S, o)); await wait(ms); }
+  // 3. CRT off: squash toward the middle row, then a line, then a dot
+  const mid = Math.floor(NR / 2), all = T.map;
+  for (const k of [.5, .22, .08]) {
+    const m = new Map(); for (const [key, v] of all) { const [c, r] = key.split(",").map(Number); m.set(`${c},${Math.round(mid + (r - mid) * k)}`, v === "r" ? "r" : "w"); }
+    set(render({ map: m, rows: [], fullRow: null }, { shift: bands(2, 2) })); await wait(55);
+  }
+  for (const half of [NC / 2, NC / 3, NC / 6, NC / 14, 3, 1]) {
+    const m = new Map(); for (let c = Math.round(NC / 2 - half); c < Math.round(NC / 2 + half); c++) m.set(`${c},${mid}`, "g");
+    set(render({ map: m, rows: [], fullRow: null })); await wait(half > 3 ? 45 : 90);
+  }
+  set(render({ map: new Map(), rows: [], fullRow: null })); await wait(260);
+}

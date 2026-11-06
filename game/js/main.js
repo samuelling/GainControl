@@ -17,7 +17,7 @@ import { keypad } from "./minigames/keypad.js";
 import { fogNeuro } from "./minigames/fogneuro.js";
 import { sfx } from "./sfx.js";
 import * as FULL from "./fullscreen.js";
-import { titleArt, titleGlitch } from "./title.js";
+import { titleArt, titleGlitch, titleExit } from "./title.js";
 import { installGuide } from "./guide.js";
 import { music } from "./music.js";
 import { applyOverrides, rewriteSay, jumpFromHash } from "./tools/overrides.js";
@@ -665,7 +665,11 @@ async function start() {
   const tOpts = { unlocked, full: !FULL.standalone() };
   const titleP = showCard(titleArt(tOpts), { buttons: true });
   const stopGlitch = titleGlitch(card, { sfx: () => { sfx.play("blank"); music.glitch(); }, ...tOpts });
-  const choice = await titleP; stopGlitch(); onTitle = false;
+  const choice = await titleP; stopGlitch();
+  // keep the LED screen up for the handoff glitch, then let the act's day card take over the black
+  card.classList.add("show"); G.busy = true; card.style.cursor = "default";
+  await titleExit(card, choice, { sfx: () => { sfx.play("blank"); music.glitch(); }, ...tOpts });
+  card.style.cursor = ""; onTitle = false;
   if (["2", "3", "4", "5"].includes(choice)) { await startAct(+choice, { fresh: true }); return; }
   await startAct(1, { fresh: true });
 }
