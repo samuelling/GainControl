@@ -567,8 +567,9 @@ frame.addEventListener("pointermove", (e) => {
 });
 frame.addEventListener("contextmenu", (e) => { e.preventDefault(); if (!G.busy) cancelAll(); });
 // sound: the audio context can only start after a user gesture; M toggles it
-const unlockAudio = () => { sfx.unlock(); music.start(); musicScene(true); };
-window.addEventListener("pointerdown", unlockAudio, true); window.addEventListener("keydown", unlockAudio, true);
+const unlockAudio = () => { if (sfx.running && music.state.on) return; sfx.unlock(); music.start(); musicScene(true); };
+for (const ev of ["pointerdown", "pointerup", "touchend", "click", "keydown"]) window.addEventListener(ev, unlockAudio, true);
+// (after iOS suspends or interrupts the audio, e.g. coming back to the home-screen app, the next tap wakes it again)
 window.addEventListener("keydown", (e) => { if ((e.key === "m" || e.key === "M") && !e.target.closest?.("input,textarea")) { sfx.toggle(); hud(); } });
 FULL.install(() => hud());
 const GUIDE = installGuide({ G });

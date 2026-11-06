@@ -238,7 +238,19 @@ function startAmb(room, mode) {
 }
 
 export const sfx = {
-  unlock() { if (!ac()) return; if (ctx.state === "suspended") ctx.resume().then(() => sfx.resumeAmbience()); else sfx.resumeAmbience(); },
+  // called from every user gesture until audio runs. iOS Safari only lets a finished tap (touchend / click / pointerup)
+  // start audio, so pointerdown alone isn't enough; it may also "interrupt" the context when the app is backgrounded.
+  // A one-sample silent buffer started inside the gesture is the classic iOS unlock; the "playback" audio session
+  // keeps the ringer's silent switch from muting the game (Safari 17+).
+  unlock() {
+    if (!ac()) return;
+    try { if (navigator.audioSession && navigator.audioSession.type !== "playback") navigator.audioSession.type = "playback"; } catch (e) {}
+    if (ctx.state !== "running") {
+      try { const b = ctx.createBuffer(1, 1, ctx.sampleRate), src = ctx.createBufferSource(); src.buffer = b; src.connect(ctx.destination); src.start(0); } catch (e) {}
+      ctx.resume().then(() => sfx.resumeAmbience()).catch(() => {});
+    } else sfx.resumeAmbience();
+  },
+  get running() { return !!ctx && ctx.state === "running"; },
   play(name, opts) { if (muted || !ac() || ctx.state !== "running") return; const f = S[name]; if (f) try { f(opts); } catch (e) {} },
   voice(who, force) { if (muted || !ac() || ctx.state !== "running") return; try { voiceTick(who, force); } catch (e) {} },
   blip(fs = [880, 1320]) { if (muted || !ac() || ctx.state !== "running") return; fs.forEach((f, i) => tone(f, .12, { type: "square", g: .035, at: i * .08 })); },
