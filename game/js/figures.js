@@ -37,6 +37,39 @@ export function nellFigure() {
   return stand + walkA + walkB + torso + head;
 }
 
+/* ---- Nell in Gus's robe (Act V, after PUT ON): the Table's robe and hood, hood up, but it's still Nell in it: the
+ *  red fringe and side locks, the round glasses and the freckled jaw in the opening. Gus is taller, so the sleeves
+ *  swallow her hands and the hem drags (a little bunch on the floor). The insignia pin on the collar is lit. ---- */
+const nellInHood = `
+    <path class="k sV" d="M128,94 C120,58 132,10 161,7 C190,10 202,58 194,94 C186,90 176,88 161,88 C146,88 136,90 128,94 Z"/>
+    <path class="k sK" d="M139,54 C138,72 149,82 161,82 C174,82 183,72 183,56"/>
+    <path class="sK" d="M154,80 L154,88 M167,80 L167,88"/>
+    <path class="sR" d="M139,58 C141,46 150,40 160,43 C167,39 178,42 183,56 M150,43 C152,47 155,50 158,51 M165,42 C168,46 172,48 176,49"/>
+    <path class="sR" d="M138,61 C135,67 136,74 139,79 M184,61 C187,67 186,74 183,79"/>
+    <rect class="sW" x="146.5" y="56" width="13" height="10" rx="3"/><rect class="sW" x="166" y="56" width="13" height="10" rx="3"/>
+    <path class="sW" d="M159.5,60 L166,60"/>
+    <circle class="fW" cx="155" cy="61.5" r="1.6"/><circle class="fW" cx="174.5" cy="61.5" r="1.6"/>
+    <path class="sK" d="M168,66 C165,71 168,73 171,72 M162,76 C166,74 170,75 173,77"/>
+    <path class="sV" d="M133,92 C127,62 134,30 161,26 C188,30 195,62 189,92"/>
+    <path class="hl sV" d="M136,40 C142,22 152,14 161,13 M186,40 C180,22 170,14 161,13"/>`;
+export function nellRobed() {
+  const robe = `
+    <path class="k sV" d="M134,90 C146,86 152,88 161,94 C170,88 176,86 188,90 C194,118 198,150 202,183 L120,183 C124,150 128,118 134,90 Z"/>
+    <path class="sV" d="M146,88 C150,98 156,104 161,106 C166,104 172,98 176,88"/>
+    <path class="hl sV" d="M150,108 C147,134 145,158 143,180 M172,108 C175,134 177,158 179,180 M161,108 L161,182"/>
+    <circle class="sX" cx="176" cy="100" r="4"/><circle class="fX" cx="176" cy="100" r="1.6"/>`;
+  // sleeves that swallow the hands: [shoulder, elbow, cuff] per pose, cuffs open and empty
+  const sleeve = (x0, y0, x1, y1, x2, y2) => `<path class="k sV" d="M${x0 - 5},${y0} L${x1 - 6},${y1} L${x2 - 7},${y2} L${x2 + 7},${y2 + 2} L${x1 + 6},${y1} L${x0 + 5},${y0 + 2} Z"/><path class="hl sV" d="M${x2 - 6},${y2 - 4} L${x2 + 6},${y2 - 2}"/>`;
+  const hem = (d) => `<path class="k sV" d="${d}"/>`;
+  const stand = `<g class="ap0">${hem("M120,182 C134,188 148,186 161,188 C174,186 188,188 202,182 L202,184 C188,190 134,190 120,184 Z")}
+    <path class="sW" d="M141,187 L153,187 M168,187 L180,187"/>${sleeve(137, 94, 129, 116, 126, 134)}${sleeve(185, 94, 193, 116, 196, 134)}</g>`;
+  const walkA = `<g class="ap1">${hem("M118,180 C132,188 150,184 162,188 C176,186 192,188 204,182 L204,185 C190,191 132,190 118,183 Z")}
+    <path class="sW" d="M118,186 L130,185 M184,187 L196,186"/>${sleeve(137, 94, 142, 114, 149, 128)}${sleeve(185, 94, 178, 113, 169, 124)}</g>`;
+  const walkB = `<g class="ap2">${hem("M121,183 C134,187 148,189 161,186 C174,189 188,186 200,181 L200,184 C186,190 136,191 121,186 Z")}
+    <path class="sW" d="M146,187 L158,187 M161,187 L173,187"/>${sleeve(137, 94, 125, 110, 115, 121)}${sleeve(185, 94, 197, 110, 207, 120)}</g>`;
+  return robe + stand + walkA + walkB + nellInHood;
+}
+
 export function gusFigure() {
   // Gus Ian: Nell's labmate. Curly hair, mustache, headphones round the neck, cardigan, laptop under his arm.
   const legs = (a, b) => `<path class="k sM" d="${a}"/><path class="k sM" d="${b}"/>`;

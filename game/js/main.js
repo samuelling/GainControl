@@ -73,7 +73,7 @@ const ACT = () => ACTS[G.act];
 const HS = () => ACT().HS;
 const KEY = () => (G.char === "morris" ? "morris" : G.mode);          // which version of a hotspot applies
 const DAYNAMES = { 1: "MON", 2: "TUE", 3: "WED", 4: "THU", 5: "FRI", 6: "SAT" };
-const FIGURE = { nell: () => FIG.nellFigure(), gus: () => FIG.gusFigure(), morris: () => (FIG.morrisFigure ? FIG.morrisFigure() : FIG.nellFigure()), iris: () => irisFigure() };
+const FIGURE = { nell: () => (G.act === 5 && G.flags && G.flags.robeOn ? FIG.nellRobed() : FIG.nellFigure()), gus: () => FIG.gusFigure(), morris: () => (FIG.morrisFigure ? FIG.morrisFigure() : FIG.nellFigure()), iris: () => irisFigure() };
 const CHIP = { nell: ["NELL", "fG"], gus: ["GUS", "fB"], morris: ["MORRIS", "fK"], iris: ["IRIS", "fV"] };
 
 let checkpoint = null;
@@ -262,7 +262,7 @@ const convo = $("#convo"), dlg = $("#dlg"), PF = { L: $(".pf.left"), R: $(".pf.r
 let blinkTimers = [];
 function mount(side, id) {
   const p = PORTRAIT[id] || PORTRAIT.nell;
-  PF[side].querySelector(".pv").innerHTML = `<svg class="t pt" viewBox="${p.vb}" preserveAspectRatio="xMidYMid meet">${p.svg()}</svg>`;
+  PF[side].querySelector(".pv").innerHTML = `<svg class="t pt" viewBox="${p.vb}" preserveAspectRatio="xMidYMid meet">${p.svg(G)}</svg>`;
   const nm = PF[side].querySelector(".name"); nm.textContent = p.name; nm.style.background = `var(--${p.chip.slice(1)})`;
   const el = PF[side].querySelector("svg");
   const blink = () => { el.classList.add("bl"); setTimeout(() => el.classList.remove("bl"), 140); blinkTimers.push(setTimeout(blink, 1800 + Math.random() * 3000)); };

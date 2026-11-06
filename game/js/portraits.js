@@ -3,8 +3,8 @@
 import { seg, arcs } from "./gfx.js";
 import { tessBust, pennyBust, ethelBust, codyBust, smallBust } from "./figures.js";
 
-export const PORTRAIT = {
-  nell: { name: "NELL NULL", chip: "fG", vb: "112 12 96 118", svg: () => `
+// Nell, as drawn in the scene: sweater, red hair, round glasses, freckles
+const nellPlain = () => `
     <path class="k sG" d="M108,140 C112,104 124,94 140,90 C146,88 150,86 153,86 L160,92 L167,86 C170,86 174,88 180,90 C196,94 208,104 212,140 Z"/>
     <path class="sG" d="M153,86 C156,91 164,91 167,86"/><circle class="sG" cx="180" cy="112" r="6"/><path class="sG" d="M177.5,109.5 L182.5,114.5"/>
     <path class="hl sG" d="M126,104 C130,114 130,126 127,136 M196,104 C192,114 193,126 196,136 M146,96 C150,98 154,98 158,97"/>
@@ -22,7 +22,34 @@ export const PORTRAIT = {
     <path class="sK" d="M168,66 C165,71 168,73 171,72"/>
     ${[[147.5, 71], [150.5, 72.5], [153.5, 71], [171.5, 71], [174.5, 72.5], [177.5, 71], [161, 70.5]].map(([x, y]) => `<circle class="fK" cx="${x}" cy="${y}" r=".6"/>`).join("")}
     <g class="mouth-a"><path class="sK" d="M161,75.5 C165,74 169,74.5 173,76.5"/></g>
-    <g class="mouth-b"><path class="k sK" d="M161,75 C165,73.5 170,74 173,76 C171,79.5 164,80 161,75 Z"/></g>` },
+    <g class="mouth-b"><path class="k sK" d="M161,75 C165,73.5 170,74 173,76 C171,79.5 164,80 161,75 Z"/></g>`;
+// Nell in Gus's robe (Act V): the same face inside the Table's hood, the robe's collar, the pin lit
+const nellHooded = () => `
+    <path class="k sV" d="M108,140 C110,104 122,92 140,90 L161,108 L182,90 C198,92 210,104 212,140 Z"/>
+    <path class="sV" d="M140,90 C148,100 154,106 161,108 C168,106 174,100 182,90"/><path class="hl sV" d="M150,110 L148,140 M172,110 L174,140"/>
+    <circle class="sX" cx="186" cy="110" r="5"/><circle class="fX" cx="186" cy="110" r="2"/>
+    <path class="k sV" d="M124,104 C114,62 128,6 161,2 C194,6 208,62 198,104 C188,96 176,92 161,92 C146,92 134,96 124,104 Z"/>
+    <path class="sK" d="M154,80 L154,87 M167,80 L167,87"/>
+    <path class="k sK" d="M139,54 C138,72 149,82 161,82 C174,82 183,72 183,56"/>
+    <path class="sK" d="M140,58 C134,57 133,67 140,68"/><path class="hl sK" d="M137,61 C136,63 137,65 139,65"/>
+    <path class="sR" d="M147,53 C150,51.5 154,51.5 157,52.5 M168,52.5 C171,51.5 175,51.5 178,53"/>
+    <g class="eyes-open"><circle class="fW" cx="155" cy="61.5" r="1.7"/><circle class="fW" cx="174.5" cy="61.5" r="1.7"/></g>
+    <g class="eyes-closed"><path class="sW" d="M152,61.5 L158,61.5 M171.5,61.5 L177.5,61.5"/></g>
+    <rect class="sW" x="146.5" y="56" width="13" height="10" rx="3"/><rect class="sW" x="166" y="56" width="13" height="10" rx="3"/>
+    <path class="sW" d="M159.5,60 L166,60 M146.5,59 L141,58"/>
+    <path class="hl sK" d="M149,68.5 C151,69.5 154,69.5 156,68.5 M168.5,68.5 C170.5,69.5 173.5,69.5 175.5,68.5"/>
+    <path class="sK" d="M168,66 C165,71 168,73 171,72"/>
+    ${[[147.5, 71], [150.5, 72.5], [153.5, 71], [171.5, 71], [174.5, 72.5], [177.5, 71], [161, 70.5]].map(([x, y]) => `<circle class="fK" cx="${x}" cy="${y}" r=".6"/>`).join("")}
+    <g class="mouth-a"><path class="sK" d="M161,75.5 C165,74 169,74.5 173,76.5"/></g>
+    <g class="mouth-b"><path class="k sK" d="M161,75 C165,73.5 170,74 173,76 C171,79.5 164,80 161,75 Z"/></g>
+    <path class="sR" d="M139,58 C141,46 150,40 160,43 C167,39 178,42 183,56 M150,43 C152,47 155,50 158,51 M165,42 C168,46 172,48 176,49"/>
+    <path class="sR" d="M138,61 C135,67 136,74 139,79 M184,61 C187,67 186,74 183,79"/>
+    <path class="sV" d="M131,98 C124,62 133,26 161,22 C189,26 198,62 191,98"/>
+    <path class="hl sV" d="M133,38 C140,18 151,9 161,8 M189,38 C182,18 171,9 161,8"/>`;
+
+export const PORTRAIT = {
+  nell: { name: "NELL NULL", chip: "fG", vb: "112 12 96 118", svg: (G) => (G && G.act === 5 && G.flags && G.flags.robeOn ? nellHooded() : nellPlain()) },
+
 
   preston: { name: "PRESTON VALU", chip: "fR", vb: "112 10 96 118", svg: () => `
     <path class="k sR" d="M104,140 C106,108 122,95 150,92 L160,106 L170,92 C198,95 214,108 216,140 Z"/>
