@@ -67,12 +67,22 @@ function desk(G) {
       ${hit(x + 6, y - 50, 44, 50)}</g>
   </g>`;
 }
+// Gus's dart-frog vivarium, at the left end of his desk: glass (hairlines only), a bromeliad, a mister nozzle on the lid,
+// one small blue frog (D. tinctorius 'Azureus') on the leaf litter. cls dims it in Act I (not a hotspot then).
+function vivarium(x, t, dim) {
+  const g = dim ? "sD" : "sB", l = dim ? "sD" : "sG", x0 = x - 47, w = 17, h = 15;
+  return `<g data-hs="${dim ? "" : "viv"}"><rect class="hl ${g}" x="${x0}" y="${t - h}" width="${w}" height="${h}"/><path class="hl ${g}" d="M${x0},${t - h + 3} L${x0 + w},${t - h + 3} M${x0 + w / 2},${t - h} L${x0 + w / 2},${t - h - 2.5} L${x0 + w / 2 + 3},${t - h - 2.5}"/>
+    <path class="hl ${l}" d="M${x0 + 3},${t - 1} C${x0 + 2},${t - 7} ${x0 + 5},${t - 10} ${x0 + 4},${t - 11} M${x0 + 4},${t - 1} C${x0 + 6},${t - 6} ${x0 + 9},${t - 8} ${x0 + 9},${t - 10} M${x0 + 5},${t - 1} C${x0 + 4},${t - 5} ${x0 + 1.5},${t - 6} ${x0 + 1.5},${t - 8}"/>
+    <path class="hl ${g}" d="M${x0},${t - 2} L${x0 + w},${t - 2}"/>
+    <ellipse class="k ${g}" style="stroke-width:.9" cx="${x0 + 12}" cy="${t - 3.6}" rx="2.6" ry="1.6"/><circle class="${dim ? "fM" : "fB"}" cx="${x0 + 13.6}" cy="${t - 4.6}" r=".55"/>
+    ${dim ? "" : hit(x0 - 1, t - h - 4, w + 2, h + 4)}</g>`;
+}
 // Gus's desk, front right: closed laptop, headphones, the Gaussian mug, a sticky note
 function otherDesk(G) {
   const k = .78, y = P(0, FY, k)[1], x = P(470, FY, k)[0];
   if (!G.act || G.act === 1) return `<g><path class="hl sD" d="M${x - 40},${y - 28} L${x - 42},${y} M${x + 40},${y - 28} L${x + 42},${y}"/>
     <polygon class="k sD" points="${x - 44},${y - 28} ${x + 44},${y - 28} ${x + 38},${y - 37} ${x - 38},${y - 37}"/>
-    <rect class="k sD mech" x="${x - 18}" y="${y - 64}" width="38" height="24"/><path class="hl sD" d="M${x},${y - 40} L${x},${y - 37}"/></g>`;
+    <rect class="k sD mech" x="${x - 18}" y="${y - 64}" width="38" height="24"/><path class="hl sD" d="M${x},${y - 40} L${x},${y - 37}"/>${vivarium(x, y - 37, true)}</g>`;
   const t = y - 37;
   if (act3day(G)) return gusDesk3(G, x, y, t);
   return `<g data-hs="gusdesk"><path class="hl sM" d="M${x - 40},${y - 28} L${x - 42},${y} M${x + 40},${y - 28} L${x + 42},${y}"/>
@@ -82,18 +92,18 @@ function otherDesk(G) {
     <path class="sW" d="M${x + 10},${t + 1} C${x + 10},${t - 12} ${x + 30},${t - 12} ${x + 30},${t + 1}"/><ellipse class="k sW" cx="${x + 10}" cy="${t}" rx="3" ry="4"/><ellipse class="k sW" cx="${x + 30}" cy="${t}" rx="3" ry="4"/>
     <path class="k sA" d="M${x + 34},${t + 2} L${x + 34},${t - 10} L${x + 44},${t - 10} L${x + 44},${t + 2} Z M${x + 44},${t - 7} C${x + 49},${t - 7} ${x + 49},${t - 1} ${x + 44},${t - 1}"/>
     <path class="hl sA" d="M${x + 35.5},${t - 2} C${x + 37.5},${t - 2} ${x + 38},${t - 8} ${x + 39},${t - 8} C${x + 40},${t - 8} ${x + 40.5},${t - 2} ${x + 42.5},${t - 2}"/>
-    ${hit(x - 46, t - 16, 98, y - t + 16)}</g>`;
+    ${hit(x - 28, t - 16, 80, y - t + 16)}</g>${vivarium(x, t)}`;
 }
 // Act III day: the laptop is open (the Big Finding on it), an energy drink, the Gaussian mug; Gus wears his headphones
 function gusDesk3(G, x, y, t) {
-  const lx = x - 24;
+  const lx = x - 12;
   return `<g data-hs="gusdesk"><path class="hl sM" d="M${x - 40},${y - 28} L${x - 42},${y} M${x + 40},${y - 28} L${x + 42},${y}"/>
     <polygon class="k sW" points="${x - 44},${y - 28} ${x + 44},${y - 28} ${x + 38},${t} ${x - 38},${t}"/>
     <path class="k sA" d="M${x + 34},${t + 2} L${x + 34},${t - 10} L${x + 44},${t - 10} L${x + 44},${t + 2} Z M${x + 44},${t - 7} C${x + 49},${t - 7} ${x + 49},${t - 1} ${x + 44},${t - 1}"/>
     <path class="hl sA" d="M${x + 35.5},${t - 2} C${x + 37.5},${t - 2} ${x + 38},${t - 8} ${x + 39},${t - 8} C${x + 40},${t - 8} ${x + 40.5},${t - 2} ${x + 42.5},${t - 2}"/>
     ${G.flags.gotDrink ? "" : `<path class="k sG" d="M${x + 22},${t + 2} L${x + 22},${t - 13} L${x + 29},${t - 13} L${x + 29},${t + 2} Z"/><path class="hl sG" d="M${x + 22},${t - 10} L${x + 29},${t - 10} M${x + 23.5},${t - 6} L${x + 27.5},${t - 4}"/>`}
-    <rect class="k sA" x="${x - 40}" y="${t - 7}" width="8" height="6" transform="rotate(-8 ${x - 36} ${t - 4})"/>
-    ${hit(x - 46, t - 2, 98, y - t + 2)}</g>
+    <rect class="k sA" x="${x - 44}" y="${t - 11}" width="7" height="5" transform="rotate(-8 ${x - 40} ${t - 8})"/>
+    ${hit(x - 28, t - 2, 80, y - t + 2)}</g>${vivarium(x, t)}
     <g data-hs="${meeting(G) ? "gusdesk" : "gus"}"><polygon class="k sV" points="${lx - 14},${t + 2} ${lx + 14},${t + 2} ${lx + 13},${t - 15} ${lx - 13},${t - 15}"/>
     <circle class="hl sV" cx="${lx}" cy="${t - 7}" r="3"/><path class="hl sV" d="M${lx - 2},${t - 7} C${lx - 1},${t - 10} ${lx + 1},${t - 10} ${lx + 2},${t - 7}"/>
     <path class="sV" d="M${lx - 16},${t + 2} L${lx + 16},${t + 2}"/>${hit(lx - 16, t - 17, 32, 19)}</g>`;
@@ -137,13 +147,13 @@ export default {
       { depth: P(0, FY, .82)[1], svg: desk(G) },
     ] };
   },
-  stand: { monitor: [246, 284], drawer: [246, 284], whiteboard: [262, 212], adline: [380, 212], door: [106, 274], booth: [520, 252], brett: [262, 262], vent: [314, 210], gusdesk: [414, 268],
+  stand: { monitor: [246, 284], drawer: [246, 284], whiteboard: [262, 212], adline: [380, 212], door: [106, 274], booth: [520, 252], brett: [262, 262], vent: [314, 210], gusdesk: [414, 268], viv: [400, 268],
     gus: [372, 268], small: [150, 268], robe: [280, 284] },
   labels: {
     day: { get monitor() { return cur && cur.act === 3 ? { use: "WORK" } : { use: "RERUN" }; },
       gus: { talk: "TALK", use: "TABLE 1" }, small: { talk: "TALK" }, drawer: { use: "OPEN" }, whiteboard: { use: "ERASE" }, adline: { use: "KNOCK" }, door: { use: "GO OUT" }, booth: { use: "SIT IN", go: "CONSOLE" }, brett: { use: "HIGH FIVE" },
-      gusdesk: { use: "SNOOP" }, robe: { use: "TAKE" } },
-    morris: { vent: { use: "CLIMB IN" }, drawer: { use: "HIDE IN" }, door: { go: "SCURRY OUT" }, gusdesk: { use: "RAID" }, monitor: { use: "WALK ON KEYS" } },
-    night: { monitor: { use: "TAP KEY" }, drawer: { use: "OPEN" }, whiteboard: { use: "ERASE" }, adline: { use: "KNOCK" }, door: { use: "GO OUT" }, booth: { use: "SIT IN", go: "CONSOLE" } },
+      gusdesk: { use: "SNOOP" }, robe: { use: "TAKE" }, viv: { use: "TAP GLASS" } },
+    morris: { vent: { use: "CLIMB IN" }, drawer: { use: "HIDE IN" }, door: { go: "SCURRY OUT" }, gusdesk: { use: "RAID" }, monitor: { use: "WALK ON KEYS" }, viv: { use: "LICK" } },
+    night: { monitor: { use: "TAP KEY" }, drawer: { use: "OPEN" }, whiteboard: { use: "ERASE" }, adline: { use: "KNOCK" }, door: { use: "GO OUT" }, booth: { use: "SIT IN", go: "CONSOLE" }, viv: { use: "FEED" } },
   },
 };

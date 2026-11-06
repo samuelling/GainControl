@@ -140,7 +140,7 @@ const ENDINGS = {
   accepted: { title: "ACCEPTED", chip: "THE BEST ENDING", bodies: "BODIES 05.  ONE QUORUM, ARRESTED.", next: "THE TABLE IS DISSOLVED.",
     epilogue: "Monday. Ethel Bord's office. The reels, transcribed: fifty years of membership rolls. Iris brings the panel rosters. 'This is the part they never thought anyone would do,' she says. 'It's just matching.'" },
   major: { title: "MAJOR REVISIONS", chip: "THE TABLE IS STOPPED. THE ARCHIVE IS GONE.", bodies: "BODIES 05.", next: "NO PROOF.  NOT YET.",
-    epilogue: "The Table is stopped. Quorum is pulled out of the bore of a 3T, and then into custody. But the magnet took the Archive with the mill, and without the rolls, it's a story.\n\nNell passes her defense, with major revisions.\n\nThe last shot: Gus's empty desk. His laptop is still on, still running a GLM. Somewhere in the walls, a canister rattles." },
+    epilogue: "The Table is stopped. Quorum is pulled out of the bore of a 3T, and then into custody. But the magnet took the Archive with the mill, and without the rolls, it's a story.\n\nNell passes her defense, with major revisions.\n\nThe last shot: Gus's empty desk. His laptop is still on, still running a GLM. In the other window, Dendroboard: one unread reply to his last thread. Somewhere in the walls, a canister rattles." },
   inducted: { title: "INDUCTED", chip: "CONGRATULATIONS ON YOUR R01", bodies: "BODIES 05.  YOURS, SPIRITUALLY.", next: "THE END.",
     epilogue: "NELL|Yes.\n\nTwelve hoods applaud, softly, like a grant panel. Someone hands Nell a small velvet box. Inside: a pair of earbuds.\n\nThey fit perfectly. Everything does, now.\n\nCongratulations on your R01." },
   deskreject: { title: "DESK REJECT", chip: "THE INDUCTION SUCCEEDED", bodies: "BODIES 05.", next: "THE END.",
@@ -152,7 +152,7 @@ async function ending(api, which) {
   if (which === "accepted") {
     await api.say(END.epilogue);
     await api.mini(crossref, { score: api.score });
-    END.epilogue = "Nell lays the membership rolls next to fifty years of grant panels and editorial boards, and the pattern is undeniable.\n\nThe NRT is exposed and dissolved. Quorum is arrested, at thirty-nine; the charge sheet is amended. Half a century of Reviewer 2 reports are unsealed.\n\nPreston confesses to stealing Nell's data and to running the mill. All 31 of his papers are retracted; the retraction notices are the first thing he's written himself in years.\n\nNell's original paper, null and all, is published. It's dedicated to Gus Ian, with a methods section he would have called 'fine.'\n\nNell passes her defense. She gets the job.\n\nIris watches it on the news, puts down the staple gun, and finally retires.";
+    END.epilogue = "Nell lays the membership rolls next to fifty years of grant panels and editorial boards, and the pattern is undeniable.\n\nThe NRT is exposed and dissolved. Quorum is arrested, at thirty-nine; the charge sheet is amended. Half a century of Reviewer 2 reports are unsealed.\n\nPreston confesses to stealing Nell's data and to running the mill. All 31 of his papers are retracted; the retraction notices are the first thing he's written himself in years.\n\nNell's original paper, null and all, is published. It's dedicated to Gus Ian, with a methods section he would have called 'fine.'\n\nNell passes her defense. She gets the job.\n\nAlpha lives on Nell's desk now. The mister comes on at nine.\n\nIris watches it on the news, puts down the staple gun, and finally retires.";
   }
   api.endAct(); return null;
 }

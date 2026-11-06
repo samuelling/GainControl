@@ -1,7 +1,7 @@
 // ACT II — Tuesday: UNDER REVIEW. The paper trail (Nell + Morris), Preston's computer (Gus), and the first body.
 import { seg, segC } from "../gfx.js";
 import * as FIG from "../figures.js";
-import { ITEMS } from "./act1.js";
+import { ITEMS, VIV, dendro } from "./act1.js";
 import { openConsole } from "../console/open.js";
 
 /* ---------------- new items, and act-aware versions of old ones ---------------- */
@@ -222,8 +222,9 @@ export const HS = {
     booth: { label: "dark booth",
       day: { look: "The dark-adapted psychophysics booth. Still dark. Still tempting.", use: (api) => api.die("You sit in the dark booth just for a minute, to think. Your eyes adapt. Your thoughts slow. Your eyelids file a formal complaint and win.\n\nYou wake up on Saturday. Your defense was yesterday. Preston gave a lovely job talk in your slot."), go: openConsole },
       morris: { look: "MORRIS|I've seen what the dark does to grad students, pal. No." } },
+    viv: VIV,
     gusdesk: { label: "Gus's desk",
-      day: { look: "Gus's desk. Closed laptop, headphones, a mug that says I ♥ GAUSSIANS. A sticky note: '2:30a scan. If I'm not here, I'm in the scanner. Don't wake me.'",
+      day: { look: "Gus's desk. Closed laptop, headphones, a mug that says I ♥ GAUSSIANS, a vivarium with one very blue frog in it. A sticky note: '2:30a scan. If I'm not here, I'm in the scanner. Don't wake me.'",
         use: (api) => { api.flag("noteForGus", true); return "You stick a note on Gus's laptop: WEIRD DAY. TELL YOU TONIGHT. He'll see it at 2 AM."; } },
       morris: { look: "Morris sniffs the mug. 'This guy's all right, pal.'" },
       night: { look: "Gus's own desk. His laptop, his mug, and a sticky note from Nell: WEIRD DAY. TELL YOU TONIGHT." } },

@@ -17,6 +17,7 @@ import { keypad } from "./minigames/keypad.js";
 import { fogNeuro } from "./minigames/fogneuro.js";
 import { sfx } from "./sfx.js";
 import * as FULL from "./fullscreen.js";
+import { titleArt, titleGlitch } from "./title.js";
 import { applyOverrides, rewriteSay, jumpFromHash } from "./tools/overrides.js";
 import seminar from "./rooms/seminar.js";
 import hall from "./rooms/hallway.js";
@@ -623,10 +624,12 @@ async function start() {
   if (h === "#act5night") { await startAct(5, { fresh: true, skipCard: true }); await A5.debugNight(api); return; }
   loadRoom("seminar", "start");
   const unlocked = +(localStorage.getItem("gaincontrol.act") || 1);
-  const choice = await showCard(`${centered("GAIN CONTROL", 92, 44, "sW", 2.2)}${cchip("A MURDER MYSTERY WITH ERROR BARS", 160, 7, "fR")}
+  const titleP = showCard(`${titleArt()}
     ${button("1", "ACT I  SUBMISSION", 60, 200, 160, true)}${button("2", "ACT II  UNDER REVIEW", 240, 200, 160, unlocked >= 2)}${button("3", "ACT III  MAJOR REVISIONS", 420, 200, 160, unlocked >= 3)}
     ${button("4", "ACT IV  REBUTTAL", 150, 232, 160, unlocked >= 4)}${button("5", "ACT V  DECISION", 330, 232, 160, unlocked >= 5)}
     ${centered(unlocked >= 2 ? "PICK AN ACT" : "START WITH ACT I, OR JUMP AHEAD", 272, 4.6, "sM", .8)}${FULL.cardButton(270, 298, 100)}`, { buttons: true });
+  const stopGlitch = titleGlitch(card, { sfx: () => sfx.play("blank") });
+  const choice = await titleP; stopGlitch();
   if (["2", "3", "4", "5"].includes(choice)) { await startAct(+choice, { fresh: true }); return; }
   await startAct(1, { fresh: true });
 }

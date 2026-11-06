@@ -1,7 +1,7 @@
 // ACT IV — Thursday: REBUTTAL. Impact in the −80, Reviewer 2 and the retainer, Cody in the maze, the chase through the fog;
 // Gus's last night at the coat check; Friday dawn; Iris and THE REHEARSAL. Design: docs/ACT4.md.
 import { seg, segC, chip, chipW } from "../gfx.js";
-import { ITEMS } from "./act1.js";
+import { ITEMS, VIV, dendro } from "./act1.js";
 import "./act3.js";
 import { metamer } from "../minigames/metamer.js";
 import { hours } from "../minigames/hours.js";
@@ -224,8 +224,9 @@ export const HS = {
         use: doDark, go: openConsole },
       morris: look("MORRIS|No. I know what dark rooms are for in this building."), night: { look: "Dark.", go: openConsole }, morning: look("Dark.") },
     gusdesk: { label: "Gus's desk", day: look("Gus's desk. Cans. Notes. A map of the steam tunnels with B3 written on it and crossed out and written again."), morris: look("Morris sniffs. Cans."),
-      night: look("His desk. He hasn't sat at it since Monday."), morning: look("Gus's desk. The mug that says I ♥ GAUSSIANS. Still half full.") },
-    gus: { label: "Gus", day: { look: "Gus, at his desk. He's re-running your replication for the fourth time. Same answer.", talk: (api) => gusHint(api) },
+      night: look("His desk. He hasn't sat at it since Monday."), morning: look("Gus's desk. The mug that says I ♥ GAUSSIANS, still half full. His laptop is open to Dendroboard, logged in, a reply half-typed: 'honestly just give them time, they'll call when they're ready'.") },
+    viv: VIV,
+    gus: { label: "Gus", day: { look: () => `Gus, at his desk, "re-running your replication for the fourth time." The laptop says DENDROBOARD. Thread: ${dendro()}\n\nGUS|It's running in the background. The frogs are in the foreground. That's called multitasking.`, talk: (api) => gusHint(api) },
       morris: { look: "MORRIS|He scratched my ears this morning. Nobody does that." } },
     robe: { label: "the robe on your chair", morning: { look: "A hooded robe, draped over your chair. The pin from Gus's photo on Monday, lit. Folded into the hood: a reel of tape.",
       use: (api) => { api.give("robe"); if (api.flag("reelLeft")) api.give("reel"); api.flag("gotRobe", true); api.refresh(); api.score("gotRobe", 1);

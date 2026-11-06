@@ -240,3 +240,23 @@ async function readNote(api) {
   api.shift({ mode: "night", char: "gus", room: "hall", entry: "start", min: 2 * 60 + 13, cast: ["gus"] });
   await api.say("Gus Ian. Fourth-year, Adline Lab, Nell's labmate. He scans at 2 AM because the 3T is cheapest when nobody sane wants it. Nobody notices a grad student at 2 AM. Grad students are furniture.\n\nNell has been texting him about journal club. And something has been rattling in the tube pipes all week.");
 }
+
+/* ---------------- Gus's dart frogs (shared by Acts II–IV) ---------------- */
+// Gus keeps one Dendrobates tinctorius 'Azureus' in a vivarium on his desk, and spends a suspicious share of his
+// working day on Dendroboard, the dart-frog forum. THREADS rotates on each LOOK at Gus or his laptop.
+export const FROG_THREADS = ["'Is my Azureus calling, or just stressed?' (14 replies)", "'Springtail culture crashed. Again.' (31 replies)",
+  "'Imitator tadpoles: how many is too many?' (52 replies)", "'Mister nozzle placement for a 12x12x18' (8 replies)", "'Thumbnails or tincs for a first frog?' (203 replies)",
+  "'Grad student, small apartment, three vivs. Am I a hoarder?' (posted by GUS_IAN, 0 replies)", "'Can frogs tell when you're avoiding your thesis?' (posted by GUS_IAN, 4 replies, all 'yes')"];
+let frogN = 0;
+export const dendro = () => FROG_THREADS[frogN++ % FROG_THREADS.length];
+export const VIV = {
+  label: "Gus's vivarium",
+  day: { look: "A glass vivarium at the end of Gus's desk: a bromeliad, leaf litter, a mister on a timer, and one small, extremely blue frog. A label in Gus's handwriting: D. TINCTORIUS 'AZUREUS'. ALPHA. 0.05 g, GIVE OR TAKE.",
+    use: (api) => api.G.act >= 3 ? "You tap the glass.\n\nGUS|Don't tap the glass. She's sensitive to vibration. And to Reviewer 2." : "You tap the glass. The frog regards you with a contempt that Gus would know how to interpret." },
+  morris: { look: "MORRIS|Pal. In the wild, that thing could take out ten of me. I respect her.",
+    use: "Morris licks the glass. Nothing happens. Captive-bred dart frogs aren't toxic: their poison comes from the ants and mites they eat in the wild.\n\nMORRIS|I'm disappointed, pal, and I can't tell you why." },
+  night: { look: "Alpha, under the vivarium's blue night light. The mister hisses on its timer. Gus checks on her the way other people check their email.",
+    use: "Gus taps in a few fruit flies from a culture cup. Flightless; he breeds those too.\n\nGUS|Drosophila. The other model organism." },
+  morning: { look: "The vivarium. The mister comes on at nine, on its timer. Alpha doesn't know.",
+    use: "You tap the glass. She doesn't look up.\n\nYou find the fruit flies in his drawer and tip some in, the way you saw him do it. You don't know how many. You'll learn." },
+};

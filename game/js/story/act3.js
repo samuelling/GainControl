@@ -1,7 +1,7 @@
 // ACT III — Wednesday: MAJOR REVISIONS. Four proofs (Nell + Morris, Gus at his desk), Dana, the faculty meeting
 // (THE NOD, and Quorum "dies"), Iris; then Gus in the steam tunnels. Design: docs/ACT3.md.
 import { seg, segC, chip, chipW } from "../gfx.js";
-import { ITEMS } from "./act1.js";
+import { ITEMS, VIV, dendro } from "./act1.js";
 import "./act2.js";   // Act II's items (printout, …) and look-wrappers
 import { ceiling } from "../minigames/ceiling.js";
 import { overlay } from "../minigames/overlay.js";
@@ -324,7 +324,8 @@ export const HS = {
         use: (api) => { if (api.has("can") || api.flag("descaled")) return "GUS|That's my last one. Don't make it weird."; api.give("can"); api.flag("gotDrink", true); api.refresh(); api.score("can", 1);
           return "You take Gus's emergency can.\n\nGUS|That's my emergency can.\n\nNELL|This is an emergency.\n\nGUS|…pH 2.4. Don't drink it. Nobody should drink it. I drink it."; } },
       morris: { look: "Morris sniffs the cans. His whiskers curl." }, night: { look: "His own desk. He hasn't sat at it since Monday." } },
-    gus: { label: "Gus", day: { look: "Gus Ian. Awake since Monday. Same cardigan. His eyes have the steady, unblinking calm of a man who has seen the raw data.",
+    viv: VIV,
+    gus: { label: "Gus", day: { look: () => `Gus Ian. Awake since Monday. Same cardigan. On his laptop, behind the Big Finding, a second window: DENDROBOARD, the dart-frog forum. Thread: ${dendro()}\n\nHe alt-tabs to the paper the moment he sees you. Too late.`,
         talk: (api) => api.flag("gusPlanned") ? gusHint(api) : "c:gusPlan", use: doGrim },
       morris: { look: "MORRIS|This guy's all right, pal. He doesn't scream when he sees me. He just nods and says 'rat.'" } },
     small: { label: "Det. Sgt. Small", day: { look: "Det. Sgt. Small, by the door, doing a power calculation in his notebook.", talk: "c:smallLab" } },
