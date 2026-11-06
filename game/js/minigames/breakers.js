@@ -1,7 +1,8 @@
 // THE COLD START (Act V, B3 power plant; played by Iris). Page 14 of the 1968 operator's manual prints the cold-start
 // steps in the engineer's order, which is wrong. Iris's pencil notes in the margin correct it. Throw the six breakers
-// in the corrected order: each right one steps the supply needle up; a wrong one sparks and drops everything.
-// Then the charge climbs. breakers(el, { score(key, n), onBreak(order) }) → Promise<{ done, tries, order }>
+// in the corrected order: each right one steps the supply needle up; a wrong one sparks and kicks itself back off (the
+// ones already up stay up), and Iris says which pencil note it broke. After two wrong throws she reads out the note for
+// the next breaker; after four, the next breaker lights green. Then the charge climbs. breakers(el, { score(key, n), onBreak(order) }) → Promise<{ done, tries, order }>
 // onBreak is called with the current string of thrown breakers (e.g. "ACD") after each throw, and "" after a reset.
 import { seg, segC, segW, star4, arcs, chip } from "../gfx.js";
 
@@ -26,15 +27,25 @@ const LINES = {
     E: ["IRIS", "Field on the generator. Watch the needle. It knows."],
     F: ["IRIS", "And the coil bus. Now it's a magnet again. Almost."],
   },
-  bad: [
-    ["IRIS", "Sparks. In 1968 we'd have called that a near miss and gone to lunch."],
-    ["IRIS", "All the way back down. The supply has a longer memory than the faculty."],
-    ["IRIS", "I wrote those notes so I'd never have to remember. Read them, Iris."],
-    ["IRIS", "Everything down again. Like the 1974 vote."],
-    ["IRIS", "My hands remember this panel. My hands are eighty-eight."],
-    ["IRIS", "That's the engineer's order. He's dead, dear. Of the order, I always assumed."],
-  ],
-  trap: ["IRIS", "Never F before C. I underlined it. Twice. In 1968. For exactly this evening."],
+  // a wrong throw: why it was wrong (the pencil note it broke). The rest stay up.
+  why: {
+    early: ["IRIS", "Sparks. Control power first, dear: A. Nothing else lights without it. In 1968 we'd have called that a near miss and gone to lunch."],
+    C: ["IRIS", "Sparks. The water goes RIGHT AFTER A. There's an arrow. I drew it in 1968 and it still points. Only that one dropped; the rest held."],
+    B: ["IRIS", "Not yet. The note by B: water and dump first. That's the engineer's order, dear. He's dead. Of the order, I always assumed."],
+    E: ["IRIS", "Sparks. E, ONLY ONCE B WHINES. Do you hear a whine? I don't. Only that one dropped."],
+    F: ["IRIS", "Sparks. The coil bus goes last. Everything else first. My hands remember this panel. My hands are eighty-eight."],
+  },
+  // after two wrong throws: the note for the next breaker, read aloud
+  hint: {
+    A: ["IRIS", "Start with A, dear. Control power. That part the engineer got right."],
+    C: ["IRIS", "After A: the arrow. RIGHT AFTER A! It points at C. The water."],
+    D: ["IRIS", "Water's in. Next: D BEFORE ANYTHING SPINS. The dump resistor."],
+    B: ["IRIS", "Water and dump are in. Now B, the M-G set. Let it whine."],
+    E: ["IRIS", "B is whining. ONLY ONCE B WHINES: that's E's note. E."],
+    F: ["IRIS", "Last one, dear. F. C is in, so F is allowed."],
+  },
+  show: (L) => ["IRIS", `This one, dear. ${L}. It's lit. My hands remember even when the rest of me doesn't.`],
+  trap: ["IRIS", "Never F before C. I underlined it. Twice. In 1968. For exactly this evening. Only that one dropped; the rest held."],
   charging: ["IRIS", "Now the charge. It takes its time. So did I."],
   done: ["IRIS", "Supply's charged. The knife switch is upstairs, by the ring. Not yet. First, the stair."],
 };
@@ -122,8 +133,10 @@ export function breakers(el, { score = () => {}, onBreak = () => {} } = {}) {
     }
     function breaker(L, i) {
       const x = 322 + i * 52, cx = x + 22, y = 162, up = S.up.includes(L), sp = S.spark === L;
-      let s = `<g data-brk="${L}">` + segC(L, cx, y - 16, 11, up ? "sG" : "sW", 1.4);
-      s += `<rect class="k hs ${sp ? "sR" : "sW"} mech" x="${x}" y="${y}" width="44" height="80"/>`;
+      const lit = !up && !sp && !S.done && !S.charging && S.bad >= 4 && ORDER[S.up.length] === L;   // the answer, after four wrong throws
+      let s = `<g data-brk="${L}">` + segC(L, cx, y - 16, 11, up || lit ? "sG" : "sW", 1.4);
+      s += `<rect class="k hs ${sp ? "sR" : lit ? "sG" : "sW"} mech" x="${x}" y="${y}" width="44" height="80"/>`;
+      if (lit) s += arcs(x - 4, y + 40, -1, "sG", 2, .6) + arcs(x + 48, y + 40, 1, "sG", 2, .6);
       s += up ? `<circle class="fG" cx="${cx}" cy="${y + 9}" r="3.2"/>` : `<circle class="hl sD" cx="${cx}" cy="${y + 9}" r="3.2"/>`;
       s += `<rect class="hl sM mech" x="${cx - 5}" y="${y + 18}" width="10" height="54"/>`;
       const hy = up ? y + 20 : y + 54;
@@ -150,25 +163,29 @@ export function breakers(el, { score = () => {}, onBreak = () => {} } = {}) {
           ${[..."ABCDEF"].map(breaker).join("")}
         </svg>
         <div class="coachline"><span class="who" style="background:var(--${col})">${S.say[0]}</span><span style="color:var(--${col})">${S.say[1]}</span></div>
-        <div class="bar"><span class="status">${S.done ? "SUPPLY CHARGED" : `THROWN: ${S.up || "NONE"}   ·   ATTEMPT ${S.tries}`}</span>
+        <div class="bar"><span class="status">${S.done ? "SUPPLY CHARGED" : S.charging ? "CHARGING" : `THROW ALL SIX IN THE PENCIL ORDER (CLICK, OR KEYS A-F)   ·   UP: ${S.up || "NONE"}`}</span>
           <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
     }
     function throwIt(L) {
       if (S.lock || S.done || S.charging || S.up.includes(L)) return;
-      const want = ORDER[S.up.length];
+      const want = ORDER[S.up.length], before = S.up;
       S.up += L; onBreak(S.up); sfx("clunk");
       if (L === want) {
         S.say = LINES.ok[L]; draw(); if (L === "B") sfx("mgset");
         if (S.up.length === 6) charge();
         return;
       }
-      // wrong: spark (poses), then everything drops
+      // wrong: spark (poses), then that one breaker kicks back off; the ones already up stay up
       S.lock = true; S.spark = L; S.sp = 0; draw(); sfx("zap");
-      const trap = L === "F" && !S.up.slice(0, -1).includes("C");
-      [1, 2, 3, 4].forEach(k => later(130 * k, () => { S.sp = k; draw(); if (k === 2) sfx("spark"); if (k === 3) sfx("powerdown"); }));
+      const trap = L === "F" && !before.includes("C");
+      const why = trap ? LINES.trap : !before ? LINES.why.early : want === "C" ? LINES.why.C : LINES.why[L];
+      [1, 2, 3, 4].forEach(k => later(130 * k, () => { S.sp = k; draw(); if (k === 2) sfx("spark"); }));
       later(700, () => {
-        S.spark = null; S.up = ""; S.tries++; S.lock = false; onBreak(""); sfx("thud");
-        S.say = trap ? LINES.trap : LINES.bad[S.bad++ % LINES.bad.length]; draw();
+        S.spark = null; S.up = before; S.tries++; S.bad++; S.lock = false; onBreak(S.up); sfx("thud");
+        S.say = why; draw();
+        // the hint ladder: the next note read aloud after two wrong throws, the next breaker lit after four
+        const next = ORDER[S.up.length], n = S.bad;
+        if (n >= 2) later(2800, () => { if (!S.done && !S.lock && S.bad === n && ORDER[S.up.length] === next) { S.say = n >= 4 ? LINES.show(next) : LINES.hint[next]; draw(); } });
       });
     }
     function charge() {

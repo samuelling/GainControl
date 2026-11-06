@@ -152,7 +152,7 @@ export const WALKTHROUGH = {
     { name: "LEAD: THE DARK (DARK BOOTH, LAB)", steps: [
       { t: "In the lab, click the dark booth and choose SIT IN (safe today: Preston is inside).", flag: "clueDark" },
       { t: "Step 1: click the red ON lamp, the phone and the light under the door.", flag: "clueDark" },
-      { t: "Step 2: wait (about ten seconds) while the dark-adaptation curve falls. Don't press CHECK PHONE: it starts the wait over.", flag: "clueDark" },
+      { t: "Step 2: wait (about six seconds) while the dark-adaptation curve falls. CHECK PHONE warns you once; pressing it again starts the wait over.", flag: "clueDark" },
       { t: "Step 3: keep the pointer beside his head, not on it. Answer RING, then RING IN RING, then DIAL: MAX. DONE.", flag: "clueDark" },
     ] },
     { name: "FOUR O'CLOCK  IMPACT'S OFFICE", steps: [
@@ -213,7 +213,7 @@ export const WALKTHROUGH = {
       { t: "If Quorum says 'Let us advance the Echo', compare three turns back until he says it returns. Six mistakes and the hoods close in (Revise & Resubmit).", flag: "echoPassed" },
       { t: "IRIS: click the breaker panel and choose THROW BREAKERS. Throw A, C, D, B, E, F (the pencil order), then wait for the charge. DONE.", flag: "magnetCharged" },
       { t: "AVOID: as Iris, the plant's knife switch THROW IT before the breakers are set, twice (death)." },
-      { t: "MORRIS: click the Archive, PICK REELS. First click ETHEL BORD 2F on the dial. 90 seconds a run: don't CLOSE early.", flag: "reelsDone" },
+      { t: "MORRIS: click the Archive, PICK REELS. The dial already points at ETHEL BORD 2F. A wrong send costs five seconds and the reel comes back; if time runs out, REVISE & RESUBMIT.", flag: "reelsDone" },
       { t: "Send MEMBERSHIP ROLLS, PANEL SCORES, REVIEWER 2 REPORTS and EDITORIAL BOARDS: click a reel, then SEND. Three or more reach Ethel for the best ending. Fewer? PICK REELS again for another run.", flag: "archiveSent" },
       { t: "OPTIONAL: as Morris, click the dead letters and choose OPEN IT: the brass gavel.", flag: "brassGavel" },
       { t: "MORRIS: riser pipe, UP TO THE 3T. Click the jack posts and choose LOOSEN THE BOLTS.", flag: "supportsOut" },
@@ -224,7 +224,7 @@ export const WALKTHROUGH = {
       { t: "When all three jobs are done: SWITCH TO IRIS, click the service stair and choose CLIMB (or, as Nell, TAKE YOUR SEAT again).", flag: "climax" },
       { t: "Quorum makes his offer. Choose NO. With the Archive sent, this is the ACCEPTED ending.", flag: "ending" },
       { t: "AVOID: YES or CAN I THINK ABOUT IT? Each plays a bad ending (INDUCTED or DESK REJECT); choose REVISE & RESUBMIT afterwards to answer again." },
-      { t: "Epilogue (ACCEPTED only): click member names on the left until eight are traced and the view steps back. Then DONE." },
+      { t: "Epilogue (ACCEPTED only): click member names on the left until five are traced and the view steps back. Then DONE." },
     ] },
   ] },
 };

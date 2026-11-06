@@ -11,6 +11,11 @@
 // a breather). Events never touch the staircase: no level change, nothing logged as a trial. The fog surge is a REMINDER
 // trial (an easy, high-contrast landing that real staircases use to catch lapses): logged separately, out of the threshold.
 // Scenery stays outside the door panels, which carry the stimulus exactly as before.
+// Kept forgiving on purpose: five reversals (not six), events every three to five landings, a wrong door costs one flight
+// (not two), Preston waits longer on each landing, a HE'S RIGHT BEHIND YOU warning shows before he can catch you, and two
+// misses in a row get a "just guess" nudge. The staircase itself is the hint ladder: every miss makes the next mark
+// clearer. A catch costs nothing but the death card (Revise & Resubmit picks up on the same landing, data intact).
+// Esc does nothing once the run has started (the caller reopens THE FOG from scratch on a close).
 import { seg, segW, segC, chip, chipW, arcs, star4 } from "../gfx.js";
 import { nellFigure, morrisPeek, robedFigure } from "../figures.js";
 import { rexHead } from "../cast/act3b.js";
@@ -73,7 +78,7 @@ function stimulus(c) {
 const C_SURGE = 0.25;
 
 /* ---------------- the staircase: 1-down until the first miss, then 2-down-1-up ---------------- */
-const REVERSALS = 6;
+const REVERSALS = 5, MAX_TRIALS = 36;   // the run also ends after 36 counted landings, whatever the reversals
 const makeST = () => ({
   logc: Math.log10(0.10), step: 0.25, run: 0, dir: 0, phase: "fast", reversals: [], trials: [], reminders: [],
   get c() { return Math.pow(10, this.logc); },
@@ -87,13 +92,13 @@ const makeST = () => ({
     this.logc = Math.max(Math.log10(C_MIN), Math.min(Math.log10(C_MAX), this.logc + move * this.step));
     return move;
   },
-  get done() { return this.reversals.length >= REVERSALS; },
-  get threshold() { const r = this.reversals.slice(-4); return Math.pow(10, r.reduce((a, b) => a + b, 0) / r.length); },
+  get done() { return this.reversals.length >= REVERSALS || this.trials.length >= MAX_TRIALS; },
+  get threshold() { const r = this.reversals.length >= 2 ? this.reversals.slice(-4) : [this.logc]; return Math.pow(10, r.reduce((a, b) => a + b, 0) / r.length); },
 });
 
 const GAP_MAX = 8;
 // the time Preston gives you on a landing depends on how far back he is
-const hesitateMs = (gap) => 1300 + 220 * Math.max(1, Math.min(GAP_MAX, gap));
+const hesitateMs = (gap) => 2000 + 250 * Math.max(1, Math.min(GAP_MAX, gap));
 const DEATH = "Preston catches you on the landing. His earbuds are glowing. \"Nell! Let's grab coffee. Actually, let's grab synergy.\"\n\nYou have been added to his network.";
 const EV_TYPES = ["hand", "hood", "jam", "notebook", "surge", "vent", "flicker", "detour", "breather"];
 const CSS = `
@@ -130,8 +135,8 @@ export function stairwell(el, opts = {}) {
       <div class="lines">
         <p class="r">Preston is one flight behind you. The NRT has filled the stairwell with fog. Five floors down to B3.</p>
         <p class="a">On every landing, one door is marked with a faint circle inside a circle. That's the way down. The other goes back up.</p>
-        <p class="g">Pick it: ← / → or click. Hesitate and he gains on you. When something else happens, do what the screen says.</p>
-        <p class="m">Screen bright, room dim. Two or three minutes. Click to run.</p>
+        <p class="g">Pick it: ← / → or click. Can't see it? Guess: a guess is data. Hesitate and he gains on you. When something else happens, do what the bottom left of the screen says.</p>
+        <p class="m">Screen bright, room dim. A minute or two. Click to run.</p>
       </div></div></div>`;
   el.classList.add("show");
   const svg = el.querySelector(".fogmini > svg"), quipEl = el.querySelector(".fogquip"), introEl = el.querySelector(".fogintro");
@@ -143,7 +148,7 @@ export function stairwell(el, opts = {}) {
   return new Promise(resolve => {
     /* ---------------- state ---------------- */
     const S = { landing: 0, target: "L", phase: "intro", nell: { x: 60, y: UP_Y, dir: 1, pose: 0, s: NELL_S }, open: null, dash: null,
-      gap: 6, streak: 0, best: 0, score: 0, caught: 0, pop: null, t0: 0, arrived: 0, wisps: [], said: {},
+      gap: 6, streak: 0, missRun: 0, best: 0, score: 0, caught: 0, pop: null, t0: 0, arrived: 0, wisps: [], said: {},
       // scenery and pacing
       zone: 0, zoneLandings: 0, geoI: 0, geo: GEOS.flight, names: ["PROF. IMPACT", "PROF. QUORUM"], tick: 0, card: null,
       // events
@@ -447,6 +452,11 @@ export function stairwell(el, opts = {}) {
       s += prestonSVG(st) + nellSVG();
       s += evOver(st);
       if (S.pop) s += segC(S.pop.t, S.pop.x, S.pop.y, 9, S.pop.cls, 1.4);
+      if (S.gap <= 2 && S.gap > 0 && (S.phase === "choose" || S.phase === "event")) {   // the warning before a catch
+        const w = S.gap === 1 ? "HE'S RIGHT BEHIND YOU" : "HE'S CLOSE", sub = S.phase === "choose" ? "PICK A DOOR. ANY DOOR." : "";
+        s += chip(w, 472 - chipW(w, 6) / 2, 270, 6, S.tick % 2 ? "fR" : "fA");
+        if (sub && S.tick % 2) s += segC(sub, 160, 274, 4.6, "sR", .9);
+      }
       s += hud(st);
       if (S.phase === "caught" && ownDie) s += caughtCard();
       if (S.phase === "end") s += results();
@@ -560,14 +570,16 @@ export function stairwell(el, opts = {}) {
         S.score += gain; S.gap = Math.min(GAP_MAX, S.gap + 1);
         S.pop = { t: "+" + gain + (quick ? " QUICK" : ""), x: STAND[side], y: DOOR_TOP - 26, cls: "sG" };
       } else {
-        S.streak = 0; S.gap -= 2;
+        S.streak = 0; S.gap -= 1; S.gapFx = { d: -1, t: Date.now() };
         S.pop = { t: "WRONG WAY", x: STAND[side], y: DOOR_TOP - 26, cls: "sR" };
       }
+      S.missRun = correct ? 0 : S.missRun + 1;
       draw(); await tick(correct ? 260 : 420);
       const move = ST.update(correct);
       if (move === -1) sfx("fogHiss");
       S.landing += correct ? 1 : -1;
-      if (!correct) once("wrongway", () => quip("MORRIS", "WRONG WAY, PAL. THAT'S UP.", "K"));
+      if (!correct && S.missRun === 2) quip("MORRIS", "CAN'T SEE IT? JUST GUESS, PAL. EVERY MISS MAKES THE NEXT ONE CLEARER.", "K");
+      else if (!correct) once("wrongway", () => quip("MORRIS", "WRONG WAY, PAL. THAT'S UP. THE NEXT MARK WILL BE EASIER.", "K"));
       else if (S.said.cantsee && !S.said.gut) once("gut", () => quip("NELL", "PICK ANYWAY. YOUR GUT'S BETTER THAN YOU THINK.", "G"));
       else if (move === -1 && ST.phase === "main") once("atmos", () => quip("VOICE BELOW", "SHE'S GETTING AWAY. MORE ATMOSPHERE.", "V"));
       else if (S.streak === 5) once("streak5", () => quip("MORRIS", "LOOK AT YOU GO, PAL.", "K"));
@@ -603,7 +615,7 @@ export function stairwell(el, opts = {}) {
       return "breather";
     }
     // events come every 2–4 trials; the spacing never repeats twice running
-    function scheduleNext() { let k; do { k = 2 + Math.floor(Math.random() * 3); } while (k === S.lastGapN); S.lastGapN = k; S.evAt = ST.trials.length + k; }
+    function scheduleNext() { let k; do { k = 3 + Math.floor(Math.random() * 3); } while (k === S.lastGapN); S.lastGapN = k; S.evAt = ST.trials.length + k; }
     async function next() {
       if (S.closed) return;
       if (S.gap <= 0) { caught(); return; }
@@ -667,8 +679,8 @@ export function stairwell(el, opts = {}) {
       async hand(rec) {
         S.ev.hint = ["DUCK: SPACE, DOWN", "OR CLICK"];
         quip("PRESTON (ABOVE)", "NELL! YOU'VE GOT SOMETHING IN YOUR HAIR!", "R"); sfx("fogGrab"); draw();
-        const t0 = Date.now(), WIN = 1250;
-        const lunge = setTimeout(() => { if (S.ev && S.ev.type === "hand") { S.ev.pose = 1; sfx("fogWhiff"); draw(); } }, 620);
+        const t0 = Date.now(), WIN = 1700;
+        const lunge = setTimeout(() => { if (S.ev && S.ev.type === "hand") { S.ev.pose = 1; sfx("fogWhiff"); draw(); } }, 850);
         const k = await evWait(WIN, () => true);
         if (k) { S.nell.duck = true; S.nell.pose = 0; sfx("select"); draw(); await tick(Math.max(0, WIN - (Date.now() - t0))); }
         clearTimeout(lunge);
@@ -703,12 +715,12 @@ export function stairwell(el, opts = {}) {
         quip("NELL", "FIRE DOOR. JAMMED. OF COURSE IT'S JAMMED.", "G");
         await jumpTo(STAND[d] + (d === "L" ? 26 : -26), FLOOR, 80); S.dash = null; S.nell.pose = 0; S.nell.dir = d === "L" ? -1 : 1; draw();
         const t0 = Date.now(); let lastPen = t0;
-        while (S.ev.p < 8 && !S.closed) {
+        while (S.ev.p < 6 && !S.closed) {
           const k = await evWait(300, (k) => k !== "up");
           if (S.closed) return;
           if (k) { sfx("fogShove"); S.ev.p++; S.ev.pose = S.ev.pose === 1 ? 2 : 1; S.nell.pose = S.ev.pose; S.nell.x += (S.nell.dir) * (S.ev.pose === 1 ? 4 : -4); }
-          if (Date.now() - lastPen > 1500) { lastPen = Date.now(); gapAdd(-1); quip("PRESTON (ABOVE)", "NEED A HAND WITH THAT DOOR, NELL?", "R"); if (S.gap <= 0) { draw(); return; } }
-          if (Date.now() - t0 > 9000) S.ev.p = 8;   // it gives, eventually
+          if (Date.now() - lastPen > 2000) { lastPen = Date.now(); gapAdd(-1); quip("PRESTON (ABOVE)", "NEED A HAND WITH THAT DOOR, NELL?", "R"); if (S.gap <= 0) { draw(); return; } }
+          if (Date.now() - t0 > 6000) S.ev.p = 6;   // it gives, eventually
           draw();
         }
         const secs = (Date.now() - t0) / 1000; rec.secs = secs;
@@ -725,7 +737,7 @@ export function stairwell(el, opts = {}) {
         quip("NELL", "MY NOTEBOOK! FIVE YEARS OF NULLS!", "G");
         S.ev.pose = 1; S.ev.cd = 6; draw();
         let k = null;
-        for (let i = 6; i > 0 && !k; i--) { S.ev.cd = i; draw(); k = await evWait(420, (k) => k === "L" || k === "R"); if (S.closed) return; }
+        for (let i = 6; i > 0 && !k; i--) { S.ev.cd = i; draw(); k = await evWait(550, (k) => k === "L" || k === "R"); if (S.closed) return; }
         S.ev.pose = 2;
         if (k === "L") {
           rec.choice = "grab"; S.notes = "KEPT";
@@ -839,7 +851,7 @@ export function stairwell(el, opts = {}) {
         // the fire door: red frame, push bar, a crack of black opening at the far edge
         s += `<path class="sR" d="M${d.x - 7},${FLOOR} L${d.x - 7},${DOOR_TOP - 7} L${d.x + d.w + 7},${DOOR_TOP - 7} L${d.x + d.w + 7},${FLOOR}"/>`;
         s += `<path class="sW" d="M${d.x + 8},186 L${d.x + d.w - 8},186 M${d.x + 10},182 L${d.x + 10},190 M${d.x + d.w - 10},182 L${d.x + d.w - 10},190"/>`;
-        const gap = e.p * 2.2, ex = e.side === "L" ? d.x + d.w : d.x;
+        const gap = e.p * 2.9, ex = e.side === "L" ? d.x + d.w : d.x;
         if (gap > 0) s += `<path class="k sW" d="M${ex},${DOOR_TOP} L${ex + (e.side === "L" ? -gap : gap)},${DOOR_TOP + 4} L${ex + (e.side === "L" ? -gap : gap)},${FLOOR - 4} L${ex},${FLOOR} Z"/>`;
         s += chip("FIRE DOOR", d.x + d.w / 2 - chipW("FIRE DOOR", 4.6) / 2, DOOR_TOP - 26, 4.6, "fR");
         if (e.p > 0) s += arcs(e.side === "L" ? d.x - 12 : d.x + d.w + 12, 150 + (e.pose === 1 ? 0 : 8), e.side === "L" ? -1 : 1, "sW", 3, .8);
@@ -849,7 +861,7 @@ export function stairwell(el, opts = {}) {
         // the shove meter
         const mx = d.x + d.w / 2 - 50;
         s += seg("SHOVE", mx, 256, 4.2, "sW", .8);
-        for (let i = 0; i < 8; i++) s += `<rect class="${i < e.p ? "fG" : "k sW"}" x="${mx + 28 + i * 9}" y="253" width="6" height="10"/>`;
+        for (let i = 0; i < 6; i++) s += `<rect class="${i < e.p ? "fG" : "k sW"}" x="${mx + 28 + i * 9}" y="253" width="6" height="10"/>`;
       }
       if (e.type === "detour" && e.pose === 0) { s += chain(DOORS.L) + chain(DOORS.R); s += chip("CHAINED", 472 - chipW("CHAINED", 5) / 2, 252, 5, "fR"); }
       if (e.type === "detour" && e.pose === 2) s += chip("CROSSOVER", 407 - chipW("CROSSOVER", 4.6) / 2, DOOR_TOP - 26, 4.6, "fG") + chain(DOORS.R);
@@ -977,7 +989,7 @@ export function stairwell(el, opts = {}) {
     }
     function revise() {
       if (S.phase !== "caught" || S.closed) return;
-      S.gap = 5; S.surge = false; S.surgeDone = null; S.ev = null; S.onEv = null; S.nell.duck = false;
+      S.gap = 6; S.missRun = 0; S.surge = false; S.surgeDone = null; S.ev = null; S.onEv = null; S.nell.duck = false;
       svg.innerHTML = `<rect width="640" height="360" fill="#000"/>`; setTimeout(trial, 120);
     }
 
@@ -1005,7 +1017,7 @@ export function stairwell(el, opts = {}) {
       const R = ST.reminders, rOk = R.filter(r => r.correct).length;
       s += seg("THE FOG SETTLED WHERE YOU PICK THE RIGHT DOOR", 20, 204, 4.4, "sW", .8);
       s += seg("ABOUT 71% OF THE TIME. THAT CONTRAST IS YOUR THRESHOLD.", 20, 213, 4.4, "sW", .8);
-      s += seg(`2AFC  2-DOWN-1-UP  ${REVERSALS} REVERSALS  ${n} LANDINGS COUNTED`, 20, 228, 4.2, "sM", .8);
+      s += seg(`2AFC  2-DOWN-1-UP  ${ST.reversals.length} REVERSALS  ${n} LANDINGS COUNTED`, 20, 228, 4.2, "sM", .8);
       s += seg(`NOT COUNTED: ${S.events.length - R.length} EVENTS${R.length ? `, ${R.length} EASY REMINDER${R.length > 1 ? "S" : ""} (${rOk}/${R.length} RIGHT)` : ""}`, 20, 238, 4.2, "sM", .8);
       s += seg("UNCALIBRATED SCREEN. DON'T PUT IT IN A PAPER.", 20, 252, 4.4, "sR", .8);
       // the run, drawn as stairs
@@ -1037,7 +1049,7 @@ export function stairwell(el, opts = {}) {
       if (S.phase === "event") evIn(S.ev && S.ev.type === "detour" ? "up" : "act");
     };
     const onKey = (e) => {
-      if (e.key === "Escape") { if (S.phase !== "caught") close(false); return; }
+      if (e.key === "Escape") { if (S.phase === "intro") close(false); return; }
       if (S.phase === "intro" && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); begin(); return; }
       if (S.phase === "caught" && (e.key === " " || e.key === "Enter")) { e.preventDefault(); reviseNow(); return; }
       if (S.phase === "event") {

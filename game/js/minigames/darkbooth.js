@@ -4,12 +4,13 @@
 // was a rod study: middle authorship). Three steps:
 //   1. DARK: kill every light leak (the booth's ON LED, Nell's phone, the gap under the door).
 //   2. ADAPT: sit in the dark while the dark-adaptation curve falls: the cone branch flattens at ~8 min, the rod-cone
-//      break, then the rods take over until threshold drops below the emission at ~20 min. CHECK PHONE bleaches
-//      your rhodopsin and sends you back to the start.
+//      break, then the rods take over until threshold drops below the emission at ~20 min (about six seconds of
+//      play). CHECK PHONE warns first; pressed again, it bleaches your rhodopsin and sends you back to the start.
 //   3. LOOK: photons arrive in sparse bursts in the shape of the emitter, among the dark noise of your own rods. The
 //      cursor is your gaze, and the fovea has no rods, so dots right where you look vanish: look beside it
 //      (averted vision). Name the shape, three times, each fainter: a ring (a coil), the Table's insignia (a circle
-//      seated round a smaller circle), and a gain dial pinned at MAX.
+//      seated round a smaller circle), and a gain dial pinned at MAX. Hint ladder per shape: after two wrong answers
+//      Gus describes it; after four he traces it in green and lights the right button.
 // Resolves { done, wrong }.
 import { seg, segW, chip } from "../gfx.js";
 
@@ -54,6 +55,12 @@ const LINES = {
     ["GUS", "Gain at maximum. Somebody has him turned all the way up."]],
   next: [["GUS", "Again. It'll be fainter. It changes when his earbuds pulse. Two, one, two."], ["GUS", "Last one. Fainter still. There's a needle in there."]],
   bad: ["GUS", "Not that. Wait for a few more bursts, and look beside it, not at it."],
+  bad2: ["GUS", "Nope. Let it build up for a second or two. Keep the pointer off his head."],
+  hint: [["GUS", "It's one loop, Nell. Round. A coil is just a wire going round and round."],
+    ["GUS", "Two circles, but one is INSIDE the other. Not side by side. Small in the middle, big around it."],
+    ["GUS", "It's a dial, every time. The question is the needle. Watch where the dots pile up: far right. All the way up."]],
+  show: ["GUS", "Okay. I'm tracing it for you. Green line, green button. Rods are hard; nobody's grading this. Except me. Kind of."],
+  phoneWarn: ["GUS", "Don't. One look at that screen bleaches your rods and we're back to minute zero. Press it again if you really have to."],
   stare: ["GUS", "You're staring right at it. No rods there. Look a little to the side."],
 };
 
@@ -81,7 +88,7 @@ function icon(id, x, y, s, cls) {
 export function darkbooth(el, { score = () => {} } = {}) {
   return new Promise(resolve => {
     let spoken = null, timer = null, tick = null;
-    const S = { phase: "prep", leaks: new Set(), min: 0, broke: false, trial: 0, dots: [], gaze: [CX + 70, CY], wrong: 0, say: LINES.prep, done: false, stareT: 0 };
+    const S = { phase: "prep", leaks: new Set(), min: 0, broke: false, trial: 0, dots: [], gaze: [CX + 70, CY], wrong: 0, tw: 0, phoneWarned: false, say: LINES.prep, done: false, stareT: 0 };
     const R = rng(1942);
     function svgBody() {
       if (S.phase === "prep") {
@@ -117,11 +124,11 @@ export function darkbooth(el, { score = () => {} } = {}) {
       for (const d of S.dots) { const age = now - d.t; if (age > 1500) continue;
         if (Math.hypot(d.x - S.gaze[0], d.y - S.gaze[1]) < FOVEA) continue;          // fovea: no rods, nothing seen
         s += `<circle class="${age < 450 ? "fW" : "fM"}" cx="${d.x.toFixed(1)}" cy="${d.y.toFixed(1)}" r="${age < 450 ? 1.5 : 1.1}"/>`; }
-      if (S.done) s += icon(t.answer, CX, CY, 1, "hl sG");
+      if (S.done || S.tw >= 4) s += icon(t.answer, CX, CY, 1, "hl sG");
       if (S.trial === 0) s += `<circle class="hl sD dash" cx="${S.gaze[0]}" cy="${S.gaze[1]}" r="${FOVEA}"/>` + seg("FOVEA  NO RODS", S.gaze[0] - 22, S.gaze[1] + FOVEA + 3, 3.6, "sD", .6);
       // the answers, in a row along the bottom
-      t.opts.forEach((id, i) => { const x = 110 + i * 140, y = 228;
-        s += `<g data-opt="${id}" style="cursor:pointer"><rect class="k sM" x="${x - 52}" y="${y - 18}" width="104" height="36"/>${icon(id, x - 30, y, .22, "sW")}${seg(SHAPES[id].name, x - 12, y - 3, 4.4, "sW", .7)}<rect x="${x - 52}" y="${y - 18}" width="104" height="36" fill="transparent"/></g>`; });
+      t.opts.forEach((id, i) => { const x = 110 + i * 140, y = 228, lit = !S.done && S.tw >= 4 && id === t.answer, c = lit ? "sG" : "sW";
+        s += `<g data-opt="${id}" style="cursor:pointer"><rect class="k ${lit ? "sG" : "sM"}" x="${x - 52}" y="${y - 18}" width="104" height="36"/>${icon(id, x - 30, y, .22, c)}${seg(SHAPES[id].name, x - 12, y - 3, 4.4, c, .7)}<rect x="${x - 52}" y="${y - 18}" width="104" height="36" fill="transparent"/></g>`; });
       return s;
     }
     function draw() {
@@ -132,17 +139,17 @@ export function darkbooth(el, { score = () => {} } = {}) {
         <svg class="t hd" viewBox="0 0 640 40">${seg("THE DARK", 16, 10, 18, "sW", 1.6)}${seg(step, 150, 17, 5.5, "sA", .8)}</svg>
         <div class="ceilbody"><svg class="t" id="darkfield" viewBox="0 0 640 250">${svgBody()}</svg></div>
         <div class="coachline"><span class="who" style="background:var(--${c})">${S.say[0]}</span> <span style="color:var(--${c})">${S.say[1]}</span></div>
-        <div class="bar"><span class="status">${S.phase === "look" ? `${S.done ? 3 : S.trial} / 3 NAMED` : S.phase === "adapt" ? (thresh(S.min) < EMIT ? "BELOW THE EMISSION" : "WAITING") : `${S.leaks.size} / 3 SEALED`}</span>
+        <div class="bar"><span class="status">${S.phase === "look" ? (S.done ? "3 / 3 NAMED" : `${S.trial} / 3 NAMED  ·  KEEP THE POINTER BESIDE HIM, THEN CLICK THE SHAPE YOU SEE`) : S.phase === "adapt" ? (thresh(S.min) < EMIT ? "BELOW THE EMISSION" : "WAITING  ·  JUST WAIT, IT TAKES A FEW SECONDS") : `${S.leaks.size} / 3 SEALED  ·  CLICK EACH LIGHT LEAK`}</span>
           ${S.phase === "adapt" && !S.done ? `<button data-b="phone" class="red">CHECK PHONE</button>` : ""}
           <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
     }
     function drawField() { const f = el.querySelector("#darkfield"); if (f) f.innerHTML = svgBody(); else draw(); }
     function startAdapt() {
       S.phase = "adapt"; S.min = 0; S.broke = false; S.say = LINES.adapt; draw(); clearInterval(tick);
-      tick = setInterval(() => { S.min += .25;                                    // 25 minutes in ~9 seconds
+      tick = setInterval(() => { S.min += .25;                                    // 20 minutes in about six seconds
         if (!S.broke && S.min >= 7.75) { S.broke = true; S.say = LINES.break; sfx("tock"); draw(); }
-        if (S.min >= 20) { clearInterval(tick); S.say = LINES.ready; sfx("chime"); draw(); timer = setTimeout(startLook, 2600); return; }
-        drawField(); el.querySelector(".status") && (el.querySelector(".status").textContent = thresh(S.min) < EMIT ? "BELOW THE EMISSION" : "WAITING"); }, 90);
+        if (S.min >= 20) { clearInterval(tick); S.say = LINES.ready; sfx("chime"); draw(); timer = setTimeout(startLook, 2200); return; }
+        drawField(); el.querySelector(".status") && (el.querySelector(".status").textContent = thresh(S.min) < EMIT ? "BELOW THE EMISSION" : "WAITING  ·  JUST WAIT, IT TAKES A FEW SECONDS"); }, 75);
     }
     function startLook() {
       S.phase = "look"; S.trial = 0; S.dots = []; S.say = LINES.look; draw(); clearInterval(tick);
@@ -160,8 +167,9 @@ export function darkbooth(el, { score = () => {} } = {}) {
     }
     function answer(id) {
       const t = TRIALS[S.trial]; if (!t || S.done) return;
-      if (id !== t.answer) { S.wrong++; S.say = LINES.bad; sfx("bad"); draw(); return; }
-      S.say = LINES.ok[S.trial];
+      if (id !== t.answer) { S.wrong++; S.tw++; sfx("bad");
+        S.say = S.tw >= 4 ? LINES.show : S.tw >= 2 ? LINES.hint[S.trial] : S.tw % 2 ? LINES.bad : LINES.bad2; draw(); return; }
+      S.say = LINES.ok[S.trial]; S.tw = 0;
       if (S.trial === TRIALS.length - 1) { clearInterval(tick); S.done = true; sfx("chime"); score("dark", Math.max(1, 4 - S.wrong)); draw(); return; }
       sfx("good"); S.trial++; S.dots = [];
       draw(); timer = setTimeout(() => { if (S.phase === "look") { S.say = LINES.next[S.trial - 1]; draw(); } }, 2600);
@@ -172,7 +180,9 @@ export function darkbooth(el, { score = () => {} } = {}) {
           if (S.leaks.size === 3) timer = setTimeout(startAdapt, 1800); } return; }
       const o = t.closest("[data-opt]"); if (o && S.phase === "look" && !S.done) { answer(o.dataset.opt); return; }
       const k = t.closest("button[data-b]"); if (!k) return;
-      if (k.dataset.b === "phone") { sfx("bad"); clearInterval(tick); S.say = LINES.phone; draw(); timer = setTimeout(startAdapt, 2200); }
+      if (k.dataset.b === "phone") {
+        if (!S.phoneWarned) { S.phoneWarned = true; sfx("select"); S.say = LINES.phoneWarn; draw(); return; }
+        sfx("bad"); clearInterval(tick); S.phoneWarned = false; S.say = LINES.phone; draw(); timer = setTimeout(startAdapt, 2200); }
       else if (k.dataset.b === "off") finish();
     };
     // gaze follows the pointer over the dark field (mouse or finger)

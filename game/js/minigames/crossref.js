@@ -1,6 +1,6 @@
 // THE CROSS-REFERENCE (epilogue, Ethel Bord's office; ACCEPTED ending only). Iris's method: the membership rolls on the
 // left, fifty years of grant panels and editorial boards on the right. Click a member: hairlines run to every row where
-// the name turns up again. Trace enough of them and the view steps back: the web is a brain (a midsagittal view, the
+// the name turns up again. Trace five of them (the status bar counts down) and the view steps back: the web is a brain (a midsagittal view, the
 // rolls along the corpus callosum, the rosters along the cortex). Every name here is fictional.
 // crossref(el, { score(key, n) }) → Promise<{ done }>
 import { seg, segC, segW, chip } from "../gfx.js";
@@ -27,7 +27,7 @@ export const ROWS = (() => {
   rows.sort((a, b) => a.y - b.y || a.n.localeCompare(b.n));
   return rows;
 })();
-const ENOUGH = 8;
+const ENOUGH = 5;   // members to trace before the step back (it was 8: the point lands by five)
 
 /* ---------------- the brain (midsagittal; frontal pole left) ---------------- */
 const CEREBRUM = [[150, 140], [148, 112], [158, 84], [178, 60], [206, 42], [240, 30], [280, 23], [322, 21], [362, 26], [398, 38], [428, 58], [452, 84], [466, 112],
@@ -98,7 +98,7 @@ export function crossref(el, { score = () => {} } = {}) {
     /* --- the table view --- */
     function names() {
       return MEMBERS.map(([n, j], m) => {
-        const [x, y] = leftPos(m), t = S.tr[m] !== undefined, c = m === S.last ? "sA" : t ? "sV" : "sW";
+        const [x, y] = leftPos(m), t = S.tr[m] !== undefined, c = m === S.last ? "sA" : t ? "sV" : S.n === 0 && m === 0 ? "sG" : "sW";
         return `<g data-m="${m}">${seg(n, 8, y - 3, 6.5, c, 1)}${seg(String(j), 108, y - 1.5, 4.4, "sM", .7)}
           <circle class="${t ? "fA" : "hl sW"}" cx="${x}" cy="${y}" r="1.8"/><rect x="4" y="${y - 7}" width="${x}" height="15" fill="transparent"/></g>`;
       }).join("");
@@ -153,7 +153,7 @@ export function crossref(el, { score = () => {} } = {}) {
         <svg class="t hd" viewBox="0 0 640 40">${seg("THE CROSS-REFERENCE", 16, 10, 18, "sW", 1.6)}${seg("ETHEL BORD  RESEARCH INTEGRITY  3F  THE REELS, TRANSCRIBED", 260, 17, 5, "sM", .8)}</svg>
         <svg class="t xrsvg" viewBox="0 0 640 276">${body}</svg>
         <div class="coachline"></div>
-        <div class="bar"><span class="status">${S.revealed ? "ONE NETWORK. FIFTY YEARS." : `MEMBERS TRACED ${n} / ${MEMBERS.length}   ·   MATCHES ${mt}`}</span>
+        <div class="bar"><span class="status">${S.revealed ? "ONE NETWORK. FIFTY YEARS." : `${goal(n)}   ·   MATCHES ${mt}`}</span>
           <button data-b="off" class="off">${S.revealed ? "DONE" : "CLOSE"}</button></div></div>`;
       renderCoach();
     }
@@ -162,8 +162,9 @@ export function crossref(el, { score = () => {} } = {}) {
       if (S.say !== spoken) { spoken = S.say; window.SFX && window.SFX.voice(S.say[0], true); }
       c.innerHTML = `<span class="who" style="background:var(--${col})">${S.say[0]}</span><span style="color:var(--${col})">${S.say[1]}</span>`;
     }
+    const goal = (n) => n >= ENOUGH ? "STEPPING BACK" : n ? `TRACED ${n}  ·  ${ENOUGH - n} MORE` : "CLICK A NAME ON THE LEFT TO TRACE IT";
     const layer = (cls, html) => { const g = el.querySelector(".xr ." + cls); if (g) g.innerHTML = html; };
-    function status() { const st = el.querySelector(".xr .status"); if (!st) return; const n = Object.keys(S.tr).length, mt = Object.keys(S.tr).reduce((a, m) => a + matches(+m).length, 0); st.textContent = `MEMBERS TRACED ${n} / ${MEMBERS.length}   ·   MATCHES ${mt}`; }
+    function status() { const st = el.querySelector(".xr .status"); if (!st) return; const n = Object.keys(S.tr).length, mt = Object.keys(S.tr).reduce((a, m) => a + matches(+m).length, 0); st.textContent = `${goal(n)}   ·   MATCHES ${mt}`; }
 
     function trace(m, fast = false) {
       if (S.tr[m] !== undefined || S.zoom) return;
@@ -173,10 +174,10 @@ export function crossref(el, { score = () => {} } = {}) {
       ms.forEach((_, k) => later((fast ? 25 : 70) * (k + 1), () => { S.prog[m] = k + 1; layer("xl", lines()); if (!fast) sfx("pen", { k }); }));
       if (fast) return;
       const n = S.n;
-      if (n === 1) say(["NELL", m === 0 ? "Quorum. Eight rows. Fifty years of panels, from a man who's been thirty-nine since 1979." : "Every time the name comes up again, a line."]);
-      if (n === 3) say(["ETHEL", "That is a great many lines for a coincidence."]);
-      if (n === 5) say(["IRIS", "It's just matching, dear. That's all it ever was. Nobody ever bothered to match."]);
-      if (n === 6) say(["NELL", "Every panel. Every board. The same names, decade after decade, reviewing each other."]);
+      if (n === 1) say(["NELL", m === 0 ? "Quorum. Nine rows. Fifty years of panels, from a man who's been thirty-nine since 1979." : "Every time the name comes up again, a line."]);
+      if (n === 2) say(["ETHEL", "That is a great many lines for a coincidence."]);
+      if (n === 3) say(["IRIS", "It's just matching, dear. That's all it ever was. Nobody ever bothered to match."]);
+      if (n === 4) say(["NELL", "Every panel. Every board. The same names, decade after decade, reviewing each other."]);
       if (n === ENOUGH) later(70 * ms.length + 900, stepBack);
     }
     function stepBack() {
@@ -204,7 +205,7 @@ export function crossref(el, { score = () => {} } = {}) {
       resolve({ done: S.revealed });
     }
     el.classList.add("show"); draw();
-    qT = setTimeout(nextLine, 2600);
+    qT = setTimeout(nextLine, 2000);
     S.q.push(["IRIS", "Membership on the left. Fifty years of panels and boards on the right. Click a member, and draw a line wherever the name turns up again."]);
     el.addEventListener("click", onClick); window.addEventListener("keydown", onKey);
   });

@@ -1,7 +1,10 @@
 // THE ARCHIVE (Act V, B3 Tube Hub; played by Morris). Twelve reel-to-reel tapes on the Archive shelves: four that prove
 // the network and eight that don't. Pick a reel, it goes into the canister; set the big brass destination dial; SEND.
-// The magnet is ramping next door (a countdown): a decoy sent to Ethel wastes time; a wrong address loses the reel.
-// reels(el, { seconds = 90, score(key, n) }) → Promise<{ sent, wrongSends, decoys, lost, timeLeft, done }>
+// The magnet is ramping next door (a countdown). Kept forgiving on purpose: the dial starts on ETHEL BORD 2F; a decoy sent
+// to Ethel or a reel sent to the wrong address costs five seconds and the reel comes back down the tube (nothing is ever
+// lost); after two wrong sends Morris says what the good reels have in common, after four the good reels light up green;
+// if the field comes up, REVISE & RESUBMIT winds the clock back (delivered reels stay delivered); CLOSE asks once.
+// reels(el, { seconds = 90, score(key, n) }) → Promise<{ sent, wrongSends, decoys, lost, timeLeft, done }> (lost is always 0 now)
 import { seg, segC, segW, chip, arcs } from "../gfx.js";
 
 export const REELS = [
@@ -45,6 +48,9 @@ export const DEST = [
   { t: "CURRICULUM CMTE", n: "Delivered to the curriculum committee, who will discuss it at their next meeting, in 2029." },
 ];
 const COL = { MORRIS: "K", NARRATOR: "W" };
+const PEN = 5;   // seconds lost to a wrong send
+const HINT1 = ["MORRIS", "Pal, Ethel needs WHO, not WHAT. Who's a member, who sat on which panel, who reviewed who, who ran which board. Four reels."];
+const HINT2 = ["MORRIS", "Okay. I lit up the four that matter, pal. Green ones, dial on ETHEL BORD 2F, SEND."];
 
 const CSS = `
 .rls svg.rlsvg { position: relative; width: 100%; flex: 1 1 0; min-height: 0; }
@@ -53,6 +59,7 @@ const CSS = `
 .rls:not(.lock) [data-reel]:hover .rh { stroke: var(--G); }
 .rls:not(.lock) [data-dest]:hover path { stroke: var(--G); }
 .rls:not(.lock) [data-knob]:hover .kn { stroke: var(--G); }
+.rls .bar button.warn { background: var(--R); color: #000; }
 .rls .coachline { font-size: 1.8cqw; line-height: 1.2; }
 `;
 function css() { if (document.getElementById("css-reels")) return; const s = document.createElement("style"); s.id = "css-reels"; s.textContent = CSS; document.head.appendChild(s); }
@@ -74,7 +81,7 @@ const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
 export function reels(el, { seconds = 90, score = () => {} } = {}) {
   css();
   return new Promise(resolve => {
-    const S = { t: seconds, total: seconds, load: -1, dial: 1, gone: {}, sent: 0, wrong: 0, decoys: 0, lost: 0, anim: 0, pen: 0,
+    const S = { t: seconds, total: seconds, load: -1, dial: 0, confirm: false, gone: {}, sent: 0, wrong: 0, decoys: 0, lost: 0, anim: 0, pen: 0,
       over: false, done: false, say: ["MORRIS", "The Archive. Fifty years of the Table, on tape. And a magnet warming up next door."], q: [] };
     const timers = []; let tick = null, qT = null;
     const later = (ms, f) => timers.push(setTimeout(f, ms));
@@ -89,10 +96,11 @@ export function reels(el, { seconds = 90, score = () => {} } = {}) {
         const y = 52 + row * 76;
         s += `<path class="sM" d="M4,${y + 44} L350,${y + 44}"/><path class="hl sD" d="M10,${y + 44} L10,${y + 52} M344,${y + 44} L344,${y + 52} M4,${y + 48} L350,${y + 48}"/>`;
         for (let c = 0; c < 4; c++) {
-          const i = row * 4 + c, cx = 48 + c * 86, R = REELS[i];
+          const i = row * 4 + c, cx = 48 + c * 86, R = REELS[i], lit = R.good && S.wrong >= 4 && !S.over;
           if (S.gone[i] || S.load === i) { s += `<circle class="hl sD dash" cx="${cx}" cy="${y - 2}" r="22"/>`; continue; }
-          s += `<g data-reel="${i}">${reel(cx, y - 2, 22, S.over ? "sM" : "sW", "sA", S.over)}<rect class="hl rh ${S.over ? "sD" : "sW"}" x="${cx - 38}" y="${y + 23}" width="76" height="18"/>
-            ${segC(R.t[0], cx, y + 26, 4.4, S.over ? "sD" : "sW", .8)}${segC(R.t[1], cx, y + 33.5, 4.4, S.over ? "sD" : "sW", .8)}
+          s += `<g data-reel="${i}">${reel(cx, y - 2, 22, S.over ? "sM" : "sW", "sA", S.over)}<rect class="hl rh ${S.over ? "sD" : lit ? "sG" : "sW"}" x="${cx - 38}" y="${y + 23}" width="76" height="18"/>
+            ${segC(R.t[0], cx, y + 26, 4.4, S.over ? "sD" : lit ? "sG" : "sW", .8)}${segC(R.t[1], cx, y + 33.5, 4.4, S.over ? "sD" : lit ? "sG" : "sW", .8)}
+            ${lit ? arcs(cx - 30, y - 2, -1, "sG", 2, .7) + arcs(cx + 30, y - 2, 1, "sG", 2, .7) : ""}
             <rect x="${cx - 40}" y="${y - 26}" width="80" height="70" fill="transparent"/></g>`;
         }
       }
@@ -125,6 +133,7 @@ export function reels(el, { seconds = 90, score = () => {} } = {}) {
         const ly = cy + sa * (R + 10) - (sa < -.3 ? h + 3 : sa > .3 ? -1 : h / 2 + 1);
         s += `<g data-dest="${i}">${sel ? chip(d.t, lx, ly - h * .35, h, "fA") : seg(d.t, lx, ly, h, "sW", .8)}<rect x="${lx - 3}" y="${ly - 4}" width="${w + 6}" height="${h + 8}" fill="transparent"/></g>`;
       });
+      if (S.load >= 0 && !DEST[S.dial].ok) s += seg("SET TO ETHEL BORD 2F", cx - segW("SET TO ETHEL BORD 2F", 4) / 2, 222, 4, "sA", .8);
       // pointer and knob (click the knob to turn one click clockwise)
       const a = -Math.PI / 2 + S.dial * Math.PI / 4, px = cx + Math.cos(a) * (R - 8), py = cy + Math.sin(a) * (R - 8);
       s += `<g data-knob="1"><circle class="k kn sA" cx="${cx}" cy="${cy}" r="13"/><path class="sA" d="M${cx},${cy} L${px.toFixed(1)},${py.toFixed(1)}"/>
@@ -156,14 +165,14 @@ export function reels(el, { seconds = 90, score = () => {} } = {}) {
           ${shelves()}<path class="hl sD" d="M358,0 L358,276"/>${tube()}${dial()}<g class="rclk">${clock()}</g>${tally()}
         </svg>
         <div class="coachline"><span class="who" style="background:var(--${col})">${S.say[0]}</span><span style="color:var(--${col})">${S.say[1]}</span></div>
-        <div class="bar"><button data-b="send" ${S.load >= 0 && !lock ? "" : "disabled"}>SEND</button><button data-b="out" ${S.load >= 0 && !lock ? "" : "disabled"}>UNLOAD</button>
-          <span class="status">${S.done ? (S.sent === 4 ? "ALL FOUR DELIVERED" : S.sent + " OF 4 DELIVERED") : S.over ? "THE MAGNET IS AT FIELD" : S.load >= 0 ? "LOADED: " + REELS[S.load].t.join(" ") + "  →  " + DEST[S.dial].t : "PICK A REEL"}</span>
-          <button data-b="off" class="off">${S.done || S.over ? "DONE" : "CLOSE"}</button></div></div>`;
+        <div class="bar">${S.over ? `<button data-b="retry">REVISE &amp; RESUBMIT</button>` : `<button data-b="send" ${S.load >= 0 && !lock ? "" : "disabled"}>SEND</button><button data-b="out" ${S.load >= 0 && !lock ? "" : "disabled"}>UNLOAD</button>`}
+          <span class="status">${S.done ? (S.sent === 4 ? "ALL FOUR DELIVERED" : S.sent + " OF 4 DELIVERED") : S.over ? `THE MAGNET IS AT FIELD  ·  ${S.sent} OF 4 DELIVERED  ·  TRY AGAIN?` : S.load >= 0 ? "LOADED: " + REELS[S.load].t.join(" ") + "  →  " + DEST[S.dial].t + "  ·  SEND" : `PICK A REEL  ·  SEND THE 4 THAT ARE EVIDENCE TO ETHEL BORD 2F  ·  ${S.sent} OF 4`}</span>
+          <button data-b="off" class="off ${S.confirm ? "warn" : ""}">${S.done ? "DONE" : S.confirm ? "LEAVE ANYWAY" : S.over ? "LEAVE IT" : "CLOSE"}</button></div></div>`;
     }
 
     function load(i) {
       if (S.anim || S.over || S.done || S.gone[i]) return;
-      S.load = i; sfx("reel"); say(["MORRIS", REELS[i].look]);
+      S.load = i; S.confirm = false; sfx("reel"); say(["MORRIS", REELS[i].look]);
     }
     function send() {
       if (S.load < 0 || S.anim || S.over || S.done) return;
@@ -172,18 +181,21 @@ export function reels(el, { seconds = 90, score = () => {} } = {}) {
       later(120 * 5 + 200, () => {
         S.anim = 0;
         if (D.here) { sfx("thud"); say(["MORRIS", "Return to sender. The sender is me. Ow. Point the dial somewhere else, pal."]); return; }
-        S.load = -1; S.gone[i] = true;
+        S.load = -1;
         if (D.ok && R.good) {
+          S.gone[i] = true;
           S.sent++; sfx("good"); say(["MORRIS", GOOD_SENT[S.sent - 1]]);
           if (S.sent === 4) { S.done = true; clearInterval(tick); score("reels", 4); draw(); }
           else checkLeft();
           return;
         }
-        S.wrong++; sfx("bad");
-        if (D.ok) { S.decoys++; penalty(10); say(["MORRIS", DECOY_SENT[i] || "That one wasn't evidence, pal."], ["NARRATOR", "That cost ten seconds."]); return; }
-        if (R.good) S.lost++;
-        say(["NARRATOR", D.n], ["MORRIS", R.good ? "Aw, no. That was a good one, too." : "Eh. Nobody needed that one."]);
-        if (R.good) checkLeft(true);
+        // a wrong send: five seconds, and the reel comes back down the tube to the shelf
+        S.wrong++; sfx("bad"); penalty(PEN);
+        const hint = S.wrong === 2 ? [HINT1] : S.wrong === 4 ? [HINT2] : [];
+        if (D.ok) { S.decoys++; say(["MORRIS", DECOY_SENT[i] || "That one wasn't evidence, pal."], ["NARRATOR", `Ethel sends it straight back down. Five seconds gone. The reel's on the shelf again.`], ...hint); draw(); return; }
+        say(["NARRATOR", D.n + " It comes back down the tube with a note. Five seconds gone."],
+          ["MORRIS", R.good ? "Good reel, wrong address. Dial to ETHEL BORD 2F, pal, then SEND." : "Wrong address, and not evidence either. Dial to ETHEL BORD 2F, pal."], ...hint);
+        draw();
       });
     }
     // no damning reels left on the shelf: nothing more worth sending
@@ -194,35 +206,54 @@ export function reels(el, { seconds = 90, score = () => {} } = {}) {
       if (afterLoss) S.q.push(l); else say(l);
       draw();
     }
-    function penalty(n) { S.t = Math.max(0, S.t - n); S.pen = n; later(1600, () => { S.pen = 0; const c = el.querySelector(".rls .rclk"); if (c) c.innerHTML = clock(); }); if (S.t <= 0) timeUp(); }
+    function penalty(n) { if (S.over || S.done) return; S.t = Math.max(0, S.t - n); S.pen = n; later(1600, () => { S.pen = 0; const c = el.querySelector(".rls .rclk"); if (c) c.innerHTML = clock(); }); if (S.t <= 0) timeUp(); }
     function timeUp() {
       if (S.over || S.done) return;
-      S.over = true; S.load = -1; clearInterval(tick); score("reels", S.sent); sfx("alarm"); sfx("ramp");
-      say(["MORRIS", "My itch just went through the roof. That's the field, pal."], ["NARRATOR", "Every reel left in the Archive is now a very long piece of brown ribbon."]);
+      S.over = true; S.load = -1; S.confirm = false; clearInterval(tick); sfx("alarm"); sfx("ramp");
+      say(["MORRIS", "My itch just went through the roof. That's the field, pal."], ["NARRATOR", "Every reel left in the Archive is now a very long piece of brown ribbon. REVISE & RESUBMIT to try again; what reached Ethel stays with Ethel."]);
+      draw();
+    }
+    // Revise & Resubmit: the clock winds back; the shelf is as it was; delivered reels stay delivered
+    function retry() {
+      if (!S.over) return;
+      S.over = false; S.t = S.total; S.pen = 0; S.load = -1; sfx("cancel");
+      say(["NARRATOR", "Revise & Resubmit. The field ramps back down. The tape is fine. Tape is very forgiving."],
+        ["MORRIS", S.wrong >= 2 ? "Same deal, pal. Who's who, who sat where, who reviewed who. Dial's on Ethel." : "Again. Good reels, dial to Ethel, whoosh."]);
+      startTick();
+    }
+    function startTick() {
+      clearInterval(tick);
+      tick = setInterval(() => { if (S.over || S.done) return; S.t--; if (S.t <= 0) { timeUp(); return; }
+        sfx("countdown", { n: S.t <= 8 ? 4 : S.t <= 20 ? 2 : 1, hot: S.t <= 20 });
+        const c = el.querySelector(".rls .rclk"); if (c) c.innerHTML = clock(); }, 1000);
     }
     const onClick = (e) => {
       const t = e.target;
       const b = t.closest && t.closest("button[data-b]");
       if (b) { if (b.disabled) return; const k = b.dataset.b;
-        if (k === "send") send(); else if (k === "out") { S.load = -1; sfx("cancel"); draw(); } else finish(); return; }
+        if (k === "send") send(); else if (k === "out") { S.load = -1; sfx("cancel"); draw(); } else if (k === "retry") retry(); else leave(); return; }
       if (S.anim || S.over || S.done) return;
       const r = t.closest && t.closest("[data-reel]"); if (r) { load(+r.dataset.reel); return; }
       const d = t.closest && t.closest("[data-dest]"); if (d) { const n = (+d.dataset.dest - S.dial + DEST.length) % DEST.length; S.dial = +d.dataset.dest; if (n) sfx("ratchet", { n }); draw(); return; }
       const kn = t.closest && t.closest("[data-knob]"); if (kn) { S.dial = (S.dial + 1) % DEST.length; sfx("ratchet", { n: 1 }); draw(); }
     };
-    const onKey = (e) => { if (e.key === "Escape") finish(); };
+    // leaving before all four are delivered asks once (the Archive can't be visited twice)
+    function leave() {
+      if (S.done || S.confirm) { finish(); return; }
+      S.confirm = true;
+      say(["MORRIS", `Pal. ${S.sent} of 4 are with Ethel. If we go now, the rest stay down here with the magnet. LEAVE ANYWAY, or pick a reel and keep sending.`]);
+    }
+    const onKey = (e) => { if (e.key === "Escape") leave(); };
     function finish() {
       timers.forEach(clearTimeout); clearInterval(tick); clearTimeout(qT);
       el.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey);
       el.classList.remove("show"); el.innerHTML = "";
-      if (!S.over && !S.done) score("reels", S.sent);
+      // (no partial score on leaving: Act V lets Morris go back, and the full run should still count)
       resolve({ sent: S.sent, wrongSends: S.wrong, decoys: S.decoys, lost: S.lost, timeLeft: Math.max(0, S.t), done: S.done });
     }
     el.classList.add("show");
-    say(S.say, ["MORRIS", "Magnets eat tape, pal. Good reels in the canister, dial to Ethel, whoosh. Before the field comes up."]);
-    tick = setInterval(() => { if (S.over || S.done) return; S.t--; if (S.t <= 0) { timeUp(); return; }
-      sfx("countdown", { n: S.t <= 8 ? 4 : S.t <= 20 ? 2 : 1, hot: S.t <= 20 });
-      const c = el.querySelector(".rls .rclk"); if (c) c.innerHTML = clock(); }, 1000);
+    say(S.say, ["MORRIS", "Magnets eat tape, pal. Click a reel that's evidence, the dial's already on Ethel, SEND. Four of 'em. Before the field comes up."]);
+    startTick();
     el.addEventListener("click", onClick); window.addEventListener("keydown", onKey);
   });
 }
