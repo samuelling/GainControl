@@ -2,6 +2,7 @@
 // A response can be: a string ("WHO|text" for a quoted line), "c:key" (a conversation),
 // or a function(api) that does things and may return either of those.
 import { seg } from "../gfx.js";
+import { openConsole } from "../console/open.js";
 
 /* ---------------- inventory ---------------- */
 export const ITEMS = {
@@ -170,8 +171,8 @@ export const HS = {
       night: { look: "Prof. Adline's office. Still a light on. Still on the phone. It's 2 AM.", use: "Gus knocks. \"AFTER THE 15TH!\"" } },
     booth: { label: "dark booth",
       day: { look: "The dark-adapted psychophysics booth. Twenty minutes in there and your eyes can detect a single photon. Ten more and you're asleep.",
-        use: (api) => api.die("You sit in the dark-adapted booth to think. Your eyes adjust. Your thoughts slow. Your eyelids lose the argument.\n\nYou wake up three years later. You are a 9th-year. Your committee has retired.") },
-      night: { look: "The dark booth. Darker at night, somehow.", use: "Gus doesn't sit in the dark booth. Gus has seen things in there." } },
+        use: (api) => api.die("You sit in the dark-adapted booth to think. Your eyes adjust. Your thoughts slow. Your eyelids lose the argument.\n\nYou wake up three years later. You are a 9th-year. Your committee has retired."), go: openConsole },
+      night: { look: "The dark booth. Darker at night, somehow.", use: "Gus doesn't sit in the dark booth. Gus has seen things in there.", go: openConsole } },
     brett: { label: "Brett", day: { look: "Brett, from your stats section. He has a question. He always has a question.", talk: "c:brett", use: "You offer Brett a high five. He wasn't expecting it. Neither were you." } },
   },
 };

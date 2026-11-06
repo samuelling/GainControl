@@ -9,6 +9,7 @@ import { retainer } from "../minigames/retainer.js";
 import { stairwell } from "../minigames/stairwell.js";
 import { echo } from "../minigames/echo.js";
 import { darkbooth } from "../minigames/darkbooth.js";
+import { openConsole } from "../console/open.js";
 
 /* ---------------- items ---------------- */
 Object.assign(ITEMS, {
@@ -220,8 +221,8 @@ export const HS = {
     adline: { label: "Prof. Adline's office", day: { look: "AFTER THE 15TH. Today the door is open a crack.", talk: "PROF. ADLINE|Nell. I heard. All of it. Your defense is still tomorrow. I'll be there. I'll be there, Nell." }, morris: look("Typing."), night: look("Dark."), morning: { look: "Prof. Adline's door, open. She's at her desk, not typing.", talk: "PROF. ADLINE|Two o'clock. I'll be there. Gus would have hated it if we postponed." } },
     booth: { label: "dark booth", day: { look: (api) => api.flag("clueDark") ? "The dark booth. Empty again. Gus's hoodie is still stuffed under the door."
         : api.flag("darkReady") ? "The dark booth. The ON lamp is lit. From inside, muffled: Preston, practising his elevator pitch to nobody. 'Synergy… no. SYNERGY.'" : "The dark booth.",
-        use: doDark },
-      morris: look("MORRIS|No. I know what dark rooms are for in this building."), night: look("Dark."), morning: look("Dark.") },
+        use: doDark, go: openConsole },
+      morris: look("MORRIS|No. I know what dark rooms are for in this building."), night: { look: "Dark.", go: openConsole }, morning: look("Dark.") },
     gusdesk: { label: "Gus's desk", day: look("Gus's desk. Cans. Notes. A map of the steam tunnels with B3 written on it and crossed out and written again."), morris: look("Morris sniffs. Cans."),
       night: look("His desk. He hasn't sat at it since Monday."), morning: look("Gus's desk. The mug that says I ♥ GAUSSIANS. Still half full.") },
     gus: { label: "Gus", day: { look: "Gus, at his desk. He's re-running your replication for the fourth time. Same answer.", talk: (api) => gusHint(api) },

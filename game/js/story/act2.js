@@ -2,6 +2,7 @@
 import { seg, segC } from "../gfx.js";
 import * as FIG from "../figures.js";
 import { ITEMS } from "./act1.js";
+import { openConsole } from "../console/open.js";
 
 /* ---------------- new items, and act-aware versions of old ones ---------------- */
 Object.assign(ITEMS, {
@@ -219,7 +220,7 @@ export const HS = {
       day: { look: "AFTER THE 15TH. Through the door: frantic typing, three phones, and the sound of someone signing things very fast.", talk: "PROF. ADLINE (THROUGH THE DOOR)|Nell? Is it urgent? AFTER THE FIFTEENTH!", use: "Locked. She's signing things in there. Anything that slides under the door, probably." },
       morris: { look: "Morris listens at the door. 'She's signing stuff, pal. Anything that moves.'" } },
     booth: { label: "dark booth",
-      day: { look: "The dark-adapted psychophysics booth. Still dark. Still tempting.", use: (api) => api.die("You sit in the dark booth just for a minute, to think. Your eyes adapt. Your thoughts slow. Your eyelids file a formal complaint and win.\n\nYou wake up on Saturday. Your defense was yesterday. Preston gave a lovely job talk in your slot.") },
+      day: { look: "The dark-adapted psychophysics booth. Still dark. Still tempting.", use: (api) => api.die("You sit in the dark booth just for a minute, to think. Your eyes adapt. Your thoughts slow. Your eyelids file a formal complaint and win.\n\nYou wake up on Saturday. Your defense was yesterday. Preston gave a lovely job talk in your slot."), go: openConsole },
       morris: { look: "MORRIS|I've seen what the dark does to grad students, pal. No." } },
     gusdesk: { label: "Gus's desk",
       day: { look: "Gus's desk. Closed laptop, headphones, a mug that says I ♥ GAUSSIANS. A sticky note: '2:30a scan. If I'm not here, I'm in the scanner. Don't wake me.'",

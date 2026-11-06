@@ -7,6 +7,7 @@ import { ceiling } from "../minigames/ceiling.js";
 import { overlay } from "../minigames/overlay.js";
 import { nod } from "../minigames/nod.js";
 import { glm } from "../minigames/glm.js";
+import { openConsole } from "../console/open.js";
 
 /* ---------------- items ---------------- */
 Object.assign(ITEMS, {
@@ -317,8 +318,8 @@ export const HS = {
       night: { look: "IS ANY OF IT REAL? And under it, in Gus's hand: NO." } },
     adline: { label: "Prof. Adline's office", day: { look: "AFTER THE 15TH.", talk: "PROF. ADLINE (THROUGH THE DOOR)|Nell! I heard about the thermos! Can it wait until after the fifteenth?" },
       morris: { look: "Scribbling, inside." }, night: { look: "Dark. Even grant panic sleeps." } },
-    booth: { label: "dark booth", day: { look: "The dark booth.", use: (api) => api.die("You sit in the dark booth, just to think for a minute.\n\nYou wake up a ninth-year postdoc. Rex brings you a coffee. He seems pleased.") },
-      morris: { look: "MORRIS|No." }, night: { look: "The dark booth. Gus doesn't need it to be dark. Gus is dark." } },
+    booth: { label: "dark booth", day: { look: "The dark booth.", use: (api) => api.die("You sit in the dark booth, just to think for a minute.\n\nYou wake up a ninth-year postdoc. Rex brings you a coffee. He seems pleased."), go: openConsole },
+      morris: { look: "MORRIS|No." }, night: { look: "The dark booth. Gus doesn't need it to be dark. Gus is dark.", go: openConsole } },
     gusdesk: { label: "Gus's desk", day: { look: "Gus's desk. Four empty cans of NULL HYPOTHESIS and one full one, his emergency can.",
         use: (api) => { if (api.has("can") || api.flag("descaled")) return "GUS|That's my last one. Don't make it weird."; api.give("can"); api.flag("gotDrink", true); api.refresh(); api.score("can", 1);
           return "You take Gus's emergency can.\n\nGUS|That's my emergency can.\n\nNELL|This is an emergency.\n\nGUS|…pH 2.4. Don't drink it. Nobody should drink it. I drink it."; } },

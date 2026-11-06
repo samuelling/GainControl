@@ -141,9 +141,9 @@ export default {
     gus: [372, 268], small: [150, 268], robe: [280, 284] },
   labels: {
     day: { get monitor() { return cur && cur.act === 3 ? { use: "WORK" } : { use: "RERUN" }; },
-      gus: { talk: "TALK", use: "TABLE 1" }, small: { talk: "TALK" }, drawer: { use: "OPEN" }, whiteboard: { use: "ERASE" }, adline: { use: "KNOCK" }, door: { use: "GO OUT" }, booth: { use: "SIT IN" }, brett: { use: "HIGH FIVE" },
+      gus: { talk: "TALK", use: "TABLE 1" }, small: { talk: "TALK" }, drawer: { use: "OPEN" }, whiteboard: { use: "ERASE" }, adline: { use: "KNOCK" }, door: { use: "GO OUT" }, booth: { use: "SIT IN", go: "CONSOLE" }, brett: { use: "HIGH FIVE" },
       gusdesk: { use: "SNOOP" }, robe: { use: "TAKE" } },
     morris: { vent: { use: "CLIMB IN" }, drawer: { use: "HIDE IN" }, door: { go: "SCURRY OUT" }, gusdesk: { use: "RAID" }, monitor: { use: "WALK ON KEYS" } },
-    night: { monitor: { use: "TAP KEY" }, drawer: { use: "OPEN" }, whiteboard: { use: "ERASE" }, adline: { use: "KNOCK" }, door: { use: "GO OUT" }, booth: { use: "SIT IN" } },
+    night: { monitor: { use: "TAP KEY" }, drawer: { use: "OPEN" }, whiteboard: { use: "ERASE" }, adline: { use: "KNOCK" }, door: { use: "GO OUT" }, booth: { use: "SIT IN", go: "CONSOLE" } },
   },
 };

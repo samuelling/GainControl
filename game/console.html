@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gain Control: the Perception Console</title>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+<!-- The dark booth's perception console on its own: bistable demos, Carrasco, Ling & Read (2004), and the PS 327 labs. -->
+<div id="stage"><div id="frame"><div id="panel"></div></div></div>
+<script type="module">
+import { perceptionConsole } from "./js/console/console.js";
+import { sfx } from "./js/sfx.js";
+window.SFX = sfx;
+window.addEventListener("pointerdown", () => sfx.unlock && sfx.unlock(), { once: true });
+perceptionConsole(document.getElementById("panel"), { standalone: true });
+</script>
+</body>
+</html>
