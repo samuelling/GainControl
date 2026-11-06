@@ -239,7 +239,7 @@ export const HS = {
       night: { look: (api) => api.flag("robesSeen") ? "The robes went down here. Down past the basement." : "The stairwell. Gus's scan is in the basement at 2:30.",
         go: { down: async (api) => {
           if (!api.flag("robesSeen")) return "Not yet. Gus's scan isn't until 2:30, and he has a feeling about 116.";
-          await api.say("Gus takes the stairs two at a time. The robes are just below him, then just below that, then gone.\n\nHis phone buzzes. SCANNER: GRADIENT FAULT. SESSION PAUSED. BILLING CONTINUES.\n\nGUS: Not now…");
+          api.sfx("buzz"); await api.say("Gus takes the stairs two at a time. The robes are just below him, then just below that, then gone.\n\nHis phone buzzes. SCANNER: GRADIENT FAULT. SESSION PAUSED. BILLING CONTINUES.\n\nGUS: Not now…");
           await api.say("He runs to the control room, resets the gradients in four minutes flat, and comes back. The stairwell is empty. Whatever went down went further down than the basement goes.");
           api.score("followed", 1); await morning(api); return null; },
           up: "Nothing good is upstairs at 2 AM." } } },
@@ -319,7 +319,7 @@ export const HS = {
           return "You print a research credit slip. It comes out pre-signed: P. VALU, in a font. Nobody has ever actually signed one of these."; } },
       morris: { look: (api) => api.flag("printerFixed") ? "The printer, fixed. Morris takes a bow." : "A printer, jammed. Morris can see the jam from here: a crumpled flyer, deep inside.",
         use: (api) => { if (api.flag("printerFixed")) return "Morris has done enough printer work for one career.";
-          api.flag("printerFixed", true); api.score("printer", 2); api.refresh();
+          api.flag("printerFixed", true); api.score("printer", 2); api.refresh(); api.sfx("printer");
           return "Morris crawls into the printer. Grinding. Squeaking. A crumpled 2019 holiday party flyer shoots out, followed by Morris.\n\nThe JAM light goes off.\n\nPENNY|…It works? Nobody touch anything."; } } },
     mailboxes: { label: "mailboxes",
       day: { look: "Pigeonholes. Preston's is overflowing: award letters, speaking invitations, and an envelope sealed with round red wax. A circle inside a circle.", use: "You don't take other people's mail.", score: { look: ["waxSeal", 1] } },
@@ -420,7 +420,7 @@ async function robes(api) {
   api.G.busy = true;
   await api.wait(300);
   for (let i = 0; i < 26; i++) {
-    for (const w of W) { w.x -= 20; w.pose = i % 2 ? 1 : 2; }
+    for (const w of W) { w.x -= 20; w.pose = i % 2 ? 1 : 2; } if (i % 2) api.sfx("step", { room: "antechamber" });
     api.extras(W.filter(w => w.x > 70)); await api.wait(140);
   }
   api.extras([]); api.G.busy = false;
@@ -430,6 +430,7 @@ async function morning(api) {
   await api.card("WEDNESDAY", "08:52", "MRI CONTROL  B1", "fR", 3000);
   api.G.bodies = 1;
   api.shift({ mode: "morning", char: "nell", room: "mri", entry: "morning", min: 532, cast: ["nell"] });
+  api.sfx("clang");
   await api.say("Dr. Tess La is dead.\n\nShe was found in the magnet room at 7:40 this morning. The murder weapon is still in there, stuck to the magnet.\n\nIt says NELL.");
 }
 

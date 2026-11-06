@@ -292,7 +292,7 @@ async function monitor(api) {
 async function meeting(api) {
   if (api.flag("quorumDead")) return "The meeting goes on without a chair. Or with one. It's hard to tell.";
   await api.say("You sit. Gus slides in beside you. Quorum raps the table, once.\n\nQUORUM|We'll take New Business at the end. As always. Ethel, the first motion.");
-  const r = await api.mini(nod, { score: api.score, onPose: (i) => { api.pose("vote", i); if (i) api.sfx("nod"); }, onQuorum: () => { api.flag("quorumDead", true); api.G.bodies = 3; api.refresh(); } }, "nodmode");
+  const r = await api.mini(nod, { score: api.score, onPose: (i) => { api.pose("vote", i); if (i) api.sfx("nod"); }, onQuorum: () => { api.sfx("thud"); api.flag("quorumDead", true); api.G.bodies = 3; api.refresh(); } }, "nodmode");
   api.flag("nodDone", true);
   await api.say(`NELL|My d′ was ${r.dprime.toFixed(1)}. Theirs was higher. They weren't even listening.\n\nGUS|They weren't conscious, Nell.`);
   await api.convo("ethelAfter");
@@ -572,12 +572,12 @@ export const END = { title: "END OF ACT III", chip: "MAJOR REVISIONS", bodies: "
 export async function check(api) {
   const { G } = api, f = G.flags;
   if (G.mode !== "day") {
-    if (G.room === "tunnels" && !f.chanting) { f.chanting = true; api.refresh();
+    if (G.room === "tunnels" && !f.chanting) { f.chanting = true; api.refresh(); api.sfx("chant");
       return "The tunnels. Pipes in every direction, sweating. The leak runs along the floor and under a doorway in the left wall.\n\nThe doorway has been bricked up. Through the bricks: voices. Many voices. Together.\n\nGUS|If I put my ear to that, I'm going to hear something I can't un-hear. …I'm going to put my ear to that."; }
     return null;
   }
   if (G.room === "hall" && G.char === "nell" && proofs(api) >= 2 && !f.danaGone) {
-    f.danaGone = true; G.bodies = 2; api.refresh();
+    f.danaGone = true; G.bodies = 2; api.refresh(); api.sfx("sting");
     await api.say("The hallway is full of people who aren't doing anything. Det. Sgt. Small is standing by the recycling bin.\n\nA pair of sneakers is sticking out of it. One has a bike clip.");
     return f.danaClosed ? null : "c:smallDana";
   }

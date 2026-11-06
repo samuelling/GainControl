@@ -240,6 +240,7 @@ async function speak(c, els, [side, raw, fx]) {
   else { const p = PORTRAIT[c[side]] || PORTRAIT.nell; who.textContent = p.name; who.style.background = `var(--${p.chip.slice(1)})`; txt.style.color = `var(--${p.chip.slice(1)})`; }
   const sp = side === "N" ? null : els[side];
   if (sp) sp.classList.toggle("blank", fx === "blank");
+  if (fx === "blank") sfx.play("blank");
   const scene = $("#preston"); if (fx === "blank" && scene) scene.classList.add("blank");
   let flap = 0;
   await typeInto(txt, esc(text) + (sub ? `<em>${esc(sub)}</em>` : ""), G.mode === "night" ? 24 : 16,

@@ -66,6 +66,8 @@ const FORKS = ["NEW ROI: 'V1-ISH'", "DROP RUN 2", "MORE SMOOTHING", "EXCLUDE OUT
   "ONLY THE RIGHT HEMISPHERE", "CHANGE THE HRF", "REMOVE SUBJECT 'P. GAGE'", "SMALL-VOLUME CORRECTION", "TRIM THE LAST BLOCK", "RE-REFERENCE TO BASELINE 2", "REPORT THE PEAK VOXEL"];
 const FORK_P = [.48, .31, .27, .19, .22, .14, .11, .09, .12, .08, .07, .06, .051, .049];
 
+const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
+
 export function glm(root, opts = {}) {
   const die = opts.die || (async () => "revise");
   const score = opts.score || (() => {});
@@ -82,6 +84,7 @@ export function glm(root, opts = {}) {
     /* ---------- coach (Gus teaches, Nell reacts) ---------- */
     function coach(who, text) {
       const col = who === "GUS" ? "B" : who === "NELL" ? "G" : who === "MORRIS" ? "K" : "W";
+      if (!S.coach.length || S.coach[0][1] !== text) window.SFX && window.SFX.voice(who, true);
       S.coach = [[who, text, col]];
       coachEl.innerHTML = `<span class="who" style="background:var(--${col})">${who}</span> <span style="color:var(--${col})">${text}</span>`;
       if (opts.coach) opts.coach(who, text);
@@ -297,64 +300,65 @@ export function glm(root, opts = {}) {
     function cellClick(row, t) {
       if (S.stage !== 0) return;
       const list = S.blocks[row], hit = list.findIndex(o => t >= o && t < o + 16);
-      if (hit >= 0) list.splice(hit, 1);
-      else { const other = row === "A" ? "I" : "A"; if (t + 16 > 256 || list.length >= 4) return;
-        if ([...list, ...S.blocks[other]].some(o => t < o + 16 && o < t + 16)) return; list.push(t); }
+      if (hit >= 0) { list.splice(hit, 1); sfx("cancel"); }
+      else { const other = row === "A" ? "I" : "A"; if (t + 16 > 256 || list.length >= 4) { sfx("nudge", { f: 300 }); return; }
+        if ([...list, ...S.blocks[other]].some(o => t < o + 16 && o < t + 16)) { sfx("nudge", { f: 300 }); return; } list.push(t); sfx("select"); }
       draw();
     }
     const KR = { A: [0, 2], I: [0, 2], B: [-1, 1] };
-    function nudge(id, d) { const [lo, hi] = KR[id]; S.k[id] = Math.round(Math.max(lo, Math.min(hi, S.k[id] + d * 0.05)) * 100) / 100; afterKnob(); }
+    function nudge(id, d) { const [lo, hi] = KR[id], was = S.k[id]; S.k[id] = Math.round(Math.max(lo, Math.min(hi, S.k[id] + d * 0.05)) * 100) / 100;
+      if (S.k[id] !== was) sfx("ktick", { v: (S.k[id] - lo) / (hi - lo) }); afterKnob(); }
     function afterKnob() {
       if (S.stage === 3) { const { xa, xi } = model(), rss = RSS(D.y, xa, xi, [S.k.A, S.k.I, S.k.B]);
-        if (rss <= D.fit.rss * 1.02 && !S.lampSeen) { S.lampSeen = true; add("fitByHand", 3); coach("GUS", "That's it. The leftovers can't get much smaller. You just ran a GLM by hand. Press THAT'S THE FIT."); } }
+        if (rss <= D.fit.rss * 1.02 && !S.lampSeen) { S.lampSeen = true; sfx("lamp"); add("fitByHand", 3); coach("GUS", "That's it. The leftovers can't get much smaller. You just ran a GLM by hand. Press THAT'S THE FIT."); } }
       draw();
     }
     async function press(id) {
-      if (id === "clear") { S.blocks = { A: [], I: [] }; draw(); return; }
+      if (id === "clear") { S.blocks = { A: [], I: [] }; sfx("cancel"); draw(); return; }
       if (id === "check") {
-        if (!matchesLog()) { coach("GUS", "That's not what the log says. Four ATTEND blocks, four IGNORE blocks, 16 seconds each. Read the times again."); return; }
-        add("log", 2); S.stage = 1;
+        if (!matchesLog()) { sfx("bad"); coach("GUS", "That's not what the log says. Four ATTEND blocks, four IGNORE blocks, 16 seconds each. Read the times again."); return; }
+        add("log", 2); S.stage = 1; sfx("good");
         if (aligned()) { add("timing", 2); add("timingBonus", 1); S.stage = 2; coach("NELL", "The log is in scanner time. The data start after four dummy scans, so I took eight seconds off every block before I entered them."); }
         else coach("GUS", "Now lay your blocks over the data. Look at where the signal rises, and where your blocks start.");
         draw(); return;
       }
-      if (id === "left" || id === "right") { S.shift += id === "left" ? -1 : 1; draw(); return; }
+      if (id === "left" || id === "right") { S.shift += id === "left" ? -1 : 1; sfx("nudge", { f: id === "left" ? 780 : 980 }); draw(); return; }
       if (id === "aligned") {
-        if (!aligned()) { coach("GUS", S.shift === 0 ? "Look: the signal starts climbing before your blocks even begin. Every block is late by the same amount. Read the bottom of his log." : "Closer. Slide them until every block starts exactly where the stimulus did. Each click is one scan, two seconds."); return; }
-        add("timing", 2); S.stage = 2;
+        if (!aligned()) { sfx("bad"); coach("GUS", S.shift === 0 ? "Look: the signal starts climbing before your blocks even begin. Every block is late by the same amount. Read the bottom of his log." : "Closer. Slide them until every block starts exactly where the stimulus did. Each click is one scan, two seconds."); return; }
+        add("timing", 2); S.stage = 2; sfx("good");
         coach("NELL", "Dummies. The scanner throws away the first four volumes, eight seconds, and his log counts from the scanner start. The data clock and the scanner clock aren't the same clock.");
         draw(); return;
       }
       if (id === "stamp") {
-        S.hrf = true; add("hrf", 2); S.stage = 3;
+        S.hrf = true; add("hrf", 2); S.stage = 3; sfx("stamp");
         coach("GUS", "Neurons answer instantly. Blood arrives about five seconds later, lingers, then dips. Lightning, then thunder. Now stretch each template until it lies on the data: turn the knobs.");
         draw(); return;
       }
       if (id === "next4") {
-        if (!S.lampSeen) { coach("GUS", "Not yet. Watch the leftovers: the red lines between the data and your fit. Make them as short as you can."); return; }
-        S.stage = 4; coach("GUS", "Now let MATLAB do it. It does exactly what you just did, but instantly. That's all 'running a GLM' means."); draw(); return;
+        if (!S.lampSeen) { sfx("cancel"); coach("GUS", "Not yet. Watch the leftovers: the red lines between the data and your fit. Make them as short as you can."); return; }
+        S.stage = 4; sfx("select"); coach("GUS", "Now let MATLAB do it. It does exactly what you just did, but instantly. That's all 'running a GLM' means."); draw(); return;
       }
       if (id === "solve") {
-        S.k = { A: +D.fit.beta[0].toFixed(2), I: +D.fit.beta[1].toFixed(2), B: +D.fit.beta[2].toFixed(2) }; S.solved = true; add("solve", 1); S.stage = 5;
+        S.k = { A: +D.fit.beta[0].toFixed(2), I: +D.fit.beta[1].toFixed(2), B: +D.fit.beta[2].toFixed(2) }; S.solved = true; add("solve", 1); S.stage = 5; sfx("compute"); sfx("seesaw");
         coach("GUS", "Same picture in both blocks. The only difference is attention. So ATTEND minus IGNORE is the attention effect.");
         setTimeout(() => { coach("NELL", "It's not a small effect. It's no effect."); }, 2600);
         add("contrast", 2); draw(); return;
       }
       if (id === "layers") {
-        S.stage = 6; coach("GUS", "His paper says six layers. V1 is about two millimeters thick. A 3T voxel is about three millimeters on a side. Like measuring the six layers of a cake with a spoon bigger than the cake.");
+        S.stage = 6; sfx("whoosh"); coach("GUS", "His paper says six layers. V1 is about two millimeters thick. A 3T voxel is about three millimeters on a side. Like measuring the six layers of a cake with a spoon bigger than the cake.");
         draw(); return;
       }
-      if (id === "perlayer") { S.layerFit = true; add("layers", 2); coach("NELL", "One voxel. One number. Six times. So where did his six layers come from?"); draw(); return; }
-      if (id === "paper") { S.stage = 7; coach("GUS", "Here's his Figure 3. Real measurements wobble, drift and disagree. Find three things no real data would do."); draw(); return; }
+      if (id === "perlayer") { S.layerFit = true; sfx("compute"); add("layers", 2); coach("NELL", "One voxel. One number. Six times. So where did his six layers come from?"); draw(); return; }
+      if (id === "paper") { S.stage = 7; sfx("paper"); coach("GUS", "Here's his Figure 3. Real measurements wobble, drift and disagree. Find three things no real data would do."); draw(); return; }
       if (id === "finish") {
-        S.done = true; add("replication", 2);
+        S.done = true; add("replication", 2); sfx("chime");
         coach("MORRIS", "So the fancy layers?");
         setTimeout(() => coach("NELL", "Painted on."), 2200);
         draw(); return;
       }
       if (id === "close") { cleanup(); resolve({ tells: S.tells, score: S.total }); return; }
       if (id === "fork") {
-        const i = S.forks++;
+        const i = S.forks++; sfx("compute");
         if (i === 0) coach("GUS", "Nell. That button is how this whole building got here.");
         else coach("NELL", `${FORKS[i]}…  P = ${String(FORK_P[i]).replace("0.", ".")}`);
         if (i === 13) {
@@ -368,7 +372,7 @@ export function glm(root, opts = {}) {
     }
     function tell(k) {
       if (S.tells[k]) return;
-      S.tells[k] = true; add("tell_" + k, 3);
+      S.tells[k] = true; add("tell_" + k, 3); sfx("stamp");
       const L = { clean: "His leftovers are a flat line. Real fMRI noise drifts and wobbles every two seconds. Yours do. His don't.",
         copy: "Layer 2 and layer 5 have the same noise. Wiggle for wiggle. Six layers, one noise.",
         veins: "Real gradient-echo BOLD is loudest at the surface, because the blood drains outward into the veins up there. His profile has no slope at all. The top floor always gets the most water pressure. His building has no plumbing." };

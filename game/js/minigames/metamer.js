@@ -101,6 +101,8 @@ const CSS = `
 `;
 function injectStyle(id, css) { if (document.getElementById(id)) return; const s = document.createElement("style"); s.id = id; s.textContent = css; document.head.appendChild(s); }
 
+const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
+
 export function metamer(el, { score = () => {} } = {}) {
   injectStyle("mg-metamer", CSS);
   return new Promise(resolve => {
@@ -110,7 +112,8 @@ export function metamer(el, { score = () => {} } = {}) {
     const cardOf = (s) => S.matched[s];                    // shelf index matched to sentence s
     const sentOf = (c) => S.matched.indexOf(c);
     const allMatched = () => S.matched.every(v => v !== null);
-    const coach = () => { const [w, t] = S.say; return `<span class="who" style="background:var(--${COL[w]})">${w}</span><span style="color:var(--${COL[w]})">${t}</span>`; };
+    let spoken = null;
+    const coach = () => { const [w, t] = S.say; if (S.say !== spoken) { spoken = S.say; window.SFX && window.SFX.voice(w, true); } return `<span class="who" style="background:var(--${COL[w]})">${w}</span><span style="color:var(--${COL[w]})">${t}</span>`; };
     function card(c) {
       const x = SRC[c], s = sentOf(c), lit = S.stage === 2 || allMatched();
       const cls = ["card", s >= 0 ? "ok" : "", S.sel && S.sel.side === "c" && S.sel.i === c ? "sel" : "", lit && x.s < 0 ? "dim" : "", S.flash === c ? "flash" : ""].join(" ");
@@ -146,10 +149,10 @@ export function metamer(el, { score = () => {} } = {}) {
     function tryPair(s, c) {
       S.sel = null;
       if (SRC[c].s === s) {
-        S.matched[s] = c; S.say = LINES.ok[S.okN++ % LINES.ok.length];
-        if (allMatched()) { S.say = LINES.labs; later(2800, () => { if (S.stage === 1) S.say = LINES.labs2; }); }
+        S.matched[s] = c; S.say = LINES.ok[S.okN++ % LINES.ok.length]; sfx("good");
+        if (allMatched()) { S.say = LINES.labs; sfx("chime"); later(2800, () => { if (S.stage === 1) S.say = LINES.labs2; }); }
       } else {
-        S.wrong++;
+        S.wrong++; sfx("bad");
         const x = SRC[c];
         if (x.s < 0) { S.say = ["NELL", x.no]; if (x.nw) later(2400, () => { if (S.say[1] === x.no) S.say = [x.nw, x.nx]; }); }
         else S.say = LINES.near;
@@ -160,7 +163,7 @@ export function metamer(el, { score = () => {} } = {}) {
       if (side === "s" && cardOf(i) !== null) return;
       if (side === "c" && sentOf(i) >= 0) return;
       if (S.sel && S.sel.side !== side) { side === "s" ? tryPair(i, S.sel.i) : tryPair(S.sel.i, i); draw(); return; }
-      S.sel = S.sel && S.sel.side === side && S.sel.i === i ? null : { side, i };
+      S.sel = S.sel && S.sel.side === side && S.sel.i === i ? null : { side, i }; sfx(S.sel ? "select" : "cancel");
       if (S.sel) S.say = side === "s" ? LINES.how : LINES.howC;
       draw();
     }
@@ -168,13 +171,13 @@ export function metamer(el, { score = () => {} } = {}) {
       if (S.stage !== 2 || S.done || S.flagged[i]) return;
       const r = REFS[i];
       if (r.src === null) {
-        S.flagged[i] = true; S.say = LINES[r.id];
+        S.flagged[i] = true; S.say = LINES[r.id]; sfx("stamp");
         if (Object.keys(S.flagged).length === 2) {
           S.done = true; score("metamer", S.wrong ? 3 : 5);
           later(3200, () => { S.say = LINES.done; }); later(7000, () => { S.say = LINES.done2; });
         }
       } else {
-        S.wrong++; S.say = LINES.real(r.src); S.flash = r.src;
+        S.wrong++; S.say = LINES.real(r.src); S.flash = r.src; sfx("bad");
         later(1400, () => { S.flash = -1; });
       }
       draw();
@@ -184,7 +187,7 @@ export function metamer(el, { score = () => {} } = {}) {
       const b = t.closest("button[data-b]");
       if (b && !b.disabled) {
         if (b.dataset.b === "off") { finish(); return; }
-        if (b.dataset.b === "refs") { S.stage = 2; S.sel = null; S.say = LINES.refs; draw(); }
+        if (b.dataset.b === "refs") { S.stage = 2; sfx("paper"); S.sel = null; S.say = LINES.refs; draw(); }
         return;
       }
       const s = t.closest("[data-s]"); if (s) { pick("s", +s.dataset.s); return; }

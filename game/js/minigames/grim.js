@@ -20,8 +20,11 @@ const LINES = {
   done: ["NELL", "Three of six means are impossible. In Table 1. Of a paper in Nurture Neuroscience."],
 };
 
+const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
+
 export function grim(el, { score = () => {} } = {}) {
   return new Promise(resolve => {
+    let spoken = null;
     const S = { row: -1, step: 0, verdict: ROWS.map(() => null), wrong: 0, say: LINES.intro, done: false };
     const calc = () => {
       if (S.row < 0) return [];
@@ -32,6 +35,7 @@ export function grim(el, { score = () => {} } = {}) {
       return out;
     };
     function draw() {
+      if (S.say !== spoken) { spoken = S.say; window.SFX && window.SFX.voice(S.say[0], true); }
       const rows = ROWS.map(([c, d, m], i) => {
         const v = S.verdict[i];
         return `<tr data-row="${i}" class="${i === S.row ? "sel" : ""}"><td>${c}</td><td>${d}</td><td>${N}</td><td class="num">${m.toFixed(2)}</td>
@@ -59,17 +63,17 @@ export function grim(el, { score = () => {} } = {}) {
           <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
     }
     function act(b, row) {
-      if (row !== undefined) { S.row = row; S.step = 0; S.say = LINES.how; }
-      else if (b === "mul") S.step = 1;
-      else if (b === "round") S.step = 2;
-      else if (b === "div") S.step = 3;
+      if (row !== undefined) { S.row = row; S.step = 0; S.say = LINES.how; sfx("select"); }
+      else if (b === "mul") { S.step = 1; sfx("calc"); }
+      else if (b === "round") { S.step = 2; sfx("calc"); }
+      else if (b === "div") { S.step = 3; sfx("calc"); }
       else if (b === "ok" || b === "bad") {
-        if (S.step < 3) S.say = LINES.skip;
+        if (S.step < 3) { S.say = LINES.skip; sfx("cancel"); }
         else {
           const truth = possible(ROWS[S.row][2]), said = b === "ok";
-          if (said !== truth) { S.wrong++; S.say = truth ? LINES.wrongOk : LINES.wrongBad; }
-          else { S.verdict[S.row] = truth; S.say = truth ? LINES.ok : LINES.bad;
-            if (S.verdict.every(v => v !== null)) { S.done = true; S.say = LINES.done; score("grim", Math.max(1, 4 - S.wrong)); } }
+          if (said !== truth) { S.wrong++; S.say = truth ? LINES.wrongOk : LINES.wrongBad; sfx("bad"); }
+          else { S.verdict[S.row] = truth; S.say = truth ? LINES.ok : LINES.bad; sfx(truth ? "good" : "stamp");
+            if (S.verdict.every(v => v !== null)) { S.done = true; S.say = LINES.done; sfx("chime"); score("grim", Math.max(1, 4 - S.wrong)); } }
         }
       } else if (b === "off") { finish(); return; }
       draw();

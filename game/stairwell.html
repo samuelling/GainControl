@@ -19,6 +19,9 @@
 <script type="module">
   import { segC } from "./js/gfx.js";
   import { stairwell } from "./js/minigames/stairwell.js";
+  import { sfx } from "./js/sfx.js";
+  const unlock = () => sfx.unlock();
+  window.addEventListener("pointerdown", unlock, true); window.addEventListener("keydown", unlock, true);
   const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br>");
   // the game's death screen, with Revise & Resubmit
   function die(text) {
@@ -27,7 +30,7 @@
       d.querySelector("svg").innerHTML = segC("DESK REJECTED", 320, 26, 26, "sR", 1.8)
         + `<g class="dbtn" data-b="revise"><rect class="fW" x="150" y="300" width="160" height="26"/>${segC("REVISE & RESUBMIT", 230, 309, 7, "s0", 1.2)}</g>`
         + `<g class="dbtn" data-b="withdraw"><rect class="k sW" x="330" y="300" width="160" height="26"/>${segC("WITHDRAW MANUSCRIPT", 410, 309, 7, "sW", 1.2)}</g>`;
-      d.querySelector(".dtxt").innerHTML = esc(text); d.classList.add("show");
+      d.querySelector(".dtxt").innerHTML = esc(text); d.classList.add("show"); sfx.play("death");
       d.onclick = (e) => { const b = e.target.closest(".dbtn"); if (!b) return; d.classList.remove("show"); d.onclick = null;
         if (b.dataset.b === "withdraw") location.reload(); else resolve("revise"); };
     });

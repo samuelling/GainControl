@@ -92,12 +92,15 @@ const CSS = `
 `;
 function injectStyle(id, css) { if (document.getElementById(id)) return; const s = document.createElement("style"); s.id = id; s.textContent = css; document.head.appendChild(s); }
 
+const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
+
 export function retainer(el, { score = () => {} } = {}) {
   injectStyle("mg-retainer", CSS);
   return new Promise(resolve => {
     const S = { t: { ...START }, moves: 0, say: LINES.intro, reg: false, zoom: false, marked: FAKE.map(() => false), done: false };
     const timers = []; const later = (ms, fn) => timers.push(setTimeout(() => { fn(); draw(); }, ms));
-    const coach = () => { const [w, t] = S.say; return `<span class="who" style="background:var(--${COL[w]})">${w}</span><span style="color:var(--${COL[w]})">${t}</span>`; };
+    let spoken = null;
+    const coach = () => { const [w, t] = S.say; if (S.say !== spoken) { spoken = S.say; window.SFX && window.SFX.voice(w, true); } return `<span class="who" style="background:var(--${COL[w]})">${w}</span><span style="color:var(--${COL[w]})">${t}</span>`; };
     const nMarked = () => S.marked.filter(Boolean).length;
     const sgn = (v) => (v > 0 ? "+" : v < 0 ? "-" : "") + Math.abs(v);
     function panel(x, y, w, inner, cls, vb = "0 0 200 200") {
@@ -138,16 +141,17 @@ export function retainer(el, { score = () => {} } = {}) {
       else if (b === "S-") t.s = Math.max(0.6, +(t.s - SSTEP).toFixed(2)); else if (b === "S+") t.s = Math.min(1.6, +(t.s + SSTEP).toFixed(2));
       else return;
       S.moves++;
+      if (b[0] === "S") sfx("scale", { up: b === "S+" }); else sfx("nudge", { f: 700 + 120 * "LRUD".indexOf(b) });
       if (t.dx === 0 && t.dy === 0 && Math.abs(t.s - 1) < 1e-6) {
-        S.reg = true; S.say = LINES.match; score("retainerReg", 2);
-        later(2600, () => { S.zoom = true; S.say = LINES.zoom; });
+        S.reg = true; S.say = LINES.match; sfx("chime"); score("retainerReg", 2);
+        later(2600, () => { S.zoom = true; S.say = LINES.zoom; sfx("whoosh"); });
       } else { const p = regScore(t); S.say = S.moves === 1 ? LINES.how : p >= 50 ? LINES.close : LINES.far; }
       draw();
     }
     function mark(i) {
       if (!S.zoom || S.marked[i] || S.done) return;
-      S.marked[i] = true; const n = nMarked();
-      if (n === 6) { S.done = true; S.say = LINES.done; score("retainerLayers", 3); later(3400, () => { S.say = LINES.done2; }); }
+      S.marked[i] = true; const n = nMarked(); sfx("layer", { n });
+      if (n === 6) { S.done = true; S.say = LINES.done; sfx("stamp"); score("retainerLayers", 3); later(3400, () => { S.say = LINES.done2; }); }
       else if (LINES.marks[n]) S.say = LINES.marks[n];
       draw();
     }

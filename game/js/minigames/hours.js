@@ -92,6 +92,8 @@ const X0 = 30, CW = 62, Y0 = 26, RH = 11, W = X0 + 7 * CW + 6, H = Y0 + 24 * RH 
 export const freeHours = (keys) => { const out = []; for (let d = 0; d < 7; d++) for (let h = 0; h < 24; h++)
   if (!keys.some(k => CALS[k].blocks.some(([bd, s, l]) => bd === d && h >= s && h < s + l))) out.push([d, h]); return out; };
 
+const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
+
 export function hours(el, { score = () => {} } = {}) {
   injectStyle("mg-hours", CSS);
   return new Promise(resolve => {
@@ -100,7 +102,8 @@ export function hours(el, { score = () => {} } = {}) {
     const timers = []; const later = (ms, fn) => timers.push(setTimeout(() => { fn(); draw(); }, ms));
     const onKeys = () => Object.keys(S.on).filter(k => S.on[k]);
     const allOn = () => onKeys().length === 3;
-    const coach = () => { const [w, t] = S.say; return `<span class="who" style="background:var(--${COL[w]})">${w}</span><span style="color:var(--${COL[w]})">${t}</span>`; };
+    let spoken = null;
+    const coach = () => { const [w, t] = S.say; if (S.say !== spoken) { spoken = S.say; window.SFX && window.SFX.voice(w, true); } return `<span class="who" style="background:var(--${COL[w]})">${w}</span><span style="color:var(--${COL[w]})">${t}</span>`; };
     function week() {
       let s = `<defs>${Object.entries(CALS).map(([k, c]) => `<pattern id="hrs${k}" width="6" height="6" patternUnits="userSpaceOnUse"><path class="hl s${c.col}" d="${c.pat}"/></pattern>`).join("")}</defs>`;
       for (let h = 0; h <= 24; h++) s += `<path class="hl ${h % 6 ? "sN" : "sD"}" d="M${X0},${Y0 + h * RH} L${X0 + 7 * CW},${Y0 + h * RH}"/>`;
@@ -172,31 +175,31 @@ export function hours(el, { score = () => {} } = {}) {
     }
     function checkNight() {
       if (S.night || !allOn() || !S.placed.every(Boolean)) return;
-      S.night = true; S.say = LINES.night; later(3600, () => { if (S.stage === "cal") S.say = LINES.night2; });
+      S.night = true; S.say = LINES.night; sfx("stamp"); later(3600, () => { if (S.stage === "cal") S.say = LINES.night2; });
     }
     function toggle(k) {
-      S.on[k] = !S.on[k];
+      S.on[k] = !S.on[k]; sfx("toggle", { on: S.on[k] });
       const on = onKeys();
       if (on.length === 1) S.say = LINES.one[on[0]];
       else if (on.length === 2) S.say = LINES.two(freeHours(on).length);
-      else if (on.length === 3) { S.say = LINES.three; if (!S.saidThree) { S.saidThree = true; later(3000, () => { if (S.say === LINES.three) S.say = LINES.three2; }); } }
+      else if (on.length === 3) { S.say = LINES.three; if (!S.saidThree) { S.saidThree = true; sfx("chime"); later(3000, () => { if (S.say === LINES.three) S.say = LINES.three2; }); } }
       else S.say = LINES.how;
       checkNight();
     }
     function file(d) {
       const r = RECEIPTS[S.sel];
-      if (d !== r.day) { S.say = LINES.wrongDay(r); return; }
-      S.placed[S.sel] = true; S.sel = -1; S.say = r.talk ? LINES.talk : r.line;
+      if (d !== r.day) { S.say = LINES.wrongDay(r); sfx("bad"); return; }
+      S.placed[S.sel] = true; S.sel = -1; S.say = r.talk ? LINES.talk : r.line; sfx("paper");
       checkNight();
     }
     function labClick(k) {
       if (S.found[k] || S.done) return;
       if (SHARED.includes(k)) {
-        S.found[k] = true; S.say = LINES.found[k];
+        S.found[k] = true; S.say = LINES.found[k]; sfx("good");
         if (Object.keys(S.found).length === 3) { S.done = true; score("hours", 4); later(2600, () => { S.say = LINES.done; }); later(7000, () => { S.say = LINES.done2; }); }
       } else {
         const who = CVS.filter(cv => cv.rows.some(r => r[2] === k)).map(cv => CALS[cv.who].name[0] + CALS[cv.who].name.slice(1).toLowerCase());
-        S.say = LINES.miss(k, who.join(" and ")); S.nope = k; later(1200, () => { S.nope = null; });
+        S.say = LINES.miss(k, who.join(" and ")); S.nope = k; sfx("bad"); later(1200, () => { S.nope = null; });
       }
     }
     const onClick = (e) => {
@@ -205,13 +208,13 @@ export function hours(el, { score = () => {} } = {}) {
       if (b && !b.disabled) {
         const k = b.dataset.b;
         if (k === "off") { finish(); return; }
-        if (k === "cv") { S.stage = "cv"; S.say = LINES.cv; draw(); return; }
+        if (k === "cv") { S.stage = "cv"; S.say = LINES.cv; sfx("paper"); draw(); return; }
         if (CALS[k]) { toggle(k); draw(); }
         return;
       }
       const d = t.closest("[data-day]"); if (d && S.sel >= 0) { file(+d.dataset.day); draw(); return; }
       const r = t.closest("[data-r]");
-      if (r) { const i = +r.dataset.r; if (S.placed[i]) return; S.sel = S.sel === i ? -1 : i; if (S.sel >= 0) S.say = LINES.pick; draw(); return; }
+      if (r) { const i = +r.dataset.r; if (S.placed[i]) return; S.sel = S.sel === i ? -1 : i; sfx(S.sel >= 0 ? "select" : "cancel"); if (S.sel >= 0) S.say = LINES.pick; draw(); return; }
       const l = t.closest("[data-lab]"); if (l) { labClick(l.dataset.lab); draw(); }
     };
     const onKey = (e) => { if (e.key === "Escape") finish(); };

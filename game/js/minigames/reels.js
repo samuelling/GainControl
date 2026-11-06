@@ -69,6 +69,8 @@ function reel(cx, cy, r, cls = "sW", tape = "sA", wiped = false) {
   return s;
 }
 
+const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
+
 export function reels(el, { seconds = 90, score = () => {} } = {}) {
   css();
   return new Promise(resolve => {
@@ -79,7 +81,7 @@ export function reels(el, { seconds = 90, score = () => {} } = {}) {
 
     // a short line queue; lines show for a beat each, the newest batch replaces what's waiting
     function say(...lines) { S.q = lines; clearTimeout(qT); nextLine(); }
-    function nextLine() { if (!S.q.length) return; S.say = S.q.shift(); draw(); if (S.q.length) qT = setTimeout(nextLine, Math.max(2000, 45 * S.say[1].length)); }
+    function nextLine() { if (!S.q.length) return; S.say = S.q.shift(); window.SFX && window.SFX.voice(S.say[0], true); draw(); if (S.q.length) qT = setTimeout(nextLine, Math.max(2000, 45 * S.say[1].length)); }
 
     function shelves() {
       let s = seg("SHELVES 1-3", 8, 2, 5, "sM", .8) + seg("REEL-TO-REEL  PROPERTY OF THE TABLE  DO NOT DEGAUSS", 64, 2.5, 4, "sD", .7);
@@ -161,23 +163,23 @@ export function reels(el, { seconds = 90, score = () => {} } = {}) {
 
     function load(i) {
       if (S.anim || S.over || S.done || S.gone[i]) return;
-      S.load = i; say(["MORRIS", REELS[i].look]);
+      S.load = i; sfx("reel"); say(["MORRIS", REELS[i].look]);
     }
     function send() {
       if (S.load < 0 || S.anim || S.over || S.done) return;
       const i = S.load, R = REELS[i], D = DEST[S.dial];
-      [1, 2, 3, 4].forEach(k => later(120 * k, () => { S.anim = k; draw(); }));
+      sfx("tube"); [1, 2, 3, 4].forEach(k => later(120 * k, () => { S.anim = k; draw(); }));
       later(120 * 5 + 200, () => {
         S.anim = 0;
-        if (D.here) { say(["MORRIS", "Return to sender. The sender is me. Ow. Point the dial somewhere else, pal."]); return; }
+        if (D.here) { sfx("thud"); say(["MORRIS", "Return to sender. The sender is me. Ow. Point the dial somewhere else, pal."]); return; }
         S.load = -1; S.gone[i] = true;
         if (D.ok && R.good) {
-          S.sent++; say(["MORRIS", GOOD_SENT[S.sent - 1]]);
+          S.sent++; sfx("good"); say(["MORRIS", GOOD_SENT[S.sent - 1]]);
           if (S.sent === 4) { S.done = true; clearInterval(tick); score("reels", 4); draw(); }
           else checkLeft();
           return;
         }
-        S.wrong++;
+        S.wrong++; sfx("bad");
         if (D.ok) { S.decoys++; penalty(10); say(["MORRIS", DECOY_SENT[i] || "That one wasn't evidence, pal."], ["NARRATOR", "That cost ten seconds."]); return; }
         if (R.good) S.lost++;
         say(["NARRATOR", D.n], ["MORRIS", R.good ? "Aw, no. That was a good one, too." : "Eh. Nobody needed that one."]);
@@ -195,18 +197,18 @@ export function reels(el, { seconds = 90, score = () => {} } = {}) {
     function penalty(n) { S.t = Math.max(0, S.t - n); S.pen = n; later(1600, () => { S.pen = 0; const c = el.querySelector(".rls .rclk"); if (c) c.innerHTML = clock(); }); if (S.t <= 0) timeUp(); }
     function timeUp() {
       if (S.over || S.done) return;
-      S.over = true; S.load = -1; clearInterval(tick); score("reels", S.sent);
+      S.over = true; S.load = -1; clearInterval(tick); score("reels", S.sent); sfx("alarm"); sfx("ramp");
       say(["MORRIS", "My itch just went through the roof. That's the field, pal."], ["NARRATOR", "Every reel left in the Archive is now a very long piece of brown ribbon."]);
     }
     const onClick = (e) => {
       const t = e.target;
       const b = t.closest && t.closest("button[data-b]");
       if (b) { if (b.disabled) return; const k = b.dataset.b;
-        if (k === "send") send(); else if (k === "out") { S.load = -1; draw(); } else finish(); return; }
+        if (k === "send") send(); else if (k === "out") { S.load = -1; sfx("cancel"); draw(); } else finish(); return; }
       if (S.anim || S.over || S.done) return;
       const r = t.closest && t.closest("[data-reel]"); if (r) { load(+r.dataset.reel); return; }
-      const d = t.closest && t.closest("[data-dest]"); if (d) { S.dial = +d.dataset.dest; draw(); return; }
-      const kn = t.closest && t.closest("[data-knob]"); if (kn) { S.dial = (S.dial + 1) % DEST.length; draw(); }
+      const d = t.closest && t.closest("[data-dest]"); if (d) { const n = (+d.dataset.dest - S.dial + DEST.length) % DEST.length; S.dial = +d.dataset.dest; if (n) sfx("ratchet", { n }); draw(); return; }
+      const kn = t.closest && t.closest("[data-knob]"); if (kn) { S.dial = (S.dial + 1) % DEST.length; sfx("ratchet", { n: 1 }); draw(); }
     };
     const onKey = (e) => { if (e.key === "Escape") finish(); };
     function finish() {
@@ -219,6 +221,7 @@ export function reels(el, { seconds = 90, score = () => {} } = {}) {
     el.classList.add("show");
     say(S.say, ["MORRIS", "Magnets eat tape, pal. Good reels in the canister, dial to Ethel, whoosh. Before the field comes up."]);
     tick = setInterval(() => { if (S.over || S.done) return; S.t--; if (S.t <= 0) { timeUp(); return; }
+      sfx("countdown", { n: S.t <= 8 ? 4 : S.t <= 20 ? 2 : 1, hot: S.t <= 20 });
       const c = el.querySelector(".rls .rclk"); if (c) c.innerHTML = clock(); }, 1000);
     el.addEventListener("click", onClick); window.addEventListener("keydown", onKey);
   });

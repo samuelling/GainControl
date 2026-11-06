@@ -18,7 +18,7 @@ Object.assign(ITEMS, {
     g: (x, y) => `<path class="sR" d="M${x - 9},${y - 4} L${x + 8},${y - 4} L${x + 8},${y} L${x - 9},${y} Z M${x - 5},${y} L${x - 7},${y + 9} M${x + 2},${y} L${x + 4},${y + 6}"/>` },
 });
 ITEMS.robe.verbs = (api) => api.G.act === 5 && api.G.char === "nell" && !api.flag("robeOn") ? [["wear", "PUT ON"]] : [];
-ITEMS.robe.wear = (api) => { api.flag("robeOn", true); api.take("robe"); api.score("robeOn", 1); api.refresh();
+ITEMS.robe.wear = (api) => { api.sfx("cloth"); api.flag("robeOn", true); api.take("robe"); api.score("robeOn", 1); api.refresh();
   return "You pull Gus's robe over your head. It's warm from the tunnel, and too long in the sleeves. The pin on the collar glows.\n\nFrom the inside of a hood, everyone looks like a reviewer."; };
 const wrap = (id, fn) => { const old = ITEMS[id].look; ITEMS[id].look = (api) => api.G.act === 5 ? fn(api) : (typeof old === "function" ? old(api) : old); };
 wrap("notebook", (api) => {
@@ -72,7 +72,7 @@ async function doEcho(api) {
   if (api.flag("echoPassed")) return ready(api) ? climax(api) : "The Board waits for its Chair to finish reading the minutes. You have a few minutes. Somebody should be turning on a magnet.";
   if (!api.flag("passOK")) return "You're not in yet.";
   await api.say("You take an empty seat at the Round Table, inside the iron ring. Twelve hoods. At the head of the table, a hood that sits very straight, like a man who was declared dead on Wednesday.\n\nA gavel. Then the Echo begins.");
-  const r = await api.mini(echo, { mode: "induction", score: api.score, blip: api.blip, die: dieKeep(api),
+  const r = await api.mini(echo, { mode: "induction", morris: true, score: api.score, blip: api.blip, die: dieKeep(api),
     onSeat: (i) => { for (let k = 0; k < 12; k++) api.pose("seat" + k, k === i ? 1 : 0); } }, "glmwrap");
   for (let k = 0; k < 12; k++) api.pose("seat" + k, 0);
   if (!r || !r.passed) return "You stand up from the table, slowly, as if to stretch. Nobody stops you. Nobody has to. The seat will wait.";
@@ -111,7 +111,7 @@ async function climax(api) {
   G.cast = ["nell"];
   if (G.room !== "chamber") api.goRoom("chamber@fromAntechamber");
   api.sfx("gavel"); await api.say("The minutes end. A gavel: brass, with a small skull set into the head.\n\nTHE CORRESPONDING AUTHOR|Before the induction, the Hunt.\n\nThe hood at the head of the table goes back.");
-  G.flags.unhooded = true; api.refresh();
+  G.flags.unhooded = true; api.refresh(); api.sfx("cloth"); api.sfx("sting");
   await api.say("Professor Quorum. Not dead. Never dead. A little pale, as if he spent Wednesday afternoon face down on an agenda. A chain of gold medals around his neck, fifty years of them.\n\nQUORUM|Thirty-nine. Still.");
   await api.convo("quorumOffer");
   const c = await api.chooseFrom("QUORUM'S OFFER", [["yes", "\"YES.\""], ["maybe", "\"CAN I THINK ABOUT IT?\""], ["no", "\"NO.\""]]);
@@ -119,7 +119,7 @@ async function climax(api) {
   if (c === "maybe" || !c) return ending(api, "deskreject");
   await api.say("NELL|No.\n\nNELL|And give him back. Preston. Take them out of his ears.\n\nQUORUM|Ms. Null. You're in a sealed room, under a building, inside a magnet that hasn't been switched on since 1971.");
   await api.say("A voice from the service stair:\n\nIRIS|1968, Pembroke. I commissioned it. Do keep up.");
-  G.flags.irisHere = true; api.refresh();
+  G.flags.irisHere = true; api.refresh(); api.sfx("step", { room: "chamber" });
   api.sfx("staple"); await api.say("Iris Candor comes up the last step at eighty-eight years old and exactly the right speed.\n\nIRIS|I told you in 1974.\n\nQuorum stands. Iris crosses the floor, raises the staple gun, and staples the hem of his robe to the Round Table. Twice. Three times, for 1974.");
   await api.say("IRIS|I've waited a long time to turn it back on.\n\nShe throws the knife switch.");
   G.flags.finale = true; api.refresh(); api.sfx("ramp"); api.sfx("zap");
@@ -235,7 +235,7 @@ async function doorkeeper(api) {
   const d = await api.chooseFrom("YOUR DATE OF BIRTH.", [["card", "SHOW IRIS'S CARD (BORN 1987)"], ["truth", "TELL THE TRUTH"]]);
   if (!d) return null;
   if (d === "truth") return api.die("You tell the truth. The doorkeeper does the arithmetic.\n\nA HOOD: Wizened.\n\nThe hoods turn, all of them. You are retired on the spot. Your gain is set to zero. You will nod in faculty meetings for the rest of your career.");
-  f.passOK = true; api.take("idcard"); api.score("passOK", 3);
+  f.passOK = true; api.take("idcard"); api.score("passOK", 3); api.sfx("door");
   return "The doorkeeper reads the card for a long time. 1987. Thirty-nine.\n\nA HOOD|Welcome, member. You're late.\n\nThe inner door opens.";
 }
 

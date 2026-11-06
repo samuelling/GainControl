@@ -43,13 +43,19 @@ function z(p) { // inverse normal CDF (Acklam's approximation, enough for a note
 }
 export const dprime = (h, m, fa, cr) => z((h + .5) / (h + m + 1)) - z((fa + .5) / (fa + cr + 1));
 
+const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
+
 export function nod(el, { onPose = () => {}, onQuorum = () => {}, score = () => {}, pace = 2600, seed } = {}) {
   return new Promise(resolve => {
     let reader = "QUORUM", phase = "watch", log = [], coach = ["GUS", "Six of them. Watch their heads, not his mouth."], timers = [], nowArmed = false, cur = null;
     const T = { hits: 0, misses: 0, fa: 0, cr: 0, tries: 0 };
     const later = (f, ms) => timers.push(setTimeout(f, ms));
     const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    let spoken = null, read = null;
     function draw() {
+      // a voice tick for each new coach line, and one for the reader as each motion goes up
+      if (coach !== spoken) { spoken = coach; window.SFX && window.SFX.voice(coach[0], true); }
+      if (cur && cur !== read) { read = cur; window.SFX && window.SFX.voice(reader, true); }
       const col = (w) => w === "GUS" ? "B" : w === "NELL" ? "G" : "W";
       el.innerHTML = `<div class="nodbar">
         <div class="motion">${cur ? `<span class="who" style="background:var(--${reader === "QUORUM" ? "R" : "V"})">${reader}</span>
@@ -64,7 +70,7 @@ export function nod(el, { onPose = () => {}, onQuorum = () => {}, score = () => 
     function motion(seq, i, n, onEnd, lines) {
       const k = seq[i], target = isT(seq, i); cur = { k, n, target, called: false, nodded: false };
       nowArmed = phase !== "watch"; if (lines && lines[i]) coach = lines[i]; draw();
-      if (target) later(() => { cur.nodded = true; nowArmed = phase === "encore"; onPose(1); later(() => onPose(0), 520); draw(); }, pace * .62);
+      if (target) later(() => { cur.nodded = true; nowArmed = phase === "encore"; onPose(1); sfx("tock"); later(() => onPose(0), 520); draw(); }, pace * .62);
       later(() => {
         if (phase === "predict") { if (target) cur.called ? 0 : T.misses++; else if (!cur.called) T.cr++; }
         log.push({ k, n, nod: target }); onEnd();
@@ -77,12 +83,12 @@ export function nod(el, { onPose = () => {}, onQuorum = () => {}, score = () => 
     }
     function now() {
       if (!cur || !nowArmed) return;
-      nowArmed = false;
+      nowArmed = false; sfx("whisper");
       if (phase === "encore") { coach = ["GUS", cur.target ? "…and they nodded." : "Nothing. He's dead and they're still right."]; draw(); return; }
       cur.called = true;
-      if (cur.target && !cur.nodded) { T.hits++; coach = ["GUS", ["Called it.", "Yes.", "Again. Called it.", "Nell, that's not a coincidence."][Math.min(T.hits - 1, 3)]]; }
-      else if (cur.target) coach = ["GUS", "That's not a prediction, that's a reaction. Before they move."];
-      else { T.fa++; coach = ["GUS", "No. Nothing came back after one other. Don't guess."]; }
+      if (cur.target && !cur.nodded) { T.hits++; sfx("good"); coach = ["GUS", ["Called it.", "Yes.", "Again. Called it.", "Nell, that's not a coincidence."][Math.min(T.hits - 1, 3)]]; }
+      else if (cur.target) { sfx("cancel"); coach = ["GUS", "That's not a prediction, that's a reaction. Before they move."]; }
+      else { T.fa++; sfx("bad"); coach = ["GUS", "No. Nothing came back after one other. Don't guess."]; }
       draw();
     }
     function predict() {
@@ -92,13 +98,13 @@ export function nod(el, { onPose = () => {}, onQuorum = () => {}, score = () => 
       later(() => run(seq, "predict", 13, null, () => {
         if (T.hits >= Math.max(3, targets - 1) && T.fa <= 1) {
           score("nodCrack", 3); score("nodCalls", Math.min(6, T.hits));
-          coach = ["GUS", "They're not listening. They're answering."]; phase = "post"; cur = null; draw();
+          sfx("chime"); coach = ["GUS", "They're not listening. They're answering."]; phase = "post"; cur = null; draw();
           later(quorum, 2600);
-        } else { coach = ["GUS", `${T.hits} of ${targets}, ${T.fa} wrong. Again. Slower.`]; phase = "post"; cur = null; draw(); later(predict, 2600); }
+        } else { sfx("bad"); coach = ["GUS", `${T.hits} of ${targets}, ${T.fa} wrong. Again. Slower.`]; phase = "post"; cur = null; draw(); later(predict, 2600); }
       }), 2200);
     }
     function quorum() {
-      onQuorum(); reader = "ETHEL"; coach = ["NELL", "Gus. Quorum isn't moving."]; draw();
+      onQuorum(); sfx("dread"); reader = "ETHEL"; coach = ["NELL", "Gus. Quorum isn't moving."]; draw();
       later(() => { coach = ["GUS", "Nobody's moved to adjourn. So she's reading the next motion."]; draw();
         later(() => run(makeSeq(6), "encore", 27 + Math.floor(Math.random() * 3), null, () => {
           phase = "done"; cur = null; coach = ["NARRATOR", "The meeting continues for forty minutes. The faculty never miss a nod."]; draw();

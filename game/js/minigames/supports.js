@@ -97,6 +97,8 @@ function rat(x, y, s, face, pose) {
 // local points on Morris that touch the bolt: nose (gnaw) and hind foot extended (kick)
 const NOSE = [32, 6], FOOT = [-46, 6], RS = .68;
 
+const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
+
 export function supports(el, { die, score = () => {}, onBolts = () => {} } = {}) {
   css();
   return new Promise(resolve => {
@@ -104,7 +106,7 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
     const S = { bolts: POSTS.map(() => [1, 1, 1]), out: [0, 0, 0, 0], tries: 1, n: 0, lock: false, dying: false, closed: false,
       morris: { x: VX, y: P(VX, FLOOR, .82)[1], k: .82, face: 1, pose: "sit" }, drop: null, floor: [], creak: null, groan: false,
       fall: 0, amb: 0, yellowed: false, rotSeen: false, quip: 0, groanQ: 0, after: 0, done: false, say: LINES.intro[0], q: [] };
-    const timers = []; let qT = null, amb = null;
+    const timers = []; let qT = null, amb = null, spoken = null;
     const later = (ms, f) => timers.push(setTimeout(() => { if (!S.closed) f(); }, ms));
     const wait = (ms) => new Promise(r => later(ms, r));
 
@@ -303,6 +305,7 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
     function drawCoach() {
       const c = el.querySelector(".sup .coachline"); if (!c) return;
       const col = COL[S.say[0]] || "W";
+      if (S.say !== spoken) { spoken = S.say; window.SFX && window.SFX.voice(S.say[0], true); }
       c.innerHTML = `<span class="who" style="background:var(--${col})">${S.say[0]}</span><span style="color:var(--${col})">${S.say[1]}</span>`;
     }
     const setLock = (v) => { S.lock = v; const r = el.querySelector(".sup"); if (r) r.classList.toggle("lock", v || S.done || S.dying); };
@@ -322,23 +325,24 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
       for (let h = 1; h <= 3; h++) {
         Object.assign(m, { x: from.x + (to.x - from.x) * h / 3, y: from.y + (to.y - from.y) * h / 3 - (h < 3 ? 8 : 0), k: from.k + (to.k - from.k) * h / 3,
           face: to.x >= from.x ? 1 : -1, pose: h % 2 ? "walk1" : "walk0" });
-        redrawScene(); await wait(110);
+        redrawScene(); sfx("ratstep"); await wait(110);
       }
       // gnaw or kick: two poses, ~0.6 s
       m.face = to.face; const a = to.kick ? "kick" : "gnaw";
       const bp = P(PX[p], BOLTY[i], PK[p]);
-      for (let j = 0; j < 4; j++) { m.pose = a + (j % 2); S.work = j % 2 ? { x: bp[0], y: bp[1], k: PK[p] } : null; redrawScene(); await wait(150); }
+      for (let j = 0; j < 4; j++) { m.pose = a + (j % 2); S.work = j % 2 ? { x: bp[0], y: bp[1], k: PK[p] } : null; redrawScene(); if (j % 2) sfx(a); await wait(150); }
       m.pose = a + "0"; S.work = null;
       // the bolt drops through fixed positions to the floor
       const X = PX[p], k = PK[p], b = P(X, BOLTY[i], k), fl = P(X + (p % 2 ? -1 : 1) * (18 + i * 13), FLOOR, Math.min(1, k + .03 + (i % 2) * .03));
       S.fall = { p, i, x: b[0], y: b[1], k, fx: fl[0], fy: fl[1] - 2, step: 0 };
       S.bolts[p][i] = 0;
       for (let st = 0; st < 3; st++) { S.fall.step = st; redrawScene(); await wait(90); }
-      S.floor.push({ x: fl[0], y: fl[1] - 2, k, a: (i * 37 + p * 11) % 30 - 15 }); S.fall = null;
+      S.floor.push({ x: fl[0], y: fl[1] - 2, k, a: (i * 37 + p * 11) % 30 - 15 }); S.fall = null; sfx("bolt");
       S.out[p]++; S.n++; onBolts(bstr());
       const M = mag(), total = S.out.reduce((x, y) => x + y, 0);
       S.groan = total >= 9; S.creak = { p };
       if (M >= RED) { await dropEarly(); return; }
+      sfx(M >= YELLOW && !S.yellowed ? "creak" : S.groan ? "groan" : "creak2", { m: M });
       draw();
       later(900, () => { S.creak = null; redrawScene(); });
       if (total === 12) { finishRun(); return; }
@@ -352,7 +356,7 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
     async function dropEarly() {
       S.dying = true; S.creak = null; S.drop = { stage: 0, T: tilt() };
       say(["MORRIS", "Uh-oh. Pal? PAL?"]);
-      for (const st of [1, 2, 3]) { S.drop.stage = st; draw(); await wait(st === 1 ? 520 : 260); }
+      for (const st of [1, 2, 3]) { S.drop.stage = st; draw(); if (st === 1) sfx("crack"); if (st === 3) sfx("crash"); await wait(st === 1 ? 520 : 260); }
       await wait(500);
       if (S.closed) return;
       if (die) await die(DEATH); else await wait(1200);
@@ -367,7 +371,7 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
     function finishRun() {
       S.done = true; S.lock = false;
       Object.assign(S.morris, { x: VX, y: P(VX, FLOOR, .82)[1], k: .82, face: 1, pose: "sit" });
-      score("supports", Math.max(1, 5 - S.tries));
+      score("supports", Math.max(1, 5 - S.tries)); sfx("chime");
       draw(); say(...LINES.done);
     }
 

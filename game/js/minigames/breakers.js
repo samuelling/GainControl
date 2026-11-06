@@ -53,11 +53,13 @@ function hand(str, x, y, h, rot = 0, cls = "sA") {
   return `<g transform="translate(${x},${y}) rotate(${rot}) skewX(-16)">${seg(str, 0, 0, h, cls, .85)}</g>`;
 }
 
+const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
+
 export function breakers(el, { score = () => {}, onBreak = () => {} } = {}) {
   css();
   return new Promise(resolve => {
     const S = { up: "", tries: 1, spark: null, sp: 0, lock: false, charge: 0, charging: false, done: false, say: LINES.intro, bad: 0 };
-    const timers = [];
+    const timers = []; let spoken = null;
     const later = (ms, f) => timers.push(setTimeout(f, ms));
 
     function page() {
@@ -138,6 +140,7 @@ export function breakers(el, { score = () => {}, onBreak = () => {} } = {}) {
     }
     function draw() {
       const col = "V";
+      if (S.say !== spoken) { spoken = S.say; window.SFX && window.SFX.voice(S.say[0], true); }
       el.innerHTML = `<div class="screen brk ${S.lock || S.done || S.charging ? "lock" : ""}">
         <svg class="t hd" viewBox="0 0 640 40">${seg("THE COLD START", 16, 10, 18, "sW", 1.6)}${seg("B3  POWER PLANT  1968 MAGNET SUPPLY", 206, 17, 5, "sM", .8)}</svg>
         <svg class="t brksvg" viewBox="0 0 640 276">
@@ -153,26 +156,26 @@ export function breakers(el, { score = () => {}, onBreak = () => {} } = {}) {
     function throwIt(L) {
       if (S.lock || S.done || S.charging || S.up.includes(L)) return;
       const want = ORDER[S.up.length];
-      S.up += L; onBreak(S.up);
+      S.up += L; onBreak(S.up); sfx("clunk");
       if (L === want) {
-        S.say = LINES.ok[L]; draw();
+        S.say = LINES.ok[L]; draw(); if (L === "B") sfx("mgset");
         if (S.up.length === 6) charge();
         return;
       }
       // wrong: spark (poses), then everything drops
-      S.lock = true; S.spark = L; S.sp = 0; draw();
+      S.lock = true; S.spark = L; S.sp = 0; draw(); sfx("zap");
       const trap = L === "F" && !S.up.slice(0, -1).includes("C");
-      [1, 2, 3, 4].forEach(k => later(130 * k, () => { S.sp = k; draw(); }));
+      [1, 2, 3, 4].forEach(k => later(130 * k, () => { S.sp = k; draw(); if (k === 2) sfx("spark"); if (k === 3) sfx("powerdown"); }));
       later(700, () => {
-        S.spark = null; S.up = ""; S.tries++; S.lock = false; onBreak("");
+        S.spark = null; S.up = ""; S.tries++; S.lock = false; onBreak(""); sfx("thud");
         S.say = trap ? LINES.trap : LINES.bad[S.bad++ % LINES.bad.length]; draw();
       });
     }
     function charge() {
       S.charging = true;
-      later(900, () => { S.say = LINES.charging; draw(); });
-      for (let k = 1; k <= 10; k++) later(900 + k * 260, () => { S.charge = k; draw(); });
-      later(900 + 11 * 260, () => { S.charging = false; S.done = true; S.say = LINES.done; score("breakers", Math.max(1, 5 - S.tries)); draw(); });
+      later(900, () => { S.say = LINES.charging; draw(); sfx("whine"); });
+      for (let k = 1; k <= 10; k++) later(900 + k * 260, () => { S.charge = k; draw(); sfx("cite"); });
+      later(900 + 11 * 260, () => { S.charging = false; S.done = true; S.say = LINES.done; sfx("chime"); score("breakers", Math.max(1, 5 - S.tries)); draw(); });
     }
     const onClick = (e) => {
       const b = e.target.closest && e.target.closest("button[data-b]"); if (b) { finish(); return; }

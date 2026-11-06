@@ -159,7 +159,7 @@ async function stairs(api) {
   return null;
 }
 async function impactFound(api) {
-  api.flag("impactDead", true); api.G.bodies = 3; api.refresh();
+  api.flag("impactDead", true); api.G.bodies = 3; api.refresh(); api.sfx("sting"); api.sfx("hiss");
   await api.say("The −80 room. The walk-in at the back is open, fog spilling out across the floor.\n\nProf. Maximilian Impact is inside it. Standing. Mid-stride. Neck pillow on. Frozen solid next to a box labeled DO NOT THAW.");
   return "c:smallFreezer";
 }
@@ -308,7 +308,7 @@ export const HS = {
     bricked: { label: "bricked-up doorway", night: { look: "The bricked door. Tonight there's a gap at the bottom, one brick wide, and light behind it.",
         use: (api) => api.has("robe") ? api.die("Gus pulls the robe over his head and puts his eye to the gap. A hooded face on the other side, very close.\n\n'Welcome, member. Your gain has been adjusted.'") : "Gus doesn't knock. Not this time." } },
     rack: { label: "coat check", night: { look: "A coat check, here, in a steam tunnel. A rack of hooded robes on numbered hooks. One has a small round pin, lit red: the robe from Gus's photo on Monday.",
-        use: (api) => { if (api.has("robe") || api.flag("robeLeft")) return "One's enough."; api.give("robe"); api.flag("gotRobe4", true); api.score("tookRobe", 2);
+        use: (api) => { if (api.has("robe") || api.flag("robeLeft")) return "One's enough."; api.sfx("cloth"); api.give("robe"); api.flag("gotRobe4", true); api.score("tookRobe", 2);
           return "Gus takes the robe with the pin. Inside the collar, a laundry tag: 0412.\n\nThe same seed as the paper mill. The Table does its laundry and its science on the same schedule."; } } },
     reel: { label: "reel", night: { look: "A reel-to-reel tape on a hook: PANEL SCORES 1983.", use: (api) => { api.give("reel"); api.flag("gotReel", true); api.refresh(); api.score("gotReel", 2); return "Gus takes the reel."; } } },
     map: { label: "map", night: { look: "A hand-drawn map pinned to the rack: the steam tunnels, with a room past the bricked door. B3. Circled.", use: (api) => { api.give("map"); api.flag("gotMap4", true); api.refresh(); api.score("gotMap4", 2); return "Gus takes the map. On the back, he writes: Tomorrow. Bring the rat. —G."; } } },
@@ -411,7 +411,7 @@ async function nightfall(api) {
 async function dawn(api) {
   await api.say("Gus goes down to the 3T for his 2:30 scan. He texts Nell one more time from the control room: 'robe's on your chair. check the tube. scanning now. it's fine. it's always fine at 2am.'\n\nIt's the last text.");
   await api.card("FRIDAY", "06:40", "MRI CONTROL  B1", "fR", 3200);
-  api.G.bodies = 5;
+  api.G.bodies = 5; api.sfx("scanner");
   api.shift({ mode: "morning", char: "nell", room: "mri", entry: "morning", min: 400, cast: ["nell"] });
   await api.say("Gus Ian was found at 6:15 by the morning tech.\n\nHe is in the 3T. The scan is still running.");
 }

@@ -45,7 +45,7 @@ export const CONVOS = {
     ["L", "…Preston?"],
     ["R", "Anyway! I ran every subject myself. Gotta network. Ciao!"],
     ["N", "Your voice memo recorder caught that. One (1) suspicious non-answer."],
-  ], after: (api) => { api.flag("recorded", true); api.status("RECORDING", 3500); } },
+  ], after: (api) => { api.flag("recorded", true); api.status("RECORDING", 3500); api.sfx("tape"); } },
 
   iris: { L: "nell", R: "iris", score: ["iris", 2], lines: [
     ["R", "Young lady."], ["L", "Me?"], ["R", "Ask him who reviewed it."], ["L", "Who reviewed… his paper?"],
@@ -99,7 +99,7 @@ export const CONVOS = {
 /* ---------------- hotspots, by room → id → shift ---------------- */
 const tubeDay = { look: "The building's old pneumatic tube. A canister just went by, marked B3.\n\nThere is no B3.", use: "Empty. A sticker inside the hatch reads B3. There is no B3.", score: { look: ["tube", 1] } };
 const tubeNight = { look: "The canisters are rattling. Going down. Past the basement.\n\nThere is no \"past the basement.\"",
-  use: (api) => { api.flag("listened", true); return "Gus puts his ear to the pipe. Canister after canister, going down. Under the rattle, something like voices.\n\nChanting? No. Probably the boiler."; },
+  use: (api) => { api.flag("listened", true); api.sfx("tube"); return "Gus puts his ear to the pipe. Canister after canister, going down. Under the rattle, something like voices.\n\nChanting? No. Probably the boiler."; },
   score: { use: ["tubeN", 1] } };
 
 export const HS = {
@@ -127,7 +127,7 @@ export const HS = {
     robe: { label: "hooded robe", night: {
       look: "A hooded robe, draped over a chair. A small round pin on the chest: a circle around a smaller circle, lit red.\n\nSomeone left it here. Like they'll be back for it.",
       use: (api) => { if (api.flag("robePhoto")) return "Gus already has the pictures. He does not want more time alone with the robe."; api.flag("robePhoto", true); api.score("robe", 2);
-        return "Gus photographs the robe: the hood, the pin, the hem. Inside the collar, a laundry tag: No. 0412, from a dry cleaner that closed in 1979.\n\nHe sends them to Nell. DELIVERED.\n\nHe leaves the robe exactly where it was. Whoever left it will notice if it moves."; } } },
+        api.sfx("shutter"); return "Gus photographs the robe: the hood, the pin, the hem. Inside the collar, a laundry tag: No. 0412, from a dry cleaner that closed in 1979.\n\nHe sends them to Nell. DELIVERED.\n\nHe leaves the robe exactly where it was. Whoever left it will notice if it moves."; } } },
   },
 
   hall: {

@@ -83,10 +83,12 @@ function paper(feudWith) {
 export const _paper = paper; // for tests
 const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
+const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
+
 export function fogNeuro(el, { canPrint = true } = {}) {
   return new Promise(resolve => {
     const out = { generated: 0, sources: false, feud: false, printed: false };
-    let cur = null, rival = null, showSources = false, status = "", splash = 0, cites = 0;
+    let cur = null, rival = null, showSources = false, status = "", splash = 0, cites = 0, ticks = 0;
     function figure(p) {
       // a sagittal brain in line, with an implausibly perfect blob
       const bx = 60 + (p.B.length * 7) % 60, by = 46 + (p.f.length * 5) % 26;
@@ -117,14 +119,14 @@ export function fogNeuro(el, { canPrint = true } = {}) {
       el.innerHTML = h;
     }
     function act(b) {
-      if (b === "gen") { cur = paper(); rival = null; out.generated++; showSources = false; status = ""; cites = 0; splash = 1; }
-      if (b === "feud" && cur) { rival = paper(cur); out.feud = true; }
-      if (b === "src" && cur) { showSources = !showSources; out.sources = out.sources || showSources; }
-      if (b === "print" && cur && !out.printed) { status = "PRINTING ((( )))"; draw(); setTimeout(() => { out.printed = true; out.paper = cur; status = "PRINTED."; draw(); }, 900); return; }
+      if (b === "gen") { cur = paper(); rival = null; out.generated++; showSources = false; status = ""; cites = 0; splash = 1; ticks = 0; sfx("compute"); }
+      if (b === "feud" && cur) { rival = paper(cur); out.feud = true; ticks = 0; sfx("compute"); sfx("stamp"); }
+      if (b === "src" && cur) { showSources = !showSources; sfx("select"); out.sources = out.sources || showSources; }
+      if (b === "print" && cur && !out.printed) { status = "PRINTING ((( )))"; draw(); sfx("printer"); setTimeout(() => { out.printed = true; out.paper = cur; status = "PRINTED."; sfx("paper"); draw(); }, 900); return; }
       if (b === "off") { finish(); return; }
       draw();
     }
-    const tick = setInterval(() => { if (cur) { cites += 1 + Math.floor(Math.random() * 3); const c = el.querySelectorAll(".cites");
+    const tick = setInterval(() => { if (cur) { cites += 1 + Math.floor(Math.random() * 3); if (ticks++ < 20) sfx("cite"); const c = el.querySelectorAll(".cites");
       c.forEach((x, i) => x.textContent = "CITED BY " + ((i ? rival : cur).cites + cites)); }
       if (splash > 0) { splash--; draw(); } }, 600);
     const onClick = (e) => { const b = e.target.closest && e.target.closest("button[data-b]"); if (b && !b.disabled) act(b.dataset.b); };

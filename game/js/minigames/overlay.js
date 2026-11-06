@@ -26,8 +26,11 @@ const LINES = {
   after: ["GUS", "Two subjects, one brain, flipped. That's not a mistake, Nell. That's a choice."],
 };
 
+const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
+
 export function overlay(el, { score = () => {} } = {}) {
   return new Promise(resolve => {
+    let spoken = null;
     const S = { t: [1, true], moves: 0, say: LINES.intro, matched: false };
     const same = () => S.t[0] === 0 && !S.t[1];
     function fig(x, cls, t, label, col) {
@@ -35,6 +38,7 @@ export function overlay(el, { score = () => {} } = {}) {
         <g class="${cls}" transform="${t}">${PANEL}</g>${seg(label, 0, 112, 6, col, .9)}</g>`;
     }
     function draw() {
+      if (S.say !== spoken) { spoken = S.say; window.SFX && window.SFX.voice(S.say[0], true); }
       const m = same(), oc = m ? "ovG" : "";
       el.innerHTML = `<div class="screen ovl">
         <svg class="t hd" viewBox="0 0 640 40">${seg("FIGURE 3", 16, 10, 18, "sW", 1.6)}${seg("LAMINAR RESPONSE PROFILES  TWO INDEPENDENT PARTICIPANTS", 170, 17, 5, "sM", .8)}</svg>
@@ -55,8 +59,8 @@ export function overlay(el, { score = () => {} } = {}) {
     function act(b) {
       if (b === "off") { finish(); return; }
       if (S.matched) return;
-      S.t = b === "rot" ? ROT(S.t) : b === "h" ? FLIPH(S.t) : FLIPV(S.t); S.moves++;
-      if (same()) { S.matched = true; S.say = LINES.match; score("overlay", 3); setTimeout(() => { S.say = LINES.after; draw(); }, 2200); }
+      S.t = b === "rot" ? ROT(S.t) : b === "h" ? FLIPH(S.t) : FLIPV(S.t); S.moves++; sfx(b === "rot" ? "whoosh" : "flip");
+      if (same()) { S.matched = true; S.say = LINES.match; sfx("chime"); score("overlay", 3); setTimeout(() => { S.say = LINES.after; draw(); }, 2200); }
       else S.say = S.moves === 1 ? LINES.how : (S.t[1] ? LINES.how : LINES.close);
       draw();
     }

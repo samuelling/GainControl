@@ -156,6 +156,8 @@ const CSS = `
 function css() { if (document.getElementById("css-defense")) return; const s = document.createElement("style"); s.id = "css-defense"; s.textContent = CSS; document.head.appendChild(s); }
 
 /* ---------------- the module ---------------- */
+const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
+
 export function defense(el, { evidence = ALL, score = () => {} } = {}) {
   css();
   const hand = ALL.filter(id => (evidence || []).includes(id));
@@ -255,6 +257,7 @@ export function defense(el, { evidence = ALL, score = () => {} } = {}) {
     // mouths flap in poses while someone speaks; portraits blink now and then
     function flap() {
       const who = S.say && S.say[0], talking = Date.now() < talkUntil;
+      if (talking && who) window.SFX && window.SFX.voice(who);
       el.querySelectorAll("svg.pt").forEach(p => {
         if (p.dataset.pt === who && talking) p.classList.toggle("mo"); else p.classList.remove("mo");
         if (Math.random() < .03) { p.classList.add("bl"); setTimeout(() => p.classList.remove("bl"), 140); }
@@ -274,11 +277,11 @@ export function defense(el, { evidence = ALL, score = () => {} } = {}) {
       S.order.push(id);
       if (w > 0) {
         S.used[id] = ++S.ex; S.usedQ[id] = S.qi; S.got += w;
-        bump(w * 8);
+        bump(w * 8); sfx("deal"); sfx("credup");
         queue(...nellLines(id));
         if (S.got >= 2) solve();
       } else {
-        S.tried[id] = true; S.wrongN++; bump(-6); S.flash = id;
+        S.tried[id] = true; S.wrongN++; bump(-6); S.flash = id; sfx("deal"); sfx("creddown"); sfx("harrumph");
         const answeredBefore = Q.slice(0, S.qi).some(qq => qq.w[id]);
         let r = SPECIAL[q.key + ":" + id];
         if (!r && answeredBefore) r = LATE;
@@ -290,15 +293,15 @@ export function defense(el, { evidence = ALL, score = () => {} } = {}) {
       const q = Q[S.qi];
       if (q.last) { finale(); return; }
       S.answered++;
-      queue(...q.ok, () => { S.qi++; S.got = 0; S.tried = {}; S.delta = 0; }, ...Q[S.qi + 1].ask);
+      queue(...q.ok, () => { S.qi++; S.got = 0; S.tried = {}; S.delta = 0; sfx("gavel"); }, ...Q[S.qi + 1].ask);
     }
     function moveOn() {
       if (S.busy || S.end) return;
       const q = Q[S.qi];
       if (q.last) { finale(); return; }
-      bump(S.got ? -4 : -10); S.skipped[S.qi] = true;
+      bump(S.got ? -4 : -10); S.skipped[S.qi] = true; sfx("creddown"); sfx("harrumph");
       queue([q.who, S.got ? "Partially supported. The committee notes it. The committee is not thrilled." : "Unsupported. The committee notes that. In pen."],
-        () => { S.qi++; S.got = 0; S.tried = {}; S.delta = 0; }, ...Q[S.qi + 1].ask);
+        () => { S.qi++; S.got = 0; S.tried = {}; S.delta = 0; sfx("gavel"); }, ...Q[S.qi + 1].ask);
     }
     function finale() {
       S.end = true; S.answered = Math.min(S.answered, 4);
@@ -306,7 +309,7 @@ export function defense(el, { evidence = ALL, score = () => {} } = {}) {
         ["ETHEL", "Extraordinary claims, Ms. Null."],
         ["SMALL", "Show me N."],
         ["NELL", "Then I'll give you one ordinary claim. The paper, the review and the theft have one author."],
-        () => { S.named = true; S.delta = 0; score("defense", Math.round(S.cred / 10)); },
+        () => { S.named = true; S.delta = 0; sfx("sting"); score("defense", Math.round(S.cred / 10)); },
         ["NELL", "Preston Valu."]);
     }
 
@@ -333,7 +336,7 @@ export function defense(el, { evidence = ALL, score = () => {} } = {}) {
     }
     el.classList.add("show");
     el.addEventListener("click", onClick); el.addEventListener("mouseover", onOver); window.addEventListener("keydown", onKey);
-    flapT = setInterval(flap, 130);
+    flapT = setInterval(flap, 130); sfx("gavel");
     queue(["ADLINE", "Nell. I've read the abstract. Twice. Which is twice more than I've read anything since the 1st."],
       ["ETHEL", "The committee will evaluate evidence, Ms. Null. Exhibits only. I've prepared a binder for the binder."],
       ["SMALL", "I'm here because the Chair died. Allegedly. Don't mind me. I'm just counting."],

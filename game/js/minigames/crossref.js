@@ -83,11 +83,13 @@ const CSS = `
 `;
 function css() { if (document.getElementById("css-crossref")) return; const s = document.createElement("style"); s.id = "css-crossref"; s.textContent = CSS; document.head.appendChild(s); }
 
+const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
+
 export function crossref(el, { score = () => {} } = {}) {
   css();
   return new Promise(resolve => {
     const S = { tr: {}, prog: {}, last: -1, n: 0, zoom: 0, revealed: false, say: ["ETHEL", "The reels, transcribed. I've been up since four. I had to buy new binders. Plural."], q: [], auto: false };
-    const timers = []; let qT = null;
+    const timers = []; let qT = null, spoken = null;
     const later = (ms, f) => timers.push(setTimeout(f, ms));
     function say(...lines) { S.q = lines; clearTimeout(qT); nextLine(); }
     function nextLine() { qT = null; if (!S.q.length) return; S.say = S.q.shift(); renderCoach(); qT = setTimeout(nextLine, Math.max(2400, 48 * S.say[1].length)); }
@@ -157,6 +159,7 @@ export function crossref(el, { score = () => {} } = {}) {
     }
     function renderCoach() {
       const c = el.querySelector(".xr .coachline"); if (!c) return; const col = COL[S.say[0]] || "W";
+      if (S.say !== spoken) { spoken = S.say; window.SFX && window.SFX.voice(S.say[0], true); }
       c.innerHTML = `<span class="who" style="background:var(--${col})">${S.say[0]}</span><span style="color:var(--${col})">${S.say[1]}</span>`;
     }
     const layer = (cls, html) => { const g = el.querySelector(".xr ." + cls); if (g) g.innerHTML = html; };
@@ -164,10 +167,10 @@ export function crossref(el, { score = () => {} } = {}) {
 
     function trace(m, fast = false) {
       if (S.tr[m] !== undefined || S.zoom) return;
-      S.tr[m] = S.n++; S.last = m; S.prog[m] = 0;
+      S.tr[m] = S.n++; S.last = m; S.prog[m] = 0; if (!fast) sfx("select");
       const ms = matches(m);
       layer("xn", names()); status();
-      ms.forEach((_, k) => later((fast ? 25 : 70) * (k + 1), () => { S.prog[m] = k + 1; layer("xl", lines()); }));
+      ms.forEach((_, k) => later((fast ? 25 : 70) * (k + 1), () => { S.prog[m] = k + 1; layer("xl", lines()); if (!fast) sfx("pen", { k }); }));
       if (fast) return;
       const n = S.n;
       if (n === 1) say(["NELL", m === 0 ? "Quorum. Eight rows. Fifty years of panels, from a man who's been thirty-nine since 1979." : "Every time the name comes up again, a line."]);
@@ -180,9 +183,9 @@ export function crossref(el, { score = () => {} } = {}) {
       say(["NELL", "Wait. Step back."]);
       MEMBERS.forEach((_, m) => { if (S.tr[m] === undefined) trace(m, true); });
       layer("xn", names()); status();
-      [1, 2, 3, 4, 5, 6].forEach(p => later(1100 + p * 320, () => { S.zoom = p; draw(); }));
+      [1, 2, 3, 4, 5, 6].forEach(p => later(1100 + p * 320, () => { S.zoom = p; draw(); if (p === 4) sfx("swell"); }));
       later(1100 + 7 * 320, () => {
-        S.revealed = true; score("crossref", 3); draw();
+        S.revealed = true; score("crossref", 3); sfx("chime"); draw();
         say(["NELL", "It's a brain. Fifty years of peer review, and it's one brain."],
           ["IRIS", "One brain, thinking one thought, for fifty years. The rolls along the middle. Every panel on the surface."],
           ["IRIS", "I'm on there once, you know. 1976. They never asked me back."],

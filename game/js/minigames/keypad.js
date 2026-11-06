@@ -34,8 +34,8 @@ export function keypad(el, code, lit = []) {
       if (k === "*" || k === "#") { entry = ""; draw(); return; }
       entry += k; draw();
       if (entry.length === code.length) {
-        if (entry === code) { flash = "OPEN"; draw(); setTimeout(() => finish(true), 700); }
-        else { flash = "DENIED"; draw(); setTimeout(() => { flash = ""; entry = ""; draw(); }, 700); }
+        if (entry === code) { flash = "OPEN"; draw(); window.SFX && window.SFX.play("good"); setTimeout(() => finish(true), 700); }
+        else { flash = "DENIED"; draw(); window.SFX && window.SFX.play("bad"); setTimeout(() => { flash = ""; entry = ""; draw(); }, 700); }
       }
     }
     const onClick = (e) => { const b = e.target.closest && e.target.closest("[data-key]"); if (b) press(b.dataset.key); };
