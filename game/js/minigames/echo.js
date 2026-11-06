@@ -4,7 +4,7 @@
 // Silence is correct otherwise. Nobody ever calls it a dual 2-back.
 //
 //   echo(el, { mode: "rehearsal" | "induction", pace, seed, score, die, onSeat, onTurn, blip, morris })
-//     rehearsal → { passed: true, dprime, hits, misses, fa, cr, restarts }  (Iris's office: three drills, can't fail)
+//     rehearsal → { passed: true, dprime, hits, misses, fa, cr, restarts }  (Iris's office: two drills, phrases then both, can't fail)
 //     induction → { passed: true, dprime, advanced, hits, misses, fa, cr, tries }  (B3: hoods turn; three = death)
 //     either    → { passed: false, quit: true } if the player leaves with Esc, Esc.
 //
@@ -575,7 +575,7 @@ const DRILLS = {
   B: { name: ["DRILL 2", "THE CHAIRS"], streams: { phrase: false, seat: true }, base: .9, catches: ["canister", "misfire"], between: ["kettle"],
     legs: [{ len: 7, tempo: [1, 1, .85, .75, .7, 1.4, 1.5], cue: { 3: "fast", 5: "slow" } },
       { len: 6, tempo: [1.3, 1, .82, .72, .7, 1], cue: { 2: "fast" } }] },
-  C: { name: ["DRILL 3", "BOTH AT ONCE"], streams: { phrase: true, seat: true }, base: 1.05, catches: ["sneeze", "phone", "kettle"], between: ["toast"],
+  C: { name: ["DRILL 2", "BOTH AT ONCE"], streams: { phrase: true, seat: true }, base: 1.05, catches: ["sneeze", "phone", "kettle"], between: ["toast"],
     legs: [{ len: 7, set: "GRANT", tempo: [1, 1, .9, .82, .78, 1.35, 1.4], cue: { 3: "fast", 5: "slow" } },
       { len: 7, set: "TOAST", tempo: [1.2, 1, .9, .84, .8, .8, 1], cue: { 3: "fast" } }] },
 };
@@ -914,14 +914,12 @@ export function echo(el, opts = {}) {
       await interlude([card("THE REHEARSAL", "DRILL 1", "THE PHRASES")]);
       await drill("A");
       score("echoPhrases", 2); S.len = 0; await talk(R.passA);
+      // the chairs are taught, not drilled: a worked example, then straight into both at once
       S.stage = "B"; S.chair = 2; S.set = null; await talk(R.introB);
       await lesson("seat");
-      await interlude([card("THE REHEARSAL", "DRILL 2", "THE CHAIRS")]);
-      await drill("B");
-      score("echoChairs", 2); S.len = 0; await talk(R.passB);
       S.stage = "C"; await walkTo(2); await talk(R.introC);
       await lesson("both");
-      await interlude([card("THE REHEARSAL", "DRILL 3", "BOTH AT ONCE")]);
+      await interlude([card("THE REHEARSAL", "DRILL 2", "BOTH AT ONCE")]);
       await drill("C");
       score("echoBoth", 2); S.len = 0; S.set = null; await walkTo(2); await talk(R.passC);
       await lesson("three");

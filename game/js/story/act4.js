@@ -456,7 +456,7 @@ async function dawn(api) {
   api.shift({ mode: "morning", char: "nell", room: "mri", entry: "morning", min: 400, cast: ["nell"] });
   await api.say("Gus Ian was found at 6:15 by the morning tech.\n\nHe is in the 3T. The scan is still running.");
 }
-export const MAXSCORE = 96;
+export const MAXSCORE = 94;
 export const TITLE = ["ACT IV", "REBUTTAL"];
 export const END = { title: "END OF ACT IV", chip: "REBUTTAL", bodies: "BODIES 05.", next: "NEXT: FRIDAY.  ACT V  DECISION",
   epilogue: "Friday. 2 PM: Nell Null, thesis defense. 3 PM: Preston Valu, job talk. Midnight: an induction.\n\nShe's going to all three.",
