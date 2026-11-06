@@ -137,7 +137,7 @@ async function vent(api) {
 }
 const ventHS = { label: "vent", morris: { look: "A vent. Morris's highway.", use: vent }, day: { look: "A vent. Morris-sized." }, night: { look: "A vent." }, morning: { look: "A vent." } };
 async function codyFound(api) {
-  api.flag("codyDead", true); api.G.bodies = 4; api.refresh();
+  api.flag("codyDead", true); api.G.bodies = 4; api.refresh(); api.sfx("splash");
   await api.say("The animal facility. The water maze, lit from above.\n\nCody Credit is floating in it, face down, backwards cap still on. He did not locate the hidden platform.");
   return "MORRIS|…Pal. PAL. I saw them. I saw the end of it. I have to tell Nell.";
 }
@@ -317,7 +317,7 @@ export const HS = {
       if (api.flag("canister4")) return "Empty.";
       if (!api.flag("canisterLive")) return "Empty. Wait for a rattle.";
       api.flag("canisterLive", false); api.flag("canister4", true); api.refresh();
-      await api.readout(NOTE4(), "INDUCTION. FRIDAY. 00:00. B3. BRING THE QUARRY.");
+      api.sfx("tube"); await api.readout(NOTE4(), "INDUCTION. FRIDAY. 00:00. B3. BRING THE QUARRY.");
       api.score("canister4", 2);
       return "GUS|Friday. Tomorrow.\n\nGUS|Bring the quarry. They mean Nell.\n\nGUS|Then I'll bring her first."; } } },
     pipes: { label: "pipes", night: look("The chilled-water line, tapped into the brick.") }, valve: { label: "big red valve", night: look("Don't.") },
@@ -372,7 +372,7 @@ async function chase(api) {
   await api.say("The hallway. At the far end, by the Rising Stars wall: Preston.\n\nHe isn't networking. He isn't smiling. His earbuds are lit, and he is walking toward you at exactly the speed of someone who has been told to.");
   await api.say("PRESTON|The authors should consider withdrawing the manuscript.");
   await api.say("The kitchen door bangs open.\n\nREX|Preston, buddy! Have you met my coffee?\n\nBehind Preston, a hooded figure raises a steel dewar. A white plume. Rex goes down in a cloud of liquid nitrogen.");
-  await api.say("REX (FROM THE FLOOR, FROSTED)|I'm fine. Nine years of postdoc. I'm already frozen inside. RUN, NELL.\n\nVents in the ceiling begin to hiss. Fog. Thick, sweet, cheap. You run for the stairwell.");
+  api.sfx("hiss"); await api.say("REX (FROM THE FLOOR, FROSTED)|I'm fine. Nine years of postdoc. I'm already frozen inside. RUN, NELL.\n\nVents in the ceiling begin to hiss. Fog. Thick, sweet, cheap. You run for the stairwell.");
   let r = null;
   do r = await api.mini(stairwell, { score: api.score, die: dieKeep(api) }, "glmwrap"); while (!r || !r.escaped);
   G.flags.escaped = true; api.score("escaped", 3);

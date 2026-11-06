@@ -277,7 +277,7 @@ export const HS = {
       morris: { look: "A bundle of warm wires behind the console. One is labeled HE LEVEL SENSOR.",
         use: (api) => { if (api.flag("heliumAlarm")) return "Already chewed. Morris has standards.";
           if (api.flag("clueCalendar")) return "Morris has done enough damage here. Probably.";
-          api.flag("heliumAlarm", true); api.score("wires", 2); api.refresh();
+          api.flag("heliumAlarm", true); api.score("wires", 2); api.refresh(); api.sfx("alarm");
           return "Morris chews. A spark. Alarms: ((( HELIUM LOW )))\n\nTESS|MY HELIUM!\n\nTess sprints into the magnet room. The calendar sits unguarded. Now switch back to Nell."; } } },
     vent: ventHS,
     cody: { label: "Cody",

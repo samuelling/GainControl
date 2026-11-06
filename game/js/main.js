@@ -15,6 +15,7 @@ import { PORTRAITS_A } from "./cast/act3a.js";
 import { PORTRAITS_B } from "./cast/act3b.js";
 import { keypad } from "./minigames/keypad.js";
 import { fogNeuro } from "./minigames/fogneuro.js";
+import { sfx } from "./sfx.js";
 import { applyOverrides, rewriteSay, jumpFromHash } from "./tools/overrides.js";
 import seminar from "./rooms/seminar.js";
 import hall from "./rooms/hallway.js";
@@ -81,6 +82,7 @@ function restore() {
   const s = JSON.parse(checkpoint);
   SAVE_KEYS.forEach(k => G[k] = s[k]); G.scored = new Set(s.scored); G.using = null; G.status = "";
   frame.classList.toggle("night", G.mode === "night");
+  sfx.play("revise");
   loadRoom(G.room, null, s.actor);
 }
 
@@ -107,7 +109,9 @@ function entryPos(entry) {
   return R().entries[entry] || Object.values(R().entries)[0];
 }
 function loadRoom(id, entry, pos) {
+  if (G.room !== id && entry && entry !== "start") sfx.play(entry === "vent" ? "ratstep" : "door");
   G.room = id; G.chooser = null;
+  sfx.ambience(id, G.mode);
   const a = G.actor, e = pos ? [pos.x, pos.y, pos.dir] : entryPos(entry);
   Object.assign(a, { x: e[0], y: e[1], dir: e[2], tx: e[0], ty: e[1], walking: false, cb: null });
   build();
@@ -165,6 +169,8 @@ function hud() {
   s += seg("BODIES", 462, 300, 4.2, "sR", .8) + seg(String(G.bodies).padStart(2, "0"), 462, 308, 20, "sR", 1.4);
   s += chip(G.status || R().name, 522, 300, 5.5, G.status === "RECORDING" ? "fR" : night ? "fG" : "fB");
   s += seg(ACT().TITLE[0], 522, 324, 4.2, "sM", .8) + seg(ACT().TITLE[1], 522, 333, 7, "sW", 1.1);
+  const snd = sfx.muted ? "SOUND OFF" : "SOUND ON";
+  s += `<g data-mute style="cursor:pointer">${seg(snd + "  M", 522, 347, 3.6, sfx.muted ? "sD" : "sM", .7)}<rect x="518" y="343" width="70" height="12" fill="transparent"/></g>`;
   h.innerHTML = s;
 }
 
@@ -172,11 +178,8 @@ function hud() {
  *  TEXT: narration, conversations, sound
  * ================================================================ */
 let actx;
-function blip(fs = [880, 1320]) { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); const t = actx.currentTime;
-  fs.forEach((f, i) => { const o = actx.createOscillator(), g = actx.createGain(); o.type = "square"; o.frequency.value = f;
-    g.gain.setValueAtTime(.0001, t + i * .08); g.gain.exponentialRampToValueAtTime(.04, t + i * .08 + .01); g.gain.exponentialRampToValueAtTime(.0001, t + i * .08 + .1);
-    o.connect(g).connect(actx.destination); o.start(t + i * .08); o.stop(t + i * .08 + .12); }); } catch (e) {} }
-function addScore(key, n) { if (!key || G.scored.has(key)) return; G.scored.add(key); G.score += n; hud(); blip(); }
+function blip(fs = [880, 1320]) { sfx.blip(fs); }
+function addScore(key, n) { if (!key || G.scored.has(key)) return; G.scored.add(key); G.score += n; hud(); sfx.play("score"); }
 const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br>");
 
 function typeInto(el, html, speed, onTick) {
@@ -212,7 +215,7 @@ async function sayOne(who, body) {
   const c = who ? colorOf(who) : "W";
   msg.innerHTML = `${who ? `<span class="who" style="background:var(--${c})">${esc(who)}</span><br>` : ""}<span class="t" style="color:var(--${c})"></span><span class="more">CLICK ▸</span>`;
   msg.classList.add("show");
-  await typeInto($(".t", msg), esc(body), G.mode === "night" ? 24 : 14);
+  await typeInto($(".t", msg), esc(body), G.mode === "night" ? 24 : 14, (on) => { if (on) sfx.voice(who || "NARRATOR"); });
   msg.classList.remove("show"); G.busy = false;
 }
 
@@ -240,7 +243,7 @@ async function speak(c, els, [side, raw, fx]) {
   const scene = $("#preston"); if (fx === "blank" && scene) scene.classList.add("blank");
   let flap = 0;
   await typeInto(txt, esc(text) + (sub ? `<em>${esc(sub)}</em>` : ""), G.mode === "night" ? 24 : 16,
-    (on) => { if (!sp) return; if (on) { if (++flap % 3 === 0) sp.classList.toggle("mo"); } else sp.classList.remove("mo"); });
+    (on) => { if (on) sfx.voice(side === "N" ? "NARRATOR" : (PORTRAIT[c[side]] || PORTRAIT.nell).name); if (!sp) return; if (on) { if (++flap % 3 === 0) sp.classList.toggle("mo"); } else sp.classList.remove("mo"); });
   if (sp) { sp.classList.remove("mo"); sp.classList.remove("blank"); }
   if (scene) scene.classList.remove("blank");
 }
@@ -288,6 +291,7 @@ async function runConvo(key) {
  * ================================================================ */
 const card = $("#card"), readout = $("#readout");
 function showCard(inner, { hold = 0, auto = 2600, buttons = false } = {}) {
+  sfx.play("card");
   return new Promise(resolve => {
     G.busy = true; card.innerHTML = `<rect width="640" height="360" fill="#000"/>${inner}`; card.classList.add("show");
     let done = false; const t0 = Date.now();
@@ -335,7 +339,7 @@ function die(text) {
       <g class="dbtn" data-b="revise"><rect class="fW" x="150" y="300" width="160" height="26"/>${seg("REVISE & RESUBMIT", 230 - segW("REVISE & RESUBMIT", 7) / 2, 309, 7, "s0", 1.2)}</g>
       <g class="dbtn" data-b="withdraw"><rect class="k sW" x="330" y="300" width="160" height="26"/>${seg("WITHDRAW MANUSCRIPT", 410 - segW("WITHDRAW MANUSCRIPT", 7) / 2, 309, 7, "sW", 1.2)}</g>`;
     d.querySelector(".dtxt").innerHTML = esc(text);
-    d.classList.add("show"); blip([330, 220, 160]);
+    d.classList.add("show"); sfx.play("death");
     d.onclick = (e) => { const b = e.target.closest(".dbtn"); if (!b) return;
       d.classList.remove("show"); d.onclick = null; G.busy = false;
       if (b.dataset.b === "revise") { restore(); say("Revised and resubmitted. Reviewer 2 is still out there."); } else { location.hash = ""; location.reload(); }
@@ -363,7 +367,7 @@ function switchTo(c) {
   const p = G.chars[c]; delete G.chars[c];
   G.char = c; G.using = null; closeChooser();
   loadRoom(p.room, null, p);
-  blip([660, 990]);
+  sfx.play("switch");
   const t = ACT().onSwitch && ACT().onSwitch(api, c); if (t) say(t);
 }
 function saveProgress() { try { localStorage.setItem("gaincontrol.act", String(Math.max(G.act, +(localStorage.getItem("gaincontrol.act") || 1)))); } catch (e) {} }
@@ -392,7 +396,8 @@ const api = {
   G, ITEMS,
   flag: (k, v) => { if (v === undefined) return !!G.flags[k]; G.flags[k] = v; },
   has: (id) => Object.values(G.inv).some(l => l.includes(id)),
-  give: (id, who = G.char) => { (G.inv[who] ||= []); if (!G.inv[who].includes(id)) G.inv[who].push(id); hud(); },
+  give: (id, who = G.char) => { (G.inv[who] ||= []); if (!G.inv[who].includes(id)) { G.inv[who].push(id); sfx.play("pickup"); } hud(); },
+  sfx: (name, o) => sfx.play(name, o),
   take: (id) => { for (const m in G.inv) G.inv[m] = G.inv[m].filter(x => x !== id); if (G.using === id) G.using = null; hud(); },
   score: addScore, refresh, say, die, endAct, shift, switchTo, chooseFrom, blip,
   convo: runConvo,
@@ -470,13 +475,13 @@ function openChooser(t, x, y) {
   full += `</g>`;
   const ret = `<circle class="hl sW" cx="${x}" cy="${y}" r="5"/><path class="hl sW" d="M${x - 9},${y} L${x - 6},${y} M${x + 6},${y} L${x + 9},${y} M${x},${y - 9} L${x},${y - 6} M${x},${y + 6} L${x},${y + 9}"/>`;
   const pop = `<g class="pz on" data-g="ch" data-i="0"><circle class="hl dash sW" cx="${x}" cy="${y}" r="${RR - 12}"/></g>`;
-  chooserEl().innerHTML = ret + pop + full;
+  chooserEl().innerHTML = ret + pop + full; sfx.play("pop");
   G.chooser = { t };
   setTimeout(() => { if (G.chooser) chooserEl().querySelectorAll('[data-g="ch"]').forEach(el => el.classList.toggle("on", el.dataset.i === "1")); }, 70);
   hover.classList.remove("show");
 }
 function closeChooser() { const c = chooserEl(); if (c) c.innerHTML = ""; G.chooser = null; }
-function cancelAll() { closeChooser(); if (G.using) { G.using = null; hud(); } }
+function cancelAll() { if (G.chooser || G.using) sfx.play("cancel"); closeChooser(); if (G.using) { G.using = null; hud(); } }
 
 frame.addEventListener("pointermove", (e) => {
   if (G.busy || G.chooser) { hover.classList.remove("show"); return; }
@@ -492,6 +497,11 @@ frame.addEventListener("pointermove", (e) => {
   hover.style.left = lx + "px"; hover.style.top = (e.clientY - r.top + 16) + "px";
 });
 frame.addEventListener("contextmenu", (e) => { e.preventDefault(); if (!G.busy) cancelAll(); });
+// sound: the audio context can only start after a user gesture; M toggles it
+const unlockAudio = () => sfx.unlock();
+window.addEventListener("pointerdown", unlockAudio, true); window.addEventListener("keydown", unlockAudio, true);
+window.addEventListener("keydown", (e) => { if ((e.key === "m" || e.key === "M") && !e.target.closest?.("input,textarea")) { sfx.toggle(); hud(); } });
+frame.addEventListener("pointerdown", (e) => { if (e.target.closest && e.target.closest("[data-mute]")) { e.stopPropagation(); sfx.toggle(); hud(); } }, true);
 window.addEventListener("keydown", (e) => {
   if (G.busy) return;
   if (e.key === "Escape") cancelAll();
@@ -500,7 +510,7 @@ window.addEventListener("keydown", (e) => {
 
 svg.addEventListener("click", (e) => {
   if (G.busy) return;
-  const opt = e.target.closest(".opt");
+  const opt = e.target.closest(".opt"); if (opt) sfx.play("select");
   if (opt) { const t = G.chooser.t; closeChooser(); t.type === "item" ? itemAct(t.id, opt.dataset.opt) : act(t.id, opt.dataset.opt, t.x); return; }
   if (G.chooser) closeChooser();
   const ch = e.target.closest("[data-char]"); if (ch) { switchTo(ch.dataset.char); return; }
@@ -567,7 +577,7 @@ setInterval(() => {
   const a = G.actor; if (!a.walking) return;
   const dx = a.tx - a.x, dy = a.ty - a.y, d = Math.hypot(dx, dy), stepLen = (G.char === "morris" ? 11 : 9) * R().pp.kAtY(a.y) + 3;
   if (d <= stepLen) { a.x = a.tx; a.y = a.ty; a.walking = false; render(); const cb = a.cb; a.cb = null; cb && cb(); return; }
-  a.x += dx / d * stepLen; a.y += dy / d * stepLen; if (Math.abs(dx) > 1) a.dir = dx > 0 ? 1 : -1; a.step++; render();
+  a.x += dx / d * stepLen; a.y += dy / d * stepLen; if (Math.abs(dx) > 1) a.dir = dx > 0 ? 1 : -1; a.step++; sfx.play(G.char === "morris" ? "ratstep" : "step", { room: G.room }); render();
 }, 120);
 
 /* ================================================================ *

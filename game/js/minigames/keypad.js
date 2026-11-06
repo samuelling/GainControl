@@ -29,6 +29,7 @@ export function keypad(el, code, lit = []) {
     }
     function press(k) {
       if (flash) return;
+      window.SFX && window.SFX.play("key");
       if (k === "cancel") return finish(false);
       if (k === "*" || k === "#") { entry = ""; draw(); return; }
       entry += k; draw();

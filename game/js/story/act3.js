@@ -292,7 +292,7 @@ async function monitor(api) {
 async function meeting(api) {
   if (api.flag("quorumDead")) return "The meeting goes on without a chair. Or with one. It's hard to tell.";
   await api.say("You sit. Gus slides in beside you. Quorum raps the table, once.\n\nQUORUM|We'll take New Business at the end. As always. Ethel, the first motion.");
-  const r = await api.mini(nod, { score: api.score, onPose: (i) => api.pose("vote", i), onQuorum: () => { api.flag("quorumDead", true); api.G.bodies = 3; api.refresh(); } }, "nodmode");
+  const r = await api.mini(nod, { score: api.score, onPose: (i) => { api.pose("vote", i); if (i) api.sfx("nod"); }, onQuorum: () => { api.flag("quorumDead", true); api.G.bodies = 3; api.refresh(); } }, "nodmode");
   api.flag("nodDone", true);
   await api.say(`NELL|My d′ was ${r.dprime.toFixed(1)}. Theirs was higher. They weren't even listening.\n\nGUS|They weren't conscious, Nell.`);
   await api.convo("ethelAfter");
@@ -435,7 +435,7 @@ export const HS = {
 
   tunnels: {
     bricked: { label: "bricked-up doorway", night: { talk: overhear, look: "A doorway, bricked up. Scratched into the bricks: a circle seated around a smaller circle. Through the mortar, voices, all together: THE AUTHORS SHOULD CONSIDER… THE AUTHORS SHOULD CONSIDER…",
-        use: (api) => api.die("Gus knocks.\n\nThe chanting stops.\n\nA brick slides out. A hooded face. A voice, kindly: 'The authors are invited to resubmit. In person.'\n\nGus is never seen at 2 AM again.") } },
+        use: (api) => (api.sfx("knock"), api.die("Gus knocks.\n\nThe chanting stops.\n\nA brick slides out. A hooded face. A voice, kindly: 'The authors are invited to resubmit. In person.'\n\nGus is never seen at 2 AM again.")) } },
     tube: { label: "tube line", night: { look: "The pneumatic tube line along the ceiling. It runs toward the bricked door and through it.",
         use: (api) => { if (api.flag("canisterLive")) return "Rattling. Closer. Get the hatch."; api.flag("canisterLive", true); api.refresh();
           return "Gus puts his ear to the tube. Silence. Then, very far away and getting closer: a rattle.\n\nSomething's coming down."; } } },
@@ -443,7 +443,7 @@ export const HS = {
         use: async (api) => {
           if (!api.flag("canisterLive")) return "Gus opens the hatch. Empty tube. He closes it. Better to wait for a rattle.";
           api.flag("hatchOpen", true); api.flag("canisterLive", false); api.refresh();
-          await api.say("Gus throws the hatch open and gets his hand in the tube just as the rattle arrives.\n\nA canister, warm from the run. Black band. Inside, an index card, typed.");
+          api.sfx("tube"); await api.say("Gus throws the hatch open and gets his hand in the tube just as the rattle arrives.\n\nA canister, warm from the run. Black band. Inside, an index card, typed.");
           await api.readout(NOTE(), "THE GRAD STUDENT AND HER LABMATE. BEFORE FRIDAY.");
           api.score("canister", 3);
           await api.say("GUS|…\n\nGUS|Labmate.\n\nGus puts the card in his cardigan, closes the hatch very gently, and walks back the way he came, not quickly, the way you walk past a dog.");
@@ -505,7 +505,7 @@ async function logs(api) {
 export const WITH = {
   "kitchen.espresso": {
     can: (api) => { api.take("can"); api.flag("descaled", true); api.score("descaled", 2); api.refresh();
-      return "You pour Gus's NULL HYPOTHESIS into the water tank.\n\nThe machine gurgles. It fizzes. It makes a sound like a dial-up modem having a breakthrough. Fourteen years of limescale let go at once.\n\nThe DESCALE light goes out. A green one comes on: READY.\n\nREX|…I've been here nine years."; },
+      api.sfx("espresso"); return "You pour Gus's NULL HYPOTHESIS into the water tank.\n\nThe machine gurgles. It fizzes. It makes a sound like a dial-up modem having a breakthrough. Fourteen years of limescale let go at once.\n\nThe DESCALE light goes out. A green one comes on: READY.\n\nREX|…I've been here nine years."; },
     mug: (api) => { if (api.flag("descaled")) return brew(api);
       if (!api.flag("limeWarned")) { api.flag("limeWarned", true); return "REX|Don't. It's been on DESCALE since 2012. Whatever comes out of there is load-bearing."; }
       return api.die("You brew anyway. The machine coughs out one tablespoon of something gray, with a texture.\n\nYou drink it. You have consumed fourteen years of limescale. You are now load-bearing.\n\nREX: I said don't."); },
