@@ -11,7 +11,7 @@
 // chord under it. Off-beat passing tones may step, and are always played short. music.trace() logs every pitched
 // note against its chord so a test can prove it (and /tmp/harm2.mjs checks the tables).
 //
-// THE BANDS. The game opens on a Rhodes (the title and Act I day): the tune on electric piano over syncopated Rhodes
+// THE BANDS. The main menu plays the OP-1 tune. The game opens on a Rhodes (Act I day): the tune on electric piano over syncopated Rhodes
 // chords, a soft bass and a lazy, lightly swung beat. The OP-1 arrives in Act II: the square pluck and its arpeggios
 // over a bossa (rim clave, shaker, marimba answers). Act III day is angular
 // (muted brass with octave leaps, broken beat, woodblocks, brass stabs). Act IV day is restless (a sixteenth-note
@@ -239,8 +239,9 @@ function hold(arr, bar, k, q) { let n = 1; while (k + n < 8 && (arr[bar][k + n] 
 // q (night: the tune on the beats only), bass / drums / comp patterns, compAll (comp under the tune too), swing,
 // angular (octave leaps in the tune), fx (room extras), vel (tune loudness), tempo (at the act's own dread)
 const BANDS = {
-  // the game opens on a Rhodes (title, Act I): the tune on electric piano, syncopated Rhodes chords, a soft bass, a lazy beat
-  title: { tempo: 90, lead: "rhodes", leadV: "rhodes", leadB: "vibes", ctr: "vibes", hand: "rhodes", bass: "two", drums: "title", comp: "rhodes", compAll: true, swing: .18 },
+  // the main menu: the OP-1 tune (square pluck, bouncy bass, a small drum machine, marimba answers)
+  title: { tempo: 104, lead: "pluck", leadV: "pluck", leadB: "marimba", ctr: "marimba", hand: "marimba", bass: "bounce", drums: "bounce", comp: "arp" },
+  // the game itself opens on a Rhodes (Act I): the tune on electric piano, syncopated Rhodes chords, a soft bass, a lazy beat
   d1: { tempo: 92, lead: "rhodes", leadV: "rhodes", leadB: "flute", ctr: "vibes", hand: "vibes", bass: "two", drums: "soft", comp: "rhodes", compAll: true, swing: .2 },
   // the OP-1 arrives in Act II: the square pluck and its arpeggios, over the bossa
   d2: { tempo: 100, lead: "pluck", leadV: "pluck", leadB: "marimba", ctr: "marimba", hand: "marimba", bass: "bossa", drums: "bossa", comp: "arp", compAll: true },

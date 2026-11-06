@@ -702,7 +702,7 @@ async function start() {
   loadRoom("seminar", "start");
   const unlocked = +(localStorage.getItem("gaincontrol.act") || 1);
   onTitle = true; musicScene(true);
-  const tOpts = { unlocked, full: !FULL.standalone() };
+  const tOpts = { unlocked, full: !FULL.standalone(), sound: () => sfx.running && music.state.on };
   const titleP = showCard(titleArt(tOpts), { buttons: true });
   const stopGlitch = titleGlitch(card, { sfx: () => { sfx.play("blank"); music.glitch(); }, ...tOpts });
   const choice = await titleP; stopGlitch();

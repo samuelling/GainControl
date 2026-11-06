@@ -59,8 +59,10 @@ function table(map, lit) {
 }
 const ACTS = [["1", "I", "SUBMISSION"], ["2", "II", "UNDER REVIEW"], ["3", "III", "MAJOR REVISIONS"], ["4", "IV", "REBUTTAL"], ["5", "V", "DECISION"]];
 const MENU0 = 64, MENU_DY = 8;
-function screen({ unlocked = 1, title = "GAIN CONTROL", titleCls = "w", menuWord = null, lit = 0, full = true, showTable = false } = {}) {
+function screen({ unlocked = 1, title = "GAIN CONTROL", titleCls = "w", menuWord = null, lit = 0, full = true, showTable = false, sound = null } = {}) {
   const map = new Map(); if (showTable) table(map, lit);
+  // browsers keep a page silent until it's clicked: say so, top right, until the music is running
+  if (sound && !sound()) text(map, "CLICK FOR SOUND", NC - 6 - textW("CLICK FOR SOUND"), 6, "m");
   // clear a band behind the title so it reads, then the title, in the middle of the ring
   const tc = Math.max(1, center(title, BIG, 2));
   for (let r = 19; r < 40; r++) for (let c = tc - 3; c < tc + textW(title, BIG, 2) + 3; c++) map.delete(`${c},${r}`);
@@ -131,7 +133,10 @@ export function titleGlitch(root, { sfx = () => {}, ...opts } = {}) {
   }
   const loop = () => { if (!alive) return; t = setTimeout(async () => { await run(Math.random() < .45); loop(); }, 2400 + Math.random() * 3600); };
   loop();
-  return () => { alive = false; clearTimeout(t); };
+  // the CLICK FOR SOUND hint goes the moment the sound comes on
+  let heard = opts.sound ? opts.sound() : true;
+  const watch = opts.sound ? setInterval(() => { const now = opts.sound(); if (now !== heard) { heard = now; if (alive) set(render(base())); } }, 300) : null;
+  return () => { alive = false; clearTimeout(t); clearInterval(watch); };
 }
 
 // THE HANDOFF: the act you picked lights up, the takeover finally wins the screen, and the display collapses like a CRT
