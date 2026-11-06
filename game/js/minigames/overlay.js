@@ -1,7 +1,8 @@
 // THE OVERLAY (Act III, Nell's monitor). Figure 3b ("sub-07") and Figure 3d ("sub-12") are one panel, rotated and mirrored.
 // Turn and flip 3d until it lies on 3b. The overlay goes from two tangles to one clean line.
 // The state is an element of the square's symmetry group: (r, f) = flip horizontally if f, then rotate r × 90°.
-// Resolves { matched, moves }.
+// Feedback after each move says whether 3d is still mirrored or only turned; after 5 moves a hint, after 9 the next move is lit.
+// Keys: R rotates, H and V flip. Resolves { matched, moves }.
 import { seg, segC } from "../gfx.js";
 
 // the panel: a fold of cortex (pial surface, three layer lines, white-matter boundary), a blob and some noise
@@ -18,19 +19,30 @@ const tf = ([r, f]) => `rotate(${r * 90} 50 50)${f ? " translate(100,0) scale(-1
 const ROT = ([r, f]) => [(r + 1) % 4, f];
 const FLIPH = ([r, f]) => [(4 - r) % 4, !f];
 const FLIPV = ([r, f]) => [(6 - r) % 4, !f];
+const MOVES = { rot: ROT, h: FLIPH, v: FLIPV };
+// the shortest way home from any state (8 states, so a breadth-first search is instant): the first move to make
+function nextMove(t) {
+  const key = ([r, f]) => r + (f ? "f" : ""), seen = new Set([key(t)]), q = [[t, null]];
+  while (q.length) { const [u, first] = q.shift(); if (u[0] === 0 && !u[1]) return first;
+    for (const m in MOVES) { const v = MOVES[m](u); if (!seen.has(key(v))) { seen.add(key(v)); q.push([v, first || m]); } } }
+  return null;
+}
 const LINES = {
-  intro: ["GUS", "3b is participant 7. 3d is participant 12. Different people, different brains, he says."],
-  how: ["GUS", "Turn 3d and flip it until it sits on 3b. If they're different people, it never will."],
-  close: ["GUS", "Closer. Not there."],
+  intro: ["GUS", "3b is participant 7. 3d is participant 12. Different people, different brains, he says. Turn and flip 3d until it sits on 3b. If they're different people, it never will."],
+  mirror: ["GUS", "Still mirrored. The fold runs the wrong way round. A flip fixes that."],
+  turn: ["GUS", "Not mirrored any more. Now it just needs turning. Closer."],
+  hint: ["GUS", "Watch the blob. On 3b it sits top right, tucked in the second hump. Flip once if 3d is mirrored, then turn until its blob's top right too."],
+  show: ["GUS", "Here. Press the amber button. Then the next amber one. I've done this before. On other people's figures."],
   match: ["NELL", "Every dot. Every fold. Participant 12 is participant 7 in a mirror."],
   after: ["GUS", "Two subjects, one brain, flipped. That's not a mistake, Nell. That's a choice."],
 };
+const HINT_AT = 5, SHOW_AT = 9;   // moves without a match before the hint, then the answer
 
 const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
 
 export function overlay(el, { score = () => {} } = {}) {
   return new Promise(resolve => {
-    let spoken = null;
+    let spoken = null, closed = false, after = 0;
     const S = { t: [1, true], moves: 0, say: LINES.intro, matched: false };
     const same = () => S.t[0] === 0 && !S.t[1];
     function fig(x, cls, t, label, col) {
@@ -39,7 +51,8 @@ export function overlay(el, { score = () => {} } = {}) {
     }
     function draw() {
       if (S.say !== spoken) { spoken = S.say; window.SFX && window.SFX.voice(S.say[0], true); }
-      const m = same(), oc = m ? "ovG" : "";
+      if (closed) return;
+      const m = same(), lit = !m && S.moves >= SHOW_AT ? nextMove(S.t) : null;
       el.innerHTML = `<div class="screen ovl">
         <svg class="t hd" viewBox="0 0 640 40">${seg("FIGURE 3", 16, 10, 18, "sW", 1.6)}${seg("LAMINAR RESPONSE PROFILES  TWO INDEPENDENT PARTICIPANTS", 170, 17, 5, "sM", .8)}</svg>
         <svg class="t ovsvg" viewBox="0 0 640 230">
@@ -53,20 +66,21 @@ export function overlay(el, { score = () => {} } = {}) {
         <div class="coachline"><span class="who" style="background:var(--${S.say[0] === "GUS" ? "B" : "G"})">${S.say[0]}</span>
           <span style="color:var(--${S.say[0] === "GUS" ? "B" : "G"})">${S.say[1]}</span></div>
         <div class="bar">
-          <button data-b="rot" ${m ? "disabled" : ""}>ROTATE 90°</button><button data-b="h" ${m ? "disabled" : ""}>FLIP ↔</button><button data-b="v" ${m ? "disabled" : ""}>FLIP ↕</button>
+          ${["rot", "h", "v"].map(b => `<button data-b="${b}" ${m ? "disabled" : ""}${b === lit ? ` style="background:var(--A)"` : ""}>${{ rot: "ROTATE 90°", h: "FLIP ↔", v: "FLIP ↕" }[b]}</button>`).join("")}
+          <span class="status">${m ? "MATCHED" : "TURN AND FLIP 3D UNTIL IT LIES ON 3B · KEYS R H V"}</span>
           <button data-b="off" class="off">${S.matched ? "DONE" : "CLOSE"}</button></div></div>`;
     }
     function act(b) {
       if (b === "off") { finish(); return; }
       if (S.matched) return;
       S.t = b === "rot" ? ROT(S.t) : b === "h" ? FLIPH(S.t) : FLIPV(S.t); S.moves++; sfx(b === "rot" ? "whoosh" : "flip");
-      if (same()) { S.matched = true; S.say = LINES.match; sfx("chime"); score("overlay", 3); setTimeout(() => { S.say = LINES.after; draw(); }, 2200); }
-      else S.say = S.moves === 1 ? LINES.how : (S.t[1] ? LINES.how : LINES.close);
+      if (same()) { S.matched = true; S.say = LINES.match; sfx("chime"); score("overlay", 3); after = setTimeout(() => { S.say = LINES.after; draw(); }, 2200); }
+      else S.say = S.moves >= SHOW_AT ? LINES.show : S.moves >= HINT_AT ? LINES.hint : S.t[1] ? LINES.mirror : LINES.turn;
       draw();
     }
     const onClick = (e) => { const b = e.target.closest && e.target.closest("button[data-b]"); if (b && !b.disabled) act(b.dataset.b); };
-    const onKey = (e) => { if (e.key === "Escape") finish(); };
-    function finish() { el.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey); el.classList.remove("show"); el.innerHTML = ""; resolve({ matched: S.matched, moves: S.moves }); }
+    const onKey = (e) => { if (e.key === "Escape") finish(); else { const b = { r: "rot", h: "h", v: "v" }[e.key.toLowerCase()]; if (b && !same()) act(b); } };
+    function finish() { closed = true; clearTimeout(after); el.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey); el.classList.remove("show"); el.innerHTML = ""; resolve({ matched: S.matched, moves: S.moves }); }
     el.classList.add("show"); draw();
     el.addEventListener("click", onClick); window.addEventListener("keydown", onKey);
   });

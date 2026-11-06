@@ -88,7 +88,7 @@ const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
 export function fogNeuro(el, { canPrint = true } = {}) {
   return new Promise(resolve => {
     const out = { generated: 0, sources: false, feud: false, printed: false };
-    let cur = null, rival = null, showSources = false, status = "", splash = 0, cites = 0, ticks = 0;
+    let cur = null, rival = null, showSources = false, status = "", splash = 0, cites = 0, ticks = 0, leaving = false;
     function figure(p) {
       // a sagittal brain in line, with an implausibly perfect blob
       const bx = 60 + (p.B.length * 7) % 60, by = 46 + (p.f.length * 5) % 26;
@@ -104,11 +104,13 @@ export function fogNeuro(el, { canPrint = true } = {}) {
           ? p.abs.map((s, i) => `<p>${esc(s)}<br><span class="src">↳ ${esc(p.sources[i])}</span></p>`).join("")
           : p.abs.map(s => esc(s)).join(" ")}</div></div></div>`;
     }
+    // the header flickers FOG → COG on its own, without redrawing the page (so a scrolled paper or a half-made click survives)
+    const head = () => seg(splash > 0 ? "FOG NEURO" : "COG NEURO", 16, 10, 18, splash > 0 ? "sR" : "sW", 1.6)
+      + seg("LTM V0.9   BYLINE P. VALU   CORPUS: THE CLASSICS", 250, 17, 5, "sM", .8);
     function draw() {
-      const head = splash > 0 ? "FOG NEURO" : "COG NEURO";
-      let h = `<div class="screen"><svg class="t hd" viewBox="0 0 640 40">${seg(head, 16, 10, 18, splash > 0 ? "sR" : "sW", 1.6)}
-        ${seg("LTM V0.9   BYLINE P. VALU   CORPUS: THE CLASSICS", 250, 17, 5, "sM", .8)}</svg>`;
-      if (!cur) h += `<div class="empty">PRESS GENERATE.<br><em>The machine is warm. It has been waiting.</em></div>`;
+      let h = `<div class="screen"><svg class="t hd" viewBox="0 0 640 40">${head()}</svg>`;
+      if (!cur) h += `<div class="empty">PRESS GENERATE.<br><em>The machine is warm. It has been waiting.</em>
+        <br><em>GENERATE WRITES A PAPER · SOURCES SHOWS WHERE EACH SENTENCE CAME FROM · FEUD WRITES THE FURIOUS REPLY${canPrint ? " · PRINT TAKES ONE WITH YOU" : ""}</em></div>`;
       else h += paperHTML(cur, rival ? "THE PAPER" : "") + (rival ? paperHTML(rival, "THE FURIOUS REPLY") : "");
       h += `<div class="bar">
         <button data-b="gen">GENERATE</button><button data-b="feud" ${cur ? "" : "disabled"}>FEUD</button>
@@ -119,18 +121,22 @@ export function fogNeuro(el, { canPrint = true } = {}) {
       el.innerHTML = h;
     }
     function act(b) {
-      if (b === "gen") { cur = paper(); rival = null; out.generated++; showSources = false; status = ""; cites = 0; splash = 1; ticks = 0; sfx("compute"); }
+      if (b === "gen") { cur = paper(); rival = null; out.generated++; showSources = false; cites = 0; splash = 1; ticks = 0; sfx("compute");
+        status = canPrint && !out.printed && out.generated >= 2 ? "GUS SHOULD PRINT ONE. IT LOOKS IMPORTANT." : ""; leaving = false; }
       if (b === "feud" && cur) { rival = paper(cur); out.feud = true; ticks = 0; sfx("compute"); sfx("stamp"); }
       if (b === "src" && cur) { showSources = !showSources; sfx("select"); out.sources = out.sources || showSources; }
-      if (b === "print" && cur && !out.printed) { status = "PRINTING ((( )))"; draw(); sfx("printer"); setTimeout(() => { out.printed = true; out.paper = cur; status = "PRINTED."; sfx("paper"); draw(); }, 900); return; }
-      if (b === "off") { finish(); return; }
+      if (b === "print" && cur && !out.printed && !status.startsWith("PRINTING")) { status = "PRINTING ((( )))"; draw(); sfx("printer"); setTimeout(() => { out.printed = true; out.paper = cur; status = "PRINTED."; sfx("paper"); draw(); }, 900); return; }
+      if (b === "off") {
+        // one nudge, never a lock: leaving without the printout costs a second click, not a replay
+        if (canPrint && !out.printed && cur && !leaving) { leaving = true; status = "GUS HESITATES. ONE PRINTOUT, FOR EVIDENCE? (LOG OFF AGAIN TO LEAVE.)"; sfx("select"); draw(); return; }
+        finish(); return; }
       draw();
     }
-    const tick = setInterval(() => { if (cur) { cites += 1 + Math.floor(Math.random() * 3); if (ticks++ < 20) sfx("cite"); const c = el.querySelectorAll(".cites");
+    const tick = setInterval(() => { if (cur) { cites += 1 + Math.floor(Math.random() * 3); if (ticks++ < 6) sfx("cite"); const c = el.querySelectorAll(".cites");
       c.forEach((x, i) => x.textContent = "CITED BY " + ((i ? rival : cur).cites + cites)); }
-      if (splash > 0) { splash--; draw(); } }, 600);
+      if (splash > 0) { splash--; const hd = el.querySelector("svg.hd"); if (hd) hd.innerHTML = head(); } }, 600);
     const onClick = (e) => { const b = e.target.closest && e.target.closest("button[data-b]"); if (b && !b.disabled) act(b.dataset.b); };
-    const onKey = (e) => { if (e.key === "Escape") finish(); };
+    const onKey = (e) => { if (e.key === "Escape") act("off"); };
     function finish() { clearInterval(tick); el.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey); el.classList.remove("show"); el.innerHTML = ""; resolve(out); }
     el.classList.add("show"); draw();
     el.addEventListener("click", onClick); window.addEventListener("keydown", onKey);

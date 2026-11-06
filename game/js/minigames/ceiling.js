@@ -8,6 +8,8 @@
 //   3. HOW: find the sentence in the methods that explains it. He picked the voxels BECAUSE they correlated with the
 //      score, then reported how well they correlate with the score (non-independence, "double dipping").
 //      Gus then runs the same procedure on pure noise, live, and gets a correlation nearly as pretty.
+// Each step has a hint ladder (a pointer after 2 misses, the answer lit amber after 4, or 3 in step 3). CLOSE keeps your
+// place (G.flags.ceilProgress), and finding the sentence counts as done even if you skip the noise demo.
 // Resolves { done, wrong }.
 import { seg, segW, chip } from "../gfx.js";
 
@@ -50,6 +52,13 @@ const LINES = {
   },
   methOk: ["GUS", "There. He searched every voxel for the ones that happened to correlate with the score, then reported how well they correlate with the score. That's grading your own exam with the answer key."],
   noise: ["GUS", "Watch. Five thousand voxels of pure noise, nineteen made-up people, same recipe. Not a single real brain."],
+  // the hint ladder: a clear pointer after 2 misses in a step, the answer (lit amber) after 4 (3 in step 3, which only has 3 wrong sentences)
+  hint1: ["GUS", "Read the labels under the panels. I want the same measure on both axes: session 1 against session 2, odd runs against even runs."],
+  show1: ["GUS", "S2A and S2C. Attention score against itself, V1 against itself. The amber ones. Click them."],
+  hint2: ["GUS", "The dashed amber line is the ceiling, .60. Only the dots poking above it. .58 doesn't count. Close isn't above."],
+  show2: ["GUS", "V1 superficial .91, V1 deep .94, V2 deep .88. The amber ones. Click them."],
+  hint3: ["GUS", "Look for the sentence where he chooses his voxels using the same score he then correlates them with."],
+  show3: ["GUS", "The third one. He kept the voxels that correlated with the score, then reported how well they correlate with the score. Click it."],
 };
 
 // deterministic noise, so the drawing and the numbers never change between plays
@@ -72,6 +81,7 @@ export function noiseDip(seed = 2009, vox = 5000) {
   return { best, kept, mean: kept ? sum / kept : 0, pts: zs(beh).map((b, i) => [b, zs(bestY)[i]]) };
 }
 
+const MEMO = {};   // where progress lives when there is no game around (tests, previews)
 const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
 const COL = { GUS: "B", NELL: "G" };
 
@@ -84,18 +94,29 @@ function scatter(pts, x, y, w, h, cls, dotCls = cls) {
 
 export function ceiling(el, { score = () => {} } = {}) {
   return new Promise(resolve => {
-    let spoken = null, timer = null;
-    const S = { phase: 1, picked: new Set(), marked: new Set(), meth: null, wrong: 0, say: LINES.intro, done: false, drop: 0, noise: null };
+    let spoken = null, closed = false;
+    const timers = [], later = (fn, ms) => timers.push(setTimeout(() => { if (!closed) fn(); }, ms));
+    // progress survives CLOSE: reopening the desk resumes at the step you left, never back at step 1
+    const F = (window.GC && window.GC.G && window.GC.G.flags) || MEMO;
+    const saved = F.ceilProgress || null;
+    const S = { phase: 1, picked: new Set(), marked: new Set(), meth: null, tried: new Set(), under: new Set(), wrong: 0, miss: 0,
+      say: LINES.intro, done: false, drop: 0, noise: null, decoys: new Set() };
+    if (saved) { S.phase = saved.phase; S.picked = new Set(saved.picked); S.marked = new Set(saved.marked); S.wrong = saved.wrong || 0;
+      S.drop = S.phase >= 2 ? 1 : 0; S.say = S.phase === 1 ? LINES.p1 : S.phase === 2 ? LINES.p2 : LINES.p3; }
+    const save = () => { F.ceilProgress = S.done ? null : { phase: S.phase, picked: [...S.picked], marked: [...S.marked], wrong: S.wrong }; };
     const P = PANELS.map(p => pointsWithR(p.r, p.seed));
-    setTimeout(() => { if (S.phase === 1 && S.say === LINES.intro) { S.say = LINES.p1; draw(); } }, 3200);
+    if (!saved) later(() => { if (S.phase === 1 && S.say === LINES.intro) { S.say = LINES.p1; draw(); } }, 3200);
+    const showing = () => S.miss >= (S.phase === 3 ? 3 : 4);   // the answer is lit amber
 
     function phase1() {
       let s = seg("SUPPLEMENTARY FIGURE S2", 20, 8, 6, "sM", .8);
-      PANELS.forEach((p, i) => { const x = 20 + i * 152, y = 26, on = S.picked.has(p.id);
-        s += `<g data-panel="${p.id}" style="cursor:pointer">${scatter(P[i], x, y, 136, 112, on ? "sG" : "sW", on ? "sG" : "sW")}`;
-        s += seg("S2" + "ABCD"[i], x, y + 120, 6, on ? "sG" : "sM", .8);
-        s += seg(p.t[0], x, y + 132, 4.4, on ? "sG" : "sW", .7) + seg(p.t[1], x, y + 141, 4.4, on ? "sG" : "sM", .7);
+      PANELS.forEach((p, i) => { const x = 20 + i * 152, y = 26, on = S.picked.has(p.id), lit = !on && p.self && showing();
+        const c = on ? "sG" : lit ? "sA" : S.decoys.has(p.id) ? "sM" : "sW";
+        s += `<g data-panel="${p.id}" style="cursor:pointer">${scatter(P[i], x, y, 136, 112, c, c)}`;
+        s += seg("S2" + "ABCD"[i], x, y + 120, 6, on ? "sG" : lit ? "sA" : "sM", .8);
+        s += seg(p.t[0], x, y + 132, 4.4, on ? "sG" : lit ? "sA" : "sW", .7) + seg(p.t[1], x, y + 141, 4.4, on ? "sG" : lit ? "sA" : "sM", .7);
         if (on) s += chip("R = " + p.r.toFixed(2).replace(/^0/, ""), x + 136 - segW("R = .64", 5.5) - 6, y + 4, 5.5, "fG");
+        if (S.decoys.has(p.id)) s += chip("NOT ITSELF", x + 136 - chipW2("NOT ITSELF", 4.6) - 4, y + 4, 4.6, "fR");
         s += `<rect x="${x}" y="${y}" width="136" height="150" fill="transparent"/></g>`; });
       return s;
     }
@@ -105,13 +126,16 @@ export function ceiling(el, { score = () => {} } = {}) {
       s += seg("BEHAVIOUR WITH ITSELF", 20, 30, 4.4, "sW", .7) + seg(".64", 20, 40, 20, "sG", 1.4);
       s += seg("BRAIN WITH ITSELF", 20, 74, 4.4, "sW", .7) + seg(".56", 20, 84, 20, "sG", 1.4);
       s += seg("CEILING", 20, 120, 4.4, "sA", .7) + seg("ROOT .64 X .56", 20, 130, 7, "sM", .9) + seg(S.drop ? ".60" : "?", 20, 144, 20, "sA", 1.4);
+      s += seg("CLICK EVERY DOT ABOVE THE CEILING", 20, 176, 4.4, "sW", .7);
       // axes: hairline grid at .2 steps
       for (let r = 0; r <= 1.001; r += .2) { s += `<path class="hl sD" d="M${X0},${yv(r)} L${X0 + W},${yv(r)}"/>` + seg(r.toFixed(1).replace(/^0/, ""), X0 - 18, yv(r) - 2.5, 5, "sM", .7); }
       s += seg("TABLE 1  BRAIN-BEHAVIOUR R  N = 19", X0, 8, 6, "sM", .8);
-      ROWS.forEach(([roi, layer, r], i) => { const x = X0 + 28 + i * 52, m = S.marked.has(i), c = m ? "sR" : "sW";
+      ROWS.forEach(([roi, layer, r], i) => { const x = X0 + 28 + i * 52, m = S.marked.has(i), u = S.under.has(i), lit = !m && above(r) && showing();
+        const c = m ? "sR" : lit ? "sA" : u ? "sM" : "sW";
         s += `<g data-bar="${i}" style="cursor:pointer"><path class="${c}" d="M${x},${Y0} L${x},${yv(r)}"/><circle class="${m ? "fR" : "k"} ${c}" cx="${x}" cy="${yv(r)}" r="3.2"/>`;
         s += seg(r.toFixed(2).replace(/^0/, ""), x - 7, yv(r) - 13, 6, c, .9) + seg(roi, x - segW(roi, 4) / 2, Y0 + 6, 4, "sW", .7) + seg(layer, x - segW(layer, 3.6) / 2, Y0 + 13, 3.6, "sM", .6);
         if (m) s += seg("ABOVE", x - segW("ABOVE", 3.6) / 2, Y0 + 20, 3.6, "sR", .6);
+        else if (u) s += seg("UNDER", x - segW("UNDER", 3.6) / 2, Y0 + 20, 3.6, "sM", .6);
         s += `<rect x="${x - 20}" y="${yv(1)}" width="40" height="${H + 30}" fill="transparent"/></g>`; });
       const cy = yv(S.drop ? CEIL : 1.04);   // two poses: hanging at the top, then dropped onto .60
       s += `<path class="sA dash" d="M${X0 - 4},${cy} L${X0 + W},${cy}"/>` + chip("NOISE CEILING", X0 - 26 - chipW2("NOISE CEILING", 4.6), cy - 4, 4.6, "fA");
@@ -130,13 +154,17 @@ export function ceiling(el, { score = () => {} } = {}) {
       return s;
     }
     function draw() {
+      if (closed) return;
       if (S.say !== spoken) { spoken = S.say; window.SFX && window.SFX.voice(S.say[0], true); }
-      const head = ["THE CEILING", S.phase === 1 ? "STEP 1  RELIABILITY" : S.phase === 2 ? "STEP 2  THE NOISE CEILING" : "STEP 3  HOW"];
+      const head = ["THE CEILING", S.phase === 1 ? "STEP 1 OF 3  RELIABILITY" : S.phase === 2 ? "STEP 2 OF 3  THE NOISE CEILING" : "STEP 3 OF 3  HOW"];
+      const lit3 = showing() && S.meth !== "dip";
       const body = S.phase === 1 ? `<svg class="t" viewBox="0 0 640 200">${phase1()}</svg>`
         : S.phase === 2 ? `<svg class="t" viewBox="0 0 640 210">${phase2()}</svg>`
-        : `<div class="ceilmeth"><ol>${METHODS.map(m => `<li data-meth="${m.id}" class="${S.meth === m.id ? (m.id === "dip" ? "hit" : "miss") : ""}">${m.t}</li>`).join("")}</ol>
+        : `<div class="ceilmeth"><ol>${METHODS.map(m => `<li data-meth="${m.id}" class="${S.meth === "dip" && m.id === "dip" ? "hit" : S.tried.has(m.id) ? "miss" : ""}"${lit3 && m.id === "dip" ? ` style="color:var(--A)"` : ""}>${m.t}</li>`).join("")}</ol>
             <svg class="t" viewBox="320 0 320 200">${phase3()}</svg></div>`;
-      const status = S.phase === 1 ? `${S.picked.size} / 2 FOUND` : S.phase === 2 ? `${S.marked.size} / 3 MARKED` : S.done ? "PROVEN" : "FIND THE SENTENCE";
+      const status = S.phase === 1 ? `CLICK THE TWO PANELS THAT MEASURE ONE THING AGAINST ITSELF · ${S.picked.size} / 2`
+        : S.phase === 2 ? `MARK EVERY CORRELATION ABOVE THE CEILING · ${S.marked.size} / 3`
+        : S.done ? "PROVEN" : S.meth === "dip" ? "NOW WATCH IT WORK ON NOISE" : "CLICK THE SENTENCE IN HIS METHODS THAT EXPLAINS IT";
       const c = COL[S.say[0]] || "W";
       el.innerHTML = `<div class="screen grim ceil">
         <svg class="t hd" viewBox="0 0 640 40">${seg(head[0], 16, 10, 18, "sW", 1.6)}${seg(head[1], 200, 17, 5.5, "sA", .8)}</svg>
@@ -146,32 +174,41 @@ export function ceiling(el, { score = () => {} } = {}) {
           ${S.phase === 3 && S.meth === "dip" && !S.noise ? `<button data-b="noise">RUN IT ON NOISE</button>` : ""}
           <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
     }
+    // a miss: the step's own counter drives the hint ladder; S.wrong (the score) counts each distinct mistake once
+    function missed(key, line) {
+      S.miss++;
+      if (key) S.wrong++;
+      const n = S.phase;
+      S.say = showing() ? LINES["show" + n] : S.miss >= 2 ? LINES["hint" + n] : line;
+      sfx("bad"); save(); draw();
+    }
+    function nextPhase(p, say) { S.phase = p; S.miss = 0; S.say = say; save(); draw(); }
     function pick(id) {
       const p = PANELS.find(q => q.id === id); if (!p || S.picked.has(id)) return;
-      if (!p.self) { S.wrong++; S.say = LINES.selfBad; sfx("bad"); draw(); return; }
+      if (!p.self) { const fresh = !S.decoys.has(id); S.decoys.add(id); missed(fresh, LINES.selfBad); return; }
       S.picked.add(id); S.say = LINES.selfOk; sfx("good");
-      if (S.picked.size === 2) { sfx("chime"); timer = setTimeout(() => { S.phase = 2; S.say = LINES.p2; draw();
-        timer = setTimeout(() => { S.drop = 1; sfx("stamp"); draw(); }, 700); }, 1100); }
-      draw();
+      if (S.picked.size === 2) { sfx("chime"); later(() => { nextPhase(2, LINES.p2);
+        later(() => { S.drop = 1; sfx("stamp"); draw(); }, 700); }, 1100); }
+      save(); draw();
     }
     function bar(i) {
       if (!S.drop || S.marked.has(i)) return;
-      if (!above(ROWS[i][2])) { S.wrong++; S.say = LINES.barUnder; sfx("bad"); draw(); return; }
+      if (!above(ROWS[i][2])) { const fresh = !S.under.has(i); S.under.add(i); missed(fresh, LINES.barUnder); return; }
       S.marked.add(i); S.say = LINES.barOk; sfx("stamp");
       if (S.marked.size === ROWS.filter(r => above(r[2])).length) { S.say = LINES.barDone; sfx("chime");
-        timer = setTimeout(() => { S.phase = 3; S.say = LINES.p3; draw(); }, 1600); }
-      draw();
+        later(() => nextPhase(3, LINES.p3), 1600); }
+      save(); draw();
     }
     function meth(id) {
       if (S.meth === "dip") return;
-      S.meth = id;
-      if (id !== "dip") { S.wrong++; S.say = LINES.methBad[id]; sfx("bad"); }
-      else { S.say = LINES.methOk; sfx("good"); }
-      draw();
+      if (id !== "dip") { const fresh = !S.tried.has(id); S.tried.add(id); S.meth = id; missed(fresh, LINES.methBad[id]); return; }
+      S.meth = "dip"; S.say = LINES.methOk; sfx("good"); draw();
+      later(() => { if (!S.noise && !S.running) runNoise(); }, 4200);   // the payoff runs by itself if you just read
     }
     function runNoise() {
+      if (S.running) return; S.running = true;
       S.say = LINES.noise; sfx("calc"); draw();
-      timer = setTimeout(() => { S.noise = noiseDip(); S.done = true;
+      later(() => { S.noise = noiseDip(); S.done = true; save();
         const f2 = (v) => v.toFixed(2).replace(/^0/, "");
         S.say = ["NELL", `Pure noise, and the best voxel correlates at ${f2(S.noise.best)}. Keep the ${S.noise.kept} that pass and average them: ${f2(S.noise.mean)}. His layers are the selection, not the brain. A 2009 paper called these puzzlingly high correlations.`]; sfx("chime"); score("grim", Math.max(1, 4 - S.wrong)); draw(); }, 1200);
     }
@@ -184,7 +221,10 @@ export function ceiling(el, { score = () => {} } = {}) {
       if (k.dataset.b === "noise") runNoise(); else if (k.dataset.b === "off") finish();
     };
     const onKey = (e) => { if (e.key === "Escape") finish(); };
-    function finish() { clearTimeout(timer); el.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey); el.classList.remove("show"); el.innerHTML = ""; resolve({ done: S.done, wrong: S.wrong }); }
+    function finish() {
+      // the sentence is found: the proof stands even if you skip the noise demo
+      if (!S.done && S.meth === "dip") { S.done = true; score("grim", Math.max(1, 4 - S.wrong)); }
+      save(); closed = true; timers.forEach(clearTimeout); el.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey); el.classList.remove("show"); el.innerHTML = ""; resolve({ done: S.done, wrong: S.wrong }); }
     el.classList.add("show"); draw();
     el.addEventListener("click", onClick); window.addEventListener("keydown", onKey);
   });
