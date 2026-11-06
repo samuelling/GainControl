@@ -1,6 +1,7 @@
-// THE TITLE SCREEN: GAIN CONTROL, on an LED dot-matrix panel, over the Round Table. Every few seconds something tries to take the title over (the
-// Gain Controller, on a carrier wave): the letters slice and split, the seat lamps round the ring light, and for a
-// moment the title says something else. Then it snaps back. Poses, not tweens: each glitch is a few fixed frames.
+// THE TITLE SCREEN: GAIN CONTROL, on an LED dot-matrix panel, alone in the dark. Every few seconds something tries to take
+// the title over (the Gain Controller, on a carrier wave): the letters slice and split, and for those frames only the
+// Round Table flashes in behind it; on the big ones its seat lamps light and the title says something else. Then it
+// snaps back and the Table is gone. Poses, not tweens: each glitch is a few fixed frames.
 import { seg, arcs } from "./gfx.js";
 
 const CX = 320, CY = 150, RX = 272, RY = 62, TY = 92;
@@ -78,21 +79,22 @@ const WORDS = ["GAIN CONTROLLED", "GAIN: MAXIMUM", "FOG NEURO", "OBEY THE BOARD"
 const takeover = (w) => display(litDots(w), { cls: "fR" }) + arcs(WX - 18, WY + 15, -1, "sG", 3, .9) + arcs(WX + (COLS * 6 - 1) * P + 18, WY + 15, 1, "sG", 3, .9);
 const scan = () => display(TITLE, { noise: .18 });
 export const titleDefs = () => "";
-export const titleArt = () => `<g id="ttable">${titleTable(0)}</g><g id="ttl">${plain()}</g>`;
+export const titleArt = () => `<g id="ttable"></g><g id="ttl">${plain()}</g>`;   // the Table is only there while the title glitches
 
 // run the glitches while the title card is up; returns stop()
 export function titleGlitch(root, { sfx = () => {} } = {}) {
   let alive = true, t = null;
   const ttl = () => root.querySelector("#ttl"), tab = () => root.querySelector("#ttable");
-  const set = (svg, lit) => { const e = ttl(); if (e) e.innerHTML = svg; const b = tab(); if (b && lit !== undefined) b.innerHTML = titleTable(lit); };
+  // lit: null hides the Table, 0 shows it dark, >0 lights its lamps
+  const set = (svg, lit) => { const e = ttl(); if (e) e.innerHTML = svg; const b = tab(); if (b) b.innerHTML = lit === null ? "" : titleTable(lit); };
   const r = (a) => a[Math.floor(Math.random() * a.length)], j = (n) => Math.round((Math.random() * 2 - 1) * n);
   async function run(big) {
-    const frames = [[sliced([j(10), j(14), j(8)]), 70], [split(3), 60], [sliced([j(16), j(6), j(18)]), 60]];
+    const frames = [[sliced([j(10), j(14), j(8)]), 70, 0], [split(3), 60, 0], [sliced([j(16), j(6), j(18)]), 60, 0]];
     if (big) { const w = r(WORDS); frames.push([takeover(w), 90, 1], [scan(), 60, 2], [takeover(w), 380, 3], [split(5), 60, 2], [sliced([j(20), j(20), j(20)]), 70, 1]); sfx(); }
-    frames.push([plain(), 0, 0]);
-    for (const [svg, ms, lit] of frames) { if (!alive) return; set(svg, lit === undefined ? undefined : lit); if (ms) await new Promise(res => (t = setTimeout(res, ms))); }
+    frames.push([plain(), 0, null]);
+    for (const [svg, ms, lit] of frames) { if (!alive) return; set(svg, lit); if (ms) await new Promise(res => (t = setTimeout(res, ms))); }
   }
   const loop = () => { if (!alive) return; t = setTimeout(async () => { await run(Math.random() < .5); loop(); }, 2200 + Math.random() * 3800); };
   loop();
-  return () => { alive = false; clearTimeout(t); set(plain(), 0); };
+  return () => { alive = false; clearTimeout(t); set(plain(), null); };
 }
