@@ -29,6 +29,8 @@ const quick = (ctx, q, f) => ctx.choose("How long?", [["q", q], ["f", f]]).then(
 export const CSF = { id: "csf", group: "CLASSICS", tag: "CAMPBELL & ROBSON 1968", title: "Contrast sensitivity",
   sub: "How faint can a grating be before it disappears? Depends on how fine it is.",
   blurb: "Two intervals, each marked by a tick; a faint striped patch is in one of them. Press 1 or 2 for the interval that had it. Guess when you're unsure; the computer adjusts the contrast for each stripe width separately.",
+  instructions: { lines: ["Each trial has two intervals, each marked by a tick. A faint striped patch appears in ONE of them, in the middle of the screen.", "Press 1 or 2 for the interval that had the patch. If you're not sure, guess: the computer makes it fainter when you're right and stronger when you're wrong."],
+    keys: [["1", "PATCH IN INTERVAL 1"], ["2", "PATCH IN INTERVAL 2"]] },
   async run(ctx) {
     const q = await quick(ctx, "QUICK  4 FREQUENCIES × 24 TRIALS", "FULL  5 FREQUENCIES × 40 TRIALS");
     const SF = q ? [1, 2, 4, 8] : [.5, 1, 2, 4, 8], N = q ? 24 : 40;
@@ -68,6 +70,8 @@ export const CSF = { id: "csf", group: "CLASSICS", tag: "CAMPBELL & ROBSON 1968"
 export const POSNER = { id: "posner", group: "CLASSICS", tag: "POSNER 1980", title: "Orienting of attention",
   sub: "An arrow points left or right. It's usually right. What does it buy you?",
   blurb: "Keep your eyes on the centre. An arrow (or a plus sign) appears, then a square flashes in one of the boxes. Press SPACE as soon as you see it. The arrow is right 80% of the time. On a few trials nothing comes: don't press.",
+  instructions: { lines: ["Keep your eyes on the centre. Two boxes sit left and right of it.", "An arrow (or a plus sign) appears, then a small square flashes in one of the boxes. Press SPACE as fast as you can when you see it.", "The arrow points to the right box most of the time, but not always. On a few trials no square appears: then don't press anything."],
+    keys: [["SPACE", "I SAW THE SQUARE"]] },
   async run(ctx) {
     const q = await quick(ctx, "QUICK  60 TRIALS", "FULL  150 TRIALS");
     const N = q ? 60 : 150, { g, cx, cy, ppd } = ctx, ecc = 7 * ppd, bs = 1.4 * ppd;
@@ -113,6 +117,8 @@ export const POSNER = { id: "posner", group: "CLASSICS", tag: "POSNER 1980", tit
 export const ROTATION = { id: "rotation", group: "CLASSICS", tag: "SHEPARD & METZLER 1971 · COOPER & SHEPARD 1973", title: "Mental rotation",
   sub: "Is the letter normal or mirror-reversed? The answer takes longer the further it's turned.",
   blurb: "A letter appears, rotated. Is it the normal letter (N) or its mirror image (M)? As fast as you can without mistakes.",
+  instructions: { lines: ["A letter appears in the middle of the screen, rotated by some angle.", "Decide whether it is the normal letter or its mirror image. Answer as fast as you can without making mistakes."],
+    keys: [["N", "NORMAL"], ["M", "MIRROR IMAGE"]] },
   async run(ctx) {
     const q = await quick(ctx, "QUICK  48 TRIALS", "FULL  120 TRIALS");
     const ANG = [0, 60, 120, 180, 240, 300], LET = ["R", "F", "G", "J"], reps = q ? 4 : 10, { g, cx, cy } = ctx;
@@ -143,6 +149,8 @@ export const ROTATION = { id: "rotation", group: "CLASSICS", tag: "SHEPARD & MET
 export const CROWDING = { id: "crowding", group: "CLASSICS", tag: "BOUMA 1970", title: "Crowding",
   sub: "A letter you can read alone becomes unreadable between neighbours.",
   blurb: "Keep your eyes on the centre dot. A letter flashes 6° to the side, sometimes with a letter on either side of it. Name the MIDDLE letter. Don't look at it; it's gone before your eyes could get there anyway.",
+  instructions: { lines: ["Keep your eyes on the centre dot. Don't look to the side.", "A letter flashes 6° to one side, sometimes with another letter close on either side of it. It is gone before your eyes could get there.", "Type the MIDDLE letter. It is always one of D H K N R S V Z. Guess if you have to."],
+    keys: [["D H K N R S V Z", "TYPE THE MIDDLE LETTER"]] },
   async run(ctx) {
     const q = await quick(ctx, "QUICK  70 TRIALS", "FULL  140 TRIALS");
     const LET = ["D", "H", "K", "N", "R", "S", "V", "Z"], SP = [0, .9, 1.5, 2.2, 3, 4.5], reps = q ? 10 : 20, { g, cx, cy, ppd } = ctx, ecc = 6 * ppd, size = .9 * ppd;
@@ -177,6 +185,8 @@ export const CROWDING = { id: "crowding", group: "CLASSICS", tag: "BOUMA 1970", 
 export const NUMBER = { id: "number", group: "CLASSICS", tag: "HALBERDA, MAZZOCCO & FEIGENSON 2008", title: "Number sense",
   sub: "Which side has more dots? Too fast to count, and still you can tell.",
   blurb: "Two clouds of dots flash for a moment, yellow on the left, blue on the right. Which has more? Too fast to count. D for yellow, K for blue.",
+  instructions: { lines: ["Two clouds of dots flash for a moment: yellow on the left, blue on the right.", "Which cloud had more dots? They're gone too fast to count, so go with your impression."],
+    keys: [["D", "YELLOW HAD MORE"], ["K", "BLUE HAD MORE"]] },
   async run(ctx) {
     const q = await quick(ctx, "QUICK  60 TRIALS", "FULL  120 TRIALS");
     const RAT = [1.1, 1.2, 1.33, 1.5, 2], reps = q ? 12 : 24, { g, cx, cy, ppd } = ctx;

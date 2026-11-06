@@ -24,6 +24,8 @@ async function play(ctx, corr, secs, col) {
 
 export const MAE = { id: "mae", group: "PS 327 LABS", tag: "LAB 05", title: "Motion aftereffect", sub: "Stare at expanding dots, then watch still-ish ones contract.",
   blurb: "Keep your eyes on the centre dot the whole time. Green dots stream for a while (adaptation); then red dots flash for half a second, some moving out, some in. Say which way the red ones went overall: D inward, K outward.",
+  instructions: { lines: ["Keep your eyes on the centre dot for the whole run, even while the dots are moving.", "First, green dots stream for a while: that's the adaptation. Then red dots flash for half a second, some moving in and some moving out.", "Report which way the red dots went overall."],
+    keys: [["D", "INWARD"], ["K", "OUTWARD"]] },
   async run(ctx) {
     const ad = await ctx.choose("Adapt to what?", [["1", "EXPANSION (ALL OUT)"], ["0", "CONTRACTION (ALL IN)"], ["0.5", "NO NET MOTION (CONTROL)"]]);
     const adaptCorr = +ad, full = (await ctx.choose("How many blocks?", [["q", "QUICK  3 BLOCKS"], ["f", "FULL  10 BLOCKS (AS IN LAB)"]])) === "f";

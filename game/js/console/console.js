@@ -20,6 +20,23 @@ import { MODULES } from "./modules.js";
 
 const CSS = `
 .pc { padding: 0 1.2cqw !important; }
+/* the old CRT around it: the case is line art; the glass is the screen div, inset into the bezel with rounded tube corners */
+#panel .crtwrap { position: absolute; inset: 0; transform-origin: 50% 46%; }
+#panel .crtwrap.z0 { transform: scale(.08); } #panel .crtwrap.z1 { transform: scale(.26); } #panel .crtwrap.z2 { transform: scale(.6); }
+#panel.zooming { background: rgba(0,0,0,.35); }
+#panel .zoomdash { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
+#panel .zoomdash.on { display: block; }
+#panel .crtcase { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#panel .screen.pc { left: 9.4%; right: 9.4%; top: 7.6%; bottom: 17.2%; border: .12cqw solid var(--M); border-radius: 2.6cqw / 3.6cqw; }
+#panel .screen.pc::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0; border-radius: inherit;
+  background: repeating-linear-gradient(to bottom, transparent 0 .32cqw, rgba(233,230,255,.035) .32cqw .4cqw); }
+#panel .screen.pc > * { position: relative; z-index: 1; }
+#panel .screen.pc .crt { z-index: 2; }
+#panel .screen.pc.off > * { visibility: hidden; }
+#panel .screen.pc.p0 { transform: scale(.012, .006); background: var(--W); }
+#panel .screen.pc.p1 { transform: scale(.9, .006); background: var(--W); }
+#panel .screen.pc.p2 { transform: scale(1, .18); }
+#panel .screen.pc.p3 { transform: scale(1, .7); }
 .pc .pcbody { flex: 1 1 0; min-height: 0; display: flex; gap: 1.2cqw; padding: .6cqw 0; }
 .pc .menu { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: .8cqw 1.2cqw; align-content: start; overflow: auto; }
 .pc .grp { font-size: 1.15cqw; color: var(--M); letter-spacing: .12em; border-bottom: .08cqw solid var(--D); padding-bottom: .2cqw; margin-bottom: .2cqw; }
@@ -41,6 +58,37 @@ const CSS = `
 `;
 function css() { if (document.getElementById("css-console")) return; const s = document.createElement("style"); s.id = "css-console"; s.textContent = CSS; document.head.appendChild(s); }
 
+// speed dashes radiating from the middle, for the zoom (motion as drawn glyphs)
+function zoomDashes() { let o = "";
+  for (let i = 0; i < 28; i++) { const a = i / 28 * Math.PI * 2 + (i % 2) * .09, r0 = 150 + (i % 3) * 22, r1 = r0 + 34 + (i % 4) * 10, c = Math.cos(a), sn = Math.sin(a) * .6;
+    o += `<path class="sW" style="stroke-width:1.3" d="M${(320 + c * r0).toFixed(1)},${(166 + sn * r0).toFixed(1)} L${(320 + c * r1).toFixed(1)},${(166 + sn * r1).toFixed(1)}"/>`; }
+  return o; }
+// the monitor: a fat 1990s lab CRT drawn in the game's line language (case and bezel in line, knobs, a lit power LED, a foot)
+function crtCase() {
+  const gx0 = 60.2, gx1 = 579.8, gy0 = 27.4, gy1 = 298.1;               // the glass (= the screen div)
+  const bx0 = 44, bx1 = 596, by0 = 15, by1 = 312;                         // the bezel's inner lip
+  const cx0 = 20, cx1 = 620, cy0 = 4, cy1 = 340;                          // the case front
+  let o = `<rect class="k sW" x="${cx0}" y="${cy0}" width="${cx1 - cx0}" height="${cy1 - cy0}" rx="16"/>`;
+  o += `<rect class="hl sM" x="${cx0 + 5}" y="${cy0 + 5}" width="${cx1 - cx0 - 10}" height="${cy1 - cy0 - 10}" rx="12"/>`;
+  o += `<rect class="k sW" x="${bx0}" y="${by0}" width="${bx1 - bx0}" height="${by1 - by0}" rx="22"/>`;
+  // the bezel slopes in to the tube: hairlines from the lip's corners to the glass's
+  for (const [x, y, X, Y] of [[bx0 + 8, by0 + 8, gx0 + 6, gy0 + 6], [bx1 - 8, by0 + 8, gx1 - 6, gy0 + 6], [bx0 + 8, by1 - 8, gx0 + 6, gy1 - 6], [bx1 - 8, by1 - 8, gx1 - 6, gy1 - 6]])
+    o += `<path class="hl sM" d="M${x},${y} L${X},${Y}"/>`;
+  // the control strip
+  const sy = 322;
+  o += seg("ADLINE", 44, sy - 4, 7, "sW", 1.1) + seg("VISION RESEARCH MONITOR  120 HZ", 44 + segW("ADLINE", 7) + 8, sy - 1, 4, "sM", .7);
+  for (let i = 0; i < 9; i++) o += `<path class="hl sD" d="M${262 + i * 9},${sy - 4} L${262 + i * 9},${sy + 4}"/>`;
+  for (const [x, lbl, a] of [[436, "BRT", -40], [470, "CONT", 30], [504, "DEGAUSS", null]]) {
+    if (a === null) { o += `<rect class="k sW" x="${x - 7}" y="${sy - 5}" width="14" height="9" rx="2"/>`; }
+    else { const t = a * Math.PI / 180; o += `<circle class="k sW" cx="${x}" cy="${sy}" r="6"/><path class="sW" style="stroke-width:1.1" d="M${x},${sy} L${(x + 5 * Math.sin(t)).toFixed(1)},${(sy - 5 * Math.cos(t)).toFixed(1)}"/>`; }
+    o += seg(lbl, x - segW(lbl, 3) / 2, sy + 8, 3, "sM", .5);
+  }
+  o += `<circle class="k sW" cx="566" cy="${sy}" r="7"/><circle class="fG" cx="584" cy="${sy}" r="2.2"/>` + seg("PWR", 576, sy + 8, 3, "sM", .5);
+  // the foot
+  o += `<path class="sW" d="M250,${cy1} L232,355 L408,355 L390,${cy1}"/><path class="hl sM" d="M244,349 L396,349"/>`;
+  return `<svg class="crtcase t" viewBox="0 0 640 360" preserveAspectRatio="none">${o}</svg>`;
+}
+
 export const W = 960, H = 540, PPD = 36;
 const ABORT = new Error("abort");
 const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
@@ -51,11 +99,11 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
   return new Promise(resolve => {
     let run = null, pending = null, lastRes = null, done = 0;
     el.classList.add("show");
-    el.innerHTML = `<div class="screen pc">
+    el.innerHTML = `<div class="crtwrap z0">${crtCase()}<div class="screen pc off p0">
       <svg class="t hd" viewBox="0 0 640 40">${seg("PERCEPTION CONSOLE", 16, 9, 16, "sW", 1.5)}${seg("BOOTH 114  ADLINE LAB", 236, 12, 5, "sM", .8)}<g id="pcmode"></g></svg>
       <div class="pcbody"></div>
       <div class="coachline"><span class="who" style="background:var(--G)">CONSOLE</span> <span class="txt" style="color:var(--G)"></span></div>
-      <div class="bar"><span class="status"></span><span class="btns" style="display:flex;gap:.6cqw;flex-wrap:wrap;align-items:center"></span><button data-b="back" class="off">${standalone ? "MENU" : "CLOSE"}</button></div></div>`;
+      <div class="bar"><span class="status"></span><span class="btns" style="display:flex;gap:.6cqw;flex-wrap:wrap;align-items:center"></span><button data-b="back" class="off">${standalone ? "MENU" : "CLOSE"}</button></div></div></div><svg class="zoomdash t" viewBox="0 0 640 360">${zoomDashes()}</svg>`;
     const body = el.querySelector(".pcbody"), txt = el.querySelector(".coachline .txt"), btns = el.querySelector(".btns"), status = el.querySelector(".status"), backB = el.querySelector("[data-b=back]");
     const mode = (t) => { el.querySelector("#pcmode").innerHTML = t ? chip(t, 640 - segW(t, 5) - 18, 13, 5, "fA") : ""; };
     const say = (t) => { txt.textContent = t; };
@@ -125,9 +173,11 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
         },
       };
       try {
-        say(m.blurb); btns.innerHTML = `<button data-k="go">BEGIN</button><span class="kb">SPACE</span>`;
-        ctx.clear(0); drawTitle(g, m);
+        say("Read the instructions on the screen, then begin."); btns.innerHTML = `<button data-k="go">BEGIN</button><span class="kb">SPACE</span>`;
+        ctx.clear(0); drawInstructions(g, m);
+        if (document.fonts) document.fonts.load("500 30px 'Saira Condensed'").then(() => { if (run === R && !R.begun) drawInstructions(g, m); }).catch(() => {});
         await ctx.key([" ", "go", "Enter"], { buttons: [["go", "BEGIN"]] });
+        R.begun = true;
         await m.run(ctx);
         done++; score("console", 1); sfx("chime");
         btns.innerHTML = (lastRes ? `<button data-b="csv">SAVE CSV</button>` : "") + `<button data-b="again" class="k">RUN AGAIN</button>`;
@@ -146,15 +196,66 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
     };
     const onKey = (e) => { if (e.key === "Escape") { e.stopPropagation(); if (run) { stopRun(); menu(); } else if (!standalone) finish(); } };
     function about() { say("Ported from the PS 327 Perception lab MATLAB code (magnitude estimation, Muller-Lyer, visual search, lightness, motion aftereffect), plus a replication of Carrasco, Ling & Read (2004), Nature Neuroscience 7:308. Stimuli assume a linear display; contrast and grey levels are nominal."); }
-    function finish() { stopRun(); el.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey, true); el.classList.remove("show"); el.innerHTML = ""; resolve({ runs: done }); }
+    let leaving = false;
+    function finish() {
+      if (leaving) return; leaving = true;
+      stopRun(); el.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey, true);
+      const wrapE = el.querySelector(".crtwrap"), scr = el.querySelector(".screen.pc"); sfx("cancel");
+      const steps = [[() => { scr.className = "screen pc p2"; }, 0], [() => { scr.className = "screen pc off p1"; }, 60], [() => { scr.className = "screen pc off p0"; }, 130],
+        [() => { scr.className = "screen pc off"; }, 200], [() => { el.classList.add("zooming"); wrapE.className = "crtwrap z2"; }, 300], [() => { wrapE.className = "crtwrap z1"; }, 360],
+        [() => { wrapE.className = "crtwrap z0"; }, 420], [() => { el.classList.remove("show", "zooming"); el.innerHTML = ""; resolve({ runs: done }); }, 480]];
+      for (const [fn, ms] of steps) setTimeout(fn, ms);
+    }
     el.addEventListener("click", onClick); window.addEventListener("keydown", onKey, true);
     menu();
+    // ENTRY: the monitor rushes up out of the room (the case in four stepped sizes, speed dashes on the middle two),
+    // then the tube warms up: a dot, a line, a band, the picture. Poses, not tweens.
+    const wrapE = el.querySelector(".crtwrap"), scr = el.querySelector(".screen.pc"), dash = el.querySelector(".zoomdash");
+    const poses = [["z0", 0], ["z1", 60], ["z2", 120], ["", 190]];
+    if (!standalone) { el.classList.add("zooming"); sfx("select"); }
+    else poses.splice(0, 3, ["", 0]);
+    poses.forEach(([c, ms]) => setTimeout(() => { wrapE.className = `crtwrap ${c}`.trim(); dash.classList.toggle("on", c === "z1" || c === "z2"); if (!c) el.classList.remove("zooming"); }, ms));
+    const t0 = standalone ? 0 : 230;
+    setTimeout(() => sfx("blank"), t0);
+    [["off p0", 0], ["off p1", 70], ["p2", 140], ["p3", 210], ["", 280]].forEach(([c, ms]) => setTimeout(() => { scr.className = `screen pc ${c}`.trim(); }, t0 + ms));
   });
 }
 
 function download(name, text) {
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "text/csv" })); a.download = name; document.body.appendChild(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+// THE INSTRUCTION SCREEN: what a participant reads before a run. m.instructions = { lines: [...], keys: [[cap, meaning], ...] };
+// modules without one fall back to their blurb.
+function wrap(g, text, maxW) { const out = []; let line = "";
+  for (const w of text.split(/\s+/)) { const t = line ? line + " " + w : w; if (g.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t; }
+  if (line) out.push(line); return out; }
+function drawInstructions(g, m) {
+  const I = m.instructions || { lines: [m.blurb], keys: [] }, F = "'Saira Condensed', sans-serif", keys = I.keys || [];
+  const x0 = 64, maxW = W - 2 * x0, foot = H - 30, two = keys.length > 3, rows = two ? Math.ceil(keys.length / 2) : keys.length;
+  // the largest type that fits: body, then the key caps, above the footer
+  let fs = 32, wrapped;
+  for (; fs > 18; fs -= 2) { g.font = `500 ${fs}px ${F}`; wrapped = I.lines.map(l => wrap(g, l.toUpperCase(), maxW));
+    const h = 150 + wrapped.reduce((n, w) => n + w.length * fs * 1.2 + fs * .45, 0) + (rows ? 14 + rows * fs * 1.75 : 0);
+    if (h < foot - 34) break; }
+  g.fillStyle = "#000"; g.fillRect(0, 0, W, H); g.textAlign = "left"; g.textBaseline = "alphabetic";
+  g.fillStyle = "#7b7890"; g.font = `600 20px ${F}`; g.fillText(`${(m.tag || m.group).toUpperCase()}   INSTRUCTIONS`, x0, 58);
+  g.fillStyle = "#e9e6ff"; g.font = `600 48px ${F}`; g.fillText(m.title.toUpperCase(), x0, 104);
+  g.strokeStyle = "#3a3842"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(x0, 122); g.lineTo(W - x0, 122); g.stroke();
+  let y = 150 + fs * .7; g.font = `500 ${fs}px ${F}`; g.fillStyle = "#e9e6ff";
+  for (const para of wrapped) { for (const l of para) { g.fillText(l, x0, y); y += fs * 1.2; } y += fs * .45; }
+  if (rows) {
+    y += 14 - fs * .7; const colW = two ? maxW / 2 : maxW, kh = fs * 1.35;
+    keys.forEach(([cap, what], i) => {
+      const cx = x0 + (two ? Math.floor(i / rows) : 0) * colW, cy = y + (i % rows) * fs * 1.75;
+      g.font = `600 ${fs * .85}px ${F}`; const cw = Math.max(kh * 1.15, g.measureText(cap).width + fs * .9);
+      g.strokeStyle = "#e9e6ff"; g.lineWidth = 2; g.beginPath(); g.roundRect(cx, cy, cw, kh, 6); g.stroke();
+      g.beginPath(); g.moveTo(cx + 5, cy + kh - 6); g.lineTo(cx + cw - 5, cy + kh - 6); g.strokeStyle = "#3a3842"; g.lineWidth = 1; g.stroke();
+      g.fillStyle = "#e9e6ff"; g.textAlign = "center"; g.fillText(cap, cx + cw / 2, cy + kh * .68);
+      g.textAlign = "left"; g.fillStyle = "#ffb547"; g.font = `500 ${fs * .85}px ${F}`; g.fillText(what.toUpperCase(), cx + cw + fs * .5, cy + kh * .68);
+    });
+  }
+  g.fillStyle = "#00e39a"; g.font = `600 24px ${F}`; g.textAlign = "center"; g.fillText("PRESS SPACE OR BEGIN WHEN YOU ARE READY", W / 2, foot); g.textAlign = "left";
 }
 function drawTitle(g, m) {
   g.fillStyle = "#000"; g.fillRect(0, 0, W, H);

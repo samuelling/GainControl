@@ -36,6 +36,8 @@ const fmtS = (v) => isFinite(v) ? v.toFixed(1) + " S" : "-";
 
 export const NECKER = { id: "necker", group: "DEMOS", title: "Necker cube", sub: "One drawing, two cubes. Which face is in front?",
   blurb: "A wireframe cube with no depth cues. Your visual system has to pick a 3D interpretation, and it keeps changing its mind.",
+  instructions: { lines: ["A wireframe cube appears. Keep your eyes on the small dot in its middle.", "Sooner or later the cube flips: the face that was in front jumps to the back. Don't try to make it happen. Just report what you see.", "Press the key for what you see as soon as the cube appears, and again every time it flips. Pick 30 or 90 seconds, or JUST WATCH."],
+    keys: [["A", "LOWER-LEFT FACE IN FRONT"], ["L", "UPPER-RIGHT FACE IN FRONT"]] },
   run: (ctx) => rivalry(ctx, { secs: 30, intro: "Fix your eyes on the cube.", keys: [["a", "LOWER FACE FRONT"], ["l", "UPPER FACE FRONT"]],
     draw(g, t) { ctx.clear(0); const s = 150, o = 70, x = ctx.cx - (s + o) / 2, y = ctx.cy - (s - o) / 2;
       g.strokeStyle = "#e9e6ff"; g.lineWidth = 3; g.lineJoin = "round"; g.beginPath();
@@ -45,6 +47,8 @@ export const NECKER = { id: "necker", group: "DEMOS", title: "Necker cube", sub:
 
 export const RUBIN = { id: "rubin", group: "DEMOS", title: "Rubin vase", sub: "A vase, or two faces in profile.",
   blurb: "Figure and ground: the same edge can belong to the vase or to the faces, never both at once.",
+  instructions: { lines: ["A white shape on black. Look at the middle of the screen.", "It is either a vase, or two faces looking at each other. You'll see one, then the other, never both at once.", "Press the key for what you see now, and again every time it changes. Pick 30 or 90 seconds, or JUST WATCH."],
+    keys: [["A", "VASE"], ["L", "FACES"]] },
   run: (ctx) => rivalry(ctx, { secs: 30, intro: "Look at the middle.", keys: [["a", "VASE"], ["l", "FACES"]],
     draw(g) { ctx.clear(0); g.fillStyle = "#e9e6ff"; const cx = ctx.cx, top = 70;
       // the vase's half-width down its height: its edge is the faces' profile (forehead, brow, nose, lips, chin, neck)
@@ -55,6 +59,8 @@ export const RUBIN = { id: "rubin", group: "DEMOS", title: "Rubin vase", sub: "A
 
 export const QUARTET = { id: "quartet", group: "DEMOS", title: "Motion quartet", sub: "Four flashing dots: up-down or side to side?",
   blurb: "Two dots flash on one diagonal, then two on the other. You see motion, but whether it goes vertically or horizontally is up to your visual system.",
+  instructions: { lines: ["Two dots flash on one diagonal, then two on the other, back and forth. Keep your eyes on the cross in the middle.", "You'll see the dots moving, either up and down or side to side. After a while it can switch.", "Press the key for the motion you see now, and again every time it switches. Pick 30 or 90 seconds, or JUST WATCH."],
+    keys: [["A", "UP AND DOWN"], ["L", "SIDE TO SIDE"]] },
   run: (ctx) => rivalry(ctx, { secs: 30, intro: "Keep your eyes on the centre cross.", keys: [["a", "UP-DOWN"], ["l", "SIDE TO SIDE"]],
     draw(g, t) { ctx.clear(0); const w = 150, h = 150, ph = Math.floor(t * 3) % 2;           // 3 Hz alternation, square aspect
       g.fillStyle = "#e9e6ff"; const d = (x, y) => { g.beginPath(); g.arc(ctx.cx + x, ctx.cy + y, 14, 0, Math.PI * 2); g.fill(); };
@@ -63,6 +69,8 @@ export const QUARTET = { id: "quartet", group: "DEMOS", title: "Motion quartet",
 
 export const SPHERE = { id: "sphere", group: "DEMOS", title: "Spinning sphere", sub: "Structure from motion: which way is it turning?",
   blurb: "Dots on a transparent sphere, rotating. Nothing tells you which dots are in front, so the direction of rotation flips.",
+  instructions: { lines: ["A cloud of dots turns like a glass globe. Keep your eyes on the red square in the middle.", "Watch the dots that seem to be on the front of the globe. Which way are they moving? The direction will flip from time to time.", "Press the key for the direction you see now, and again every time it flips. Pick 30 or 90 seconds, or JUST WATCH."],
+    keys: [["A", "FRONT MOVES LEFT"], ["L", "FRONT MOVES RIGHT"]] },
   run: (ctx) => { const N = 260, P = Array.from({ length: N }, () => { const z = Math.random() * 2 - 1, a = Math.random() * Math.PI * 2; return [Math.sqrt(1 - z * z), a, z]; });
     return rivalry(ctx, { secs: 30, intro: "Look at the centre.", keys: [["a", "FRONT MOVES LEFT"], ["l", "FRONT MOVES RIGHT"]],
       draw(g, t) { ctx.clear(0); g.fillStyle = "#e9e6ff"; const R = 170, w = t * Math.PI * 2 * .2;
