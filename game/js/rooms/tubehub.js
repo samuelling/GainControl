@@ -129,6 +129,22 @@ function canisters() {
   return s + `${hit(Math.min(a[0], b[0]) - 2, a[1] - 16, Math.abs(b[0] - a[0]) + 4, c[1] - a[1] + 18)}</g>`;
 }
 
+// DEAD LETTERS: a dented brass box low on the left wall, under the rack, with one dusty canister wedged in its slot
+// (tag: THE OLD TABLE · DO NOT DELIVER · 1974). Small, dim and easy to miss on purpose. G.flags.brassGavel: opened.
+function deadLetters(G) {
+  const k1 = .64, k2 = .73, Y0 = 222, Y1 = 242;
+  const a = P(0, Y0, k1), b = P(0, Y0, k2), c = P(0, Y1, k2), d = P(0, Y1, k1);
+  const sa = P(0, Y0 + 7, k1 + .012), sb = P(0, Y0 + 7, k2 - .012);
+  let s = `<g data-hs="deadletters"><polygon class="k sM mech" points="${poly(a, b, c, d)}"/>`;
+  s += `<path class="hl sM" d="M${fx(sa[0])},${fx(sa[1])} L${fx(sb[0])},${fx(sb[1])}"/>`;
+  // the canister, sticking out of the slot into the room (dusty: dim brass, a hairline cobweb to the rack above)
+  const mx = (sa[0] + sb[0]) / 2, my = (sa[1] + sb[1]) / 2, out = G.flags.brassGavel ? 4 : 0;
+  s += `<rect class="k sD" x="${fx(mx - 3)}" y="${fx(my - 3.5)}" width="${16 + out}" height="7" rx="3"/><path class="hl sD" d="M${fx(mx + 9 + out)},${fx(my - 3.5)} L${fx(mx + 9 + out)},${fx(my + 3.5)}"/>`;
+  s += `<path class="hl sD" d="M${fx(b[0])},${fx(b[1])} Q${fx(mx + 6)},${fx(my - 10)} ${fx(mx + 13 + out)},${fx(my - 3.5)} M${fx(mx + 2)},${fx(my - 13)} L${fx(mx + 4)},${fx(my - 3.5)}"/>`;
+  s += seg("DEAD LETTERS", d[0] + 1, d[1] + 3, 2.6, "sD", .5);
+  return s + `${hit(Math.min(a[0], b[0]) - 2, a[1] - 4, Math.abs(b[0] - a[0]) + 24, d[1] - a[1] + 14)}</g>`;
+}
+
 // the pipe Morris came down: a brass tube running down the left wall to an open, flared mouth just above the floor
 function pipe() {
   const k = .9, top = P(0, 0, k), m = P(0, 244, k), mouth = P(0, 262, k);
@@ -159,11 +175,11 @@ export default {
   floor: { yMin: 230, yMax: 287, margin: 16 },
   entries: { fromPipes: [64, 280, 1], fromRiser: [530, 272, -1] },
   draw(G) {
-    return { back: room() + archive(G) + arch() + ltm(G) + dial(G) + canisters() + pipe() + riser(), sortables: [] };
+    return { back: room() + archive(G) + arch() + ltm(G) + dial(G) + canisters() + deadLetters(G) + pipe() + riser(), sortables: [] };
   },
-  stand: { dial: [236, 240], canisters: [104, 262], archive: [352, 236], arch: [352, 236], ltm: [438, 240], pipe: [64, 280], riser: [530, 272] },
+  stand: { dial: [236, 240], canisters: [104, 262], deadletters: [92, 272], archive: [352, 236], arch: [352, 236], ltm: [438, 240], pipe: [64, 280], riser: [530, 272] },
   labels: {
-    morris: { dial: { use: "SEND" }, archive: { use: "PICK REELS" }, ltm: { use: "CHEW" }, canisters: { use: "CLIMB IN" }, arch: { go: "GO THROUGH" },
+    morris: { dial: { use: "SEND" }, archive: { use: "PICK REELS" }, ltm: { use: "CHEW" }, canisters: { use: "CLIMB IN" }, deadletters: { use: "OPEN IT" }, arch: { go: "GO THROUGH" },
       pipe: { go: "BACK UP THE PIPE" }, riser: { go: "UP TO THE 3T" } },
     night: { dial: { use: "SEND" }, archive: { use: "PICK REELS" }, ltm: { use: "CHEW" }, canisters: { use: "OPEN ONE" }, arch: { go: "GO THROUGH" },
       pipe: { go: "BACK" }, riser: { go: "UP TO THE 3T" } },

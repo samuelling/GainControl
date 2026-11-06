@@ -214,6 +214,8 @@ export const HS = {
     archive: { label: "the Archive", morris: { look: "Shelves of reel-to-reel tapes, floor to ceiling, through the arch. Fifty years of the Table.", use: doReels } },
     dial: { label: "brass dial", morris: { look: "A brass destination dial: every room in the building. One says ETHEL BORD 2F.", use: doReels } },
     canisters: { label: "canisters", morris: { look: "Canisters in a rack, ready.", use: "MORRIS|I'm not riding one, pal. I've seen what happens. Registrar." } },
+    deadletters: { label: "dead letters", morris: { look: "Under the rack, a dented brass box: DEAD LETTERS. One canister is wedged in the slot, furred with fifty years of dust. The tag, in fountain pen: THE OLD TABLE. DO NOT DELIVER. 1974.",
+      use: brassGavel } },
     ltm: { label: "LTM drives", morris: { look: "The LTM's drive racks, blinking. Two, one, two.", use: "Morris chews through a cable. The lights stutter. Somewhere, a paper loses one sentence and gets better." } },
     pipe: { label: "pipe", morris: look("The pipe Morris came down. It goes up to every room in the building.") },
     riser: { label: "riser pipe", morris: { look: "A riser pipe going straight up, wet on the outside. UP: 3T. It's the chilled-water line. It's been leaking down here for fifty years.",
@@ -221,6 +223,13 @@ export const HS = {
     arch: { label: "arch", morris: look("An arch, with the insignia carved in the keystone.") },
   },
 };
+
+// the old table's gavel, taken in the Schism and never used again. The coda's postscript, found in-world first.
+function brassGavel(api) {
+  if (api.flag("brassGavel")) return "MORRIS|Nope. Once is peer review. Twice is a replication, and I'm not funded for it.";
+  api.flag("brassGavel", true); api.score("brassGavel", 2); api.sfx("gavel"); api.refresh();
+  return "Morris works the canister loose and unscrews the cap. Inside, wrapped in the sports section of a 1974 newspaper: a gavel. Brass. Heavy.\n\nHe unwraps a little more.\n\nIt is shaped like a gavel the way a grant budget is shaped like what the money was for.\n\nMORRIS|Pal.\n\nMORRIS|PAL.\n\nA card is tucked in the newspaper: SPOILS OF THE SCHISM. NOT FOR CEREMONIAL USE.\n\nMORRIS|So when they walked out on the old table, they took the archive, the room and… this. And then they made a new gavel. Out of a skull. And that was the classy upgrade.\n\nMORRIS|I live in a drawer, pal. I eat ramen out of the packet. And I have never once been this embarrassed for a building.\n\nMorris wraps it back up, the way you rewrap a gift you intend to regift, and slides it home. History will want it. History can come and get it.";
+}
 
 async function doorkeeper(api) {
   const f = api.G.flags;
