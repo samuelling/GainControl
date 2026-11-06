@@ -133,8 +133,8 @@ export default {
   draw(G) { return { back: corridor() + pipes() + bricked(G) + tube(G) + hatch(G) + valve() + backDoor(), sortables: [] }; },
   stand: { bricked: [152, 244], tube: [380, 252], hatch: [522, 262], pipes: [440, 246], valve: [96, 282], back: [578, 280] },
   labels: {
-    night: { bricked: { use: "KNOCK" }, hatch: { use: "OPEN" }, back: { go: "BACK", use: "BACK" }, valve: { use: "TURN" }, pipes: { use: "TOUCH" }, tube: { use: "LISTEN" } },
-    day: { bricked: { use: "KNOCK" }, hatch: { use: "OPEN" }, back: { go: "BACK", use: "BACK" }, valve: { use: "TURN" }, pipes: { use: "TOUCH" }, tube: { use: "LISTEN" } },
+    night: { bricked: { use: "KNOCK", talk: "LISTEN" }, hatch: { use: "OPEN" }, back: { go: "BACK", use: "BACK" }, valve: { use: "TURN" }, pipes: { use: "TOUCH" }, tube: { use: "LISTEN" } },
+    day: { bricked: { use: "KNOCK", talk: "LISTEN" }, hatch: { use: "OPEN" }, back: { go: "BACK", use: "BACK" }, valve: { use: "TURN" }, pipes: { use: "TOUCH" }, tube: { use: "LISTEN" } },
     morris: { bricked: { use: "SNIFF" }, back: { go: "SCURRY BACK" }, pipes: { use: "LICK" } },
   },
 };

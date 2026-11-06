@@ -175,6 +175,7 @@ function typeInto(el, html, speed, onTick) {
 // speaker colors for quoted one-liners ("WHO|text")
 const SPEAKER = [["MORRIS", "K"], ["PRESTON", "R"], ["BRETT", "B"], ["THE OLD WOMAN", "V"], ["GUS", "B"], ["NELL", "G"], ["TESS", "A"], ["PENNY", "B"],
   ["ETHEL", "V"], ["CODY", "R"], ["DET", "W"], ["SMALL", "W"], ["PROF. ADLINE", "W"],
+  ["THE CORRESPONDING AUTHOR", "R"], ["A HOOD", "V"], ["ANOTHER HOOD", "V"], ["A THIRD HOOD", "V"], ["A YOUNGER HOOD", "A"], ["THE REAL RECORD", "A"],
   ["REX", PORTRAITS_B.rex.chip.slice(1)], ["DANA", PORTRAITS_B.dana.chip.slice(1)], ["QUORUM", PORTRAITS_A.quorum.chip.slice(1)], ["IRIS", "V"]];
 const colorOf = (who) => (SPEAKER.find(([k]) => who.startsWith(k)) || [0, "A"])[1];
 // a response may hold several paragraphs, each optionally "WHO|…": each speaker gets their own box

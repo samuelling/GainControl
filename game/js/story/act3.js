@@ -430,7 +430,7 @@ export const HS = {
   },
 
   tunnels: {
-    bricked: { label: "bricked-up doorway", night: { look: "A doorway, bricked up. Scratched into the bricks: a circle seated around a smaller circle. Through the mortar, voices, all together: THE AUTHORS SHOULD CONSIDER… THE AUTHORS SHOULD CONSIDER…",
+    bricked: { label: "bricked-up doorway", night: { talk: overhear, look: "A doorway, bricked up. Scratched into the bricks: a circle seated around a smaller circle. Through the mortar, voices, all together: THE AUTHORS SHOULD CONSIDER… THE AUTHORS SHOULD CONSIDER…",
         use: (api) => api.die("Gus knocks.\n\nThe chanting stops.\n\nA brick slides out. A hooded face. A voice, kindly: 'The authors are invited to resubmit. In person.'\n\nGus is never seen at 2 AM again.") } },
     tube: { label: "tube line", night: { look: "The pneumatic tube line along the ceiling. It runs toward the bricked door and through it.",
         use: (api) => { if (api.flag("canisterLive")) return "Rattling. Closer. Get the hatch."; api.flag("canisterLive", true); api.refresh();
@@ -520,6 +520,38 @@ export const WITH = {
     return "Gus holds his phone to the brick and records forty seconds of THE AUTHORS SHOULD CONSIDER.\n\nOn playback you can hear a gavel. And one voice, half a beat late, that sounds a lot like Preston."; } },
 };
 
+/* ---------------- through the brick: the after-dinner portion ---------------- */
+const OVERHEARD = [
+  "The chanting stops mid-word. A gavel, twice. Chairs. Somebody pours something. Through the mortar, the after-dinner portion of the evening.",
+  "THE CORRESPONDING AUTHOR|Item four. Correspondence. The Midwest has written again.",
+  "A HOOD|Oh, not the Gesellschaft.",
+  "THE CORRESPONDING AUTHOR|The Gesellschaft.",
+  "ANOTHER HOOD|Gesundheit.",
+  "The brick fills with laughter: the kind that has been laughed at this joke every year for sixty years.",
+  "A HOOD|Why German? Has anyone ever asked them why German? They're in the Midwest. The most German thing within a hundred miles of them is a bratwurst.",
+  "ANOTHER HOOD|It's so it sounds like a learned society. Gesellschaft für Unendliche Versuche. If you say it in English it's a book club.",
+  "A THIRD HOOD|Versuche doesn't even mean research. It means attempts. The Society for Endless Attempts. They named themselves after their grant success rate.",
+  "A HOOD|And they left the umlaut off the letterhead. F-U-R. The Society of Fur.",
+  "THE CORRESPONDING AUTHOR|Gentlemen. We are the society for endless research. They took our creed, translated it badly, and moved it to a state with a lot of corn.",
+  "A YOUNGER HOOD|Is it… is it actually bad German? I took Spanish.",
+  "A HOOD|Dreadful. Nobody checked the grammar. That's Midwestern peer review.",
+  "ANOTHER HOOD|And when their members turn forty they give them a little wooden rocking chair. Hand-carved. With the letters on it.",
+  "A short silence on the other side of the brick.",
+  "A HOOD|A rocking chair.",
+  "THE CORRESPONDING AUTHOR|When ours turn forty, we give them a faculty position and a nod. It's tidier. Nobody has to dust anything.",
+  "A THIRD HOOD|They let women in, you know. In the sixties.",
+  "THE CORRESPONDING AUTHOR|Imagine the paperwork. The letter asks whether we'd consider a joint meeting. Reply with our regrets. And ask for their birth dates.",
+  "Laughter again. Then, all together: SECONDED. The gavel. And the chanting starts again, as if it had never stopped: THE AUTHORS SHOULD CONSIDER… THE AUTHORS SHOULD CONSIDER…",
+  "GUS|…",
+  "GUS|They're jealous of a rocking chair.",
+  "GUS|And that voice. The one running the meeting. That's the Chair. The Chair died at three o'clock this afternoon.",
+];
+async function overhear(api) {
+  if (api.flag("overheard")) return "Just the chanting now. Gus has heard enough to know who's running it.";
+  for (const t of OVERHEARD) await api.say(t);
+  api.flag("overheard", true); api.score("overheard", 2); return null;
+}
+
 /* ---------------- shifts and act structure ---------------- */
 async function nightfall(api) {
   await api.say("Nell goes home. She locks the door. She texts Gus everything, in lowercase.\n\nGus reads it at his desk, finishes his can, and goes down to the basement. The chilled water has been leaking into his scan all week, and he's paying by the hour.");
@@ -536,7 +568,7 @@ export async function check(api) {
   const { G } = api, f = G.flags;
   if (G.mode !== "day") {
     if (G.room === "tunnels" && !f.chanting) { f.chanting = true; api.refresh();
-      return "The tunnels. Pipes in every direction, sweating. The leak runs along the floor and under a doorway in the left wall.\n\nThe doorway has been bricked up. Through the bricks: voices. Many voices. Together."; }
+      return "The tunnels. Pipes in every direction, sweating. The leak runs along the floor and under a doorway in the left wall.\n\nThe doorway has been bricked up. Through the bricks: voices. Many voices. Together.\n\nGUS|If I put my ear to that, I'm going to hear something I can't un-hear. …I'm going to put my ear to that."; }
     return null;
   }
   if (G.room === "hall" && G.char === "nell" && proofs(api) >= 2 && !f.danaGone) {
@@ -569,5 +601,5 @@ export async function start(api, { fresh, skipCard } = {}) {
 export async function debugNight(api) {
   Object.assign(api.G.flags, { proofGrim: true, proofOverlay: true, proofLogs: true, proofGLM: true, proofsDone: true, danaGone: true, danaClosed: true,
     meetingOpen: true, meeting: true, quorumDead: true, irisOpen: true, irisNamed: true, irisDone: true, dayDone: true });
-  await nightfall(api);
+  api.G.bodies = 3; await nightfall(api);
 }
