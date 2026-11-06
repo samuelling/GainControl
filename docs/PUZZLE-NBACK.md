@@ -91,3 +91,9 @@ The real thing, under Gus's robe, at the Round Table: twelve hooded seats around
 - Act IV: Iris's rehearsal is part of telling her the plan.
 - Act V: "answer the ritual call-and-response" becomes the Induction Echo.
 - Clue chain #20 and death #16 point here.
+
+## Teaching the Echo (added)
+The rule is easy to state and hard to picture, so the game now shows it before asking for it:
+- **Worked examples (`LESSONS` in `echo.js`).** Before each rehearsal drill, Iris walks through one example a turn at a time on a strip of turn cards. The current card is lit, an arc runs back two turns (green when it matches), and the verdict appears as a chip: SECONDED S, KNOCK K, both, or SAY NOTHING. Each example includes the trap, a repeat of the *previous* turn, which doesn't count ("ONE BACK DOESN'T COUNT"). Drill 1 covers phrases, drill 2 chairs, and drill 3 both streams on two rows. After drill 3 there's a three-back example in case Quorum advances the Echo. The induction opens with Nell running the both-streams example in her head.
+- **Buttons that say what they mean.** SECONDED reads "same words as 2 turns ago", KNOCK reads "same chair/seat as 2 turns ago", and a reminder sits beside them: "otherwise say nothing". Both update to 3 when the Echo is advanced.
+- **Errors that explain themselves (rehearsal only).** After a miss or false alarm, Iris's jab is followed by what actually happened, e.g. *Two turns ago was "further research is needed". This was "the conclusions do not follow".* A false alarm in the first two turns gets *there's no turn two back*. The induction gives no hints, only hoods turning.

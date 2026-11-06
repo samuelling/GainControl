@@ -106,6 +106,9 @@ const R = {
     L("QUORUM", "The Echo. As it was in 1962, and as it shall be."),
     L("NELL", "Phrase back around: seconded. Seat back around: knock. Otherwise, silence. Otherwise, silence."),
   ],
+  recapI: [L("NELL", "(Iris's office, in my head. Turn one: nothing to compare.)"), L("NELL", "(Turn two: nothing yet.)"),
+    L("NELL", "(Turn three: the words came back from two turns ago. SECONDED.)"), L("NELL", "(Turn four: words and seat both came back. Both.)"),
+    L("NELL", "(Turn five: neither. Sit still.)"), L("NELL", "(Turn six: only the seat. KNOCK.)")],
   retryI: [L("NARRATOR", "The lamps go dark. The Board settles its robes. Someone pours another sherry."), L("QUORUM", "The Echo. Again, from the beginning.")],
   turn: [L("NARRATOR", "A hood turns toward you."), L("NARRATOR", "That hood is looking straight at you now."), L("NARRATOR", "Another hood turns."),
     L("NARRATOR", "Two of them are looking at you now."), L("NARRATOR", "A third hood turns. Slowly."), L("NARRATOR", "Three hoods.")],
@@ -168,6 +171,73 @@ function placeCatches(len, kinds, rnd, offset = 0) {
     if (free.length) at.set(offset + free[Math.floor(rnd() * free.length)], kind);
   }
   return at;
+}
+
+/* ---------------- the lessons: worked examples, one turn per click ---------------- */
+// rows: [{ label, items: [...] }]; each step k shows turns 0..k, the current one lit, an arc back n turns (green when it
+// matches) and the verdict; `trap` steps also show the one-back repeat that doesn't count.
+const LESSON_P = ["THE SAMPLE SIZE IS SMALL", "THE NOVELTY IS UNCLEAR", "THE SAMPLE SIZE IS SMALL", "THE NOVELTY IS UNCLEAR", "FURTHER RESEARCH IS NEEDED", "FURTHER RESEARCH IS NEEDED"];
+export const LESSONS = {
+  phrase: { n: 2, rows: [{ label: "WHAT IS SAID", key: "S", verb: "SECONDED", items: LESSON_P }], lines: [
+    L("IRIS", "Watch first. Turn one: a phrase. There's nothing two turns back yet, so you say nothing."),
+    L("IRIS", "Turn two. Still nothing two turns back. Nothing."),
+    L("IRIS", "Turn three. Look back TWO turns: the same phrase. That's the echo. Say SECONDED. Press S."),
+    L("IRIS", "Turn four. Two back is 'the novelty is unclear'. Same again. SECONDED."),
+    L("IRIS", "Turn five: 'further research is needed'. Two back was 'the sample size'. Different. Nothing."),
+    L("IRIS", "Turn six: 'further research' again. But it matches ONE turn back, not two. That's the trap. Nothing."),
+  ], after: [L("IRIS", "So: every turn, compare it with the turn before last. Keep the last two in your head. A new one comes in, the oldest drops out. Like juggling.")] },
+  seat: { n: 2, rows: [{ label: "WHERE I SIT", key: "K", verb: "KNOCK", items: ["WINDOW", "KETTLE", "WINDOW", "DESK", "WINDOW", "WINDOW"] }], lines: [
+    L("IRIS", "Same game, with chairs. Turn one: the window chair. Nothing to compare yet."),
+    L("IRIS", "Turn two: the kettle chair. Nothing yet."),
+    L("IRIS", "Turn three: the window again. Two turns ago I sat at the window. Knock the table. Press K."),
+    L("IRIS", "Turn four: the desk. Two back was the kettle. Nothing."),
+    L("IRIS", "Turn five: the window. Two back: the window. KNOCK."),
+    L("IRIS", "Turn six: the window again, but that's ONE back. The trap. Nothing."),
+  ], after: [L("IRIS", "Watch where I land, not what I say. The words don't matter in this one.")] },
+  both: { n: 2, rows: [{ label: "WHAT IS SAID", key: "S", verb: "SECONDED", items: ["THE AIMS ARE INTERDEPENDENT", "ENTHUSIASM WAS DAMPENED", "THE AIMS ARE INTERDEPENDENT", "ENTHUSIASM WAS DAMPENED", "THE BUDGET IS NOT JUSTIFIED", "THE RIGOR IS NOT DESCRIBED"] },
+      { label: "WHERE I SIT", key: "K", verb: "KNOCK", items: ["WINDOW", "KETTLE", "DESK", "KETTLE", "WINDOW", "KETTLE"] }], lines: [
+    L("IRIS", "Now both, and they don't care about each other. Turn one: nothing to compare."),
+    L("IRIS", "Turn two: nothing yet."),
+    L("IRIS", "Turn three: the phrase echoes, the chair doesn't. SECONDED only."),
+    L("IRIS", "Turn four: phrase echoes AND the chair echoes. Both: S and K."),
+    L("IRIS", "Turn five: neither. Silence."),
+    L("IRIS", "Turn six: a new phrase, but the kettle chair echoes. KNOCK only."),
+  ], after: [L("IRIS", "Two separate questions every turn. What was said two turns ago? Where was it said two turns ago?")] },
+  three: { n: 3, rows: [{ label: "WHAT IS SAID", key: "S", verb: "SECONDED", items: ["I REMAIN UNCONVINCED", "THE NOVELTY IS UNCLEAR", "THE SAMPLE SIZE IS SMALL", "I REMAIN UNCONVINCED", "THE SAMPLE SIZE IS SMALL"] }], lines: [
+    L("IRIS", "If he advances the Echo, it's three back. Turn one."),
+    L("IRIS", "Turn two."),
+    L("IRIS", "Turn three. Still nothing three back."),
+    L("IRIS", "Turn four: the same as THREE turns ago. SECONDED."),
+    L("IRIS", "Turn five: matches two back, not three. Nothing. Juggle three now."),
+  ], after: [] },
+};
+export function lessonSVG({ kind, step, recap }) {
+  const Ls = LESSONS[kind], n = Ls.n, rows = Ls.rows, two = rows.length > 1, N = rows[0].items.length, cw = 94, gap = 8;
+  const x0 = 320 - (N * cw + (N - 1) * gap) / 2, ys = two ? [70, 158] : [104], ch = two ? 46 : 56;
+  let o = segC(recap ? "THE ECHO, ONCE MORE" : "HOW THE ECHO WORKS", 320, 8, 9, "sW", 1.2) + segC(n === 3 ? "COMPARE EACH TURN WITH THREE TURNS AGO" : "COMPARE EACH TURN WITH TWO TURNS AGO", 320, 22, 4.6, "sA", .7);
+  const verdicts = [];
+  rows.forEach((r, ri) => {
+    const y = ys[ri], up = ri === 0;
+    o += seg(r.label, x0, y - (up ? 32 : -ch - 8), 5, "sM", .7);
+    for (let k = 0; k <= step; k++) {
+      const x = x0 + k * (cw + gap), now = k === step, cls = now ? "sW" : "sM";
+      o += `<rect class="k ${cls}" x="${x}" y="${y}" width="${cw}" height="${ch}" style="stroke-width:${now ? 1.4 : .8}"/>` + seg(`TURN ${k + 1}`, x + 5, y + 4, 4.2, now ? "sA" : "sD", .6);
+      const words = r.items[k].split(" "), lines = []; let ln = "";
+      for (const w of words) { if ((ln + " " + w).trim().length > 13) { lines.push(ln.trim()); ln = w; } else ln += " " + w; } lines.push(ln.trim());
+      lines.slice(0, 3).forEach((t, j) => { o += seg(t, x + 5, y + 13 + j * (two ? 10 : 12), 5.6, now ? "sW" : "sM", .8); });
+    }
+    if (step >= n) {
+      const k = step, x = x0 + k * (cw + gap) + cw / 2, xb = x0 + (k - n) * (cw + gap) + cw / 2, hit = r.items[k] === r.items[k - n];
+      const ye = up ? y : y + ch, peak = up ? y - 22 : y + ch + 22;
+      o += `<path class="${hit ? "sG" : "sD dash"}" d="M${x},${ye} Q${(x + xb) / 2},${peak + (up ? -10 : 10)} ${xb},${ye}"/><path class="${hit ? "sG" : "sD"}" d="M${xb - 4},${ye + (up ? -6 : 6)} L${xb},${ye} L${xb + 5},${ye + (up ? -5 : 5)}"/>`;
+      o += seg(`${n} BACK`, (x + xb) / 2 - 10, peak + (up ? -18 : 10), 5, hit ? "sG" : "sD", .7);
+      if (r.items[k] === r.items[k - 1] && !hit) o += `<path class="hl sR dash" d="M${x - 10},${ye} Q${x - (cw + gap) / 2 - 5},${peak + (up ? 2 : -2)} ${x - cw - gap + 10},${ye}"/>` + seg("ONE BACK DOESN'T COUNT", x - cw - gap - 4, up ? y + ch + 6 : y - 12, 5, "sR", .7);
+      verdicts.push(hit ? r.verb + "  " + r.key : "");
+    } else verdicts.push("");
+  });
+  const v = verdicts.filter(Boolean), vy = two ? 130 : 196;
+  if (step >= n) o += v.length ? v.map((t, i) => chip(t, 320 - (v.length * 84) / 2 + i * 90, vy, 8, t.startsWith("SECONDED") ? "fG" : "fA")).join("") : chip("SAY NOTHING", 320 - chipW("SAY NOTHING", 8) / 2, vy, 8, "fW");
+  return o;
 }
 
 /* ---------------- drawing: shared bits ---------------- */
@@ -534,6 +604,8 @@ const CSS = `
 .echo .eb small{font-size:.6em;margin-left:.5cqw;letter-spacing:.1em}
 .echo .eb.s{background:var(--G)} .echo .eb.k{background:var(--A)} .echo .eb.go{background:#000;color:var(--W);box-shadow:inset 0 0 0 .12cqw var(--W)}
 .echo .eb.used{background:var(--D);cursor:default} .echo .eb:not(.used):hover{background:var(--W);color:#000}
+.echo .eb em{display:block;font-style:normal;font-weight:500;font-size:.55em;letter-spacing:.06em;line-height:1.1;margin-top:-.1cqw;opacity:.8}
+.echo .erule{font-size:1.05cqw;color:var(--M);letter-spacing:.08em;line-height:1.15}
 .echo .etl{margin-left:auto;font-size:1.2cqw;color:var(--M);letter-spacing:.06em;white-space:nowrap}
 .echo .etl b{color:var(--W);font-weight:600}
 .echo .edead{position:absolute;inset:0;background:#000;z-index:2}
@@ -591,7 +663,8 @@ export function echo(el, opts = {}) {
       if (!alive) return;
       const sum = addT(addT(tally(), T.phrase), T.seat);
       let hud = "", scene;
-      if (S.card) svg.innerHTML = cardSVG(S.card);
+      if (S.lesson) svg.innerHTML = lessonSVG(S.lesson);
+      else if (S.card) svg.innerHTML = cardSVG(S.card);
       else if (mode === "rehearsal") {
         const st = DRILLS[S.stage].name;
         hud = segC("THE REHEARSAL", 320, 8, 9, "sW", 1.2) + segC(`${st[0]}  -  ${st[1]}`, 320, 22, 4.4, "sM", .7)
@@ -626,8 +699,10 @@ export function echo(el, opts = {}) {
       if (S.go) ctl = `<div class="eb go" data-b="go">GO ON <small>ENTER</small></div>`;
       else if (S.inter) ctl = `<div class="eb go" data-b="skip">SKIP <small>ENTER</small></div>`;
       else if (cur || S.len) {
-        if (S.streams.phrase) ctl += `<div class="eb s ${cur && cur.saidS ? "used" : ""}" data-b="s">SECONDED. <small>S</small></div>`;
-        if (S.streams.seat) ctl += `<div class="eb k ${cur && cur.saidK ? "used" : ""}" data-b="k">KNOCK <small>K</small></div>`;
+        const back = S.n === 3 ? "3" : "2", place = mode === "induction" ? "SEAT" : "CHAIR";
+        if (S.streams.phrase) ctl += `<div class="eb s ${cur && cur.saidS ? "used" : ""}" data-b="s">SECONDED. <small>S</small><em>SAME WORDS AS ${back} TURNS AGO</em></div>`;
+        if (S.streams.seat) ctl += `<div class="eb k ${cur && cur.saidK ? "used" : ""}" data-b="k">KNOCK <small>K</small><em>SAME ${place} AS ${back} TURNS AGO</em></div>`;
+        ctl += `<span class="erule">OTHERWISE<br>SAY NOTHING</span>`;
       }
       ctl += `<span class="etl">HITS <b>${sum.hits}</b> · MISSES <b>${sum.misses}</b> · FALSE ALARMS <b>${sum.fa}</b> · SILENCES <b>${sum.cr}</b></span>`;
       ectl.innerHTML = ctl;
@@ -661,6 +736,13 @@ export function echo(el, opts = {}) {
       }
       S.inter = false; S.skip = false; S.coach = null; S.card = null; draw();
     }
+    async function lesson(kind, lines, recap = false) {
+      const Ls = LESSONS[kind]; lines = lines || Ls.lines;
+      S.lesson = { kind, step: 0, recap }; S.phrase = null;
+      for (let k = 0; k < lines.length; k++) { S.lesson.step = k; if (k >= Ls.n) sfx(Ls.rows.some(r => r.items[k] === r.items[k - Ls.n]) ? "bell" : "echoTick"); await talk([lines[k]]); }
+      if (Ls.after.length && !recap) await talk(Ls.after);
+      S.lesson = null; draw();
+    }
     const card = (label, title, sub) => ({ set: () => { S.card = { label, title, sub }; sfx("card"); }, ms: 1300, end: () => S.card = null });
 
     /* ---- responses ---- */
@@ -669,7 +751,7 @@ export function echo(el, opts = {}) {
       if (mode === "rehearsal") {
         S.staples++; S.click = true; blip([180, 120]); sfx("staple"); later(() => { S.click = false; draw(); }, 520);
         const pool = S.stage === "B" || (S.stage === "C" && stream === "seat") ? (kind === "fa" ? R.faB : R.missB) : (kind === "fa" ? R.fa : R.miss);
-        S.coach = kind === "catch" ? R.catchFA[cur.catch] : pick(pool, lineN++);
+        S.coach = kind === "catch" ? R.catchFA[cur.catch] : explain(pick(pool, lineN++), stream, kind);
         if (S.staples >= 3) S.abort = true;
       } else {
         S.susp++; blip([140]);
@@ -679,6 +761,16 @@ export function echo(el, opts = {}) {
         if (S.susp >= 6) S.abort = true;
       }
       draw();
+    }
+    // Iris's line, plus what actually happened: the item now and the item n turns ago
+    function explain(line, stream, kind) {
+      const c = cur; if (!c || c.i == null) return line;
+      if (c.i < c.n) return kind === "fa" ? [line[0], line[1] + ` Nothing has come round yet: there's no turn ${c.n === 3 ? "three" : "two"} back.`] : line;
+      const name = (s, k) => stream === "phrase" ? `"${c.set[s[k]]}"` : `the ${CHAIRS[s[k]].name.toLowerCase()} chair`;
+      const s = stream === "phrase" ? c.sP : c.sS; if (!s) return line;
+      const now = name(s, c.i), then = name(s, c.i - c.n), ago = c.n === 3 ? "three" : "two";
+      const why = kind === "miss" ? ` ${now[0].toUpperCase() + now.slice(1)}, and ${ago} turns ago, ${then} too.` : ` ${ago[0].toUpperCase() + ago.slice(1)} turns ago was ${then}. This was ${now}.`;
+      return [line[0], line[1] + why];
     }
     function answer(which) {
       if (!cur || !cur.open || S.paused || S.go || S.inter) return;
@@ -718,7 +810,7 @@ export function echo(el, opts = {}) {
       if (sS) { if (sS.length <= i) sS.push(nextItem(sS, n, mode === "induction" ? N_SEATS : CHAIRS.length, rnd, .3, .2, fresh)); }
       const pT = !!(sP && isTarget(sP, i, n)), sT = !!(sS && isTarget(sS, i, n));
       if (mode === "rehearsal" && sS) { cur = null; await walkTo(sS[i]); }
-      cur = { pT, sT, saidS: false, saidK: false, open: true, err: 0 };
+      cur = { pT, sT, saidS: false, saidK: false, open: true, err: 0, i, sP, sS, n, set };
       S.turn++;
       if (mode === "induction") { S.seat = sS[i]; S.phrase = sP[i]; S.who = S.seat === QSEAT ? "QUORUM" : "A HOODED MEMBER"; onSeat(S.seat); }
       else { S.who = "IRIS"; S.phrase = sP ? sP[i] : null; S.chair = sS ? sS[i] : 2; if (sS) onSeat(S.chair); }
@@ -818,17 +910,21 @@ export function echo(el, opts = {}) {
     async function rehearsal() {
       Object.assign(S, { stage: "A", chair: 2, streams: { phrase: false, seat: false } }); draw();
       await talk(R.introA);
+      await lesson("phrase");
       await interlude([card("THE REHEARSAL", "DRILL 1", "THE PHRASES")]);
       await drill("A");
       score("echoPhrases", 2); S.len = 0; await talk(R.passA);
       S.stage = "B"; S.chair = 2; S.set = null; await talk(R.introB);
+      await lesson("seat");
       await interlude([card("THE REHEARSAL", "DRILL 2", "THE CHAIRS")]);
       await drill("B");
       score("echoChairs", 2); S.len = 0; await talk(R.passB);
       S.stage = "C"; await walkTo(2); await talk(R.introC);
+      await lesson("both");
       await interlude([card("THE REHEARSAL", "DRILL 3", "BOTH AT ONCE")]);
       await drill("C");
       score("echoBoth", 2); S.len = 0; S.set = null; await walkTo(2); await talk(R.passC);
+      await lesson("three");
       const t = addT(addT(tally(), kept.phrase), kept.seat);
       return { passed: true, dprime: +dprime(t.hits, t.misses, t.fa, t.cr).toFixed(2), ...t, restarts };
     }
@@ -896,6 +992,7 @@ export function echo(el, opts = {}) {
         for (let i = 0; i < N_SEATS; i++) { S.seat = i; sfx("echoLamp"); draw(); await wait(110); }
         S.seat = null; draw();
         await talk(tries === 1 ? R.introI : R.retryI);
+        if (tries === 1) await lesson("both", R.recapI, true);
         let g = 0, streak = 0, clean = 0, deep = 0, advanced = false;
         // after every turn or catch: suspicion relaxes after a clean run; two errors in a row advance the Echo
         const after = async (c, t, isTurn) => {
