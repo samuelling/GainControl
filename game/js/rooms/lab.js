@@ -69,8 +69,10 @@ function desk(G) {
 }
 // Gus's dart-frog vivarium, at the left end of his desk: glass (hairlines only), a bromeliad, a mister nozzle on the lid,
 // one small blue frog (D. tinctorius 'Azureus') on the leaf litter. cls dims it in Act I (not a hotspot then).
-function vivarium(x, t, dim) {
-  const g = dim ? "sD" : "sB", l = dim ? "sD" : "sG", x0 = x - 47, w = 17, h = 15;
+// the tank stands ON the desk top: its base a little in front of the back edge (t is the back edge's y), inside the
+// desk's left edge (which runs from x-38 at the back to x-44 at the front), clear of the laptop at x-26
+function vivarium(x, tBack, dim) {
+  const t = tBack + 7, g = dim ? "sD" : "sB", l = dim ? "sD" : "sG", x0 = x - 42, w = 15, h = 15;
   return `<g data-hs="${dim ? "" : "viv"}"><rect class="hl ${g}" x="${x0}" y="${t - h}" width="${w}" height="${h}"/><path class="hl ${g}" d="M${x0},${t - h + 3} L${x0 + w},${t - h + 3} M${x0 + w / 2},${t - h} L${x0 + w / 2},${t - h - 2.5} L${x0 + w / 2 + 3},${t - h - 2.5}"/>
     <path class="hl ${l}" d="M${x0 + 3},${t - 1} C${x0 + 2},${t - 7} ${x0 + 5},${t - 10} ${x0 + 4},${t - 11} M${x0 + 4},${t - 1} C${x0 + 6},${t - 6} ${x0 + 9},${t - 8} ${x0 + 9},${t - 10} M${x0 + 5},${t - 1} C${x0 + 4},${t - 5} ${x0 + 1.5},${t - 6} ${x0 + 1.5},${t - 8}"/>
     <path class="hl ${g}" d="M${x0},${t - 2} L${x0 + w},${t - 2}"/>
