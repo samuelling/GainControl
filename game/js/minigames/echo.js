@@ -5,7 +5,7 @@
 // Silence is correct otherwise. Nobody ever calls it a dual 2-back.
 //
 //   echo(el, { mode: "rehearsal" | "induction", pace, seed, score, die, onSeat, onTurn, blip, morris })
-//     rehearsal → { passed: true, dprime, hits, misses, fa, cr, restarts }  (Iris's office: two drills, phrases then both, can't fail)
+//     rehearsal → { passed: true, dprime, hits, misses, fa, cr, restarts }  (Iris's office: two drills of phrases, can't fail)
 //     induction → { passed: true, dprime, advanced, hits, misses, fa, cr, tries }  (B3: hoods turn; three = death)
 //     either    → { passed: false, quit: true } if the player leaves with Esc, Esc.
 //
