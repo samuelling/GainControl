@@ -18,6 +18,8 @@ import { fogNeuro } from "./minigames/fogneuro.js";
 import { sfx } from "./sfx.js";
 import * as FULL from "./fullscreen.js";
 import { titleArt, titleGlitch } from "./title.js";
+import { installGuide } from "./guide.js";
+import { music } from "./music.js";
 import { applyOverrides, rewriteSay, jumpFromHash } from "./tools/overrides.js";
 import seminar from "./rooms/seminar.js";
 import hall from "./rooms/hallway.js";
@@ -110,13 +112,47 @@ function entryPos(entry) {
   if (entry === "vent" && R().stand.vent) { const [x, y] = R().stand.vent; return [x, y, 1]; }
   return R().entries[entry] || Object.values(R().entries)[0];
 }
+// the score follows the drama: act, day or night, where we are, and the climax
+let musicKey = "", onTitle = false;
+function musicScene(force) {
+  const k = onTitle ? "title" : `${G.act}/${G.mode}/${G.room}/${G.flags && G.flags.climax ? 1 : 0}`;
+  if (!force && k === musicKey) return; musicKey = k;
+  music.scene(onTitle ? { title: true } : { act: G.act, mode: G.mode, room: G.room, flags: G.flags || {} });
+}
+// THE SWIPE between rooms: the old room is pushed off one side while the new one comes in from the other, in ten
+// fixed steps (poses, not tweens), with a lit seam and speed dashes at the join. The new room comes in from the
+// side you walked out of. The HUD doesn't move.
+let wipeT = null;
+function swipe(dir) {
+  const W = $("#wipe"); if (!W) return;
+  const old = ["#roomBack", "#sortables", "#extras"].map(q => svg.querySelector(q)).filter(Boolean).map(e => e.outerHTML).join("")
+    .replace(/ id="[^"]*"/g, "").replace(/ data-hs="[^"]*"/g, "");
+  return () => {   // call after the new room is built
+    clearInterval(wipeT);
+    const live = ["#roomBack", "#sortables", "#extras"].map(q => svg.querySelector(q)).filter(Boolean);
+    const N = 10; let k = 0;
+    const frameAt = () => {
+      const p = k / N, xo = dir * 640 * p, xn = -dir * 640 * (1 - p), seam = dir > 0 ? 640 * p : 640 * (1 - p);
+      live.forEach(e => e.setAttribute("transform", k < N ? `translate(${xn.toFixed(1)},0)` : ""));
+      W.innerHTML = k < N ? `<defs><clipPath id="wipeclip"><rect x="0" y="0" width="640" height="291"/></clipPath></defs>
+        <g clip-path="url(#wipeclip)"><rect x="${(xo).toFixed(1)}" y="0" width="640" height="291" fill="#000"/><g transform="translate(${xo.toFixed(1)},0)">${old}</g>
+        <path class="sW" d="M${seam.toFixed(1)},0 L${seam.toFixed(1)},291"/>
+        ${[40, 96, 150, 205, 252].map((y, i) => `<path class="hl sW" d="M${(seam - dir * (10 + (i % 2) * 8)).toFixed(1)},${y} L${(seam - dir * (34 + (i % 3) * 10)).toFixed(1)},${y}"/>`).join("")}</g>` : "";
+      if (k++ >= N) clearInterval(wipeT);
+    };
+    frameAt(); wipeT = setInterval(frameAt, 40);
+  };
+}
 function loadRoom(id, entry, pos) {
+  const moving = G.room && G.room !== id && entry && entry !== "start";
+  const finishSwipe = moving ? swipe(G.actor && G.actor.x < 320 ? 1 : -1) : null;
   if (G.room !== id && entry && entry !== "start") sfx.play(entry === "vent" ? "ratstep" : "door");
   G.room = id; G.chooser = null;
-  sfx.ambience(id, G.mode);
+  sfx.ambience(id, G.mode); musicScene();
   const a = G.actor, e = pos ? [pos.x, pos.y, pos.dir] : entryPos(entry);
   Object.assign(a, { x: e[0], y: e[1], dir: e[2], tx: e[0], ty: e[1], walking: false, cb: null });
   build();
+  if (finishSwipe) finishSwipe();
 }
 const refresh = () => build();
 
@@ -135,7 +171,7 @@ function drawExtras() {
     return `<g data-pose="${x.pose}" transform="translate(${x.x},${x.y}) scale(${x.dir * s},${s}) translate(-160,-187)">${x.fig()}</g>`; }).join("");
 }
 
-function hud() {
+function hud() { musicScene();
   const night = G.mode === "night", h = $("#hud"); if (!h) return;
   let s = `<rect x="0" y="291" width="640" height="69" fill="#000"/><path class="hl sD" d="M0,292 L640,292 M152,302 L152,350 M276,302 L276,350 M510,302 L510,350"/>`;
   // the cast: the active character is a solid chip; the others are outlined and clickable
@@ -502,10 +538,11 @@ frame.addEventListener("pointermove", (e) => {
 });
 frame.addEventListener("contextmenu", (e) => { e.preventDefault(); if (!G.busy) cancelAll(); });
 // sound: the audio context can only start after a user gesture; M toggles it
-const unlockAudio = () => sfx.unlock();
+const unlockAudio = () => { sfx.unlock(); music.start(); musicScene(true); };
 window.addEventListener("pointerdown", unlockAudio, true); window.addEventListener("keydown", unlockAudio, true);
 window.addEventListener("keydown", (e) => { if ((e.key === "m" || e.key === "M") && !e.target.closest?.("input,textarea")) { sfx.toggle(); hud(); } });
 FULL.install(() => hud());
+const GUIDE = installGuide({ G });
 frame.addEventListener("pointerdown", (e) => { if (e.target.closest && e.target.closest("[data-mute]")) { e.stopPropagation(); sfx.toggle(); hud(); } }, true);
 window.addEventListener("keydown", (e) => {
   if (G.busy) return;
@@ -545,7 +582,7 @@ function act(id, v, cx) {
     goStand(id, async () => {
       if (typeof dest === "function") dest = await dest(api);
       if (!dest) { await afterAction(); return; }
-      if (!dest.includes("@")) { await say(dest); await afterAction(); return; }    // a refusal ("Locked.")
+      if (!dest.includes("@")) { await respond(dest); await afterAction(); return; }    // a refusal ("Locked."), a line or "c:convo"
       api.goRoom(dest); await afterAction();
     });
     return;
@@ -606,7 +643,7 @@ setInterval(() => document.querySelectorAll("#game .needle").forEach(n => { cons
 /* ================================================================ *
  *  START: title and chapter select
  * ================================================================ */
-window.GC = { G, api, FULL, act, itemAct, useItemOn, loadRoom, walkTo, runConvo, switchTo, startAct };   // for testing
+window.GC = { G, api, FULL, GUIDE, act, itemAct, useItemOn, loadRoom, walkTo, runConvo, switchTo, startAct };   // for testing
 async function start() {
   await applyOverrides(ACTS, ITEMS);
   if (await jumpFromHash()) return;
@@ -624,10 +661,11 @@ async function start() {
   if (h === "#act5night") { await startAct(5, { fresh: true, skipCard: true }); await A5.debugNight(api); return; }
   loadRoom("seminar", "start");
   const unlocked = +(localStorage.getItem("gaincontrol.act") || 1);
+  onTitle = true; musicScene(true);
   const tOpts = { unlocked, full: !FULL.standalone() };
   const titleP = showCard(titleArt(tOpts), { buttons: true });
-  const stopGlitch = titleGlitch(card, { sfx: () => sfx.play("blank"), ...tOpts });
-  const choice = await titleP; stopGlitch();
+  const stopGlitch = titleGlitch(card, { sfx: () => { sfx.play("blank"); music.glitch(); }, ...tOpts });
+  const choice = await titleP; stopGlitch(); onTitle = false;
   if (["2", "3", "4", "5"].includes(choice)) { await startAct(+choice, { fresh: true }); return; }
   await startAct(1, { fresh: true });
 }

@@ -245,6 +245,8 @@ export const sfx = {
   ambience(room, mode) { const key = room + "/" + mode; if (!ac() || ambNow.key === key) return; stopAmb(); ambNow.key = key; if (ctx.state === "running" && !muted) startAmb(room, mode); else ambNow.pending = [room, mode]; },
   resumeAmbience() { if (ambNow.pending && ctx && ctx.state === "running" && !muted) { const [r, m] = ambNow.pending; delete ambNow.pending; startAmb(r, m); } },
   get muted() { return muted; },
+  // the live context, for the music: { ctx, master, noise }
+  audio() { if (!ac()) return null; return { ctx, master, noise: noiseBuf }; },
   toggle() { muted = !muted; try { localStorage.setItem("gaincontrol.mute", muted ? "1" : "0"); } catch (e) {}
     if (ac()) master.gain.setTargetAtTime(muted ? 0 : .7, now(), .05);
     if (!muted && ambNow.key) { const [r, m] = ambNow.key.split("/"); ambNow.key = ""; sfx.ambience(r, m); }

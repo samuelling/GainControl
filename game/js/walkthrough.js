@@ -1,0 +1,231 @@
+// THE GUV SHEET's content: a literal walkthrough of GAIN CONTROL, act by act, checked against the story and minigame code.
+// Each step: { t: one imperative instruction, flag? the G.flags key that is true once the step is done }.
+// "OPTIONAL: " marks bonus steps (points, the real record); "AVOID: " marks deaths that are easy to stumble into.
+// Minigame how-to steps all carry the flag the game sets when that minigame is finished, so they tick off together.
+// Wording follows the game: hotspot labels, chooser verbs (labels per room), item names. USE X ON Y means: click X in the
+// inventory, choose USE ON, then click Y.
+
+export const WALKTHROUGH = {
+  1: { title: "ACT I  SUBMISSION", parts: [
+    { name: "MONDAY  DAY  (NELL)  THREE TASKS, ANY ORDER", steps: [
+      { t: "In Seminar Rm 101, click Preston and choose TALK. Your voice memo recorder catches his 'I ran every subject myself.'", flag: "recorded" },
+      { t: "OPTIONAL: LOOK at the projector screen (7T vs 3T) and the pneumatic tube for h-index points." },
+      { t: "OPTIONAL: TALK to the old woman in the back row. Afterwards, USE the voice memo recorder ON the old woman." },
+      { t: "Click the ceiling tile (two eyes in the ceiling) and choose TALK. Morris wants pepperoni, delivered to your desk drawer.", flag: "morrisMoved" },
+      { t: "Click the pizza, TAKE SLICE. Door to hallway (GO OUT), Adline Lab 114 (GO IN). USE the slice of pizza ON the desk drawer.", flag: "fedMorris" },
+      { t: "TALK to Brett. When he asks what a Tesla is, pick 'A unit of magnet strength. 7T is more than twice our 3T…'", flag: "officeHours" },
+      { t: "OPTIONAL: in the hallway, LOOK at the Rising Stars wall and the bulletin board (same room, same Friday, 2 PM)." },
+      { t: "AVOID: the dark booth's SIT IN. You fall asleep and wake up a 9th-year. (CONSOLE is safe: it opens the perception console.)" },
+      { t: "With all three done, do anything in the lab: a note appears on your monitor.", flag: "noteReady" },
+      { t: "Click your monitor and choose LOOK. Read the sticky note (brain coordinates). Monday night begins.", flag: "noteRead" },
+    ] },
+    { name: "MONDAY NIGHT  (GUS)  ANY ORDER", steps: [
+      { t: "OPTIONAL: in the hallway, LOOK at Impact Lab 116 (light and hum under the door) for a point." },
+      { t: "Enter Seminar Room 101 (GO IN). Click the hooded robe on the chair and choose PHOTOGRAPH.", flag: "robePhoto" },
+      { t: "Click the pneumatic tube (or the hallway's tube station) and choose LISTEN. With both done, Act I ends.", flag: "listened" },
+    ] },
+  ] },
+
+  2: { title: "ACT II  UNDER REVIEW", parts: [
+    { name: "TUESDAY  DAY  (NELL + MORRIS)  THEN FOUR CLUES, ANY ORDER", steps: [
+      { t: "In the lab, click the desk drawer (now labeled Morris) and choose TALK. Morris joins: click a name chip or press Tab to switch.", flag: "morrisJoined" },
+      { t: "OPTIONAL: click Gus's desk, SNOOP, to leave him a note.", flag: "noteForGus" },
+    ] },
+    { name: "CLUE: THE SCANNER CALENDAR (MRI CONTROL B1)", steps: [
+      { t: "As Nell: hallway stairwell, GO DOWN. In MRI Control B1, click the metal locker and choose PUT METAL IN (your thermos).", flag: "thermosLocked" },
+      { t: "AVOID: OPEN the magnet room door while carrying the thermos. The magnet takes it, and you." },
+      { t: "OPTIONAL: TALK to Dr. Tess La." },
+      { t: "SWITCH TO MORRIS: vent, CLIMB IN, MRI CONTROL B1. CHEW the wires. SWITCH TO NELL: scanner calendar, READ. Tess comes back and turns.", flag: "clueCalendar" },
+    ] },
+    { name: "CLUE: THE PURCHASE ORDERS (MAIN OFFICE 1F)", steps: [
+      { t: "As Nell: hallway, main office, GO IN. TALK to Penny Ledger to get Form PO-7 (or TAKE FORM from the form rack).", flag: "gotPO7" },
+      { t: "In the lab, USE Form PO-7 ON Prof. Adline's office. Back in the main office, USE signed Form PO-7 ON Penny Ledger.", flag: "clueCoil" },
+      { t: "OPTIONAL: then USE the voice memo recorder ON Penny Ledger ('Nobody ordered a coil').", flag: "pennyMemo" },
+    ] },
+    { name: "CLUE: THE ETHICS PROTOCOL (RESEARCH INTEGRITY 2F)", steps: [
+      { t: "Hallway stairwell, GO UP. OPTIONAL: TALK to Ethel Bord. Click the Binder of Binders and choose LOOK UP VALU.", flag: "sawIndex" },
+      { t: "Click the step stool and choose MOVE IT.", flag: "stoolPlaced" },
+      { t: "Click the red shelf (R) and choose PULL R-12: approved June 3, after the data.", flag: "clueIRB" },
+      { t: "AVOID: PULL A BINDER on shelves A, B or C. The binder avalanche kills you." },
+    ] },
+    { name: "CLUE: THE SIGN-IN SHEET (CODY, MRI CONTROL B1)", steps: [
+      { t: "In MRI Control B1, TALK to Cody.", flag: "codyTalked" },
+      { t: "USE the voice memo recorder ON Cody. He hears Preston say he ran everyone himself.", flag: "codyShaken" },
+      { t: "SWITCH TO MORRIS: vent, CLIMB IN, MAIN OFFICE 1F. Click the printer and choose CRAWL IN to clear the jam.", flag: "printerFixed" },
+      { t: "SWITCH TO NELL: in the main office, printer, PRINT (a credit slip). In MRI Control, USE credit slip ON Cody to get the clipboard.", flag: "clueClipboard" },
+      { t: "AVOID: the dark booth's SIT IN (death)." },
+    ] },
+    { name: "TUESDAY NIGHT  (GUS)", steps: [
+      { t: "OPTIONAL: LOOK at the Rising Stars wall: CITATIONS 147,794." },
+      { t: "Click Impact Lab 116, TRY BADGE. On the keypad (keys 1, 4, 7, 9 are worn) enter 147794.", flag: "impactOpen" },
+      { t: "Click Preston's computer, USE. Press GENERATE, then PRINT, then LOG OFF. (SOURCES and FEUD are worth extra points.)", flag: "printed" },
+      { t: "AVOID: the second monitor's TOUCH. Turning the Gain Controller dial is a death." },
+      { t: "OPTIONAL: LOOK at the poster (the insignia on the coxswain's hat)." },
+      { t: "Leave by the door (GO OUT). Two robed figures cross the hallway to the stairs.", flag: "robesSeen" },
+    ] },
+    { name: "WEDNESDAY MORNING  (NELL)", steps: [
+      { t: "Click the stairwell, GO DOWN, to follow the robes. Wednesday morning: in MRI Control B1, TALK to Det. Sgt. Small first.", flag: "smallDone" },
+      { t: "Then TALK to Gus. Act II ends.", flag: "gusDone" },
+    ] },
+  ] },
+
+  3: { title: "ACT III  MAJOR REVISIONS", parts: [
+    { name: "WEDNESDAY  DAY  (NELL + MORRIS)  FOUR PROOFS, ANY ORDER", steps: [
+      { t: "Det. Sgt. Small's chat plays on its own. Then click Gus and choose TALK; pick each topic for a hint about every proof.", flag: "gusPlanned" },
+      { t: "OPTIONAL: before your second proof, TALK to Dana Outlier in the hallway (she plans to follow Preston).", flag: "danaTalked" },
+      { t: "OPTIONAL: TALK to Preston Valu in the hallway (he blanks out).", flag: "prestonTalked" },
+      { t: "AVOID: the dark booth's SIT IN (death)." },
+    ] },
+    { name: "PROOF: TABLE 1, THE CEILING (GUS)", steps: [
+      { t: "Click Gus and choose TABLE 1.", flag: "proofGrim" },
+      { t: "Step 1: click panel S2A (attention score, session 1 vs 2) and S2C (V1 effect, odd vs even runs). Not head motion, not pizza.", flag: "proofGrim" },
+      { t: "Step 2: mark the three bars above the .60 ceiling: V1 superficial .91, V1 deep .94, V2 deep .88.", flag: "proofGrim" },
+      { t: "Step 3: click the methods sentence about selecting voxels whose effect correlated with attention score. Press RUN IT ON NOISE, then DONE.", flag: "proofGrim" },
+    ] },
+    { name: "PROOF: FIGURE 3 (YOUR MONITOR)", steps: [
+      { t: "Click your monitor, WORK, FIGURE 3: TWO PARTICIPANTS. Press FLIP ↔ once, then ROTATE 90° once. When it matches, DONE.", flag: "proofOverlay" },
+    ] },
+    { name: "PROOF: THE GPU LOGS (KITCHEN, SERVER ROOM)", steps: [
+      { t: "Click Gus's desk and choose SNOOP: you take his energy drink.", flag: "gotDrink" },
+      { t: "Hallway, coffee kitchen, GO IN. TALK to Dr. Rex Jected (he wants a real coffee).", flag: "rexAsked" },
+      { t: "Click the mug tree and choose TAKE A MUG.", flag: "gotMug" },
+      { t: "USE energy drink (Gus's) ON espresso machine. It descales: READY.", flag: "descaled" },
+      { t: "AVOID: putting the mug on the machine before it's descaled. Rex warns you once; the second time is a death." },
+      { t: "AVOID: the fridge's OPEN (the oat milk is a sample)." },
+      { t: "USE mug ON espresso machine (or BREW) for a coffee, then TALK to Rex. He trades his login.", flag: "rexLogin" },
+      { t: "OPTIONAL: LOOK at the folded card on the corkboard: from the real record.", flag: "real_invite2018" },
+      { t: "Hallway stairwell, OPEN, B1 GPU SERVER ROOM. Click the terminal and choose LOG IN.", flag: "proofLogs" },
+      { t: "AVOID: the rack marked LTM's ASK IT TO WRITE YOUR DISSERTATION (death)." },
+    ] },
+    { name: "PROOF: THE REPLICATION (MORRIS, THEN YOUR MONITOR)", steps: [
+      { t: "SWITCH TO MORRIS: vent, CLIMB IN, IMPACT LAB 116. Click the stimulus log and choose DRAG OUT. It lands in Nell's drawer.", flag: "gotLog" },
+      { t: "OPTIONAL: as Morris, click Preston's printer and choose CRAWL IN: the Round Table's invitation.", flag: "invite" },
+      { t: "AVOID: as Morris, USE on the second monitor (death)." },
+      { t: "SWITCH TO NELL: your monitor, WORK, THE REPLICATION (or USE Preston's stimulus log ON your monitor).", flag: "proofGLM" },
+      { t: "Log: click cells to start blocks. ATTEND (green) at 0:16, 1:20, 2:24, 3:28; IGNORE (blue) at 0:48, 1:52, 2:56, 4:00. CHECK IT.", flag: "proofGLM" },
+      { t: "Press < EARLIER four times (8 s of dummy scans), then LINED UP. Then STAMP THE HRF.", flag: "proofGLM" },
+      { t: "Turn the knobs with + and −: ATTEND 0.95, IGNORE 0.95, BASELINE 0.20. When the FIT lamp lights, THAT'S THE FIT. Then SOLVE.", flag: "proofGLM" },
+      { t: "AVOID: pressing TRY ANOTHER ANALYSIS fourteen times (inducted early: death)." },
+      { t: "LOOK FOR LAYERS, FIT PER LAYER, COMPARE TO HIS PAPER. Click panels A, B/D and C (three tells), WRITE IT UP, then CLOSE.", flag: "proofGLM" },
+    ] },
+    { name: "WEDNESDAY AFTERNOON  ETHEL, THE MEETING, IRIS", steps: [
+      { t: "Dana has been found in the recycling bin; Det. Sgt. Small talks to you.", flag: "danaGone" },
+      { t: "With all four proofs: stairwell, OPEN, 2F RESEARCH INTEGRITY. TALK to Ethel Bord. Misconduct goes under New Business.", flag: "meetingOpen" },
+      { t: "Stairwell, OPEN, 3F FACULTY MEETING.", flag: "meeting" },
+      { t: "AVOID: TALK to Prof. Quorum. You're appointed to the Curriculum Committee (death)." },
+      { t: "Click the student rep chair and choose SIT DOWN. THE NOD: just watch the first twelve motions.", flag: "nodDone" },
+      { t: "Then press NOW (or Space) whenever the motion read is the same as the one two motions earlier, before the heads nod. Wrong calls cost you.", flag: "nodDone" },
+      { t: "Catch all but one of the repeats (at least three) with at most one false alarm, or the round repeats. Then press ADJOURN?", flag: "nodDone" },
+      { t: "Ethel sends you to the fourth floor.", flag: "irisOpen" },
+      { t: "Stairwell, OPEN, 4F EMERITUS OFFICE. TALK to the old woman.", flag: "irisNamed" },
+      { t: "TALK to Prof. Iris Candor again. When you choose, pick 'What does this have to do with me?' Night falls.", flag: "irisDone" },
+      { t: "OPTIONAL: in her office, LOOK at one issue, sticking out (in the journal towers): from the real record.", flag: "real_ap1977" },
+      { t: "OPTIONAL: LOOK at something small on the sill: from the real record. (LOOK at the magnet manual and photograph for points.)", flag: "real_rocker" },
+    ] },
+    { name: "WEDNESDAY NIGHT  (GUS)", steps: [
+      { t: "In the GPU Server Room, click the equipment room door and choose FOLLOW THE LEAK.", flag: "chanting" },
+      { t: "OPTIONAL: click the bricked-up doorway and choose LISTEN (the after-dinner portion).", flag: "overheard" },
+      { t: "OPTIONAL: USE phone ON bricked-up doorway to record the chanting.", flag: "chantTaped" },
+      { t: "AVOID: the bricked-up doorway's KNOCK (death)." },
+      { t: "Click the tube line and choose LISTEN: a canister is coming. Then click the access hatch and choose OPEN. Act III ends.", flag: "hatchOpen" },
+    ] },
+  ] },
+
+  4: { title: "ACT IV  REBUTTAL", parts: [
+    { name: "THURSDAY  DAY  (NELL + MORRIS)  THEN THREE LEADS, ANY ORDER", steps: [
+      { t: "Go to the hallway. TALK to Prof. Impact (neck pillow, by the Rising Stars wall): four o'clock, his office.", flag: "impactMet" },
+      { t: "Back in the lab, TALK to Gus: his plan for the dark booth.", flag: "darkReady" },
+    ] },
+    { name: "LEAD: THE METAMER (LIBRARY 2F)", steps: [
+      { t: "Stairwell, OPEN, 2F LIBRARY. Click the faculty directory and choose READ (Impact's h-index: 112).", flag: "sawHindex" },
+      { t: "OPTIONAL: LOOK at the reading table (the feud's shared seed).", flag: "clueFeud" },
+      { t: "Click the back issues and choose COMPARE (or USE printout ON back issues).", flag: "clueMetamer" },
+      { t: "Match sentence, then card: 1 Quorum 1979, 2 Laud & Hindex 1983, 3 Sinecure 1988, 4 Tenure & Quorum 1991, 5 Hindex & Sinecure 1996, 6 Laud & Sinecure 1987.", flag: "clueMetamer" },
+      { t: "CHECK THE REFERENCES. Click reference 4 (Quorum 1979B) and reference 8 (Valu & Mick 2025, J. Endless Res.). Then DONE.", flag: "clueMetamer" },
+    ] },
+    { name: "LEAD: THE MISSING HOURS (MAIN OFFICE 1F)", steps: [
+      { t: "Hallway, main office, GO IN. TALK to Penny Ledger: she gives you the expense receipts.", flag: "gotReceipts" },
+      { t: "USE expense receipts ON Penny Ledger (or RING BELL).", flag: "clueHours" },
+      { t: "Turn on all three calendars: PRESTON, IMPACT, QUORUM. File each receipt: click it, then its day column (OCT 26 is MON 26 … OCT 31 is SAT 31).", flag: "clueHours" },
+      { t: "COMPARE CVS. Click THE HINDEX LAB, SINECURE GROUP and QUORUM LAB. Then DONE.", flag: "clueHours" },
+    ] },
+    { name: "LEAD: THE DARK (DARK BOOTH, LAB)", steps: [
+      { t: "In the lab, click the dark booth and choose SIT IN (safe today: Preston is inside).", flag: "clueDark" },
+      { t: "Step 1: click the red ON lamp, the phone and the light under the door.", flag: "clueDark" },
+      { t: "Step 2: wait (about ten seconds) while the dark-adaptation curve falls. Don't press CHECK PHONE: it starts the wait over.", flag: "clueDark" },
+      { t: "Step 3: keep the pointer beside his head, not on it. Answer RING, then RING IN RING, then DIAL: MAX. DONE.", flag: "clueDark" },
+    ] },
+    { name: "FOUR O'CLOCK  IMPACT'S OFFICE", steps: [
+      { t: "Four o'clock arrives once Impact is met and all three leads are done.", flag: "fourOClock" },
+      { t: "Stairwell, OPEN, 3F PROF. IMPACT. Nobody answers; Penny says he went to the −80 room.", flag: "impactMissing" },
+      { t: "Stairwell, OPEN, B1 −80 ROOM. Impact is frozen in the walk-in. TALK to Det. Sgt. Small.", flag: "impactDead" },
+      { t: "AVOID: the walk-in −80's CLOSE THE DOOR (death)." },
+      { t: "Stairwell, OPEN, 3F PROF. IMPACT. Keypad: 112 (his h-index, from the library directory).", flag: "impactOpen" },
+      { t: "AVOID: three wrong keypad codes (death)." },
+      { t: "Click the desk drawer and choose OPEN: Impact's expired membership card. This brings Cody to the hallway.", flag: "clueCard" },
+      { t: "OPTIONAL (story clue; the act advances without it): click Impact's laptop and choose READ THE REVIEW.", flag: "clueReviewer2" },
+      { t: "OPTIONAL (story clue): framed Figure 2, OVERLAY YOUR SCAN. Press ← 4 times, ↓ 3 times, SCALE − 5 times; click all six painted layers. DONE.", flag: "clueRetainer" },
+    ] },
+    { name: "CODY, AND THE FOG", steps: [
+      { t: "In the hallway, TALK to Cody (by the tube station).", flag: "codyLeft" },
+      { t: "AVOID: stairwell, B1 ANIMAL FACILITY as Nell. No booties: a warning the first time, a death the second." },
+      { t: "SWITCH TO MORRIS: vent, CLIMB IN, ANIMAL FACILITY B1. Cody is in the water maze.", flag: "codyDead" },
+      { t: "OPTIONAL: as Morris, click the water maze and choose REMEMBER.", flag: "mazeRemember" },
+      { t: "SWITCH TO NELL and click anything (LOOK). Morris tells her what he saw.", flag: "morrisPast" },
+      { t: "Go into the hallway as Nell. Preston comes; Rex is frozen; run. THE FOG begins: click to start.", flag: "chased" },
+      { t: "Each landing: click the door with the faint ring-in-ring mark (or press ← / →). Guess if unsure: you're right more often than you think.", flag: "escaped" },
+      { t: "Events: Space to duck, shove or shush; take the door the robe isn't in; ↑ when both are chained; ← grabs your notebook; hold still in a flicker.", flag: "escaped" },
+      { t: "If Preston catches you, REVISE & RESUBMIT: you keep your landings. At the end screen, CONTINUE. Iris takes you in.", flag: "irisThursday" },
+    ] },
+    { name: "THURSDAY NIGHT  (GUS)", steps: [
+      { t: "In the steam tunnels, click the coat check and choose PUT ONE ON: the robe with the lit pin.", flag: "gotRobe4" },
+      { t: "Click the map and choose TAKE.", flag: "gotMap4" },
+      { t: "OPTIONAL: click the reel and choose TAKE.", flag: "gotReel" },
+      { t: "OPTIONAL: tube line, LISTEN, then access hatch, OPEN: the induction notice.", flag: "canister4" },
+      { t: "AVOID: the bricked-up doorway's KNOCK while carrying the robe (death)." },
+      { t: "Back to the server room (BACK), door to the stairs (GO OUT), Adline Lab 114 (GO IN). USE hooded robe ON your monitor.", flag: "robeLeft" },
+      { t: "In the hallway, USE Gus's map ON tube station. Friday morning begins.", flag: "mapSent" },
+    ] },
+    { name: "FRIDAY MORNING  (NELL)", steps: [
+      { t: "In MRI Control B1, TALK to Det. Sgt. Small (it starts on its own if you click anything).", flag: "smallGus" },
+      { t: "Door to the stairs (GO UP), Adline Lab 114 (GO IN). Click the robe on your chair and choose TAKE.", flag: "gotRobe" },
+      { t: "In the hallway, click the tube station and choose OPEN HATCH: Gus's map.", flag: "gotMap" },
+      { t: "Stairwell, OPEN, 4F EMERITUS OFFICE. TALK to Prof. Iris Candor: THE REHEARSAL.", flag: "rehearsed" },
+      { t: "Drill 1: press S (SECONDED) only when the phrase matches the one two turns ago. Ignore the kettle, phone and other noises.", flag: "rehearsed" },
+      { t: "Drill 2: keep doing S, and press K (KNOCK) when Iris sits in the same chair as two turns ago. Three mistakes restart the drill.", flag: "rehearsed" },
+      { t: "Press Enter (GO ON or SKIP) between lessons and scenes. When the drills are passed, Act IV ends.", flag: "rehearsed" },
+    ] },
+  ] },
+
+  5: { title: "ACT V  DECISION", parts: [
+    { name: "FRIDAY  2 PM  THE DEFENSE  (NELL)", steps: [
+      { t: "Click your lectern and choose BEGIN THE DEFENSE. Answer each question by clicking evidence cards; two right cards (or one decisive card) close it.", flag: "defenseDone" },
+      { t: "Q1, WAS THE STUDY RUN? → two of SCANNER CALENDAR, PURCHASE ORDERS, IRB PROTOCOL, SIGN-IN SHEET, THE RECORDER.", flag: "defenseDone" },
+      { t: "Q2, ARE THE DATA REAL? → TABLE 1 CEILING and FIGURE 3B = 3D. (Save GPU LOGS and THE REPLICATION.)", flag: "defenseDone" },
+      { t: "Q3, WHOSE DATA ARE THEY? → THE RETAINER. Q4, WHO WROTE THE REVIEW? → REVIEWER 2 REPORT.", flag: "defenseDone" },
+      { t: "Q5, WHY? → two of THE INVITATION, THE MISSING HOURS, THE METAMER, IMPACT'S NRT CARD, THE DARK BOOTH. Nell names Preston. CONTINUE.", flag: "defenseDone" },
+    ] },
+    { name: "FRIDAY NIGHT  B3  NELL, IRIS, MORRIS (TAB SWITCHES)  JOBS IN ANY ORDER", steps: [
+      { t: "NELL: click the hooded robe in your inventory and choose PUT ON.", flag: "robeOn" },
+      { t: "NELL: click the doorkeeper, ANSWER. Choose ‘…FURTHER RESEARCH’, then SHOW IRIS'S CARD (BORN 1987).", flag: "passOK" },
+      { t: "AVOID: ‘…A CAREER IN INDUSTRY’, or TELL THE TRUTH about your birth date (both deaths)." },
+      { t: "NELL: inner door, GO IN. Click the Round Table and choose TAKE YOUR SEAT: THE INDUCTION.", flag: "echoPassed" },
+      { t: "Same rules as the rehearsal: S when the phrase matches two turns ago, K when the speaking seat does. Otherwise stay silent; ignore the gavel and lamps.", flag: "echoPassed" },
+      { t: "If Quorum says 'Let us advance the Echo', compare three turns back until he says it returns. Six mistakes and the hoods close in (Revise & Resubmit).", flag: "echoPassed" },
+      { t: "IRIS: click the breaker panel and choose THROW BREAKERS. Throw A, C, D, B, E, F (the pencil order), then wait for the charge. DONE.", flag: "magnetCharged" },
+      { t: "AVOID: as Iris, the plant's knife switch THROW IT before the breakers are set (death)." },
+      { t: "MORRIS: click the Archive, PICK REELS. First click ETHEL BORD 2F on the dial. 90 seconds, one attempt: don't CLOSE early.", flag: "reelsDone" },
+      { t: "Send MEMBERSHIP ROLLS, PANEL SCORES, REVIEWER 2 REPORTS and EDITORIAL BOARDS: click a reel, then SEND. Three or more reach Ethel for the best ending.", flag: "archiveSent" },
+      { t: "OPTIONAL: as Morris, click the dead letters and choose OPEN IT: the brass gavel.", flag: "brassGavel" },
+      { t: "MORRIS: riser pipe, UP TO THE 3T. Click the jack posts and choose LOOSEN THE BOLTS.", flag: "supportsOut" },
+      { t: "Find the post weeping rust. Pull a bolt from its diagonal partner, then the weeping post, then one each from the other two. Repeat three times.", flag: "supportsOut" },
+      { t: "AVOID: stripping one post. Past the red ring the pad drops early (death; Revise & Resubmit puts every bolt back)." },
+    ] },
+    { name: "THE DECISION", steps: [
+      { t: "When all three jobs are done: SWITCH TO IRIS, click the service stair and choose CLIMB (or, as Nell, TAKE YOUR SEAT again).", flag: "climax" },
+      { t: "Quorum makes his offer. Choose NO. With the Archive sent, this is the ACCEPTED ending.", flag: "ending" },
+      { t: "AVOID: YES, CAN I THINK ABOUT IT? or NEVER MIND. Each ends the game badly (INDUCTED or DESK REJECT)." },
+      { t: "Epilogue (ACCEPTED only): click member names on the left until eight are traced and the view steps back. Then DONE." },
+    ] },
+  ] },
+};
