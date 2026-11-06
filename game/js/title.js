@@ -1,9 +1,9 @@
-// THE TITLE SCREEN: GAIN CONTROL over the Round Table. Every few seconds something tries to take the title over (the
+// THE TITLE SCREEN: GAIN CONTROL, on an LED dot-matrix panel, over the Round Table. Every few seconds something tries to take the title over (the
 // Gain Controller, on a carrier wave): the letters slice and split, the seat lamps round the ring light, and for a
 // moment the title says something else. Then it snaps back. Poses, not tweens: each glitch is a few fixed frames.
-import { seg, segC, segW, arcs } from "./gfx.js";
+import { seg, arcs } from "./gfx.js";
 
-const CX = 320, CY = 150, RX = 272, RY = 62, TY = 92, TS = 44;
+const CX = 320, CY = 150, RX = 272, RY = 62, TY = 92;
 const at = (deg, rx = RX, ry = RY) => { const a = deg * Math.PI / 180; return [CX + rx * Math.cos(a), CY + ry * Math.sin(a)]; };
 const f = (v) => v.toFixed(1);
 
@@ -33,20 +33,52 @@ export function titleTable(lit = 0) {
   return s;
 }
 
-// the title, normally
-const plain = () => segC("GAIN CONTROL", CX, TY, TS, "sW", 2.2);
-// glitch poses: horizontal slices shoved sideways, a split into channels, a takeover word, scanlines
-const sliced = (dx) => [[TY - 2, TY + 14], [TY + 14, TY + 30], [TY + 30, TY + TS + 4]].map(([a, b], i) =>
-  `<g clip-path="url(#tclip${i})"><g transform="translate(${dx[i]},0)">${plain()}</g></g>`).join("");
-const split = (d) => `<g transform="translate(${-d},0)">${segC("GAIN CONTROL", CX, TY, TS, "sR", 2.2)}</g><g transform="translate(${d},1)">${segC("GAIN CONTROL", CX, TY, TS, "sG", 2.2)}</g>${segC("GAIN CONTROL", CX, TY, TS, "sW", 1.2)}`;
-const WORDS = ["GAIN CONTROLLED", "GAIN: MAXIMUM", "FOG NEURO", "OBEY THE BOARD", "FURTHER RESEARCH", "THE AUTHORS SHOULD", "CONSCIENCE: 0"];
-const takeover = (w) => segC(w, CX, TY, Math.min(TS, 560 / (segW(w, 1) || 1)), "sR", 2.2)
-  + arcs(CX - segW(w, Math.min(TS, 560 / segW(w, 1))) / 2 - 14, TY + 22, -1, "sG", 3, .9) + arcs(CX + segW(w, Math.min(TS, 560 / segW(w, 1))) / 2 + 14, TY + 22, 1, "sG", 3, .9);
-const scan = () => plain() + Array.from({ length: 16 }, (_, i) => `<path class="hl sG" d="M${CX - 170},${TY + i * 3} L${CX + 170},${TY + i * 3}"/>`).join("");
-
-export const titleDefs = () => `<defs>${[[TY - 2, TY + 14], [TY + 14, TY + 30], [TY + 30, TY + TS + 4]].map(([a, b], i) =>
-  `<clipPath id="tclip${i}"><rect x="0" y="${a}" width="640" height="${b - a}"/></clipPath>`).join("")}</defs>`;
-export const titleArt = () => `${titleDefs()}<g id="ttable">${titleTable(0)}</g><g id="ttl">${plain()}</g>`;
+// THE TITLE TYPE: an LED dot-matrix display, the way Teenage Engineering's hardware screens draw letters (OB-4,
+// EP-133): a 5×7 grid per character, lit dots filled (they're ON), unlit dots as faint hairline rings, all inside a
+// thin display window. Sixteen characters wide, so the takeover words fit the same panel.
+const FONT = {
+  A: "01110 10001 10001 11111 10001 10001 10001", B: "11110 10001 10001 11110 10001 10001 11110", C: "01110 10001 10000 10000 10000 10001 01110",
+  D: "11110 10001 10001 10001 10001 10001 11110", E: "11111 10000 10000 11110 10000 10000 11111", F: "11111 10000 10000 11110 10000 10000 10000",
+  G: "01110 10001 10000 10111 10001 10001 01111", H: "10001 10001 10001 11111 10001 10001 10001", I: "01110 00100 00100 00100 00100 00100 01110",
+  J: "00111 00010 00010 00010 00010 10010 01100", K: "10001 10010 10100 11000 10100 10010 10001", L: "10000 10000 10000 10000 10000 10000 11111",
+  M: "10001 11011 10101 10101 10001 10001 10001", N: "10001 10001 11001 10101 10011 10001 10001", O: "01110 10001 10001 10001 10001 10001 01110",
+  P: "11110 10001 10001 11110 10000 10000 10000", Q: "01110 10001 10001 10001 10101 10010 01101", R: "11110 10001 10001 11110 10100 10010 10001",
+  S: "01111 10000 10000 01110 00001 00001 11110", T: "11111 00100 00100 00100 00100 00100 00100", U: "10001 10001 10001 10001 10001 10001 01110",
+  V: "10001 10001 10001 10001 10001 01010 00100", W: "10001 10001 10001 10101 10101 10101 01010", X: "10001 10001 01010 00100 01010 10001 10001",
+  Y: "10001 10001 01010 00100 00100 00100 00100", Z: "11111 00001 00010 00100 01000 10000 11111", "0": "01110 10001 10011 10101 11001 10001 01110",
+  ":": "00000 01100 01100 00000 01100 01100 00000", "-": "00000 00000 00000 11111 00000 00000 00000", " ": "00000 00000 00000 00000 00000 00000 00000",
+};
+const COLS = 16, P = 5.2, DR = 1.9;                       // characters in the window, dot pitch, lit dot radius
+const WX = CX - (COLS * 6 - 1) * P / 2, WY = TY + 2;      // window origin (top-left dot)
+// which dots are lit for a word, centred in the window: a Set of "c,r"
+function litDots(word) {
+  const on = new Set(), w = word.toUpperCase(), c0 = Math.floor((COLS - w.length) / 2) * 6 + (((COLS - w.length) % 2) ? 3 : 0);
+  [...w].forEach((ch, k) => { const rows = (FONT[ch] || FONT[" "]).split(" ");
+    rows.forEach((bits, r) => [...bits].forEach((b, c) => { if (b === "1") on.add(`${c0 + k * 6 + c},${r}`); })); });
+  return on;
+}
+// draw the display: unlit grid, lit dots; opts: cls for lit dots, dx per row (row slices), noise (stray lit dots), shift
+function display(on, { cls = "fW", dx = [], noise = 0, ghost = null } = {}) {
+  let s = `<rect class="k sM" style="stroke-width:.8" x="${f(WX - 9)}" y="${f(WY - 9)}" width="${f((COLS * 6 - 1) * P + 18)}" height="${f(6 * P + 18)}" rx="4"/>`;
+  s += seg("GAIN", WX - 8, WY - 17, 3.6, "sM", .6) + seg("CONTROL", WX + 14, WY - 17, 3.6, "sM", .6) + `<circle class="fR" cx="${f(WX + (COLS * 6 - 1) * P + 4)}" cy="${f(WY - 14)}" r="1.4"/>`;
+  for (let r = 0; r < 7; r++) for (let c = 0; c < COLS * 6 - 1; c++) {
+    const x = WX + c * P + (dx[Math.floor(r / 2.4)] || 0), y = WY + r * P, k = `${c},${r}`;
+    if (ghost && ghost.has(k)) s += `<circle class="fR" cx="${f(x - 1.6)}" cy="${f(y)}" r="${DR * .8}"/>`;
+    if (on.has(k) || Math.random() < noise) s += `<circle class="${cls}" cx="${f(x)}" cy="${f(y)}" r="${DR}"/>`;
+    else s += `<circle class="hl sN" cx="${f(WX + c * P)}" cy="${f(y)}" r=".7"/>`;
+  }
+  return s;
+}
+const TITLE = litDots("GAIN CONTROL");
+const plain = () => display(TITLE);
+// glitch poses, in dots: rows shoved sideways, a red ghost beside the white, a takeover word in red, random dots firing
+const sliced = (dx) => display(TITLE, { dx: dx.map(v => Math.round(v / P) * P) });
+const split = (d) => display(TITLE, { ghost: TITLE, dx: [d, -d, d] });
+const WORDS = ["GAIN CONTROLLED", "GAIN: MAXIMUM", "FOG NEURO", "OBEY THE BOARD", "FURTHER RESEARCH", "AUTHORS SHOULD", "CONSCIENCE: 0", "REVIEWER 2"];
+const takeover = (w) => display(litDots(w), { cls: "fR" }) + arcs(WX - 18, WY + 15, -1, "sG", 3, .9) + arcs(WX + (COLS * 6 - 1) * P + 18, WY + 15, 1, "sG", 3, .9);
+const scan = () => display(TITLE, { noise: .18 });
+export const titleDefs = () => "";
+export const titleArt = () => `<g id="ttable">${titleTable(0)}</g><g id="ttl">${plain()}</g>`;
 
 // run the glitches while the title card is up; returns stop()
 export function titleGlitch(root, { sfx = () => {} } = {}) {
