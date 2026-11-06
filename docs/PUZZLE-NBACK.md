@@ -60,7 +60,7 @@ The real thing, under Gus's robe, at the Round Table: twelve hooded seats around
 - **Phrase stream:** Board members speak peer-review boilerplate, one per turn. Answer **SECONDED** (key S, or the button in the dialogue box) when the phrase matches two back.
 - **Seat stream:** each turn a different seat's lamp lights as its occupant speaks. Knock (key K, or click the table) when the seat matches two back.
 - **Silence is correct** when neither matches. Most turns, the right answer is nothing.
-- **Suspicion meter:** each miss or false alarm turns a hood toward Nell (drawn as poses: hoods swivel one notch at a time). Two errors in a row and Quorum leans in: *"Let us advance the Echo."* It becomes 3-back for the next stretch.
+- **Suspicion meter:** each miss or false alarm turns a hood toward Nell (drawn as poses: hoods swivel one notch at a time). Three errors in a row and Quorum leans in: *"Let us advance the Echo."* It becomes 3-back for the next stretch.
 - **Three hoods turned:** death #16. *"The authors have failed to address the reviewers' concerns."* The hoods close in. Revise & Resubmit puts Nell back at the start of the Echo.
 - **Pass:** the Board accepts her as one of their own. *"The motion carries."* The induction proceeds, which buys Morris and Iris the time they need.
 

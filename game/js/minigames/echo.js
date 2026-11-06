@@ -350,7 +350,7 @@ function office(S) {
       if (S.speaking) {
         s += arcs(c.x + 22 * q, sy - 104 * q, 1, "hl sV", 3, q * 1.4);
         // the tempo, drawn: speed dashes when she hurries, three slow dots when she taunts
-        if (S.tempo <= .8) s += `<path class="hl sV" d="M${f1(c.x - 26 * q)},${f1(sy - 112 * q)} L${f1(c.x - 44 * q)},${f1(sy - 112 * q)} M${f1(c.x - 28 * q)},${f1(sy - 102 * q)} L${f1(c.x - 50 * q)},${f1(sy - 102 * q)} M${f1(c.x - 26 * q)},${f1(sy - 92 * q)} L${f1(c.x - 42 * q)},${f1(sy - 92 * q)}"/>`;
+        if (S.tempo <= .85) s += `<path class="hl sV" d="M${f1(c.x - 26 * q)},${f1(sy - 112 * q)} L${f1(c.x - 44 * q)},${f1(sy - 112 * q)} M${f1(c.x - 28 * q)},${f1(sy - 102 * q)} L${f1(c.x - 50 * q)},${f1(sy - 102 * q)} M${f1(c.x - 26 * q)},${f1(sy - 92 * q)} L${f1(c.x - 42 * q)},${f1(sy - 92 * q)}"/>`;
         if (S.tempo >= 1.3) for (let d = 0; d < 3; d++) s += `<circle class="hl sV" cx="${f1(c.x + (44 + d * 9) * q)}" cy="${f1(sy - 88 * q)}" r="${f1(1.6 * q)}"/>`;
       }
       // the sherry: at her hand, at her lips, or raised in a toast
@@ -362,19 +362,19 @@ function office(S) {
   if (!walked) s += irisStanding(S.walk);
   return s + sleeve(S);
 }
-// the foreground: Nell's arm on the desk, three staples' worth of sleeve, and Iris's staple gun
+// the foreground: Nell's arm on the desk, four staples' worth of sleeve, and Iris's staple gun
 function sleeve(S) {
   let s = `<path class="k sM mech" d="M-2,214 L190,214 L190,252 L-2,252 Z"/><path class="hl sM" d="M-2,219 L190,219"/>
     <path class="k sG" d="M-4,252 L4,226 L44,214 L58,238 L46,252 Z"/><path class="hl sG" d="M40,216 L54,240"/>
     <path class="sK" d="M52,222 L104,208 M57,236 L106,219"/><path class="k sK" d="M103,207 C111,203 120,206 120,212 C120,218 113,220 106,219"/>
     <path class="sK" d="M110,206 L112,203 M115,206 L117,203"/>`;
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     const x = 14 + i * 11, y = 238 - i * 4;
     if (i < S.staples) s += `<path class="sW" d="M${x},${y + 4} L${x},${y} L${x + 7},${y - 2} L${x + 7},${y + 2}"/>`;
   }
-  // the meter: tiny label above, three staples
+  // the meter: tiny label above, four staples
   s += seg("STAPLES", 134, 224, 4, "sM", .6);
-  for (let i = 0; i < 3; i++) s += `<path class="${i < S.staples ? "sR" : "hl sD"}" d="M${136 + i * 12},${241} L${136 + i * 12},${234} L${144 + i * 12},${234} L${144 + i * 12},${241}"/>`;
+  for (let i = 0; i < 4; i++) s += `<path class="${i < S.staples ? "sR" : "hl sD"}" d="M${136 + i * 12},${241} L${136 + i * 12},${234} L${144 + i * 12},${234} L${144 + i * 12},${241}"/>`;
   // the staple gun: resting (pose 0), fired at the sleeve (pose 1), or misfiring on its own (a staple flies off)
   const gun = (x, y) => `<path class="k sR" d="M${x},${y} L${x + 44},${y} L${x + 46},${y + 8} L${x + 4},${y + 8} Z"/>
     <path class="k sR" d="M${x + 12},${y + 8} L${x + 8},${y + 24} L${x + 19},${y + 24} L${x + 24},${y + 8}"/><path class="hl sR" d="M${x + 4},${y + 4} L${x + 40},${y + 4}"/>`;
@@ -570,20 +570,20 @@ const pad = (v) => String(v).padStart(2, "0");
 // Rehearsal drills: legs (each a fresh Echo), the phrase set and tempo per turn, Iris's cue lines, the scene between
 const DRILLS = {
   A: { name: ["DRILL 1", "THE PHRASES"], streams: { phrase: true, seat: false }, base: 1.25, catches: ["kettle", "phone"], between: ["sherry"],
-    legs: [{ len: 8, set: "PEER", tempo: [1, 1, .9, .8, .72, .68, .68, 1.45], cue: { 3: "fast", 7: "slow" } },
-      { len: 7, set: "GRANT", tempo: [1.45, 1.45, 1, .9, .78, .7, .7], cue: { 0: "slow", 4: "fast" } }] },
+    legs: [{ len: 7, set: "PEER", tempo: [1, 1, .9, .8, .72, .68, .68, 1.45], cue: { 3: "fast", 7: "slow" } },
+      { len: 6, set: "GRANT", tempo: [1.45, 1.45, 1, .9, .78, .7, .7], cue: { 0: "slow", 4: "fast" } }] },
   B: { name: ["DRILL 2", "THE CHAIRS"], streams: { phrase: false, seat: true }, base: .9, catches: ["canister", "misfire"], between: ["kettle"],
     legs: [{ len: 7, tempo: [1, 1, .85, .75, .7, 1.4, 1.5], cue: { 3: "fast", 5: "slow" } },
       { len: 6, tempo: [1.3, 1, .82, .72, .7, 1], cue: { 2: "fast" } }] },
   C: { name: ["DRILL 2", "BOTH AT ONCE"], streams: { phrase: true, seat: true }, base: 1.05, catches: ["sneeze", "phone", "kettle"], between: ["toast"],
-    legs: [{ len: 7, set: "GRANT", tempo: [1, 1, .9, .82, .78, 1.35, 1.4], cue: { 3: "fast", 5: "slow" } },
-      { len: 7, set: "TOAST", tempo: [1.2, 1, .9, .84, .8, .8, 1], cue: { 3: "fast" } }] },
+    legs: [{ len: 6, set: "GRANT", tempo: [1, 1, .9, .82, .78, 1.35, 1.4], cue: { 3: "fast", 5: "slow" } },
+      { len: 6, set: "TOAST", tempo: [1.2, 1, .9, .84, .8, .8, 1], cue: { 3: "fast" } }] },
 };
 // Induction readings: camera, speaking order, tempo, the catch events
 const READINGS = [
-  { cam: "wide", pattern: "round", len: 8, tempo: 1.05, name: "FIRST READING", sub: "ROUND THE TABLE", catches: ["gavel"] },
-  { cam: "close", pattern: "cluster", len: 8, tempo: 1, name: "SECOND READING", sub: "THE HEAD OF THE TABLE", catches: ["flicker"] },
-  { cam: "over", pattern: "open", len: 8, tempo: .94, name: "THIRD READING", sub: "THE FLOOR IS OPEN", catches: ["flicker", "gavel"] },
+  { cam: "wide", pattern: "round", len: 7, tempo: 1.15, name: "FIRST READING", sub: "ROUND THE TABLE", catches: ["gavel"] },
+  { cam: "close", pattern: "cluster", len: 7, tempo: 1.1, name: "SECOND READING", sub: "THE HEAD OF THE TABLE", catches: ["flicker"] },
+  { cam: "over", pattern: "open", len: 7, tempo: 1.05, name: "THIRD READING", sub: "THE FLOOR IS OPEN", catches: ["flicker", "gavel"] },
 ];
 // the poses each catch event steps through (spread over most of a turn)
 const FX_FRAMES = { kettle: [1, 2, 1, 2, 1, 2], phone: [1, 2, 1, 2, 0, 1, 2], sneeze: [1, 1, 2, 2, 2, 0], canister: [1, 2, 1, 2, 1, 2], misfire: [1, 2, 3, 3, 3],
@@ -630,7 +630,7 @@ const FX_SOUND = { kettle: (f, i) => i === 0 || i === 3 ? "echoKettle" : null, p
 export function echo(el, opts = {}) {
   injectCSS();
   const mode = opts.mode === "induction" ? "induction" : "rehearsal";
-  const P = opts.pace || 2400, score = opts.score || (() => {}), blip = opts.blip || (() => {});
+  const P = opts.pace || 2800, score = opts.score || (() => {}), blip = opts.blip || (() => {});
   const onSeat = opts.onSeat || (() => {}), onTurn = opts.onTurn || (() => {});
   let attemptSeed = 0;
   const rng = () => opts.seed != null ? mulberry(opts.seed * 7919 + (attemptSeed++) * 104729) : Math.random;
@@ -752,7 +752,7 @@ export function echo(el, opts = {}) {
         S.staples++; S.click = true; blip([180, 120]); sfx("staple"); later(() => { S.click = false; draw(); }, 520);
         const pool = S.stage === "B" || (S.stage === "C" && stream === "seat") ? (kind === "fa" ? R.faB : R.missB) : (kind === "fa" ? R.fa : R.miss);
         S.coach = kind === "catch" ? R.catchFA[cur.catch] : explain(pick(pool, lineN++), stream, kind);
-        if (S.staples >= 3) S.abort = true;
+        if (S.staples >= 4) S.abort = true;
       } else {
         S.susp++; blip([140]);
         const order = S.hoodOrder, j = Math.floor((S.susp - 1) / 2);
@@ -827,7 +827,7 @@ export function echo(el, opts = {}) {
       if (S.abort) return cur;
       S.speaking = false; S.phrase = null; if (mode === "induction") { S.seat = null; onSeat(-1); }
       draw();
-      await wait(pace * .22); if (S.abort) return cur;
+      await wait(pace * .34); if (S.abort) return cur;
       cur.open = false;
       if (sP) { if (pT && !cur.saidS) { T.phrase.misses++; error("phrase", "miss"); } else if (!pT && !cur.saidS) T.phrase.cr++; }
       if (S.abort) return cur;
@@ -896,7 +896,7 @@ export function echo(el, opts = {}) {
           S.set = leg.set || null;
           const sP = D.streams.phrase ? makeStream(leg.len, 2, SETS[leg.set][1].length, rnd) : null, sS = D.streams.seat ? makeStream(leg.len, 2, CHAIRS.length, rnd) : null;
           for (let i = 0; i < leg.len && !S.abort; i++, g++) {
-            S.tempo = leg.tempo[i] || 1;
+            S.tempo = Math.max(.82, leg.tempo[i] || 1);   // she hurries, but not past what a person can follow
             if (leg.cue[i]) S.coach = pick(R[leg.cue[i]], lineN++);
             await turn(P * D.base * S.tempo, sP, sS, i);
             if (!S.abort && catches.has(g) && i < leg.len - 1) await catchEvent(catches.get(g), P * D.base);
@@ -992,12 +992,12 @@ export function echo(el, opts = {}) {
         await talk(tries === 1 ? R.introI : R.retryI);
         if (tries === 1) await lesson("both", R.recapI, true);
         let g = 0, streak = 0, clean = 0, deep = 0, advanced = false;
-        // after every turn or catch: suspicion relaxes after a clean run; two errors in a row advance the Echo
+        // after every turn or catch: suspicion relaxes after three clean answers; three errors in a row advance the Echo
         const after = async (c, t, isTurn) => {
-          if (c.err) { streak++; clean = 0; } else { streak = 0; if (++clean >= 5 && S.susp > 0) { clean = 0; relax(); say(R.relax); } }
+          if (c.err) { streak++; clean = 0; } else { streak = 0; if (++clean >= 3 && S.susp > 0) { clean = 0; relax(); say(R.relax); } }
           if (isTurn && deep > 0 && --deep === 0 && t < LEN - 1) { S.n = 2; say(R.retreat); draw(); await wait(1600); }
-          if (streak >= 2 && t < LEN - 2) {
-            streak = 0; deep = 8;
+          if (streak >= 3 && t < LEN - 2) {
+            streak = 0; deep = 6;
             if (S.n === 3) { say(R.still); sfx("echoAdvance"); await wait(1400); }
             else { S.n = 3; advanced = true; say(R.advance); blip([110, 90]); sfx("echoAdvance"); await wait(2200); say(R.advNell); await wait(1600); }
           }
