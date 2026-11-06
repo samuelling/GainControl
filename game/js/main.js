@@ -5,6 +5,7 @@ import { PORTRAIT } from "./portraits.js";
 import * as A1 from "./story/act1.js";
 import * as A2 from "./story/act2.js";
 import * as A3 from "./story/act3.js";
+import { coda } from "./story/coda.js";
 import { PORTRAITS_A } from "./cast/act3a.js";
 import { PORTRAITS_B } from "./cast/act3b.js";
 import { keypad } from "./minigames/keypad.js";
@@ -363,6 +364,7 @@ async function endAct() {
     ${centered(E.next, 252, 6, "sM", 1)}${centered("CLICK TO CONTINUE", 300, 4.4, "sM", .8)}`, { hold: 1200, auto: 0 });
   if (E.epilogue) await say(E.epilogue);
   if (ACTS[G.act + 1]) { await startAct(G.act + 1); return; }
+  await coda(api);                                         // the real record, after the last act
   await showCard(`${centered("GAIN CONTROL", 120, 34, "sW", 2)}${cchip(E.thanks, 186, 7, "fG")}${centered("CLICK TO RETURN TO THE TITLE", 232, 5, "sM", .9)}`, { hold: 800, auto: 0 });
   location.hash = ""; location.reload();
 }
