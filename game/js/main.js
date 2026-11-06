@@ -624,11 +624,9 @@ async function start() {
   if (h === "#act5night") { await startAct(5, { fresh: true, skipCard: true }); await A5.debugNight(api); return; }
   loadRoom("seminar", "start");
   const unlocked = +(localStorage.getItem("gaincontrol.act") || 1);
-  const titleP = showCard(`${titleArt()}
-    ${button("1", "ACT I  SUBMISSION", 60, 200, 160, true)}${button("2", "ACT II  UNDER REVIEW", 240, 200, 160, unlocked >= 2)}${button("3", "ACT III  MAJOR REVISIONS", 420, 200, 160, unlocked >= 3)}
-    ${button("4", "ACT IV  REBUTTAL", 150, 232, 160, unlocked >= 4)}${button("5", "ACT V  DECISION", 330, 232, 160, unlocked >= 5)}
-    ${centered(unlocked >= 2 ? "PICK AN ACT" : "START WITH ACT I, OR JUMP AHEAD", 272, 4.6, "sM", .8)}${FULL.cardButton(270, 298, 100)}`, { buttons: true });
-  const stopGlitch = titleGlitch(card, { sfx: () => sfx.play("blank") });
+  const tOpts = { unlocked, full: !FULL.standalone() };
+  const titleP = showCard(titleArt(tOpts), { buttons: true });
+  const stopGlitch = titleGlitch(card, { sfx: () => sfx.play("blank"), ...tOpts });
   const choice = await titleP; stopGlitch();
   if (["2", "3", "4", "5"].includes(choice)) { await startAct(+choice, { fresh: true }); return; }
   await startAct(1, { fresh: true });
