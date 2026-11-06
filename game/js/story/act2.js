@@ -86,6 +86,25 @@ export const CONVOS = {
     ["N", "Tess turns back to her console. She guards the calendar like a dragon guards a hoard, if the hoard were half-hour blocks."],
   ] },
 
+  // after the calendar: Tess stops guarding it and starts agreeing with Nell, out loud, which is why she dies tonight
+  tessTurn: { L: "nell", R: "tess", score: ["tessTurn", 1], lines: [
+    ["N", "Tess stomps back in from the magnet room."],
+    ["R", "Rats. A building full of scientists and it's overrun with rats. Who chewed my wire?"],
+    ["R", "…You looked."],
+    ["L", "He never booked it, Tess. Not once."],
+    ["R", "I know. I keep the calendar. I know who's in my building. I'm down here twelve hours a day, and in three years I've seen Preston Valu four times."],
+    ["R", "All four, there was pizza."],
+    ["R", "Then the paper comes out. Seven tesla. Layers. From my three. I've run QA on this magnet every morning since 2011. It doesn't do layers. Some mornings it barely does Tuesday."],
+    ["L", "So you think something's off."],
+    ["R", "I think something's off. I said so at the faculty lunch. To the Chair. He said 'interesting' and wrote it down. Nobody in this building writes anything down."],
+    ["R", "So tonight I'm pulling the console's raw logs. Every session since January, every sequence, every coil. If there's one seven tesla protocol in there, I'll eat my ear defenders."],
+    ["R", "Then it goes to Ethel Bord. In writing. With a cover sheet."],
+    ["L", "Tess, maybe don't do that alone."],
+    ["R", "Alone is how I do everything. The magnet is always on, Nell. So am I."],
+    ["N", "Somewhere behind the wall, a pneumatic canister drops toward the basement. Then another."],
+    ["N", "A note from your narrator: in a comedy, the character who announces she'll do something brave, tonight, by herself, should be watched closely."],
+  ] },
+
   penny: { L: "nell", R: "penny", score: ["pennyTalk", 1], lines: [
     ["R", "Main office. Take a number."], ["L", "There's nobody else here."], ["R", "Take a number anyway. It's policy."],
     ["L", "I need to see a purchase order. For a 7T. Or a laminar coil. Anything Preston Valu bought."],
@@ -144,6 +163,9 @@ export const CONVOS = {
     ["L", "It was in the locker. Tess made me put it there. Yesterday."],
     ["R", "Then who took it out?"],
     ["L", "…"],
+    ["L", "She was pulling the console logs last night. Every session since January. She told me she was going to prove Preston never scanned."],
+    ["R", "The console was wiped at 2:14 AM. Logs, calendar backups, QA history. Factory settings."],
+    ["R", "Your fingerprints are on the console, Ms. Null. Hers are on the logs she never got to print."],
     ["R", "Don't leave the building, Ms. Null. Well. Do. Just come back."],
   ], after: (api) => api.flag("smallDone", true) },
 
@@ -397,7 +419,7 @@ async function calendar(api) {
   if (api.has("thermos")) return "As you lean over the console, the thermos in your bag tugs toward the magnet room.\n\nTESS (FROM INSIDE)|METAL! IN! THE! LOCKER!";
   await api.readout(CALENDAR(), "Six months of bookings. Tess's QA. Gus, 2:30 AM, every night. The Adline Lab. A 'mock calibration' every Friday at 23:59, booked by nobody.\n\nAnd Preston Valu: never. Not once. Not one session.");
   api.flag("clueCalendar", true); api.flag("heliumAlarm", false); api.score("clueCalendar", 3); api.refresh();
-  return "Tess stomps back in from the magnet room.\n\nTESS|Rats. A building full of scientists and it's overrun with rats. Who chewed my wire?";
+  return "c:tessTurn";
 }
 async function readIndex(api) {
   await api.readout(INDEX(), "VALU, P. — see RISING STARS (SPECIAL). And RISING STARS (SPECIAL) is filed on Shelf R, binder 12: the red shelf at the top.");
@@ -445,7 +467,7 @@ export async function check(api) {
   if (G.mode === "day" && f.clueCalendar && f.clueCoil && f.clueIRB && f.clueClipboard && !f.dayDone) { f.dayDone = true; await nightfall(api); return null; }
   if (G.mode === "night" && G.room === "hall" && f.printed && !f.robesSeen) {
     f.robesSeen = true; await robes(api);
-    return "Two figures in hooded robes cross the hallway without a sound and turn down the stairwell. One wears a small round pin, lit red.\n\nGUS|…Nope.\n\nGUS|…Yep. Following.";
+    return "Two figures in hooded robes cross the hallway without a sound and turn down the stairwell. One wears a small round pin, lit red. The other carries a steel thermos, the way you carry something that isn't yours.\n\nThe stairwell goes down to B1. The only light on in B1 tonight is MRI control. Tess, working late.\n\nGUS|…Nope.\n\nGUS|…Yep. Following.";
   }
   return null;
 }

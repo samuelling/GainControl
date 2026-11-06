@@ -14,7 +14,7 @@ const CARDS = {
   irb: { t: "IRB PROTOCOL", s: "APPROVED AFTER THE DATA", k: "sW", d: "Ethel's binder of binders: the protocol was approved after the data were 'collected'." },
   clipboard: { t: "SIGN-IN SHEET", s: "H. MOLAISON, P. GAGE ...", k: "sW", d: "Cody's clipboard. Participants include H. Molaison, P. Gage and Totally Real Person." },
   recorder: { t: "THE RECORDER", s: "I RAN EVERY SUBJECT MYSELF", k: "sW", d: "Monday's voice memo, from journal club: 'I ran every subject myself.'" },
-  grim: { t: "TABLE 1  GRIM", s: "3 OF 6 MEANS IMPOSSIBLE", k: "sB", d: "The GRIM test. Three of Table 1's six means can't come from nineteen whole numbers." },
+  grim: { t: "TABLE 1  CEILING", s: "3 OF 6 R ABOVE THE CEILING", k: "sB", d: "The noise ceiling. Three of Table 1's brain-behaviour correlations beat what his own measurements could ever produce. He picked the voxels that correlated." },
   overlay: { t: "FIGURE 3B = 3D", s: "ONE BRAIN, MIRRORED", k: "sB", d: "Figure 3d is Figure 3b, rotated and flipped. Two participants, one brain." },
   logs: { t: "GPU LOGS", s: "4,000 HRS SUPERRES_LAMINAR", k: "sB", d: "Rex's server logs: 4,000 GPU-hours of superres_laminar.py, and a Friday-midnight ltm_generate.py." },
   glm: { t: "THE REPLICATION", s: "ATTEND = IGNORE", k: "sB", d: "The GLM, by hand, on his own deposited data. No attention effect. Painted-on layers." },
@@ -56,7 +56,7 @@ const Q = [
     ok: [["SMALL", "No bookings, no coil, no permission, no living participants. Fine. The study wasn't run."], ["SMALL", "I'm writing that down. It's my first non-power calculation this year."]] },
   { key: "REAL", who: "ETHEL", q: "ARE THE DATA REAL?", w: { grim: 1, overlay: 1, logs: 1, glm: 1 },
     ask: [["ETHEL", "Question two. Something was published, Ms. Null. It has numbers in it. Are the data real?"]],
-    ok: [["ETHEL", "Impossible means. A recycled panel. A result that isn't there."], ["ETHEL", "I'm opening a new binder. That hasn't happened since 2009."]] },
+    ok: [["ETHEL", "Impossible correlations. A recycled panel. A result that isn't there."], ["ETHEL", "I'm opening a new binder. That hasn't happened since 2009."]] },
   { key: "WHOSE", who: "ADLINE", q: "WHOSE DATA ARE THEY?", w: { retainer: 2, glm: 1, logs: 1 },
     ask: [["ADLINE", "Then whose data are they, Nell? Data come from somewhere. Mine come from my lab. Slowly."]],
     ok: [["ADLINE", "That's your pilot. That's… our pilot. That came out of my lab."], ["ADLINE", "Okay. That one does not wait until after the 15th."]] },
@@ -75,7 +75,7 @@ const NELL = {
   irb: ["The ethics protocol. Approved in March. The data were 'collected' in January. You need permission before you test people, not after."],
   clipboard: ["The participant sign-in sheet. H. Molaison. P. Gage. S.M. And my favorite participant, Totally Real Person."],
   recorder: [["PRESTON", "(RECORDED) I ran every subject myself."], ["NELL", "He ran every subject himself. Into a magnet the building doesn't have."]],
-  grim: ["Table 1. Nineteen people, whole-number ratings. Three of his six means can't be made from nineteen whole numbers. They were typed, not measured."],
+  grim: ["Table 1. His behaviour agrees with itself at .64, his brain at .56. Nothing can correlate above about .60. Three of his correlations are past .88, because he chose the voxels that correlated and then reported how well they correlate."],
   overlay: ["Figure 3b is participant 7. Figure 3d is participant 12. Turn 3d and flip it, and every voxel lands on 3b. Two people, one brain, mirrored."],
   logs: ["The GPU logs. Four thousand hours of a script called superres_laminar.py. Nobody super-resolves data they actually collected at 7T."],
   glm: ["We ran his own analysis on his own deposited data. Attend equals ignore. And at 3T one voxel is bigger than all six layers. The layers are painted on."],
@@ -102,7 +102,7 @@ const REACT = {
     () => "I have a grant due in nine days. Relevant things only, please."],
 };
 const SPECIAL = {
-  "RUN:grim": ["SMALL", "Arithmetic. I like arithmetic. Not yet, though. First: did anybody sit in a scanner?"],
+  "RUN:grim": ["SMALL", "Correlations. I like correlations. Not yet, though. First: did anybody sit in a scanner?"],
   "RUN:retainer": ["ADLINE", "Nell. Is that your retainer? Why is your retainer an exhibit?"],
   "RUN:feud": ["ADLINE", "Valu versus Mick? I reviewed for that. Both of them cited me. Huh. Not the question."],
   "REAL:clipboard": ["ETHEL", "Dead neurologists signing in is about whether the study ran. We've settled that. I have it tabbed."],
@@ -112,7 +112,7 @@ const SPECIAL = {
   "REVIEW:recorder": ["SMALL", "A man saying he did something. I hear that a lot. Usually it's 'I didn't.'"],
   "REVIEW:invite": ["ADLINE", "That's a dinner invitation, Nell. I asked about a review. Although… cream paper. Nice."],
   "WHY:calendar": ["ETHEL", "That establishes nobody booked a scanner. It doesn't establish a motive. Unless the motive is scheduling."],
-  "WHY:grim": ["SMALL", "We know the numbers are fake. I asked why. Arithmetic doesn't have a why."],
+  "WHY:grim": ["SMALL", "We know the numbers are fake. I asked why. A correlation doesn't have a why. I've tried asking."],
 };
 const LATE = ["SMALL", "We did that one. Keep up, Ms. Null."];
 const COL = { NELL: "G", ADLINE: "W", ETHEL: "V", SMALL: "W", NARRATOR: "W", PRESTON: "R" };

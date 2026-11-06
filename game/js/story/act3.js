@@ -3,7 +3,7 @@
 import { seg, segC, chip, chipW } from "../gfx.js";
 import { ITEMS } from "./act1.js";
 import "./act2.js";   // Act II's items (printout, …) and look-wrappers
-import { grim } from "../minigames/grim.js";
+import { ceiling } from "../minigames/ceiling.js";
 import { overlay } from "../minigames/overlay.js";
 import { nod } from "../minigames/nod.js";
 import { glm } from "../minigames/glm.js";
@@ -28,7 +28,7 @@ wrap("notebook", (api) => {
   const f = api.G.flags, t = (k, s) => `- ${f[k] ? "(done) " : ""}${s}`;
   if (f.quorumDead) return "Your lab notebook. Today's last line, in handwriting you don't recognize as your own:\n\nTHE FACULTY ANSWER THE MOTION FROM TWO AGO. QUORUM IS DEAD. NOBODY MOVED TO ADJOURN.\n\nAnd under it: the old woman on four.";
   return "Your lab notebook. Today: prove the Big Finding is fake. Not suspicious. Fake.\n\n"
-    + [t("proofGrim", "Table 1: Gus says the means look wrong. (His desk.)"), t("proofOverlay", "Figure 3: the two participants look… familiar. (Your monitor.)"),
+    + [t("proofGrim", "Table 1: brain predicts behaviour at r = .94. Gus says that's impossible. (His desk.)"), t("proofOverlay", "Figure 3: the two participants look… familiar. (Your monitor.)"),
       t("proofLogs", "Who used the GPU cluster? Rex knows. Rex wants coffee. (Kitchen.)"),
       t("proofGLM", "Replicate it. Need Preston's stimulus log, which is in the Impact Lab. Nell can't get in." + (f.morrisHint3 ? " Morris can." : ""))].join("\n")
     + (proofs(api) === 4 && !f.meetingOpen ? "\n\nAll four. Take it to Ethel Bord, Research Integrity, 2F." : "")
@@ -120,7 +120,7 @@ export const CONVOS = {
     ["L", "Gus. Small thinks I did it."],
     ["R", "Then we prove the paper's fake, and the rest follows. Not suspicious. Fake. The kind of fake Ethel Bord can file."],
     { choice: [
-      { text: "Where do we start?", lines: [["R", "Table 1. The means are wrong. Not 'surprising', arithmetically wrong. Click me and pick TABLE 1."]] },
+      { text: "Where do we start?", lines: [["R", "Table 1. His brain-behaviour correlations are higher than his own measurements allow. Not 'surprising'. Impossible. Click me and pick TABLE 1."]] },
       { text: "His figures look too clean.", lines: [["R", "Figure 3. Two participants. Put them side by side on your monitor and tell me they're two people."]] },
       { text: "Where did the layers come from?", lines: [["R", "Somebody burned a lot of GPU. Rex watches the cluster logs like a soap opera. Rex works for coffee. The machine's been broken since 2012."]] },
       { text: "Can we just replicate it?", lines: [["R", "He deposited his raw data. We need his stimulus log, the timing. It's in 116."], ["L", "I can't get into 116."], ["R", "No. But something in your drawer can."]] },
@@ -181,7 +181,7 @@ export const CONVOS = {
     ["R", "Enough that I can file it. In a binder. Binders don't have feelings either."],
   ] },
   ethelNew: { L: "nell", R: "ethel", score: ["ethelFile", 2], lines: [
-    ["L", "Impossible means in Table 1. Figure 3b and 3d are the same panel, flipped. Four thousand GPU-hours of 'super-resolution'. And the replication: attention does nothing in V1."],
+    ["L", "Correlations in Table 1 above the noise ceiling. Figure 3b and 3d are the same panel, flipped. Four thousand GPU-hours of 'super-resolution'. And the replication: attention does nothing in V1."],
     ["R", "…"],
     ["R", "That's a binder. That's a whole binder."],
     ["R", "Misconduct in this department is raised at the faculty meeting, under New Business. Today. Three o'clock. Third floor."],
@@ -262,11 +262,11 @@ async function stairs(api) {
 
 /* ---------------- minigames ---------------- */
 async function doGrim(api) {
-  if (api.flag("proofGrim")) return "GUS|Three impossible means out of six. I'd frame it, but frames are evidence too.";
-  const r = await api.mini(grim, { score: api.score });
-  if (!r.done) return "GUS|Take your time. Table 1 isn't going anywhere. It can't. It's impossible.";
+  if (api.flag("proofGrim")) return "GUS|Three correlations above the ceiling, from voxels picked for correlating. I'd frame it, but frames are evidence too.";
+  const r = await api.mini(ceiling, { score: api.score });
+  if (!r.done) return "GUS|Take your time. Table 1 isn't going anywhere. It's above the ceiling. It can't go anywhere.";
   api.flag("proofGrim", true); api.score("proofGrim", 2);
-  return "GUS|Nineteen people, whole numbers. Those three means can't exist. This is called a GRIM test, Nell. Granularity. Nobody checks. That's why it works.";
+  return "GUS|A measure can't agree with anything better than it agrees with itself. His do. That's not a finding, Nell. That's a selection procedure. Nobody checks. That's why it works.";
 }
 async function doOverlay(api) {
   if (api.flag("proofOverlay")) return "Participant 7 and participant 12. One brain, two names.";
@@ -484,7 +484,7 @@ export const HS = {
 
 function gusHint(api) {
   const f = api.G.flags;
-  if (!f.proofGrim) return "GUS|Table 1 first. Click me, TABLE 1.";
+  if (!f.proofGrim) return "GUS|Table 1 first. Click me, TABLE 1. Bring your skepticism. Leave your calculator.";
   if (!f.proofOverlay) return "GUS|Figure 3. Your monitor. Make the two participants agree.";
   if (!f.proofLogs) return f.rexLogin ? "GUS|You have Rex's login. Server room, B1." : "GUS|Rex. Kitchen. Coffee. My can is for emergencies." + (f.descaled ? "" : " This is an emergency.");
   if (!f.proofGLM) return api.has("log") ? "GUS|You have the log. Your monitor." : "GUS|The log's in 116. Your drawer has a rat. I'm just saying.";
@@ -582,7 +582,7 @@ export async function check(api) {
     return f.danaClosed ? null : "c:smallDana";
   }
   if (proofs(api) === 4 && !f.proofsDone) { f.proofsDone = true;
-    return "NELL|Impossible means. One brain, two names. Four thousand GPU-hours. And when you actually run it: nothing.\n\nNELL|That's not a sloppy paper. That's a fake one.\n\nGUS|Ethel. Second floor. Before anyone else ends up in a bin."; }
+    return "NELL|Correlations above the ceiling. One brain, two names. Four thousand GPU-hours. And when you actually run it: nothing.\n\nNELL|That's not a sloppy paper. That's a fake one.\n\nGUS|Ethel. Second floor. Before anyone else ends up in a bin."; }
   if (G.room === "conference" && !f.meeting) { f.meeting = true; api.refresh();
     return "The faculty meeting. Prof. Quorum presides. Six senior faculty, three to a side. Ethel takes the minutes.\n\nGus slips in behind you in a borrowed tie and sits down. The student representative's chair, by the door, is empty."; }
   if (f.irisDone && !f.dayDone) { f.dayDone = true; await nightfall(api); return null; }
@@ -600,7 +600,7 @@ export async function start(api, { fresh, skipCard } = {}) {
   G.cast = ["nell", "morris"]; G.chars = { morris: { room: "lab", x: 222, y: 284, dir: 1 } }; G.bodies = 1;
   api.shift({ mode: "day", char: "nell", room: "lab", entry: "start", min: 10 * 60 + 12 });
   if (!skipCard) await api.card("WEDNESDAY", "ACT III  MAJOR REVISIONS", "ADLINE LAB 114  10:12", "fV", 2800);
-  await api.say("Wednesday. Tess is dead, Nell's thermos did it, and a detective is waiting by her door.\n\nGus hasn't gone home. He's at his desk with the Big Finding open, and the expression of a man who has found something wrong in Table 1.");
+  await api.say("Wednesday. Tess is dead, Nell's thermos did it, and a detective is waiting by her door.\n\nGus hasn't gone home. He's at his desk with the Big Finding open, and the expression of a man who has found a correlation of .94 in Table 1.");
   await api.convo("smallLab");
 }
 export async function debugNight(api) {

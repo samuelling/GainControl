@@ -131,7 +131,7 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 
 | Act | Victim | Why the Table wanted them gone |
 |---|---|---|
-| II | Tess La | Knew no 7T session ever happened, and had noticed the midnight Friday power draw on the old B-level circuit |
+| II | Tess La | Knew no 7T session ever happened (she'd seen Preston in the building four times in three years, always at pizza), had noticed the midnight Friday power draw on the old B-level circuit, and, once Nell saw the calendar, said out loud that something was off: she'd raised it with the Chair at faculty lunch, and announced she'd pull the console's raw logs that night for Ethel. The console was wiped at 2:14 AM |
 | III | Dana Outlier | Told Nell about Preston's hours, and had started asking where he went on Friday nights |
 | III | Prof. Quorum (faked) | Clears the leader off the board right as suspicion builds |
 | IV | Cody Credit | Decided to tell Det. Small about the fake sign-in sheet |
@@ -178,6 +178,7 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 **Seeds:**
 - Penny complains that everyone important is "unreachable on Friday nights. Every Friday. For decades."
 - Tess grumbles that something keeps drawing power from the old B-level circuit at midnight on Fridays.
+- **Tess turns.** Once Nell has seen the calendar, Tess stops guarding it and starts agreeing: she has seen Preston in the building four times in three years ("all four, there was pizza"), her 3T "doesn't do layers," she mentioned it to the Chair at faculty lunch (he said "interesting" and wrote it down), and tonight she's pulling the raw console logs, alone, for Ethel. Canisters drop toward the basement as she says it. That night Gus sees a robe carrying a steel thermos toward the only lit room in B1.
 - Rex's first rant: *"This whole field is rigged. I could tell you things."* (Nobody asks.)
 
 **Night (Gus):** Gus works out the Impact Lab's keypad code from its four worn keys and finds Preston's computer still logged in, running **FOG NEURO**: the mill's front end, which writes a new fake paper on a different Big Question of cognitive neuroscience every time you press GENERATE. It's a playable toy (an in-game METAMERS; design in [PUZZLE-METAMERS.md](PUZZLE-METAMERS.md)). Gus prints one because "it looked important." Then, at 2am, two robed figures cross the MRI hallway. Gus follows, gets called back by a gradient fault on his scan (he's paying by the hour), and arrives five minutes late.
@@ -196,7 +197,7 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 **Question:** Why?
 
 **Day (Nell):** Nell investigates under suspicion, interrupted by Det. Small's interrogations. Gus, running on no sleep, is her methods partner at the desk.
-- **The fraud, proven:** Table 1's impossible means (GRIM test), Figure 3b and 3d are the same panel flipped (overlay), and 4,000 GPU-hours on `superres_laminar.py` (Rex's logs, bought with coffee), plus a second job that runs every Friday at 00:00: `ltm_generate.py --corpus /mnt/B3/archive --byline "P. Valu"`. Its output queue holds 40 finished drafts with future dates, including *Valu et al. (2027): "The Null Result of N. Null Is an Artifact."*
+- **The fraud, proven:** Table 1's brain-behaviour correlations sit above the noise ceiling, because he picked the voxels that correlated (THE CEILING), Figure 3b and 3d are the same panel flipped (overlay), and 4,000 GPU-hours on `superres_laminar.py` (Rex's logs, bought with coffee), plus a second job that runs every Friday at 00:00: `ltm_generate.py --corpus /mnt/B3/archive --byline "P. Valu"`. Its output queue holds 40 finished drafts with future dates, including *Valu et al. (2027): "The Null Result of N. Null Is an Artifact."*
 - **The replication** (centerpiece; full design in [PUZZLE-GLM.md](PUZZLE-GLM.md)): with Preston's own stimulus log (Morris, from the Impact Lab) and his deposited raw data, Nell and Gus run the GLM by hand at Nell's monitor. Attention does nothing in visual cortex: ATTEND = IGNORE. And at 3T a single voxel is bigger than all six layers. *"It's not a small effect. It's no effect."* / *"So the fancy layers?"* / *"Painted on."*
 - **The conspiracy, surfacing:**
   - **Preston's blank moments.** Morris's itch spikes, Preston's earbuds pulse, and his face goes empty mid-sentence.
@@ -307,7 +308,7 @@ Day of the Tentacle split its heroes across time. Here they split across **day a
 **Example puzzle:** to get into Tess's office, Morris goes into the vent above the scanner control room and chews a wire, which sets off the "helium low" alarm. Tess runs out. Nell walks in.
 
 ### 3. Day job interludes (the Freddy Pharkas engine)
-Nell is still a TA. Undergrads from her stats section show up at random with questions, just as Freddy's customers did. A correct answer earns points and sometimes an item or favor. The same stats skills (GRIM, distributions, outliers) are what crack the case later, so the day job trains you for the mystery.
+Nell is still a TA. Undergrads from her stats section show up at random with questions, just as Freddy's customers did. A correct answer earns points and sometimes an item or favor. The same stats skills (reliability, distributions, outliers) are what crack the case later, so the day job trains you for the mystery.
 
 ### 4. Sam & Max texture
 - Use/Look on *everything* gets a joke, especially Morris's lines.
@@ -335,7 +336,7 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 | Cortical layers | "The brain's surface is a stack of thin layers, like a cake. Seeing them needs a very strong magnet." | Why the 7T claim matters |
 | Signal dropout | "Metal in your mouth makes a hole in the scan, like a thumb over a camera lens." | The retainer reveal |
 | AI hallucination | "Ask an AI to sharpen a blurry photo and it invents detail that was never there." | Layers inside the retainer hole |
-| The GRIM test | "If 10 people answer with whole numbers, the average can't be 3.47." | Table 1 calculator puzzle |
+| The noise ceiling | "Two wobbly rulers can only agree as well as each one agrees with itself." Reliability caps any correlation at √(rel₁ × rel₂); picking voxels because they correlate, then reporting that correlation, breaks the cap with pure noise (the 2009 "puzzlingly high correlations" critique). | Table 1, THE CEILING |
 | Image duplication | "Two experiments shouldn't produce the identical picture." | Notebook overlay |
 | Brain coordinates | "Every spot in the brain has an address, like latitude and longitude." | Cipher notes |
 | Water maze | "Rats learn where a hidden platform is. It's a test of spatial memory." | Cody's death; Morris's backstory |
@@ -376,7 +377,7 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 | 3 | No coil purchased | Penny's office | Penny requires Form PO-7 signed by a PI. Slip it into Adline's grant pile while she's signing in a panic |
 | 4 | Backdated IRB | Ethel's office | Find the right binder (the binder of binders) |
 | 5 | Fake participants | Cody's clipboard | Trade Cody a credit slip forged on the jammed printer |
-| 6 | Impossible means | Calculator | GRIM test |
+| 6 | Correlations above the noise ceiling | Gus's desk | THE CEILING: find the reliability panels, drop the ceiling, find the double dip in the methods |
 | 7 | Duplicated panel | Overlay screen | Rotate and flip panels to match (glowing overlay mini-game) |
 | 7b | The replication | Nell's monitor + Preston's log (Impact Lab, via Morris) + deposited data | Playable GLM: enter the blocks, fix the dummy-scan offset, apply the HRF, fit by hand, run the contrast, find the three tells. See [PUZZLE-GLM.md](PUZZLE-GLM.md) |
 | 7a | FOG NEURO printout | Preston's PC, Act II night (Gus) | Keypad code from the four worn keys; generate, read SOURCES, print; Gus hands it to Nell in the morning. See [PUZZLE-METAMERS.md](PUZZLE-METAMERS.md) |

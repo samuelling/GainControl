@@ -99,7 +99,7 @@ const S = {
   paper: () => { noise(.12, { f: 3200, q: .8, g: .06, a: .02 }); tone(170, .05, { g: .06, at: .1 }); },
   compute: () => { for (let i = 0; i < 6; i++) tone(500 + Math.random() * 1500, .04, { type: "square", g: .025, at: i * .045 }); },
   nudge: (o = {}) => { tone(o.f || 900, .03, { type: "square", g: .03 }); },
-  // GRIM: the desk calculator
+  // THE CEILING (formerly GRIM): the desk calculator
   calc: () => { tone(1900, .03, { type: "square", g: .028 }); noise(.008, { f: 7000, q: 3, g: .04 }); },
   // the overlay
   flip: () => { noise(.13, { f: 2200, sweep: 700, q: 1, g: .13, a: .02 }); tone(900, .06, { type: "triangle", g: .03, glide: 600, at: .09 }); },

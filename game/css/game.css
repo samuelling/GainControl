@@ -159,6 +159,14 @@
   #panel .grim .num { text-align: right; font-variant-numeric: tabular-nums; }
   #panel .grim tr[data-row]:hover td { color: var(--G); } #panel .grim tr.sel td { color: var(--A); }
   #panel .grim .mark { min-width: 9cqw; font-size: 1.2cqw; } #panel .okc { color: var(--G); } #panel .badc { color: #000; background: var(--R); padding: 0 .3cqw; font-weight: 600; }
+  #panel .ceilbody { flex: 1 1 0; min-height: 0; display: flex; align-items: center; padding: .6cqw 0; }
+  #panel .ceilbody > svg.t { position: relative; width: 100%; height: 100%; }
+  #panel .ceilmeth { display: flex; gap: 1.6cqw; width: 100%; height: 100%; align-items: center; }
+  #panel .ceilmeth ol { flex: 0 0 52%; margin: 0; padding-left: 2.2cqw; font-size: 1.45cqw; line-height: 1.28; color: var(--W); }
+  #panel .ceilmeth li { padding: .45cqw .6cqw; border-top: .08cqw solid var(--D); cursor: pointer; }
+  #panel .ceilmeth li:hover { color: var(--G); } #panel .ceilmeth li.miss { color: var(--M); }
+  #panel .ceilmeth li.hit { color: #000; background: var(--R); font-weight: 600; }
+  #panel .ceilmeth svg.t { position: relative; flex: 1; height: 100%; }
   #panel .calc { flex: 1; display: flex; flex-direction: column; gap: .6cqw; border-left: .1cqw solid var(--D); padding-left: 1.4cqw; }
   #panel .calc svg { position: relative; width: 100%; height: auto; }
   #panel .keys { display: flex; flex-wrap: wrap; gap: .6cqw; align-items: center; } #panel .keys .gap { width: 1.2cqw; }
