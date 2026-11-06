@@ -16,6 +16,7 @@ import { PORTRAITS_B } from "./cast/act3b.js";
 import { keypad } from "./minigames/keypad.js";
 import { fogNeuro } from "./minigames/fogneuro.js";
 import { sfx } from "./sfx.js";
+import * as FULL from "./fullscreen.js";
 import { applyOverrides, rewriteSay, jumpFromHash } from "./tools/overrides.js";
 import seminar from "./rooms/seminar.js";
 import hall from "./rooms/hallway.js";
@@ -171,6 +172,7 @@ function hud() {
   s += seg(ACT().TITLE[0], 522, 324, 4.2, "sM", .8) + seg(ACT().TITLE[1], 522, 333, 7, "sW", 1.1);
   const snd = sfx.muted ? "SOUND OFF" : "SOUND ON";
   s += `<g data-mute style="cursor:pointer">${seg(snd + "  M", 522, 347, 3.6, sfx.muted ? "sD" : "sM", .7)}<rect x="518" y="343" width="70" height="12" fill="transparent"/></g>`;
+  s += FULL.hudChip(562, 347);
   h.innerHTML = s;
 }
 
@@ -502,6 +504,7 @@ frame.addEventListener("contextmenu", (e) => { e.preventDefault(); if (!G.busy) 
 const unlockAudio = () => sfx.unlock();
 window.addEventListener("pointerdown", unlockAudio, true); window.addEventListener("keydown", unlockAudio, true);
 window.addEventListener("keydown", (e) => { if ((e.key === "m" || e.key === "M") && !e.target.closest?.("input,textarea")) { sfx.toggle(); hud(); } });
+FULL.install(() => hud());
 frame.addEventListener("pointerdown", (e) => { if (e.target.closest && e.target.closest("[data-mute]")) { e.stopPropagation(); sfx.toggle(); hud(); } }, true);
 window.addEventListener("keydown", (e) => {
   if (G.busy) return;
@@ -602,7 +605,7 @@ setInterval(() => document.querySelectorAll("#game .needle").forEach(n => { cons
 /* ================================================================ *
  *  START: title and chapter select
  * ================================================================ */
-window.GC = { G, api, act, itemAct, useItemOn, loadRoom, walkTo, runConvo, switchTo, startAct };   // for testing
+window.GC = { G, api, FULL, act, itemAct, useItemOn, loadRoom, walkTo, runConvo, switchTo, startAct };   // for testing
 async function start() {
   await applyOverrides(ACTS, ITEMS);
   if (await jumpFromHash()) return;
@@ -623,7 +626,7 @@ async function start() {
   const choice = await showCard(`${centered("GAIN CONTROL", 92, 44, "sW", 2.2)}${cchip("A MURDER MYSTERY WITH ERROR BARS", 160, 7, "fR")}
     ${button("1", "ACT I  SUBMISSION", 60, 200, 160, true)}${button("2", "ACT II  UNDER REVIEW", 240, 200, 160, unlocked >= 2)}${button("3", "ACT III  MAJOR REVISIONS", 420, 200, 160, unlocked >= 3)}
     ${button("4", "ACT IV  REBUTTAL", 150, 232, 160, unlocked >= 4)}${button("5", "ACT V  DECISION", 330, 232, 160, unlocked >= 5)}
-    ${centered(unlocked >= 2 ? "PICK AN ACT" : "START WITH ACT I, OR JUMP AHEAD", 272, 4.6, "sM", .8)}`, { buttons: true });
+    ${centered(unlocked >= 2 ? "PICK AN ACT" : "START WITH ACT I, OR JUMP AHEAD", 272, 4.6, "sM", .8)}${FULL.cardButton(270, 298, 100)}`, { buttons: true });
   if (["2", "3", "4", "5"].includes(choice)) { await startAct(+choice, { fresh: true }); return; }
   await startAct(1, { fresh: true });
 }

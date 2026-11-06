@@ -1,8 +1,16 @@
-  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
-  body { font-family: "Saira Condensed", "Arial Narrow", sans-serif; -webkit-font-smoothing: antialiased; }
-  #stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; overscroll-behavior: none; }
+  body { font-family: "Saira Condensed", "Arial Narrow", sans-serif; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; touch-action: manipulation; }
+  /* the visible box: dynamic viewport units, so iPhone's address bar can't push the top of the frame off screen; minus the notch */
+  :root {
+    --vw: 100vw; --vh: 100vh;
+    --sl: env(safe-area-inset-left, 0px); --sr: env(safe-area-inset-right, 0px);
+    --st: env(safe-area-inset-top, 0px); --sb: env(safe-area-inset-bottom, 0px);
+  }
+  @supports (height: 100dvh) { :root { --vw: 100dvw; --vh: 100dvh; } html, body { height: 100dvh; } }
+  #stage { position: fixed; left: 0; top: 0; width: var(--vw); height: var(--vh); display: flex; align-items: center; justify-content: center;
+    padding: var(--st) var(--sr) var(--sb) var(--sl); box-sizing: border-box; }
   #frame {
-    position: relative; width: min(100vw, calc(100vh * 16 / 9)); aspect-ratio: 16 / 9;
+    position: relative; width: min(calc(var(--vw) - var(--sl) - var(--sr)), calc((var(--vh) - var(--st) - var(--sb)) * 16 / 9)); aspect-ratio: 16 / 9;
     container-type: inline-size; user-select: none; -webkit-user-select: none; cursor: crosshair; background: #000;
     /* DAY palette */
     --W: #e9e6ff; --R: #ff3b5c; --B: #6b8cff; --G: #00e39a; --K: #ff95ae; --A: #ffb547;
@@ -81,6 +89,9 @@
   /* clue readout, title cards, death */
   #readout { position: absolute; inset: 0; display: none; z-index: 4; }
   #readout.show { display: block; } #readout.dim { filter: brightness(.35); }
+  #toast { z-index: 30; opacity: 0; pointer-events: none; transition: opacity .25s; }
+  #toast.show { opacity: 1; pointer-events: auto; }
+  :fullscreen #frame, :-webkit-full-screen #frame { cursor: crosshair; }
   #card { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .6s; z-index: 8; }
   #card.show { opacity: 1; pointer-events: auto; cursor: pointer; }
   #death { position: absolute; inset: 0; background: #000; display: none; z-index: 9; }
