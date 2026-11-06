@@ -19,6 +19,8 @@ const ROOTS = [38, 46, 41, 36, 38, 46, 43, 45];                     // D2 Bb2 F2
 const CHORDS = [[62, 65, 69], [58, 62, 65], [60, 65, 69], [60, 64, 67], [62, 65, 69], [58, 62, 65, 67], [58, 62, 67], [57, 61, 64]];
 const NIGHT_ROOTS = ROOTS, NIGHT_CHORDS = CHORDS;   // night re-voices the same harmony; it never re-harmonises the tune
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+// Act V underground: the finale arrangement (a driving pulse, the MRI as the rhythm section)
+const FINALE = new Set(["tunnels", "antechamber", "chamber", "plant", "tubehub", "crawlspace"]);
 const UNDER = new Set(["tunnels", "antechamber", "chamber", "plant", "tubehub", "crawlspace", "freezer", "maze", "server"]);
 
 let C = null, bus = null, B = {}, delay = null, timer = null, step = 0, nextT = 0, pass = 0;
@@ -73,6 +75,19 @@ function knock(t, v) {
   env(g, t, .004, v, .22); o.connect(lp); lp.connect(g); g.connect(B.throb); o.start(t); o.stop(t + .3);
   noiseHit(t, 420, 6, v * .25, .05, B.throb);
 }
+// the finale's engine: a sixteenth-note saw bass through a snapping lowpass (dark, a little nasty)
+function pulseBass(m, t, v, open = 0) {
+  const o = C.createOscillator(), q = C.createOscillator(), f = C.createBiquadFilter(), g = C.createGain();
+  o.type = "sawtooth"; o.frequency.value = hz(m); q.type = "square"; q.frequency.value = hz(m) / 2;
+  f.type = "lowpass"; f.Q.value = 7; f.frequency.setValueAtTime(700 + 900 * open, t); f.frequency.exponentialRampToValueAtTime(160, t + .11);
+  env(g, t, .002, v, .13); o.connect(f); q.connect(f); f.connect(g); g.connect(B.bass); o.start(t); q.start(t); o.stop(t + .2); q.stop(t + .2);
+}
+// the scanner's gradients: a short square beep, the sound of an EPI sequence running
+function beep(t, v, f0 = 1180) {
+  const o = C.createOscillator(), g = C.createGain(), hp = C.createBiquadFilter();
+  o.type = "square"; o.frequency.value = f0; hp.type = "highpass"; hp.frequency.value = 700;
+  env(g, t, .001, v, .028); o.connect(hp); hp.connect(g); g.connect(B.throb); o.start(t); o.stop(t + .05);
+}
 // a pad chord for a bar: two detuned saws per note through a lowpass that closes as the dread rises
 function pad(notes, t, dur, v, cutoff) {
   const f = C.createBiquadFilter(), g = C.createGain(); f.type = "lowpass"; f.frequency.value = cutoff; f.Q.value = .7;
@@ -82,7 +97,31 @@ function pad(notes, t, dur, v, cutoff) {
 }
 
 /* ---------------- the sequencer ---------------- */
+// THE FINALE (Act V, underground): same key, same chords, same tune, but driven. A sixteenth-note bass, the MRI knock
+// fused with a four-on-the-floor kick, gradient beeps on the off-sixteenths, a backbeat clap, low pads; the theme on a
+// deep bell, alternating with a pulsing arpeggio. Four 8-bar sections: engine only, theme, arpeggio, theme with hats.
+// At the climax (hoods off) the tempo tightens, every section runs full and the beeps go to sixteenths.
+function finaleStep(s, t) {
+  const bar = Math.floor(s / 16) % 8, i = s % 16, hot = P.climax, sec = hot ? 1 + Math.floor(s / 128) % 3 : Math.floor(s / 128) % 4;
+  const root = ROOTS[bar], ch = CHORDS[bar];
+  // the engine: root on every sixteenth, the octave on the "and", accents on the beat; the filter opens on bar 8's turnaround
+  pulseBass(root + (i % 4 === 2 ? 12 : 0), t, i % 4 === 0 ? .2 : .13, bar === 7 ? (i / 16) : 0);
+  // kick + the MRI's knock, on every beat
+  if (i % 4 === 0) { kick(t, .55); knock(t, .45); }
+  // the scanner's gradients
+  if (hot ? true : i % 2 === 1) beep(t, i % 4 === 3 ? .03 : .02, bar % 4 === 3 && i > 11 ? 1320 : 1180);
+  // backbeat and hats once the section is up
+  if (sec > 0 && (i === 4 || i === 12)) clap(t, .14);
+  if ((sec === 3 || hot) && i % 4 === 2) hat(t, .07);
+  // pads: a low dark chord a bar (in key: the chord, its root doubled below)
+  if (i === 0) pad([...ch.map(m => m - 12), root], t, 60 / P.tempo * 4, .05, sec ? 900 : 600);
+  // the theme, on the beat, a deep bell (every on-beat note is a chord tone)
+  if ((sec === 1 || sec === 3) && i % 4 === 0) { const m = THEME[bar][i / 2]; if (m != null) bell(m - 12, t, .15, B.mel); }
+  // the arpeggio section: chord tones in sixteenths, dark plucks
+  if (sec === 2 || (hot && sec === 3)) pluck(ch[i % ch.length] + (i % 8 < 4 ? 0 : 12), t, .07, B.arp, .75);
+}
 function scheduleStep(s, t) {
+  if (P.arr === "finale") return finaleStep(s, t);
   const bar = Math.floor(s / 16) % 8, i = s % 16, night = P.arr !== "day", d = P.dread, spb = 60 / P.tempo / 4;
   const roots = night ? NIGHT_ROOTS : ROOTS, chords = night ? NIGHT_CHORDS : CHORDS;
   const section = Math.floor(s / 128) % 3;            // two passes with the tune, one breathing
@@ -119,13 +158,16 @@ function tick() {
 }
 
 /* ---------------- scenes ---------------- */
+function gains() {
+  const d = P.dread, night = P.arr !== "day";
+  if (P.arr === "finale") return { mel: .7, arp: .6, bass: .72, drum: .7, pad: .7, throb: .6 };   // ~3 dB over the rest of the score
+  return { mel: night ? .8 : .9 - .3 * d, arp: .7, bass: night ? .7 : .9, drum: night ? .35 : Math.max(0, .85 - 1.1 * d),
+    pad: night ? .5 + .6 * d : Math.max(0, (d - .25) * 1.6), throb: P.throb };
+}
 function mix() {
   if (!C) return;
-  const now = C.currentTime, d = P.dread, night = P.arr !== "day", to = (k, v) => B[k].gain.setTargetAtTime(v, now, 1.2);
-  to("mel", night ? .8 : .9 - .3 * d); to("arp", .7); to("bass", night ? .7 : .9);
-  to("drum", night ? .35 : Math.max(0, .85 - 1.1 * d));
-  to("pad", night ? .5 + .6 * d : Math.max(0, (d - .25) * 1.6));
-  to("throb", P.throb);
+  const now = C.currentTime, G = gains();
+  for (const k in G) B[k].gain.setTargetAtTime(G[k], now, P.arr === "finale" ? .5 : 1.2);
 }
 // render a scene offline (for previews and tests): returns the AudioBuffer
 async function renderOffline(scene, secs = 30, rate = 22050) {
@@ -135,8 +177,7 @@ async function renderOffline(scene, secs = 30, rate = 22050) {
   const realAudio = sfx.audio; sfx.audio = () => ({ ctx: O, master, noise: nb });
   C = null; B = {}; init(); music.scene(scene);
   for (const k in B) B[k].gain.cancelScheduledValues(0);
-  { const dd = P.dread, night = P.arr !== "day"; B.mel.gain.value = night ? .8 : .9 - .3 * dd; B.arp.gain.value = .7; B.bass.gain.value = night ? .7 : .9;
-    B.drum.gain.value = night ? .35 : Math.max(0, .85 - 1.1 * dd); B.pad.gain.value = night ? .5 + .6 * dd : Math.max(0, (dd - .25) * 1.6); B.throb.gain.value = P.throb; }
+  { const G = gains(); for (const k in G) B[k].gain.value = G[k]; }
   step = 0; nextT = .05; while (nextT < secs) { scheduleStep(step, nextT); nextT += 60 / P.tempo / 4; step++; }
   const buf = await O.startRendering();
   sfx.audio = realAudio; ({ C, bus, B, delay, step, nextT } = saved); Object.assign(P, saved.P);
@@ -155,8 +196,9 @@ export const music = {
     if (room === "mri") d += .1;
     if (flags.climax) d = 1;
     d = Math.max(0, Math.min(1, d));
-    P.arr = arr; P.dread = d;
-    P.tempo = arr === "day" ? 104 - 22 * d : 74 - 10 * d;
+    if (act === 5 && mode === "night" && FINALE.has(room)) arr = "finale";
+    P.arr = arr; P.dread = d; P.climax = !!flags.climax;
+    P.tempo = arr === "finale" ? (P.climax ? 128 : 120) : arr === "day" ? 104 - 22 * d : 74 - 10 * d;
     P.throb = room === "mri" || room === "crawlspace" ? .6 + .4 * d : d > .38 ? (d - .38) * 1.3 : 0;
     mix();
   },
