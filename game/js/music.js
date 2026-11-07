@@ -208,6 +208,7 @@ function knock(t, v) {
   env(g, t, .004, v, .22); o.connect(lp); lp.connect(g); g.connect(B.throb); o.start(t); o.stop(t + .3);
   noiseHit(t, 420, 6, v * .25, .05, B.throb);
 }
+function knockTop(t, v) { noiseHit(t, 420, 6, v * .3, .05, B.throb); noiseHit(t, 1900, 3, v * .08, .025, B.throb); }
 // the finale's engine: a sixteenth-note saw bass through a snapping lowpass (dark, a little nasty)
 function pulseBass(m, t, v, open = 0) {
   tr(m, false);
@@ -304,7 +305,7 @@ function finaleStep(s, t) {
   // the engine: root on every sixteenth, the octave on the "and", accents on the beat; the filter opens on bar 8's turnaround
   pulseBass(root + (i % 4 === 2 ? 12 : 0), t, i % 4 === 0 ? .2 : .13, bar === 7 ? (i / 16) : 0);
   // kick + the MRI's knock, on every beat
-  if (i % 4 === 0) { kick(t, .55); knock(t, .45); }
+  if (i % 4 === 0) { kick(t, .55); knockTop(t, .4); }   // the knock's low body would fight the kick's, so here it's only the knock's top
   // the scanner's gradients
   // (on the beat, at the climax, the beep takes the chord tone nearest its D so it never rubs against the chord)
   if (hot ? true : i % 2 === 1) beep(t, i % 4 === 3 ? .03 : .02, bar % 4 === 3 && i > 11 ? 1320 : i % 4 === 0 ? hz(near(86)) : 1180);
@@ -440,7 +441,11 @@ function scheduleStep(s, t) {
 }
 function tick() {
   if (!C || C.state !== "running") return;
-  while (nextT < C.currentTime + .14) {
+  // if the page stalled (a heavy animation frame, a background tab), don't cram the missed steps into the past, where
+  // they'd all fire at once as a flam of drums: skip ahead to the next step that can still be played on time
+  const spb = 60 / P.tempo / 4;
+  if (nextT < C.currentTime + .01) { const miss = Math.ceil((C.currentTime + .02 - nextT) / spb); step += miss; nextT += miss * spb; }
+  while (nextT < C.currentTime + .25) {
     scheduleStep(step, nextT); nextT += 60 / P.tempo / 4; step++;
     P.tempo += (P.target - P.tempo) * (P.arr === "finale" ? .08 : .035);   // glide, never lurch (about two bars)
   }
