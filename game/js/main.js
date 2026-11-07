@@ -112,7 +112,7 @@ function idleFigures() {   // the other playable character, if they're standing 
     // two characters who came in through the same door would stand inside each other: the idle one steps aside (and stays there)
     const taken = [G.actor, ...Object.entries(G.chars).filter(([o, q]) => o !== c && o !== G.char && q.room === G.room).map(([, q]) => q)];
     for (let n = 0; n < 3 && taken.some(q => Math.abs(p.x - q.x) < 70 * s && Math.abs(p.y - q.y) < 30); n++) p.x += (p.x < 320 ? 1 : -1) * 80 * s;
-    return { depth: p.y, svg: `<g data-pose="0" class="idle" transform="translate(${p.x},${p.y}) scale(${p.dir * s},${s}) translate(-160,-187)">${FIGURE[c]()}</g>` };
+    return { depth: p.y, svg: `<g data-pose="0" class="idle fp0" transform="translate(${p.x},${p.y}) scale(${p.dir * s},${s}) translate(-160,-187)">${FIGURE[c]()}</g>` };
   });
 }
 function build() {
