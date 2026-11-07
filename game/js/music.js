@@ -1,3 +1,4 @@
+import TONEWHEEL from "./tonewheel.js";
 // MUSIC: one theme, arranged by the drama. Synthesized live with WebAudio, scheduled a step ahead (16th notes).
 //
 // THE TUNE. The theme (A) is eight bars in D minor (i–VI–III–VII, then i–VI–iv–V). There is a varied A (A': the same
@@ -86,7 +87,7 @@ function init() {
   const conv = C.createConvolver(), rlp = C.createBiquadFilter(), rwet = C.createGain(); conv.buffer = ir; rlp.type = "lowpass"; rlp.frequency.value = 4200; rwet.gain.value = 2.4;   // the convolver normalizes its response, so the wet level is set here
   B.rsend = C.createGain(); B.rsend.gain.value = 0; B.mel.connect(B.rsend); B.arp.connect(B.rsend); B.ctr.connect(B.rsend);
   B.rsend.connect(conv); conv.connect(rlp); rlp.connect(rwet); rwet.connect(bus);
-  TINE.clear();
+  TINE.clear(); organReady(C);   // start loading the organ's worklet now
   return true;
 }
 
@@ -164,11 +165,33 @@ function brass(m, t, v, out, x = {}) {             // muted brass: two detuned s
   lp.connect(g); g.connect(out);
   for (const dt of [-7, 7]) { const o = osc("sawtooth", f); o.detune.value = dt; o.connect(lp); o.start(t); o.stop(t + dur + .1); }
 }
-function organ(notes, t, dur, v, out, att = .01) {  // a soft drawbar organ (8', 4', a little 2 2/3')
+// The organ is MEGAjam's Tonewheel Lite (js/tonewheel.js, an AudioWorklet drawbar organ with key click, percussion,
+// scanner vibrato/chorus, drive and a rotating speaker). Each call gets its own little organ: the notes go on at t and off
+// at t + hold, through a gain that shapes the swell (a slow attack for the haze), then the worklet is retired. Until the
+// worklet has loaded (it loads asynchronously), the old sine-drawbar organ stands in.
+const ORG = new WeakMap();   // context → "loading" | "ready"
+function organReady(ctx) {
+  if (ORG.get(ctx) === "ready") return true;
+  if (!ORG.has(ctx) && ctx.audioWorklet) { ORG.set(ctx, "loading"); TONEWHEEL.init(ctx).then(() => ORG.set(ctx, "ready")).catch(() => ORG.set(ctx, "failed")); }
+  return false;
+}
+const ORGAN_PRESET = { lead: "jazz", stab: "soul", haze: "ballad" };
+function organ(notes, t, dur, v, out, att = .01, kind = "lead") {
+  const hold = Math.max(att, dur);
+  for (const m of notes) tr(m, dur > .25);
+  if (!organReady(C)) return organOld(notes, t, dur, v, out, att);
+  const g = C.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * ORGAN_K, t + Math.max(.004, att)); g.gain.setValueAtTime(v * ORGAN_K, t + hold); g.gain.linearRampToValueAtTime(0, t + hold + .15);
+  g.connect(out);
+  const o = TONEWHEEL.create(C, g, { ...TONEWHEEL.presets[ORGAN_PRESET[kind] || "jazz"], level: 1 });
+  for (const m of notes) { o.noteOn(m, 100, t); o.noteOff(m, t + hold); }
+  if (!(C instanceof OfflineAudioContext)) setTimeout(() => { try { o.dispose(); g.disconnect(); } catch (e) {} }, Math.max(0, (t + hold + .8 - C.currentTime) * 1000));
+}
+const ORGAN_K = 4.8;   // matches the old organ's loudness
+function organOld(notes, t, dur, v, out, att = .01) {  // the stand-in: a soft drawbar organ (8', 4', a little 2 2/3')
   const g = C.createGain(), lp = C.createBiquadFilter(), hold = Math.max(att, dur); lp.type = "lowpass"; lp.frequency.value = 2400;
   g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + att); g.gain.setValueAtTime(v, t + hold); g.gain.linearRampToValueAtTime(0, t + hold + .12);
   lp.connect(g); g.connect(out);
-  for (const m of notes) { tr(m, dur > .25); for (const [mul, a] of [[1, 1], [2, .4], [3, .12]]) { const o = osc("sine", hz(m) * mul), og = C.createGain(); og.gain.value = a; o.connect(og); og.connect(lp); o.start(t); o.stop(t + hold + .15); } }
+  for (const m of notes) { for (const [mul, a] of [[1, 1], [2, .4], [3, .12]]) { const o = osc("sine", hz(m) * mul), og = C.createGain(); og.gain.value = a; o.connect(og); og.connect(lp); o.start(t); o.stop(t + hold + .15); } }
 }
 function flute(m, t, v, out, x = {}) {             // breathy: a triangle with vibrato, a chiff of noise on the attack
   const dur = x.short ? .13 : Math.max(.2, x.dur || .5), f = hz(m), a = x.short ? .02 : .07; tr(m, !x.short);
@@ -384,10 +407,10 @@ function compStep(name, s, i, bar, ch, root, t, spb, g) {
   const n = ch.length, d = P.dread;
   switch (name) {
     case "arp": if (i % 2 === 0) pluck(ch[(i / 2) % n] + 12, t, .07 * g, B.arp, d); break;
-    case "stab": if (i === 2 || i === 6 || i === 12) organ(ch, t, spb * 1.4, .026 * g, B.arp, .01); break;
+    case "stab": if (i === 2 || i === 6 || i === 12) organ(ch, t, spb * 1.4, .026 * g, B.arp, .01, "stab"); break;
     case "bstab": if (i === 3 || i === 11) for (const m of [ch[0], ch[n - 1]]) brass(m, t, .045 * g, B.arp, { short: true, dark: d }); break;
     case "ostinato": pluck(ch[[0, 1, 2, 1][i % 4] % n] + (i % 8 < 4 ? 0 : 12), t, .042 * g, B.arp, .6 + .3 * d); break;
-    case "haze": if (i === 0) organ([...ch, root + 12], t, spb * 15, .02 * g, B.arp, 1.2); break;
+    case "haze": if (i === 0) organ([...ch, root + 12], t, spb * 15, .02 * g, B.arp, 1.2, "haze"); break;
     case "mbox": if (i % 4 === 0) box(ch[(i / 4) % n] + (i >= 8 ? 12 : 0), t, .07 * g, B.arp); break;
     case "sparse": if (i % 8 === 0) box(ch[(bar * 2 + i / 8) % n], t, .07 * g, B.arp); break;
     case "rhodes": {                                        // chord tones only, voiced in the middle; never on top of the tune
@@ -479,6 +502,7 @@ async function renderOffline(scene, secs = 30, rate = 22050, from = 0) {
   const nb = O.createBuffer(1, rate * 2, rate), d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   const master = O.createGain(); master.gain.value = .7; const comp = O.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 4; master.connect(comp); comp.connect(O.destination);
   const realAudio = sfx.audio; sfx.audio = () => ({ ctx: O, master, noise: nb });
+  if (O.audioWorklet) { try { await TONEWHEEL.init(O); ORG.set(O, "ready"); } catch (e) {} }
   C = null; B = {}; init(); S = null; pend = null; P.on = false; music.scene(scene);
   for (const k in B) B[k].gain.cancelScheduledValues(0);
   { const G = gains(); for (const k in G) B[k].gain.value = G[k]; }
