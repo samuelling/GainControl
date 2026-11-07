@@ -104,9 +104,13 @@ export function ceiling(el, { score = () => {} } = {}) {
     const saved = F.ceilProgress || null;
     const S = { phase: 1, picked: new Set(), marked: new Set(), meth: null, tried: new Set(), under: new Set(), wrong: 0, miss: 0,
       say: LINES.intro, done: false, drop: 0, noise: null, decoys: new Set() };
-    if (saved) { S.phase = saved.phase; S.picked = new Set(saved.picked); S.marked = new Set(saved.marked); S.wrong = saved.wrong || 0;
+    // a step counts as finished the moment its last click lands, not when the next step slides in: closing the desk in
+    // that second used to save a finished step with nothing left to click, and reopening it was a dead end
+    const BARS = ROWS.filter(r => above(r[2])).length;
+    const reached = (ph, picked, marked) => ph === 1 && picked >= 2 ? reached(2, picked, marked) : ph === 2 && marked >= BARS ? 3 : ph;
+    if (saved) { S.phase = reached(saved.phase, (saved.picked || []).length, (saved.marked || []).length); S.picked = new Set(saved.picked); S.marked = new Set(saved.marked); S.wrong = saved.wrong || 0;
       S.drop = S.phase >= 2 ? 1 : 0; S.say = S.phase === 1 ? LINES.p1 : S.phase === 2 ? LINES.p2 : LINES.p3; }
-    const save = () => { F.ceilProgress = S.done ? null : { phase: S.phase, picked: [...S.picked], marked: [...S.marked], wrong: S.wrong }; };
+    const save = () => { F.ceilProgress = S.done ? null : { phase: reached(S.phase, S.picked.size, S.marked.size), picked: [...S.picked], marked: [...S.marked], wrong: S.wrong }; };
     const P = PANELS.map(p => pointsWithR(p.r, p.seed));
     if (!saved) later(() => { if (S.phase === 1 && S.say === LINES.intro) { S.say = LINES.p1; draw(); } }, 3200);
     const showing = () => S.miss >= (S.phase === 3 ? 3 : 4);   // the answer is lit amber
@@ -198,7 +202,7 @@ export function ceiling(el, { score = () => {} } = {}) {
       if (!S.drop || S.marked.has(i)) return;
       if (!above(ROWS[i][2])) { const fresh = !S.under.has(i); S.under.add(i); missed(fresh, LINES.barUnder); return; }
       S.marked.add(i); S.say = LINES.barOk; sfx("stamp");
-      if (S.marked.size === ROWS.filter(r => above(r[2])).length) { S.say = LINES.barDone; sfx("chime");
+      if (S.marked.size === BARS) { S.say = LINES.barDone; sfx("chime");
         later(() => nextPhase(3, LINES.p3), 1600); }
       save(); draw();
     }
