@@ -1,4 +1,6 @@
 import { megazineEnd } from "../megazine.js";
+import { CLASSICS_REFS_SORTED } from "../data/classics_refs.js";
+import * as CONSOLE from "../console/modules.js";
 // THE AFTERMATH and THE CREDITS. Show, don't tell: what happens after the climax is a montage of short animated cards
 // (stepped poses, like everything else), not paragraphs. Then the credits roll, cast first, in portraits.
 import { seg, segC, segW, chip, chipW, arcs, star4 } from "../gfx.js";
@@ -149,6 +151,21 @@ export async function credits(api, { score = 0 } = {}) {
   line("DRAWN AND SYNTHESIZED LIVE IN YOUR BROWSER", 6, "sW", 30);
   line("THE REAL RECORD", 6, "sG", 8);
   line("C. G. GROSS, AMERICAN PSYCHOLOGIST, 1977", 6, "sW", 30);
+  // the real papers: what FOG NEURO's mill was fed (paraphrased, unnamed, in the game) and what the booth's console replicates
+  const plain = (t) => t.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/Ø/g, "O").replace(/Β/g, "B").replace(/[–—]/g, "-").replace(/[‘’`´]/g, "'").replace(/[“”"]/g, "'");
+  const refs = (title, sub, list) => {
+    if (!list.length) return;
+    line(title, 6, "sG", 4); line(sub, 4.4, "sM", 12);
+    for (const r of list.map(plain)) {
+      const parts = []; let cur = "";
+      for (const w of r.split(" ")) { if ((cur + " " + w).length > 200 && cur) { parts.push(cur); cur = w; } else cur = cur ? cur + " " + w : w; }
+      parts.push(cur);
+      parts.forEach((t, i) => line(t, 4, "sW", i === parts.length - 1 ? 5 : 2, .7));
+    }
+    y += 24;
+  };
+  refs("THE CLASSICS IN THE MILL", "FOG NEURO RESYNTHESIZES THE IDEAS OF THESE PAPERS. IN THE GAME THEY ARE PARAPHRASED AND UNNAMED.", CLASSICS_REFS_SORTED);
+  refs("THE PERCEPTION CONSOLE", "EVERY DEMO AND EXPERIMENT IN BOOTH 114, AND THE PAPERS THEY REPLICATE.", CONSOLE.CONSOLE_REFS ? CONSOLE.CONSOLE_REFS() : []);
   line("WITH APOLOGIES TO EVERY SIERRA DEATH SCENE", 6, "sM", 6);
   line("AND EVERY REVIEWER 2 WHO EVER LIVED", 6, "sM", 34);
   line("NO RATS WERE HARMED IN THE MAKING OF THIS GAME.", 6, "sW", 6);
