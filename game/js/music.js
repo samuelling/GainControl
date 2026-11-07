@@ -79,6 +79,13 @@ function init() {
   delay.connect(lp); lp.connect(fb); fb.connect(delay); lp.connect(wet); wet.connect(bus);
   // the melody and arpeggio reach the delay through one send, so a build can start dry (a clean Rhodes) and open it later
   B.dsend = C.createGain(); B.mel.connect(B.dsend); B.arp.connect(B.dsend); B.dsend.connect(delay); B.ctr.connect(cs); cs.connect(delay);
+  // a reverb send (a generated room: 2.6 s of decaying stereo noise, 18 ms pre-delay, darkened), used where a band asks for it
+  const len = Math.round(C.sampleRate * 2.6), ir = C.createBuffer(2, len, C.sampleRate), pre = Math.round(C.sampleRate * .018);
+  for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); let seed = 7 + c * 13;
+    for (let k = pre; k < len; k++) { seed = (seed * 16807) % 2147483647; d[k] = (seed / 2147483647 * 2 - 1) * Math.pow(1 - (k - pre) / (len - pre), 2.4) * Math.exp(-(k - pre) / C.sampleRate * 1.1); } }
+  const conv = C.createConvolver(), rlp = C.createBiquadFilter(), rwet = C.createGain(); conv.buffer = ir; rlp.type = "lowpass"; rlp.frequency.value = 4200; rwet.gain.value = 2.4;   // the convolver normalizes its response, so the wet level is set here
+  B.rsend = C.createGain(); B.rsend.gain.value = 0; B.mel.connect(B.rsend); B.arp.connect(B.rsend); B.ctr.connect(B.rsend);
+  B.rsend.connect(conv); conv.connect(rlp); rlp.connect(rwet); rwet.connect(bus);
   TINE.clear();
   return true;
 }
@@ -259,7 +266,7 @@ function hold(arr, bar, k, q) { let n = 1; while (k + n < 8 && (arr[bar][k + n] 
 const BANDS = {
   title: null,   // the main menu: set below to day 1's Rhodes band, so the build runs straight on into Act I
   // the game itself opens on a Rhodes (Act I): the tune on electric piano, syncopated Rhodes chords, a soft bass, a lazy beat
-  d1: { tempo: 92, lead: "rhodes", leadV: "rhodes", leadB: "flute", ctr: "vibes", hand: "vibes", bass: "two", drums: "soft", comp: "rhodes", compAll: true, swing: .2, build: true },
+  d1: { tempo: 92, lead: "rhodes", leadV: "rhodes", leadB: "flute", ctr: "vibes", hand: "vibes", bass: "two", drums: "soft", comp: "rhodes", compAll: true, swing: .2, build: true, reverb: .45 },
   // the OP-1 arrives in Act II: the square pluck and its arpeggios, over the bossa
   d2: { tempo: 100, lead: "pluck", leadV: "pluck", leadB: "marimba", ctr: "marimba", hand: "marimba", bass: "bossa", drums: "bossa", comp: "arp", compAll: true },
   d3: { tempo: 97, lead: "brass", leadV: "pluck", leadB: "organ", ctr: "marimba", hand: "marimba", bass: "angular", drums: "broken", comp: "bstab", compAll: true, angular: true, stacc: true },
@@ -419,8 +426,10 @@ function scheduleStep(s, t) {
     }
   }
   // the counter-melody: through A' and the bridge, and answering at the ends of the first A's phrases
-  const L = S.build ? Math.floor((s - buildStart) / 128) : 9;   // build layers: 0 Rhodes alone (dry), 1 + bass, 2 + drums, counter-melody and the delay
+  const L = S.build ? Math.max(0, Math.floor((s - buildStart) / 128)) : 9;   // build layers: 0 Rhodes alone (dry), 1 + bass, 2 + drums, counter-melody and the delay
   if (i === 0 && B.dsend) B.dsend.gain.setTargetAtTime(L >= 2 ? 1 : 0, t, L >= 2 ? 1.5 : .05);
+  // reverb: bands that ask for it; a build starts dry and lets the room in with the bass, fuller with the drums
+  if (i === 0 && B.rsend) B.rsend.gain.setTargetAtTime((S.reverb || 0) * (S.build ? [0, .6, 1][Math.min(2, L)] : 1), t, 1.2);
   if (S.ctr && L >= 2 && i % 2 === 0) {
     const arr = sec === "V" ? COUNTER_A : br ? COUNTER_B : sec === "A" && slot === 0 && bar % 4 === 3 && k >= 4 ? COUNTER_A : null, m = arr && arr[bar][k];
     if (m != null) voice(S.ctr, m, tt, S.night ? .1 : .085, B.ctr, { raw: true, dur: spb * Math.min(8, hold(arr, bar, k) * 2) });
@@ -471,9 +480,9 @@ async function renderOffline(scene, secs = 30, rate = 22050, from = 0) {
   C = null; B = {}; init(); S = null; pend = null; P.on = false; music.scene(scene);
   for (const k in B) B[k].gain.cancelScheduledValues(0);
   { const G = gains(); for (const k in G) B[k].gain.value = G[k]; }
-  step = from; nextT = .05; while (nextT < secs) { scheduleStep(step, nextT); nextT += 60 / P.tempo / 4; step++; }
+  const bs = buildStart; buildStart = from; step = from; nextT = .05; while (nextT < secs) { scheduleStep(step, nextT); nextT += 60 / P.tempo / 4; step++; }
   const buf = await O.startRendering();
-  sfx.audio = realAudio; ({ C, bus, B, delay, step, nextT, S, pend, cur } = saved); Object.assign(P, saved.P);
+  sfx.audio = realAudio; ({ C, bus, B, delay, step, nextT, S, pend, cur } = saved); Object.assign(P, saved.P); buildStart = bs;
   return buf;
 }
 // the harmony trace (tests): run a scene's sequencer silently for some steps; every pitched note comes back as
