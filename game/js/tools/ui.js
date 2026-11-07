@@ -14,10 +14,19 @@ export const KEYS = ["day", "morris", "night", "morning"];
 /* ---------------- overrides ---------------- */
 export const current = (e) => (e.key in S.local ? S.local[e.key] : e.key in S.file ? S.file[e.key] : e.orig);
 export const isChanged = (e) => current(e) !== e.orig;
-export function setText(e, text) {
+// the effective text as the revision history records it: null when the original shows
+export const effVal = (e) => { const v = current(e); return v === e.orig ? null : v; };
+// opts.log: false → not recorded in the history (the history's own reverts record themselves);
+// opts.kind: the history entry's kind ("edit" by default, "reset" for a line's REVERT button);
+// opts.quiet: skip S.onChange (batch operations call it once at the end).
+export function setText(e, text, opts = {}) {
+  const from = effVal(e);
   if (text === e.orig) { if (e.key in S.file) S.local[e.key] = text; else delete S.local[e.key]; }
   else S.local[e.key] = text;
-  writeLocal(S.local); refreshLines(e); S.onChange(e);
+  writeLocal(S.local); refreshLines(e);
+  const to = effVal(e);
+  if (opts.log !== false && from !== to && S.onEdit) S.onEdit(e, from, to, opts.kind || "edit");
+  if (!opts.quiet) S.onChange(e);
 }
 export function allOverrides() { return { ...S.file, ...S.local }; }
 export function changedCount() {

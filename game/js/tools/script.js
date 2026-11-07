@@ -5,6 +5,7 @@ import { readFile, writeLocal } from "./overrides.js";
 import { S, esc, actName, KEYS, current, isChanged, changedCount, allOverrides, lnHTML, startEdit, setText, effChips, playBtn, anchorOf,
   sideSpeaker, whoChip, portrait, toast } from "./ui.js";
 import { renderLogic, renderList, selectNode } from "./graph.js";
+import { initHistory, record, recordBatch, effOf, historyEntriesOf, mergeHistory } from "./history.js";
 
 const $ = (s, r = document) => r.querySelector(s);
 const main = $("#main"), side = $("#side");
@@ -24,6 +25,7 @@ async function boot() {
   S.caps = localStorage.getItem("gaincontrol.script.caps") !== "0";
   document.body.classList.toggle("caps", S.caps);
   S.onChange = () => { updateCount(); renderSide(); };
+  initHistory({ goto, changed: () => { updateCount(); if (S.changedOnly) render(); else renderSide(); } });
   updateCount(); render();
 }
 function readHash() {
@@ -306,15 +308,18 @@ export function gotoNode(act, id) {
 document.addEventListener("click", (ev) => {
   const t = ev.target;
   const tx = t.closest(".tx"); if (tx && tx.closest(".ln") && !tx.classList.contains("editing") && !t.closest("button, a")) { startEdit(tx); return; }
-  const rev = t.closest(".rev"); if (rev) { const e = S.byUid.get(+rev.closest(".ln").dataset.u); if (e) { setText(e, e.orig); toast("REVERTED"); } return; }
+  const rev = t.closest(".rev"); if (rev) { const e = S.byUid.get(+rev.closest(".ln").dataset.u); if (e) { setText(e, e.orig, { kind: "reset" }); toast("REVERTED"); } return; }
   const was = t.closest(".wasbtn"); if (was) { was.closest(".ln").classList.toggle("showwas"); return; }
   const actb = t.closest("[data-act]"); if (actb) { S.act = +actb.dataset.act; S.sel = null; S.q = ""; $("#search").value = ""; S.changedOnly = false; history.replaceState(null, "", `#${S.act}.${S.view}`); render(); main.scrollTop = 0; window.scrollTo(0, 0); return; }
   const vb = t.closest("#views button"); if (vb) { S.view = vb.dataset.view; S.q = ""; $("#search").value = ""; S.changedOnly = false; history.replaceState(null, "", `#${S.act}.${S.view}`); render(); window.scrollTo(0, 0); return; }
   const g = t.closest("[data-goto]"); if (g) { ev.preventDefault(); const [a, an] = splitOnce(g.dataset.goto); goto(+a, an); return; }
   const nd = t.closest("[data-node]"); if (nd) { ev.preventDefault(); const [a, id] = splitOnce(nd.dataset.node); gotoNode(+a, id); return; }
   const cv = t.closest("[data-convo]"); if (cv) { const [a, name] = splitOnce(cv.dataset.convo); const act = S.model.convoAct[name] && !actOf(+a).convos.some(c => c.name === name) ? S.model.convoAct[name] : +a; goto(act, `cv-${act}-${name}`); return; }
-  const dr = t.closest("[data-drop]"); if (dr) { delete S.local[dr.dataset.drop]; writeLocal(S.local); if (dr.dataset.drop in S.file) toast("STILL IN overrides.json"); updateCount(); render(); return; }
-  if (t.closest("#revertAll")) { if (confirm("Revert every edit saved in this browser? (overrides.json is untouched.)")) { S.local = {}; writeLocal(S.local); updateCount(); render(); toast("ALL LOCAL EDITS REVERTED"); } return; }
+  const dr = t.closest("[data-drop]"); if (dr) { const k = dr.dataset.drop, from = effOf(k); delete S.local[k]; writeLocal(S.local); record("delete", k, from, effOf(k)); if (dr.dataset.drop in S.file) toast("STILL IN overrides.json"); updateCount(); render(); return; }
+  if (t.closest("#revertAll")) { if (confirm("Revert every edit saved in this browser? (overrides.json is untouched. The revert is logged in HISTORY, so it can be undone.)")) {
+    const keys = Object.keys(S.local), before = keys.map(k => [k, effOf(k)]);
+    S.local = {}; writeLocal(S.local);
+    recordBatch("revert-all", "every local edit", before.map(([k, from]) => ({ key: k, from, to: effOf(k) }))); updateCount(); render(); toast("ALL LOCAL EDITS REVERTED"); } return; }
 });
 const splitOnce = (s) => { const i = s.indexOf("|"); return [s.slice(0, i), s.slice(i + 1)]; };
 
@@ -335,9 +340,13 @@ $("#import").addEventListener("click", () => $("#importFile").click());
 $("#importFile").addEventListener("change", async (e) => {
   const f = e.target.files[0]; if (!f) return;
   try {
-    const j = JSON.parse(await f.text()); if (!j || typeof j !== "object" || Array.isArray(j)) throw new Error("not an object");
-    let n = 0; for (const [k, v] of Object.entries(j)) if (typeof v === "string" && k.includes("|")) { S.local[k] = v; n++; }
-    writeLocal(S.local); updateCount(); render(); toast(`IMPORTED ${n} OVERRIDES`);
+    const j = JSON.parse(await f.text());
+    const hist = historyEntriesOf(j);
+    if (hist) { const m = mergeHistory(hist); toast(`MERGED ${m} HISTORY ENTR${m === 1 ? "Y" : "IES"}`); e.target.value = ""; return; }
+    if (!j || typeof j !== "object" || Array.isArray(j)) throw new Error("not an object");
+    let n = 0; const ch = [];
+    for (const [k, v] of Object.entries(j)) if (typeof v === "string" && k.includes("|")) { const from = effOf(k); S.local[k] = v; ch.push({ key: k, from, to: effOf(k) }); n++; }
+    writeLocal(S.local); recordBatch("import", `overrides from ${f.name}`, ch); updateCount(); render(); toast(`IMPORTED ${n} OVERRIDES`);
   } catch (err) { toast("THAT FILE ISN'T AN OVERRIDES.JSON"); }
   e.target.value = "";
 });
