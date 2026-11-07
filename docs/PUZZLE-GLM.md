@@ -9,7 +9,7 @@
 ## Why it's in the story
 
 - **Preston's claim** (the slide from Act I): top-down attention boosts the BOLD response **only in V1's feedback layers**, the deep layers (5/6) and layer 1. Layer 4, the feedforward input layer, stays flat. It's a "textbook" double-bump depth profile with tiny error bars, at "7T."
-- **What the data really show:** a clean visual response to the stimulus, and **no attentional modulation in visual cortex at all**. ATTEND = IGNORE. Not a small effect, a null. And at 3T there are no layers to look at in the first place.
+- **What the data really show** (revised Nov 2026): a clean visual response, and a **real attention effect**: ATTEND is about 30% above IGNORE across the whole time series, as the field has known since the late 1990s. What the data cannot show is *where in depth* it lives: at 3T one voxel spans the whole cortex, so the effect is the same number in all six "layers". The null is a **laminar** null. And at 3T there are no layers to look at in the first place.
 - **The knife twist:** the null is Nell's. The deposited "sub-01" is Nell's pilot scan. Her honest paper reported this null; Reviewer 2 rejected it for being null, then Preston upscaled the same data into a positive laminar result. Nell doesn't realize sub-01 is herself until the retainer reveal in Act IV, so this puzzle *plants* that reveal:
   > **Act III, after the fit:** GUS: "It's not a small effect. It's no effect." / MORRIS: "So the fancy layers?" / NELL: "Painted on."
   > **Act IV, at the retainer:** "His sub-01 had my null. Because his sub-01 is me."
@@ -34,7 +34,8 @@
 ## The design (what actually happened in the scanner)
 
 - TR = 2 s. 4 dummy volumes (8 s) were **discarded** before the data start. That matters, and the log doesn't say so.
-- Block design: 16 s stimulus ON (flickering checkerboard), 16 s OFF, × 8 cycles = 256 s = 128 volumes.
+- Block design (revised): eight 16 s blocks back to back, ATTEND, IGNORE, ATTEND, … (the checkerboard is on throughout), then 32 s of rest so the signal returns to baseline. 160 s = 80 volumes after the dummies. Preston's log: ATT @ 0:08, IGN @ 0:24, … in scanner time.
+- Grace (revised): LINED UP accepts one TR either way (Gus nudges the last two seconds); the FIT lamp lights when the leftovers are within 12% of the best fit, or every knob is within 0.1. Each stage opens with a short line-by-line lesson, a task line under the stage chips, and a brass arrow on the next thing to click.
 - ON blocks alternate: **ATTEND** (count the checkerboard's contrast dips) and **IGNORE** (do a hard letter task at fixation). 4 ATTEND blocks, 4 IGNORE blocks. Same visual input in both; only attention changes. That is the whole logic of the contrast.
 
 **Preston's log** (drawn as a page in his handwriting, with a coffee ring and the NRT insignia doodled in the margin):

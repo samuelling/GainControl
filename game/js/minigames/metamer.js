@@ -38,7 +38,7 @@ export const SRC = [
   { s: 1, yr: "1983", au: "LAUD, T. & HINDEX, M.", lab: "hindex", j: "J. COMP. CORTEX 12, 40-58",
     q: "The electrode was lowered by stages through the striate cortex, a reading taken at each, from the surface membrane to the white fibres beneath." },
   { s: -1, yr: "1999", au: "PLAIN, O.", lab: null, labName: "OPEN BENCH GROUP", j: "CORTEX & CONTEXT 18, 77-81",
-    q: "We find no effect of attention in the striate cortex at any depth. We report it anyway, in full.",
+    q: "Attention lifts the whole striate response. We find no depth at which it lifts more. We report it anyway, in full.",
     no: "That one's a null. Preston's paper doesn't do nulls.", nw: "MORRIS", nx: "That one's you in a past life, pal." },
   { s: 3, yr: "1991", au: "TENURE, B. & QUORUM, R.", lab: "quorum", j: "VIS. NEUROPHYS. 22, 310-327",
     q: "The geniculate-recipient lamina was indifferent to the task. It relays what arrives and asks no questions." },

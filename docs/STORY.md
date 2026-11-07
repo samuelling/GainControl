@@ -198,7 +198,7 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 
 **Day (Nell):** Nell investigates under suspicion, interrupted by Det. Small's interrogations. Gus, running on no sleep, is her methods partner at the desk.
 - **The fraud, proven:** Table 1's brain-behaviour correlations sit above the noise ceiling, because he picked the voxels that correlated (THE CEILING), Figure 3b and 3d are the same panel flipped (overlay), and 4,000 GPU-hours on `superres_laminar.py` (Rex's logs, bought with coffee), plus a second job that runs every Friday at 00:00: `ltm_generate.py --corpus /mnt/B3/archive --byline "P. Valu"`. Its output queue holds 40 finished drafts with future dates, including *Valu et al. (2027): "The Null Result of N. Null Is an Artifact."*
-- **The replication** (centerpiece; full design in [PUZZLE-GLM.md](PUZZLE-GLM.md)): with Preston's own stimulus log (Morris, from the Impact Lab) and his deposited raw data, Nell and Gus run the GLM by hand at Nell's monitor. Attention does nothing in visual cortex: ATTEND = IGNORE. And at 3T a single voxel is bigger than all six layers. *"It's not a small effect. It's no effect."* / *"So the fancy layers?"* / *"Painted on."*
+- **The replication** (centerpiece; full design in [PUZZLE-GLM.md](PUZZLE-GLM.md)): with Preston's own stimulus log (Morris, from the Impact Lab) and his deposited raw data, Nell and Gus run the GLM by hand at Nell's monitor. Attention does turn V1 up (ATTEND > IGNORE, as everyone has known since the 1990s), but at 3T a single voxel is bigger than all six layers, so the effect is the same in every "layer". Preston's claim was never the effect; it was where it lives. *"Attention's real. His layers aren't."* / *"So the fancy layers?"* / *"Painted on."*
 - **The conspiracy, surfacing:**
   - **Preston's blank moments.** Morris's itch spikes, Preston's earbuds pulse, and his face goes empty mid-sentence.
   - **The insignia,** traced in the notebook: earbud case, sticky notes, Quorum's cufflinks, the brass plate on the tube hub. They all match.
@@ -343,7 +343,7 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 | Water maze | "Rats learn where a hidden platform is. It's a test of spatial memory." | Cody's death; Morris's backstory |
 | Ethics review (IRB) | "You need permission *before* you test people, not after." | Backdated protocol |
 | Dark adaptation | "Your eyes take about 20 minutes to adjust to darkness." | Psychophysics booth puzzle (and a death) |
-| Block design | "Show the picture for 16 seconds, then nothing for 16. Over and over." | The replication: entering the log |
+| Block design | "Sixteen seconds attending, sixteen ignoring, back to back. Same picture. Only attention changes." | The replication: entering the log |
 | Hemodynamic response | "Neurons answer instantly. The blood arrives about five seconds later and lingers. Lightning, then thunder." | The replication: the HRF stamp |
 | The GLM | "Your guess is a template. Stretch it until it lies on top of the data. How far you stretched it is the answer." | The replication: fit by hand |
 | Contrasts | "Same picture both times; only attention changes. The difference between the fits is the attention effect." | The replication: ATTEND vs IGNORE |

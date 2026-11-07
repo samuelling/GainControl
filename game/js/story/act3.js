@@ -190,7 +190,7 @@ export const CONVOS = {
     ["R", "Enough that I can file it. In a binder. Binders don't have feelings either."],
   ] },
   ethelNew: { L: "nell", R: "ethel", score: ["ethelFile", 2], lines: [
-    ["L", "Correlations in Table 1 above the noise ceiling. Figure 3b and 3d are the same panel, flipped. Four thousand GPU-hours of 'super-resolution'. And the replication: attention does nothing in V1."],
+    ["L", "Correlations in Table 1 above the noise ceiling. Figure 3b and 3d are the same panel, flipped. Four thousand GPU-hours of 'super-resolution'. And the replication: attention turns V1 up, the same at every depth, because at 3T there's only one depth."],
     ["R", "…"],
     ["R", "That's a binder. That's a whole binder."],
     ["R", "Misconduct in this department is raised at the faculty meeting, under New Business. Today. Three o'clock. Third floor."],
@@ -286,12 +286,12 @@ async function doOverlay(api) {
   api.flag("proofOverlay", true); api.score("proofOverlay", 2); return null;
 }
 async function doGLM(api) {
-  if (api.flag("proofGLM")) return "ATTEND = IGNORE. You don't need to run it again. You'll run it again tonight anyway.";
+  if (api.flag("proofGLM")) return "ATTEND > IGNORE, by the same amount in every layer. One voxel. You don't need to run it again. You'll run it again tonight anyway.";
   if (!api.has("log")) return "GUS|We need his timing. The stimulus log. It's in 116.";
   await api.say("Gus rolls his chair over. He has the raw data. You have Preston's log. Time to replicate the Big Finding.");
   await api.mini(glm, { score: api.score, die: dieKeep(api) }, "glmwrap");
   api.flag("proofGLM", true); api.score("proofGLM", 2); api.take("log");
-  return "GUS|It's not a small effect. It's no effect.\n\nNELL|So the fancy layers?\n\nGUS|Painted on.";
+  return "GUS|Attention's real. His layers aren't. One voxel can't tell you which floor of the building the party's on.\n\nNELL|So the fancy layers?\n\nGUS|Painted on.";
 }
 async function monitor(api) {
   const o = [["fig", "FIGURE 3: TWO PARTICIPANTS"]];
@@ -324,7 +324,7 @@ export const HS = {
     door: { label: "door to hallway", day: { look: "The hallway.", go: "hall@fromLab" }, morris: { look: "A door.", go: "hall@fromLab" }, night: { look: "The hallway.", go: "hall@fromLab" } },
     monitor: { label: "your monitor", day: { look: "Your monitor. Figure 3 of the Big Finding is open, and has been since 6 AM.", use: monitor },
       morris: { look: "Morris walks across the keyboard. Figure 3 rotates. Morris looks at you like he did it on purpose." },
-      night: { look: "Nell's monitor, still on: ATTEND = IGNORE, in her handwriting, on a sticky note." } },
+      night: { look: "Nell's monitor, still on: ATTEND > IGNORE. SAME IN EVERY LAYER. (THERE IS ONE LAYER.) In her handwriting, on a sticky note." } },
     drawer: { label: "desk drawer", day: { look: "Your drawer. Morris's bedding, a ramen packet, and Preston's Rising Stars headshot with the eyes cut out. That was Morris." },
       morris: { look: "Home.", use: "Morris naps for four seconds. Refreshed." }, night: { look: "Nell's drawer. Something in it is snoring." } },
     whiteboard: { label: "whiteboard", day: { look: "DID HE RUN ANYONE? has been crossed out. Underneath, bigger: IS ANY OF IT REAL?" }, morris: { look: "Morris judges it from below." },
