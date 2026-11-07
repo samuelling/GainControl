@@ -175,7 +175,7 @@ function loadRoom(id, entry, pos) {
 let pendingRemark = false;
 function maybeRemark() {
   // "codes": now and then someone lets one slip (the menu promises they're around, if you listen)
-  const topics = [...activeCheats(), ...(opt("holidays") ? holidaysNow().on : []), ...(Math.random() < .35 ? ["codes"] : [])]; if (!topics.length) return;
+  const topics = [...activeCheats(), ...(opt("holidays") ? (h => [...h.on, ...(h.lights ? ["xmaslights"] : [])])(holidaysNow()) : []), ...(Math.random() < .35 ? ["codes"] : [])]; if (!topics.length) return;
   const room = G.room;
   setTimeout(() => {
     if (G.room !== room || G.busy || G.chooser || G.using || onTitle || $("#panel").innerHTML) return;

@@ -28,22 +28,22 @@ export const HOLIDAYS = {
 };
 export const ORDER = Object.keys(HOLIDAYS);   // also the priority: the first in season owns the walls
 
+// Each holiday goes up two days before and comes down after its day (a multi-day one, after its last day).
+// The exception is the lab's Christmas lights: up all December (lights: true), whatever else is on.
 export function holidaysOn(date = new Date()) {
   const y = date.getFullYear(), t = D(y, date.getMonth() + 1, date.getDate()).getTime(), on = [], info = {};
-  const tg = nthDow(y, 11, 4, 4);
-  const add = (id, a, b, extra) => { if (within(t, a, b)) { on.push(id); if (extra) info[id] = extra; } };
-  add("newyear", D(y, 1, 1), D(y, 1, 7), { year: y }); add("newyear", D(y, 12, 31), D(y, 12, 31), { year: y + 1 });
-  add("valentine", D(y, 2, 7), D(y, 2, 14));
-  const ln = LUNAR[y]; if (ln) { const d0 = D(y, ln[0], ln[1]); add("lunar", new Date(d0 - 2 * day), new Date(+d0 + 14 * day), { animal: ln[2] }); }
-  add("pi", D(y, 3, 14), D(y, 3, 14)); add("stpat", D(y, 3, 15), D(y, 3, 17));
-  add("brainweek", nthDow(y, 3, 1, 2), new Date(+nthDow(y, 3, 1, 2) + 6 * day));
-  add("fools", D(y, 4, 1), D(y, 4, 1)); add("grads", D(y, 5, 10), D(y, 5, 24)); add("july4", D(y, 6, 30), D(y, 7, 5));
-  add("halloween", D(y, 10, 1), D(y, 11, 2)); add("thanksgiving", D(y, 11, 3), new Date(+tg + 3 * day));
-  add("winter", new Date(+tg + 4 * day), D(y, 12, 30));
+  const add = (id, d0, extra, last = d0) => { if (within(t, new Date(+d0 - 2 * day), last)) { on.push(id); if (extra) info[id] = extra; } };
+  add("newyear", D(y, 1, 1), { year: y }); add("newyear", D(y + 1, 1, 1), { year: y + 1 });
+  add("valentine", D(y, 2, 14));
+  const ln = LUNAR[y]; if (ln) add("lunar", D(y, ln[0], ln[1]), { animal: ln[2] });
+  add("pi", D(y, 3, 14)); add("stpat", D(y, 3, 17));
+  const baw = nthDow(y, 3, 1, 2); add("brainweek", baw, null, new Date(+baw + 4 * day));   // the week of outreach, Mon–Fri
+  add("fools", D(y, 4, 1)); add("grads", nthDow(y, 5, 0, 3)); add("july4", D(y, 7, 4));
+  add("halloween", D(y, 10, 31)); add("thanksgiving", nthDow(y, 11, 4, 4)); add("winter", D(y, 12, 25));
   for (const yy of [y, y - 1]) { const h = HANUKKAH[yy]; if (!h) continue; const d0 = D(yy, h[0], h[1]);
-    if (within(t, d0, new Date(+d0 + 7 * day))) { on.push("hanukkah"); info.hanukkah = { night: Math.round((t - d0) / day) + 1 }; } }
-  const dw = DIWALI[y]; if (dw) { const d0 = D(y, dw[0], dw[1]); add("diwali", new Date(d0 - 2 * day), new Date(+d0 + 3 * day)); }
-  return { on: [...new Set(on)].sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b)), info, date };
+    if (within(t, new Date(+d0 - 2 * day), new Date(+d0 + 7 * day))) { on.push("hanukkah"); info.hanukkah = { night: Math.max(0, Math.round((t - d0) / day) + 1) }; } }
+  const dw = DIWALI[y]; if (dw) add("diwali", D(y, dw[0], dw[1]));
+  return { on: [...new Set(on)].sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b)), info, date, lights: date.getMonth() === 11 };
 }
 
 // what's showing now: the URL (?holiday= / ?date=), a forced holiday from the TIMEWARP code, or today
@@ -51,7 +51,7 @@ function urlParam(k) { try { return new URLSearchParams(location.search).get(k);
 export function current() {
   const f = urlParam("holiday") || opt("forceHoliday");
   if (f && HOLIDAYS[f]) { const r = { on: [f], info: { hanukkah: { night: 5 }, newyear: { year: new Date().getFullYear() + 1 }, lunar: { animal: "HORSE" } } };
-    if (f === "winter") r.on.push("hanukkah"); if (f === "thanksgiving") r.on.push("diwali"); return r; }
+    if (f === "winter") r.on.push("hanukkah"); if (f === "thanksgiving") r.on.push("diwali"); r.lights = f === "winter"; return r; }
   const d = urlParam("date"); return holidaysOn(d ? new Date(d + "T12:00") : new Date());
 }
 // the next one round the year, for TIMEWARP (returns its id)
@@ -99,7 +99,7 @@ const ART = {
     s += `<path class="sA" d="M-12,-12 L12,-12"/>`;
     const xs = [-12, -9, -6, -3, 3, 6, 9, 12];
     xs.forEach((x, i) => { s += `<path class="hl sW" d="M${x},-12 L${x},-16"/>`; if (8 - i <= night) s += `<path class="fA" d="M${x},-16.5 C${x - 1.3},-17.8 ${x - .5},-19.5 ${x},-20.5 C${x + .5},-19.5 ${x + 1.3},-17.8 ${x},-16.5 Z"/>`; });
-    return s + `<path class="sA" d="M0,-12 L0,-17"/><path class="hl sW" d="M0,-17 L0,-21"/><path class="fA" d="M0,-21.5 C-1.3,-22.8 -.5,-24.5 0,-25.5 C.5,-24.5 1.3,-22.8 0,-21.5 Z"/>`; },
+    return s + `<path class="sA" d="M0,-12 L0,-17"/><path class="hl sW" d="M0,-17 L0,-21"/>${night < 1 ? "" : `<path class="fA" d="M0,-21.5 C-1.3,-22.8 -.5,-24.5 0,-25.5 C.5,-24.5 1.3,-22.8 0,-21.5 Z"/>`}`; },
   balloon: (c = "sB") => `<path class="k ${c}" d="M0,4 C-7,1 -8,-10 0,-12 C8,-10 7,1 0,4 Z"/><path class="${c}" d="M-1,5 L1,5 L0,4 Z"/><path class="hl sM" d="M0,5 C2,9 -2,12 0,17"/>`,
   flag: () => `<path class="sM" d="M0,10 L0,-12"/><rect class="k sW" x="0" y="-12" width="13" height="8"/><path class="hl sR" d="M5,-10.5 L13,-10.5 M5,-8 L13,-8 M0,-5.5 L13,-5.5"/><rect class="hl sB" x="0" y="-12" width="5" height="4.5"/>`,
   mortarboard: () => `<path class="k sW" d="M-11,-4 L0,-9 L11,-4 L0,1 Z"/><path class="sW" d="M-6,-1.5 L-6,4 C-3,6 3,6 6,4 L6,-1.5"/><path class="sA" d="M0,-4 L8,-2 L8,5"/><path class="hl sA" d="M7,5 L9,5 L8.5,8 L7.5,8 Z"/>`,
@@ -202,7 +202,7 @@ const KIT = {
   halloween: { garland: ["things", (i) => ART.bat(i % 4 ? "sV" : "sM"), 2, .32], banner: "HAPPY HALLOWEEN", cols: ["sA", "sV"], cut: () => ART.ghost(), hang: (i) => ART.bat(i % 2 ? "sV" : "sM"), props: [() => ART.pumpkin(), () => ART.candy()], corner: true, floorProp: true },
   thanksgiving: { garland: ["things", (i) => ART.leaf(["sA", "sR", "sA", "sG"][i % 4]), 2, .34], banner: "GIVE THANKS", cols: ["sA", "sR", "sA"], cut: () => ART.handturkey(), props: [() => ART.gloveturkey(), () => ART.pie()] },
   winter: { garland: ["tinsel"], lights: true, banner: "HAPPY HOLIDAYS", fall: 13, cols: ["sR", "sG", "sW"], cut: () => ART.snowflake(), hang: () => ART.snowflake(), props: [() => ART.tiptree(), () => ART.candy()], floorProp: true },
-  hanukkah: { banner: "HAPPY HANUKKAH", cols: ["sB", "sW"], cut: () => ART.dreidel(), props: [(info) => ART.menorah((info.hanukkah || {}).night || 5), () => ART.dreidel()] },
+  hanukkah: { banner: "HAPPY HANUKKAH", cols: ["sB", "sW"], cut: () => ART.dreidel(), props: [(info) => ART.menorah((info.hanukkah || {}).night ?? 5), () => ART.dreidel()] },
   diwali: { lights: true, lightCols: ["fA", "fA", "fR", "fA"], banner: "HAPPY DIWALI", cols: ["sA", "sR", "sV"], hang: () => ART.kandil(), props: [() => `${T(-9, 0, .7, ART.diya())}${T(7, 0, .7, ART.diya())}`] },
   newyear: { garland: ["chain", ["sA", "sW", "sB"]], banner: (info) => "HAPPY " + ((info.newyear || {}).year || ""), cols: ["sA", "sW"], hang: (i) => ART.balloon(["sB", "sA", "sV", "sR"][i % 4]), props: [() => ART.hat(), () => ART.hat("sA")] },
   lunar: { banner: (info) => "YEAR OF THE " + ((info.lunar || {}).animal || "HORSE"), cols: ["sR", "sA"], hang: () => ART.lantern(), cut: () => ART.couplet(), props: [() => `${T(-5, 0, .7, ART.orange())}${T(5, 0, .7, ART.orange())}${T(0, -6, .7, ART.orange())}`] },
@@ -234,8 +234,9 @@ const ROOMS = {
   freezer: { use: ["cut"], cut: [["b", 70, 110]] },
 };
 
-export function decorFor(roomId, pp, info, ids) {
-  const spec = ROOMS[roomId]; if (!spec || !ids.length) return "";
+export function decorFor(roomId, pp, info, ids, lights = false) {
+  const spec = ROOMS[roomId]; if (!spec) return "";
+  if (!ids.length) return roomId === "lab" && lights ? drapeLights() : "";
   const has = (k) => spec.use.includes(k);
   const prime = ids[0], K = KIT[prime], { P, KB } = pp;
   const TL = P(0, 0, KB), TR = P(640, 0, KB);
@@ -243,7 +244,7 @@ export function decorFor(roomId, pp, info, ids) {
   const scal = Math.max(3, Math.round((TR[0] - TL[0]) / 70));
   let s = "";
   // one string across the back wall: the holiday's garland, or its lights if that's all it has
-  if (roomId === "lab" && (ids.includes("winter") || ids.includes("newyear"))) s += drapeLights();
+  if (roomId === "lab" && lights) s += drapeLights();
   else if (has("garland") && K.garland) s += garland(K, ...span(4), scal);
   else if ((has("garland") || has("lights")) && (K.lights || ids.slice(1).some(i => KIT[i].lights))) {
     const L = K.lights ? K : KIT[ids.find(i => KIT[i].lights)]; s += GARLAND.lights(...span(4), scal, 4, L.lightCols); }
@@ -282,7 +283,7 @@ function garland(K, a, b, n) {
 // the layer for the room on screen (empty when the decorations are off, or underground)
 export function decor(room, G) {
   if (!opt("holidays") || !room || !room.pp) return "";
-  const cur = current(); if (!cur.on.length) return "";
-  return `<g class="decor" pointer-events="none">${decorFor(room.id, room.pp, cur.info, cur.on)}</g>`;
+  const cur = current(); if (!cur.on.length && !cur.lights) return "";
+  return `<g class="decor" pointer-events="none">${decorFor(room.id, room.pp, cur.info, cur.on, cur.lights)}</g>`;
 }
 export const ART_FOR_TEST = ART;

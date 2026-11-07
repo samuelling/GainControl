@@ -33,7 +33,7 @@ export function installMenu({ G, sfx, FULL, GUIDE, onChange = () => {}, onCode =
   }
   function draw() {
     const cur = current(), forced = opt("forceHoliday");
-    const season = cur.on.length ? cur.on.map(id => HOLIDAYS[id].name).join(" · ") : "NOTHING ON THE CALENDAR TODAY";
+    const season = [...cur.on.map(id => HOLIDAYS[id].name), ...(cur.lights && !cur.on.includes("winter") ? ["THE LAB'S CHRISTMAS LIGHTS"] : [])].join(" · ") || "NOTHING ON THE CALENDAR TODAY";
     let s = `<rect width="640" height="360" fill="#000" opacity=".94"/>
       ${seg("OPTIONS", 40, 22, 22, "sW", 1.4)}${chip("PAUSED", 40 + segW("OPTIONS", 22) + 12, 31, 6, "fA")}
       <path class="hl sD" d="M40,58 L600,58 M320,70 L320,300"/>`;
