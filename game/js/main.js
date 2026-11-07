@@ -702,8 +702,16 @@ async function start() {
   loadRoom("seminar", "start");
   const unlocked = +(localStorage.getItem("gaincontrol.act") || 1);
   onTitle = true; musicScene(true);
+  // CLICK TO START: browsers keep a page silent until it's clicked, so the game begins on a dark screen with the CRT's
+  // standby dot. That click turns the sound on (the menu's tune starts), and the dot opens out into the title screen.
+  if (!(sfx.running && music.state.on)) {
+    let n = 0;   // on most of the time, a short blink off (like a standby light)
+    const blink = setInterval(() => { const e = document.getElementById("cts"); if (e) e.setAttribute("visibility", ++n % 4 === 3 ? "hidden" : "visible"); }, 300);
+    await showCard(`<circle class="fW" cx="320" cy="180" r="1.6"/><g id="cts">${centered("CLICK TO START", 204, 8, "sW", 1.1)}</g>`, { auto: 0 });
+    clearInterval(blink);
+  }
   const tOpts = { unlocked, full: !FULL.standalone(), sound: () => sfx.running && music.state.on };
-  const titleP = showCard(titleArt(tOpts), { buttons: true });
+  const titleP = showCard(titleArt(tOpts), { buttons: true, crt: true });
   const stopGlitch = titleGlitch(card, { sfx: () => { sfx.play("blank"); music.glitch(); }, ...tOpts });
   const choice = await titleP; stopGlitch();
   // keep the LED screen up for the handoff glitch, then let the act's day card take over the black
