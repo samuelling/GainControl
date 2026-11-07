@@ -78,9 +78,9 @@ export const WALKTHROUGH = {
     ] },
     { name: "PROOF: TABLE 1, THE CEILING (GUS)", steps: [
       { t: "Click Gus and choose TABLE 1.", flag: "proofGrim" },
-      { t: "Step 1: click panel S2A (attention score, session 1 vs 2) and S2C (V1 effect, odd vs even runs). Not head motion, not pizza.", flag: "proofGrim" },
-      { t: "Step 2: mark the three bars above the .60 ceiling: V1 superficial .91, V1 deep .94, V2 deep .88.", flag: "proofGrim" },
-      { t: "Step 3: click the methods sentence about selecting voxels whose effect correlated with attention score. It runs on noise by itself (or press RUN IT ON NOISE), then DONE.", flag: "proofGrim" },
+      { t: "Step 1: click the two panels that measure the same thing twice: ATTENTION TEST, TAKEN TWICE (S2A) and BRAIN SCAN, RUN TWICE (S2C). Not head motion, not pizza.", flag: "proofGrim" },
+      { t: "Step 2: click the three bars above the .60 line (the most it could be): V1 superficial .91, V1 deep .94, V2 deep .88.", flag: "proofGrim" },
+      { t: "Step 3: click ‘He searched thousands of brain spots and kept only the ones that already matched people's scores…’. It runs on noise by itself (or press RUN IT ON NOISE), then DONE.", flag: "proofGrim" },
     ] },
     { name: "PROOF: FIGURE 3 (YOUR MONITOR)", steps: [
       { t: "Click your monitor, WORK, FIGURE 3: TWO PARTICIPANTS. Press FLIP ↔ once, then ROTATE 90° once. When it matches, DONE.", flag: "proofOverlay" },
