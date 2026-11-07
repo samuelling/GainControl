@@ -190,3 +190,29 @@
   .nodbar button { font: 600 1.8cqw "Saira Condensed", sans-serif; letter-spacing: .06em; background: var(--G); color: #000; border: 0; padding: .2cqw 1.4cqw; cursor: pointer; }
   .nodbar button:disabled { background: var(--D); cursor: default; } .nodbar button small { font-size: .6em; }
   .nodbar .tally { font-size: 1.2cqw; color: var(--M); letter-spacing: .06em; }
+
+/* the megaZINE masthead after the credits (fonts in fonts/, OFL; the look is megazine.org's, in its dark colours) */
+@font-face { font-family:"Bowlby One SC"; font-weight:400; font-display:swap; src:url(../fonts/bowlby-one-sc-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family:"Courier Prime"; font-weight:700; font-display:swap; src:url(../fonts/courier-prime-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family:"Spline Sans"; font-weight:600; font-display:swap; src:url(../fonts/spline-sans-latin-600-normal.woff2) format("woff2"); }
+#panel.mzwrap { background:#000; }
+.mzend { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; cursor:pointer; }
+.mzend .mzpart { width:22cqw; height:auto; margin-bottom:2.2cqw; }
+.mzend .mz { display:inline-block; text-decoration:none; color:#ECEBE5; }
+.mzend .mzrow { display:flex; align-items:center; justify-content:center; gap:2.6cqw; }
+.mzend .mzqr { width:15cqw; aspect-ratio:1; flex:none; transform:rotate(-1.5deg); }
+.mzend .mzqr svg { display:block; width:100%; height:100%; }
+.mzend .mzqr .lid { transition:transform .08s ease-in; }
+.mzend .mzlogo { position:relative; display:inline-block; font:400 10cqw/.86 "Bowlby One SC","Arial Black",Impact,sans-serif; letter-spacing:-.02em; color:#ECEBE5; isolation:isolate; white-space:nowrap; text-align:left; }
+.mzend .mzlogo .lc { font-family:"Spline Sans","Helvetica Neue",Arial,sans-serif; font-weight:600; letter-spacing:-.04em; font-size:.6em; vertical-align:.7em; margin-left:.06em; color:#7DB0FF; }
+.mzend .mzlogo .ink { position:relative; z-index:1; }
+.mzend .mzlogo .mis { position:absolute; left:0; top:0; color:#FF68BA; mix-blend-mode:screen; transform:translate(.035em,.03em) rotate(-.6deg); transform-origin:left top; pointer-events:none; z-index:2; opacity:.85; white-space:nowrap; }
+.mzend .mzlogo .mis .lc { color:#FF68BA; }
+@keyframes mz-jit-ink { 0% { transform:none; } 20% { transform:translate(-.014em,.006em); } 45% { transform:translate(.012em,-.01em) skewX(-1.2deg); } 70% { transform:translate(-.006em,.004em); } 100% { transform:none; } }
+@keyframes mz-jit-mis { 0% { transform:translate(.035em,.03em) rotate(-.6deg); } 20% { transform:translate(.075em,.012em) rotate(-1.3deg); } 45% { transform:translate(.008em,.055em) rotate(.25deg); } 70% { transform:translate(.055em,.038em) rotate(-.9deg); } 100% { transform:translate(.035em,.03em) rotate(-.6deg); } }
+.mzend .mzlogo.jit .ink { animation:mz-jit-ink .34s steps(1,end); }
+.mzend .mzlogo.jit .mis { animation:mz-jit-mis .34s steps(1,end); }
+.mzend .mztag { font:700 1.3cqw/1 "Courier Prime","Courier New",monospace; letter-spacing:.14em; text-transform:uppercase; margin-top:2cqw; }
+.mzend .mzurl { font:600 1.5cqw/1 "Spline Sans",Arial,sans-serif; letter-spacing:.12em; color:#9cc3ff; margin-top:.9cqw; }
+.mzend .mzhint { position:absolute; bottom:4%; font-size:1.1cqw; letter-spacing:.14em; color:var(--M); }
+.mzend svg.mzpart { position:relative; inset:auto; width:30cqw; height:auto; }

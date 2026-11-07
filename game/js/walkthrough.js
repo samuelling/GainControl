@@ -148,10 +148,10 @@ export const WALKTHROUGH = {
         hs: ["lab.monitor", "hall.lab"], nudge: ["NELL|Preston's log is in my drawer. Gus has the raw data. Somebody should introduce them.", "GUS|You have the log. Your monitor. Let's replicate it.", "NELL|My monitor. The Replication, with Preston's stimulus log."] },
       { t: "Log: click cells to start blocks (the brass arrow shows the next one). ATTEND (green) at 0:16, 1:20, 2:24, 3:28; IGNORE (blue) at 0:48, 1:52, 2:56, 4:00. Empty cells are OFF (grey screen). CHECK IT, then STAMP THE HRF.", flag: "proofGLM",
         hs: ["lab.monitor", "hall.lab"], nudge: ["GUS|His log: sixteen off, sixteen on. Copy his timing exactly. Confident handwriting. Readable, though.", "GUS|Off, attend, off, ignore. Sixteen seconds each. The first one on is at sixteen.", "GUS|Attend at 0:16, 1:20, 2:24, 3:28. Ignore at 0:48, 1:52, 2:56, 4:00."] },
-      { t: "Turn the knobs with + and −: about ATTEND 1.35, IGNORE 0.95, BASELINE 0.10 (close counts). When the FIT lamp lights, THAT'S THE FIT. Then SOLVE.", flag: "proofGLM",
-        hs: ["lab.monitor", "hall.lab"], nudge: ["GUS|Now fit it. Turn the knobs until the model looks like the data.", "GUS|Watch the attend humps. They sit a little higher than the ignore ones.", "GUS|Attend about 1.35. Ignore about 0.95. Baseline about 0.1. Then solve."] },
+      { t: "Turn the knobs with + and −: about ATTEND 1.65, IGNORE 0.95, BASELINE 0.10 (close counts). When the FIT lamp lights, THAT'S THE FIT. Then SOLVE.", flag: "proofGLM",
+        hs: ["lab.monitor", "hall.lab"], nudge: ["GUS|Now fit it. Turn the knobs until the model looks like the data.", "GUS|Watch the attend humps. They stand well above the ignore ones.", "GUS|Attend about 1.65. Ignore about 0.95. Baseline about 0.1. Then solve."] },
       { t: "AVOID: pressing TRY ANOTHER ANALYSIS fourteen times (inducted early: death)." },
-      { t: "The contrast: ATTEND beats IGNORE by about .4 (real). LOOK FOR LAYERS, FIT PER LAYER (the same .4 in all six), COMPARE TO HIS PAPER. Click panels A, B/D and C (three tells), WRITE IT UP, then CLOSE.", flag: "proofGLM",
+      { t: "The contrast: ATTEND beats IGNORE by about .7 (real). LOOK FOR LAYERS, FIT PER LAYER (the same .7 in all six), COMPARE TO HIS PAPER. Click panels A, B/D and C (three tells), WRITE IT UP, then CLOSE.", flag: "proofGLM",
         hs: ["lab.monitor", "hall.lab"], nudge: ["GUS|Now the fancy part. His layers. Fit each one, then hold them up to his paper.", "NELL|His figure next to ours. Three places where they can't both be true.", "GUS|Panels A, B and D, and C. Three tells. Then write it up."] },
     ] },
     { name: "WEDNESDAY AFTERNOON  ETHEL, THE MEETING, IRIS", steps: [

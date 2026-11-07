@@ -1,3 +1,4 @@
+import { megazineEnd } from "../megazine.js";
 // THE AFTERMATH and THE CREDITS. Show, don't tell: what happens after the climax is a montage of short animated cards
 // (stepped poses, like everything else), not paragraphs. Then the credits roll, cast first, in portraits.
 import { seg, segC, segW, chip, chipW, arcs, star4 } from "../gfx.js";
@@ -161,4 +162,5 @@ export async function credits(api, { score = 0 } = {}) {
   const done = api.bigCard(`<g id="${id}">${s}</g>`, { auto: steps * MS + 3500, hold: 800 });
   (async () => { for (let i = 1; i <= steps; i++) { await api.wait(MS); const g = document.getElementById(id); if (!g) return; g.setAttribute("transform", `translate(0 ${-i * STEP})`); } })();
   await done;
+  await api.mini(megazineEnd, {}, "mzwrap");   // the close, as in Ashland: part of megaZINE
 }

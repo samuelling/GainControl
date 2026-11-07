@@ -14,7 +14,7 @@ const TR = 2, DUMMY = 0, BLOCK = 16, OFF = 16, NB = 8;
 const DUR = NB * (OFF + BLOCK) + OFF, NV = DUR / TR;        // 272 s of data = 136 volumes
 const TRUE_ONSETS = Array.from({ length: NB }, (_, i) => OFF + i * (OFF + BLOCK));   // in data time: 0:16, 0:48, …
 const LOG_ONSETS = TRUE_ONSETS.map(t => t + DUMMY);         // Preston's log (same clock as the data)
-const AMP = { A: 1.3, I: 1.0 };                             // attention turns V1 up by ~30%: real, and known for decades
+const AMP = { A: 1.6, I: 1.0 };                             // attention turns V1 up (real, and known for decades); drawn big so you can see it
 function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 const gamma = (n) => { let g = 1; for (let i = 2; i < n; i++) g *= i; return g; };   // Γ(n) for integer n
 function hrf(t) { if (t <= 0) return 0; return Math.pow(t, 5) * Math.exp(-t) / gamma(6) - Math.pow(t, 15) * Math.exp(-t) / gamma(16) / 6; }
@@ -49,7 +49,7 @@ function inv3(m) {
 }
 function RSS(y, xa, xi, [bA, bI, b0]) { let s = 0; for (let v = 0; v < NV; v++) { const r = y[v] - bA * xa[v] - bI * xi[v] - b0; s += r * r; } return s; }
 function Phi(z) { const t = 1 / (1 + 0.2316419 * z), d = 0.3989423 * Math.exp(-z * z / 2); return 1 - d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); }
-// Nell's sub-01: attention really does turn V1 up (ATTEND 1.3, IGNORE 1.0), with real-looking noise and drift.
+// Nell's sub-01: attention really does turn V1 up (ATTEND 1.6, IGNORE 1.0), with real-looking noise and drift.
 // Pick a seed where the fit lands close to the truth and the contrast is clearly there.
 function makeData() {
   for (let seed = 412; ; seed++) {
@@ -467,7 +467,7 @@ export function glm(root, opts = {}) {
         S.k = { A: +D.fit.beta[0].toFixed(2), I: +D.fit.beta[1].toFixed(2), B: +D.fit.beta[2].toFixed(2) }; S.solved = true; add("solve", 1); S.stage = 5; sfx("compute"); sfx("seesaw");
         const eff = (D.fit.beta[0] - D.fit.beta[1]).toFixed(2).replace("0.", ".");
         lesson([["GUS", "Same picture on screen in both kinds of block. The only thing that changes is attention. So ATTEND minus IGNORE is the attention effect."],
-          ["NELL", `Plus ${eff}. Attending to it turns V1 up by about a third.`],
+          ["NELL", `Plus ${eff}. Attending to it turns V1 up by more than half.`],
           ["GUS", `And HOW SURE: that gap is ${Math.round(D.fit.t)} times bigger than its own wobble. That's the T. Luck doesn't do that.`],
           ["GUS", "That part's real. People have shown it since the nineties. His claim is where it lives, layer by layer."],
           ["GUS", "Attention is feedback: orders coming down from higher brain areas. Feedback lands in the outermost and innermost layers. The middle layer takes the input from the eyes."],
