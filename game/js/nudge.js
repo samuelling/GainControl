@@ -59,6 +59,13 @@ export function installNudge({ G, svg, say, idle }) {
     } finally { const g = svg.querySelector("#glint"); if (g) g.innerHTML = ""; playing = false; }
   }
 
+  // a playable character only speaks if it's the one you're playing or is standing in this room (texts and voices
+  // in your head, "GUS (TEXT)|", "IRIS (IN YOUR HEAD)|", always get through)
+  function canSay(line) {
+    const who = (String(line).match(/^([^|]*)\|/) || [])[1], c = who && who.toLowerCase();
+    if (!c || !["nell", "gus", "morris", "iris"].includes(c) || c === G.char) return true;
+    const p = G.chars && G.chars[c]; return !!(p && p.room === G.room && (G.cast || []).includes(c));
+  }
   async function tick() {
     const s = signature(); if (s !== sig) { sig = s; idleS = 0; spoken = 0; }
     if (!idle()) return;
@@ -66,7 +73,7 @@ export function installNudge({ G, svg, say, idle }) {
     const st = nextStep(G); if (!st) return;
     if (idleS >= T.glint && (idleS - T.glint) % T.every === 0) { const el = target(st); if (el) glint(el); }
     const lines = st.nudge || [];
-    if (spoken < lines.length && idleS >= T.first + spoken * T.again) { spoken++; await say(lines[spoken - 1]); }
+    if (spoken < lines.length && idleS >= T.first + spoken * T.again) { spoken++; const l = lines[spoken - 1]; if (canSay(l)) await say(l); }
   }
   setInterval(tick, 1000);
   return { T, tick, next: () => nextStep(G), target: () => target(nextStep(G)), glint: () => { const el = target(nextStep(G)); return el && glint(el); },
