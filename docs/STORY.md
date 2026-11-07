@@ -380,7 +380,7 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 | 5 | Fake participants | Cody's clipboard | Trade Cody a credit slip forged on the jammed printer |
 | 6 | Correlations above the noise ceiling | Gus's desk | THE CEILING: find the reliability panels, drop the ceiling, find the double dip in the methods |
 | 7 | Duplicated panel | Overlay screen | Rotate and flip panels to match (glowing overlay mini-game) |
-| 7b | The replication | Nell's monitor + Preston's log (Impact Lab, via Morris) + deposited data | Playable GLM: enter the blocks, fix the dummy-scan offset, apply the HRF, fit by hand, run the contrast, find the three tells. See [PUZZLE-GLM.md](PUZZLE-GLM.md) |
+| 7b | The replication | Nell's monitor + Preston's log (Impact Lab, via Morris) + deposited data | Playable GLM: enter the blocks, apply the HRF, fit by hand, run the contrast, find the three tells. See [PUZZLE-GLM.md](PUZZLE-GLM.md) |
 | 7a | FOG NEURO printout | Preston's PC, Act II night (Gus) | Keypad code from the four worn keys; generate, read SOURCES, print; Gus hands it to Nell in the morning. See [PUZZLE-METAMERS.md](PUZZLE-METAMERS.md) |
 | 7d | The feud seed | Library: the Valu vs. Mick exchange | Both "rival" papers carry the same LTM seed and the same Archive sources; overlaid in the notebook, the arguments mirror point for point. Polly Mick joins the nameable members |
 | 7c | The metamer | Library back issues + Big Finding | Notebook overlay: match each sentence to its source paper; the source authors form a partial membership roll. Check the references: some don't exist |

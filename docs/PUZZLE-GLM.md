@@ -34,8 +34,9 @@
 ## The design (what actually happened in the scanner)
 
 - TR = 2 s. 4 dummy volumes (8 s) were **discarded** before the data start. That matters, and the log doesn't say so.
-- Block design (revised): eight 16 s blocks back to back, ATTEND, IGNORE, ATTEND, … (the checkerboard is on throughout), then 32 s of rest so the signal returns to baseline. 160 s = 80 volumes after the dummies. Preston's log: ATT @ 0:08, IGN @ 0:24, … in scanner time.
-- Grace (revised): LINED UP accepts one TR either way (Gus nudges the last two seconds); the FIT lamp lights when the leftovers are within 12% of the best fit, or every knob is within 0.1. Each stage opens with a short line-by-line lesson, a task line under the stage chips, and a brass arrow on the next thing to click.
+- Block design (revised again): 16 s OFF (grey screen), 16 s ON while attending, 16 s OFF, 16 s ON while ignoring, … eight ON blocks, ending on OFF. 272 s = 136 volumes after the dummies. Preston's log: ATT @ 0:16, IGN @ 0:48, ATT @ 1:20, …
+- No dummy-scan offset (revised): modern scanners drop the warm-up volumes before the data reach you, so the log's times are the data's times and the LINE IT UP stage is skipped (seven steps on screen). Earlier notes about dummies below are history.
+- Grace (revised): LINED UP accepts one TR either way (Gus nudges the last two seconds); the FIT lamp lights when the leftovers are within 25% of the best fit, or every knob is within 0.1. Each stage opens with a short line-by-line lesson, a task line under the stage chips, and a brass arrow on the next thing to click.
 - ON blocks alternate: **ATTEND** (count the checkerboard's contrast dips) and **IGNORE** (do a hard letter task at fixation). 4 ATTEND blocks, 4 IGNORE blocks. Same visual input in both; only attention changes. That is the whole logic of the contrast.
 
 **Preston's log** (drawn as a page in his handwriting, with a coffee ring and the NRT insignia doodled in the margin):
