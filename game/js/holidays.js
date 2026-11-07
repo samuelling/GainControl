@@ -165,9 +165,9 @@ function pennants(text, cx, y, h, cols, fall = -1) {
 /* ---------------- what each holiday puts up ---------------- */
 // garland: [kind, …args]; banner: text (or fn of info); cut: art for the walls; hang: art for the ceiling; props: art for desks
 const KIT = {
-  halloween: { garland: ["things", (i) => ART.bat(i % 4 ? "sV" : "sM"), 2, .32], banner: "HAPPY HALLOWEEN", cols: ["sA", "sV"], cut: () => ART.ghost(), hang: (i) => ART.bat(i % 2 ? "sV" : "sM"), props: [() => ART.pumpkin(), () => ART.candy()], corner: true },
+  halloween: { garland: ["things", (i) => ART.bat(i % 4 ? "sV" : "sM"), 2, .32], banner: "HAPPY HALLOWEEN", cols: ["sA", "sV"], cut: () => ART.ghost(), hang: (i) => ART.bat(i % 2 ? "sV" : "sM"), props: [() => ART.pumpkin(), () => ART.candy()], corner: true, floorProp: true },
   thanksgiving: { garland: ["things", (i) => ART.leaf(["sA", "sR", "sA", "sG"][i % 4]), 2, .34], banner: "GIVE THANKS", cols: ["sA", "sR", "sA"], cut: () => ART.handturkey(), props: [() => ART.gloveturkey(), () => ART.pie()] },
-  winter: { garland: ["tinsel"], lights: true, banner: "HAPPY HOLIDAYS", fall: 13, cols: ["sR", "sG", "sW"], cut: () => ART.snowflake(), hang: () => ART.snowflake(), props: [() => ART.tiptree(), () => ART.candy()] },
+  winter: { garland: ["tinsel"], lights: true, banner: "HAPPY HOLIDAYS", fall: 13, cols: ["sR", "sG", "sW"], cut: () => ART.snowflake(), hang: () => ART.snowflake(), props: [() => ART.tiptree(), () => ART.candy()], floorProp: true },
   hanukkah: { banner: "HAPPY HANUKKAH", cols: ["sB", "sW"], cut: () => ART.dreidel(), props: [(info) => ART.menorah((info.hanukkah || {}).night || 5), () => ART.dreidel()] },
   diwali: { lights: true, lightCols: ["fA", "fA", "fR", "fA"], banner: "HAPPY DIWALI", cols: ["sA", "sR", "sV"], hang: () => ART.kandil(), props: [() => `${T(-9, 0, .7, ART.diya())}${T(7, 0, .7, ART.diya())}`] },
   newyear: { garland: ["chain", ["sA", "sW", "sB"]], banner: (info) => "HAPPY " + ((info.newyear || {}).year || ""), cols: ["sA", "sW"], hang: (i) => ART.balloon(["sB", "sA", "sV", "sR"][i % 4]), props: [() => ART.hat(), () => ART.hat("sA")] },
@@ -182,69 +182,58 @@ const KIT = {
 };
 
 /* ---------------- where things go, room by room ---------------- */
-// lvl 2 = the full treatment, 1 = a token effort. banner: [world X, world Y] on the back wall (null = no banner).
-// props: [x, y, scale] in screen coordinates, on a desk or the floor. cut: [side(0/640 or "b" for the back wall), k or X, Y].
+// Restraint: a real department doesn't decorate every room. Penny does the main office (banner, a cutout, a desk
+// thing); someone strings something across the lab and the kitchen; the hall gets the banner; a few rooms get one
+// small thing; the MRI suite (metal), the ethics office (disapproves), Impact and the plant rooms get nothing.
+// use: which pieces this room gets: banner, garland (or the holiday's lights), lights (only if the holiday has them),
+// cut (one wall cutout, at cut[0]), hang (two things on thread), prop (one desk prop, at props[0]), corner (cobweb).
+// banner: [world X, world Y, max width]; cut: [side (0/640, or "b" for the back wall), k or X, Y]; props: [x, y, scale].
 const ROOMS = {
-  lab: { lvl: 2, banner: [150, 30, 118], cut: [["b", 120, 120], [640, .5, 112]], props: [[282, 203, .75], [232, 206, .6]] },
-  kitchen: { lvl: 2, banner: [320, 26], cut: [["b", 90, 110], ["b", 560, 150]], props: [[372, 172, .55], [276, 172, .55]] },
-  office: { lvl: 2, banner: [180, 26], cut: [["b", 470, 150], [640, .56, 120]], props: [[395, 184, .55], [440, 184, .5]] },
-  hall: { lvl: 2, banner: [180, 26], cut: [["b", 110, 112], ["b", 530, 120]], props: [] },
-  seminar: { lvl: 2, banner: [320, 22], cut: [[0, .5, 100], [640, .5, 100]], props: [[565, 228, .55]] },
-  conference: { lvl: 2, banner: [320, 26], cut: [["b", 250, 130], ["b", 400, 130]], props: [[380, 205, .5]] },
-  library: { lvl: 2, banner: [320, 22], cut: [["b", 330, 150]], props: [[515, 215, .55]] },
-  mri: { lvl: 1, banner: null, cut: [["b", 40, 120]], props: [[426, 214, .5]] },
-  iris: { lvl: 2, banner: [480, 26], cut: [["b", 90, 120]], props: [[580, 196, .5]] },
-  impactoffice: { lvl: 1, banner: [320, 22], cut: [], props: [[330, 196, .5]] },
-  ethics: { lvl: 1, banner: [180, 24], cut: [], props: [[548, 214, .5]] },
-  impact: { lvl: 1, banner: [320, 22], cut: [], props: [] },
-  freezer: { lvl: 1, banner: null, cut: [["b", 70, 110]], props: [] },
-  server: { lvl: 1, banner: null, cut: [], props: [], lightsOnly: true },
-  plant: { lvl: 1, banner: null, cut: [], props: [], lightsOnly: true },
-  maze: { lvl: 1, banner: null, cut: [["b", 520, 110]], props: [] },
-  defense: { lvl: 1, banner: null, cut: [], props: [] },
+  lab: { use: ["garland", "cut", "prop", "corner"], cut: [[640, .5, 112]], props: [[232, 206, .6]], floor: [282, 203, .75] },
+  kitchen: { use: ["garland", "hang", "prop"], props: [[238, 181, .5]] },
+  office: { use: ["banner", "cut", "prop"], banner: [180, 26], cut: [[640, .56, 120]], props: [[440, 184, .5]] },
+  hall: { use: ["banner", "lights"], banner: [180, 26] },
+  seminar: { use: ["cut"], cut: [[640, .5, 100]] },
+  conference: { use: ["prop"], props: [[380, 205, .5]] },
+  library: { use: ["cut"], cut: [["b", 330, 150]] },
+  iris: { use: ["prop"], props: [[392, 214, .45]] },
+  freezer: { use: ["cut"], cut: [["b", 70, 110]] },
 };
 
 export function decorFor(roomId, pp, info, ids) {
   const spec = ROOMS[roomId]; if (!spec || !ids.length) return "";
-  const prime = ids[0], K = KIT[prime], { P, KB, vpx } = pp;
+  const has = (k) => spec.use.includes(k);
+  const prime = ids[0], K = KIT[prime], { P, KB } = pp;
   const TL = P(0, 0, KB), TR = P(640, 0, KB);
-  let s = "";
   const span = (y0) => [[TL[0] + 6, TL[1] + y0], [TR[0] - 6, TR[1] + y0]];
   const scal = Math.max(3, Math.round((TR[0] - TL[0]) / 70));
-  // a token effort: one string of lights (or the prime holiday's garland), nothing else
-  if (spec.lvl < 2) {
-    const [a, b] = span(4);
-    if (spec.lightsOnly || K.lights || !K.garland) s += GARLAND.lights(a, b, scal, 4, K.lightCols);
-    else s += garland(K, a, b, scal);
-  } else {
-    const [a, b] = span(4);
-    if (K.garland) s += garland(K, a, b, scal);
-    if (K.lights) s += GARLAND.lights(...span(K.garland ? 9 : 4), scal, 4, K.lightCols);
-  }
+  let s = "";
+  // one string across the back wall: the holiday's garland, or its lights if that's all it has
+  if (has("garland") && K.garland) s += garland(K, ...span(4), scal);
+  else if ((has("garland") || has("lights")) && (K.lights || ids.slice(1).some(i => KIT[i].lights))) {
+    const L = K.lights ? K : KIT[ids.find(i => KIT[i].lights)]; s += GARLAND.lights(...span(4), scal, 4, L.lightCols); }
   // the banner
   const bt = typeof K.banner === "function" ? K.banner(info) : K.banner;
-  if (bt && spec.banner) { const p = P(spec.banner[0], spec.banner[1], KB), wall = spec.banner[2] || (TR[0] - TL[0] - 16);
+  if (has("banner") && bt && spec.banner) { const p = P(spec.banner[0], spec.banner[1], KB), wall = spec.banner[2] || (TR[0] - TL[0] - 16);
     let h = 6.4; while ((bt.length * h * 1.75) > wall && h > 3.6) h -= .4;
     const cx = Math.max(TL[0] + 8 + bt.length * h * .88, Math.min(TR[0] - 8 - bt.length * h * .88, p[0]));
     s += pennants(bt, cx, p[1], h, K.cols || ["sW"], K.fall ?? -1); }
-  // cutouts taped to the walls (and, on April 1st, googly eyes on everything that holds still)
-  const cutArt = K.cut || (ids[1] && KIT[ids[1]].cut);
-  if (cutArt) (spec.lvl < 2 ? spec.cut.slice(0, 1) : spec.cut).forEach(([side, kx, Y], i) => {
+  // one cutout taped up (on April 1st, a pair of googly eyes instead, on the nearest thing that holds still)
+  const cutArt = K.cut || ids.slice(1).map(i => KIT[i].cut).find(Boolean);
+  if (has("cut") && cutArt && spec.cut) spec.cut.slice(0, 1).forEach(([side, kx, Y], i) => {
     const p = side === "b" ? P(kx, Y, KB) : P(side, Y, kx), sc = (side === "b" ? KB : kx) * 1.15;
-    s += T(p[0], p[1], sc, cutArt(i), side === "b" ? ((i * 29) % 11 - 5) : 0) + tape(p[0] - 4 * sc, p[1] - 9 * sc, -20) + tape(p[0] + 4 * sc, p[1] - 9 * sc, 20); });
-  if (K.googly) [[150, 64], [270, 90], [390, 58], [500, 96], [210, 150]].forEach(([X, Y], i) => { const p = P(X, Y, KB), k = KB * 1.2;
-    s += T(p[0] - 3.5 * k, p[1], k, ART.googly()) + T(p[0] + 3.5 * k, p[1] + (i % 2 ? .6 : -.4), k, ART.googly()); });
-  if (K.corner) { s += T(TL[0], TL[1], .9, ART.cobweb(1)) + T(TR[0], TR[1], .9, ART.cobweb(-1)); }
-  // hung from the ceiling tiles on thread, just in front of the back wall
+    if (K.googly) { s += T(p[0] - 3.5 * sc, p[1], sc, ART.googly()) + T(p[0] + 3.5 * sc, p[1] + .5, sc, ART.googly()); return; }
+    s += T(p[0], p[1], sc, cutArt(i), side === "b" ? -4 : 0) + tape(p[0] - 4 * sc, p[1] - 9 * sc, -20) + tape(p[0] + 4 * sc, p[1] - 9 * sc, 20); });
+  if (has("corner") && K.corner) s += T(TR[0], TR[1], .9, ART.cobweb(-1));
+  // two things on thread from the ceiling tiles
   const hangArt = K.hang || ids.slice(1).map(i => KIT[i].hang).find(Boolean);
-  if (hangArt && spec.lvl >= 2) {
-    const k = KB + .06, xs = [110, 230, 410, 530];
-    xs.forEach((X, i) => { const top = P(X, 0, k), len = (12 + (i % 2) * 8) * k * 1.6, end = [top[0], top[1] + len];
-      s += `<path class="hl sM" d="M${f1(top[0])},${f1(top[1])} L${f1(end[0])},${f1(end[1])}"/>` + T(end[0], end[1] + 6 * k, k * .9, hangArt(i)); });
-  }
-  // desk props: the prime holiday's first, then whatever else is in season
-  const propArts = [...ids.flatMap(id => (KIT[id].props || []).slice(0, 1)), ...(KIT[prime].props || []).slice(1)];
-  spec.props.forEach(([x, y, sc], i) => { const a = propArts[i]; if (a) s += T(x, y, sc, a(info)); });
+  if (has("hang") && hangArt) [200, 440].forEach((X, i) => { const k = KB + .06, top = P(X, 0, k), len = (12 + i * 8) * k * 1.6, end = [top[0], top[1] + len];
+    s += `<path class="hl sM" d="M${f1(top[0])},${f1(top[1])} L${f1(end[0])},${f1(end[1])}"/>` + T(end[0], end[1] + 6 * k, k * .9, hangArt(i)); });
+  // one desk prop: the first in-season holiday that has one (so Hanukkah's menorah shows up in December)
+  if (has("prop") && spec.props) { const own = (KIT[prime].props || [])[0], also = ids.slice(1).map(i => (KIT[i].props || [])[0]).find(Boolean);
+    // the kitchen gets the second holiday's thing (diyas by the coffee, the menorah on the counter)
+    const a = roomId === "kitchen" && also ? also : own || also;
+    const [x, y, sc] = (a === own && K.floorProp && spec.floor) || spec.props[0]; if (a) s += T(x, y, sc, a(info)); }
   return s;
 }
 function garland(K, a, b, n) {

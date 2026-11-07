@@ -148,7 +148,10 @@ export async function credits(api, { score = 0 } = {}) {
   y += 10;
   pair("REVIEWER 2", "HIMSELF"); pair("THE ROUND TABLE", "TWELVE HOODS AND A GAVEL"); pair("ALPHA", "A DART FROG"); y += 30;
   line("SCORE, SOUND AND PICTURES", 6, "sG", 8);
-  line("DRAWN AND SYNTHESIZED LIVE IN YOUR BROWSER", 6, "sW", 30);
+  line("DRAWN AND SYNTHESIZED LIVE IN YOUR BROWSER", 6, "sW", 16);
+  line("THE ORGAN", 6, "sG", 8);
+  line("MATT CRUMP'S TONEWHEEL, FROM SYNTHLAND (CRUMPLAB)", 6, "sW", 4);
+  line("PARED DOWN FOR MEGAJAM, AND PLAYED HERE", 4.6, "sM", 30);
   line("THE REAL RECORD", 6, "sG", 8);
   line("C. G. GROSS, AMERICAN PSYCHOLOGIST, 1977", 6, "sW", 30);
   // the real papers: what FOG NEURO's mill was fed (paraphrased, unnamed, in the game) and what the booth's console replicates

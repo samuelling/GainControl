@@ -69,9 +69,9 @@ const L = {
     GUS: ["Every result's significant now. I've never felt so powerful. Or so worried."],
   },
   halloween: {
-    NELL: ["Someone put a pumpkin carved like a brain on Gus's desk. It's anatomically wrong. It's also the best thing in the building."],
-    GUS: ["The paper bats are from 2014. Every October someone tapes them back up. Nobody admits to being the someone."],
-    PENNY: ["Don't touch the cobwebs, hon. Some of them are decorations."],
+    NELL: ["Someone carved a pumpkin like a brain and left it in the lab. It's anatomically wrong. It's also the best thing in the building."],
+    GUS: ["The paper bats are from 2014. Every October someone strings them up again. Nobody admits to being the someone."],
+    PENNY: ["Don't touch the cobweb in the lab, hon. It might be a decoration. It might not. Nobody knows anymore."],
     IRIS: ["Halloween. The one night a year the undergraduates look the way I feel."],
   },
   thanksgiving: {
@@ -81,10 +81,10 @@ const L = {
     PENNY: ["The potluck's Thursday before the break, hon. You're down for napkins. You're always down for napkins."],
     TESS: ["Someone took a glove from Zone II for that turkey. I counted. I always count."],
     IRIS: ["They've been tracing their hands for turkeys since before you were born. It's still the best thing we publish."],
-    MORRIS: ["Morris sniffs the pie on the table. Pumpkin. He's heard about pumpkin. He's heard good things."],
+    MORRIS: ["Morris sniffs the glove turkey. Nitrile. He was hoping for actual turkey."],
   },
   diwali: {
-    NELL: ["Someone put diyas out by the coffee. Little lit lamps, the only warm light in this building."],
+    NELL: ["Someone put diyas out by the kitchen sink. Little lit lamps, the only warm light in this building."],
     GUS: ["Someone brought sweets for Diwali. I've had four. I'm going to have a fifth. Nobody's counting. Tess is counting."],
     PENNY: ["The paper lanterns are lovely, hon, but I've told facilities they're not a fire hazard and I'd like that to stay true."],
   },
@@ -93,7 +93,7 @@ const L = {
       "Somebody's tinsel has come untaped at one end. Nobody's going to fix it. It's tradition now."],
     GUS: ["Secret Santa again. Last year I got a stress ball shaped like a brain. I squeezed it so hard the cerebellum came off."],
     PENNY: ["One of the S's fell off HAPPY HOLIDAYS. I've emailed about it. Twice."],
-    TESS: ["Those lights are on the same circuit as my coffee machine. If they trip it, they come down."],
+    TESS: ["The lights in the hall are on the same circuit as my coffee machine. If they trip it, they come down."],
     IRIS: ["The tip-box tree. We had one in 1979. Glass pipettes. Several people went to the hospital."],
     MORRIS: ["Morris eyes the tinsel. Shiny. Stringy. Morris has questions about the tinsel."],
   },
@@ -102,12 +102,12 @@ const L = {
     GUS: ["I made latkes for the lab. Tess asked me to fill in an ethics form for the oil."],
   },
   newyear: {
-    NELL: ["New year. Same p-values.", "Someone's party hat is still on the coffee maker. It's been there since midnight. It's in charge now."],
+    NELL: ["New year. Same p-values.", "There's a party hat by the kitchen sink. It's been there since midnight. Nobody will claim it."],
     GUS: ["My resolution is to stop checking Google Scholar. I checked it twice writing that down."],
     PENNY: ["Happy new year, hon. Your annual report's due Friday. Happy new year."],
   },
   lunar: {
-    NELL: ["Red lanterns in the hall, and a bowl of oranges in the office. The only fruit in the building that isn't moldy."],
+    NELL: ["Red paper lanterns, and somebody's left a pile of oranges out. The only fruit in the building that isn't moldy."],
     GUS: ["Who brought the oranges? They're for luck, apparently. I've eaten three. Lucky so far."],
   },
   valentine: {
