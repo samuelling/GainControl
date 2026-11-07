@@ -80,13 +80,14 @@ function init() {
   delay.connect(lp); lp.connect(fb); fb.connect(delay); lp.connect(wet); wet.connect(bus);
   // the melody and arpeggio reach the delay through one send, so a build can start dry (a clean Rhodes) and open it later
   B.dsend = C.createGain(); B.mel.connect(B.dsend); B.arp.connect(B.dsend); B.dsend.connect(delay); B.ctr.connect(cs); cs.connect(delay);
-  // a reverb send (a generated room: 2.6 s of decaying stereo noise, 18 ms pre-delay, darkened), used where a band asks for it
-  const len = Math.round(C.sampleRate * 2.6), ir = C.createBuffer(2, len, C.sampleRate), pre = Math.round(C.sampleRate * .018);
+  // a reverb send (a generated room: 1.8 s of decaying stereo noise, 18 ms pre-delay, darkened), used where a band asks for it.
+  // The convolver is the score's most expensive node, so its input is unplugged while the band has no reverb (B.rconv)
+  const len = Math.round(C.sampleRate * 1.8), ir = C.createBuffer(2, len, C.sampleRate), pre = Math.round(C.sampleRate * .018);
   for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); let seed = 7 + c * 13;
     for (let k = pre; k < len; k++) { seed = (seed * 16807) % 2147483647; d[k] = (seed / 2147483647 * 2 - 1) * Math.pow(1 - (k - pre) / (len - pre), 2.4) * Math.exp(-(k - pre) / C.sampleRate * 1.1); } }
   const conv = C.createConvolver(), rlp = C.createBiquadFilter(), rwet = C.createGain(); conv.buffer = ir; rlp.type = "lowpass"; rlp.frequency.value = 4200; rwet.gain.value = 2.4;   // the convolver normalizes its response, so the wet level is set here
   B.rsend = C.createGain(); B.rsend.gain.value = 0; B.mel.connect(B.rsend); B.arp.connect(B.rsend); B.ctr.connect(B.rsend);
-  B.rsend.connect(conv); conv.connect(rlp); rlp.connect(rwet); rwet.connect(bus);
+  conv.connect(rlp); rlp.connect(rwet); rwet.connect(bus); B.rconv = conv; B.rplug = false;
   TINE.clear(); organReady(C);   // start loading the organ's worklet now
   return true;
 }
@@ -94,6 +95,10 @@ function init() {
 /* ---------------- instruments ---------------- */
 // every pitched note reports itself to the harmony trace (sus: it sounds long enough to have to be a chord tone)
 const tr = (m, sus) => { if (TR) TR.push([cur.s, m, !!sus, [...cur.tones]]); };
+// unplug a note's nodes when its sound has ended. Chrome keeps a filter running after its input stops for as long as
+// its tail could ring (seconds, for a low resonant one), so a note every sixteenth left hundreds of finished filters
+// running: the finale's pulse bass alone cost a sixth of a core. src is the source that stops last.
+function free(src, ...nodes) { src.onended = () => { for (const n of nodes) try { n.disconnect(); } catch (e) {} try { src.disconnect(); } catch (e) {} }; }
 function env(g, t, a, peak, d) { g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(.0001, t + a + d); }
 const osc = (type, f) => { const o = C.createOscillator(); o.type = type; o.frequency.value = f; return o; };
 function pluck(m, t, v, out, dark = 0) {          // OP-1-ish: a square through a closing filter
@@ -101,27 +106,27 @@ function pluck(m, t, v, out, dark = 0) {          // OP-1-ish: a square through 
   const o = C.createOscillator(), f = C.createBiquadFilter(), g = C.createGain();
   o.type = "square"; o.frequency.value = hz(m); f.type = "lowpass"; f.Q.value = 3;
   f.frequency.setValueAtTime(3200 - 2400 * dark, t); f.frequency.exponentialRampToValueAtTime(500, t + .18);
-  env(g, t, .003, v, .22); o.connect(f); f.connect(g); g.connect(out); o.start(t); o.stop(t + .3);
+  env(g, t, .003, v, .22); o.connect(f); f.connect(g); g.connect(out); o.start(t); o.stop(t + .3); free(o, f, g);
 }
 function bell(m, t, v, out, short = false) {        // a soft two-operator FM bell (an electric piano in a dark room)
   tr(m, !short);
   const car = C.createOscillator(), mod = C.createOscillator(), mg = C.createGain(), g = C.createGain(), d = short ? .3 : 1.6;
   car.frequency.value = hz(m); mod.frequency.value = hz(m) * 2; mg.gain.setValueAtTime(hz(m) * 1.4, t); mg.gain.exponentialRampToValueAtTime(hz(m) * .05, t + d * .75);
   mod.connect(mg); mg.connect(car.frequency); env(g, t, .006, v, d); car.connect(g); g.connect(out);
-  car.start(t); mod.start(t); car.stop(t + d + .2); mod.stop(t + d + .2);
+  car.start(t); mod.start(t); car.stop(t + d + .2); mod.stop(t + d + .2); free(car, mod, mg, g);
 }
 function marimba(m, t, v, out, x = {}) {           // a sine bar with its fourth-ish overtone knocked off quickly
   tr(m, false);
   const f = hz(m), a = osc("sine", f), b = osc("sine", f * 3.93), g = C.createGain(), gb = C.createGain();
   env(g, t, .002, v, x.short ? .16 : .42); env(gb, t, .001, v * .3, .05);
-  a.connect(g); b.connect(gb); g.connect(out); gb.connect(out); a.start(t); b.start(t); a.stop(t + .5); b.stop(t + .1);
+  a.connect(g); b.connect(gb); g.connect(out); gb.connect(out); a.start(t); b.start(t); a.stop(t + .5); b.stop(t + .1); free(a, b, g, gb);
 }
 function vibes(m, t, v, out, x = {}) {             // sine + a soft fourth partial, with the motor's tremolo
   const d = x.short ? .28 : Math.max(.6, Math.min(1.8, (x.dur || 1.2) * 1.2)); tr(m, !x.short);
   const f = hz(m), a = osc("sine", f), b = osc("sine", f * 4), g = C.createGain(), gb = C.createGain(), tm = C.createGain(), lfo = osc("sine", 5.2), ld = C.createGain();
   env(g, t, .004, v, d); env(gb, t, .002, v * .16, .2); tm.gain.value = .78; ld.gain.value = .22;
   lfo.connect(ld); ld.connect(tm.gain); a.connect(g); b.connect(gb); g.connect(tm); gb.connect(tm); tm.connect(out);
-  for (const o of [a, b, lfo]) { o.start(t); o.stop(t + d + .1); }
+  for (const o of [a, b, lfo]) { o.start(t); o.stop(t + d + .1); } free(a, b, lfo, ld, g, gb, tm);
 }
 // a Rhodes (tine electric piano): an FM pair at 1:1 whose index starts high and falls (the bark of the tine), a quiet
 // high tine ping on the strike, a long warm decay, and the suitcase amp's tremolo
@@ -149,13 +154,15 @@ function rhodes(m, t, v, out, x = {}) {
   const pk = v * .75, off = t + hold;
   amp.gain.setValueAtTime(0, t); amp.gain.linearRampToValueAtTime(pk, t + .003); amp.gain.setTargetAtTime(0, t + .003, D / 3);
   amp.gain.cancelScheduledValues(off); amp.gain.setTargetAtTime(0, off, R / 4);   // note-off: the release
-  for (const o of [car, mod, tine]) { o.start(t); o.stop(off + R * 2.5 + .05); }
+  // the tine's ping is gone in 25 ms: its oscillator stops at 150 ms instead of riding the whole note
+  for (const o of [car, mod]) { o.start(t); o.stop(off + R * 2.5 + .05); } tine.start(t); tine.stop(t + .15); tine.onended = () => { try { tine.disconnect(); tg.disconnect(); } catch (e) {} };
+  free(car, mod, mg, amp);
 }
 function box(m, t, v, out, x = {}) {               // a music box: a high sine tine with a quick twelfth on the strike
   const f = hz(m + 12), d = x.short ? .14 : .9; tr(m + 12, !x.short);
   const a = osc("sine", f), b = osc("sine", f * 3), g = C.createGain(), gb = C.createGain();
   env(g, t, .002, v, d); env(gb, t, .001, v * .25, .06);
-  a.connect(g); b.connect(gb); g.connect(out); gb.connect(out); a.start(t); b.start(t); a.stop(t + d + .05); b.stop(t + .1);
+  a.connect(g); b.connect(gb); g.connect(out); gb.connect(out); a.start(t); b.start(t); a.stop(t + d + .05); b.stop(t + .1); free(a, b, g, gb);
 }
 function brass(m, t, v, out, x = {}) {             // muted brass: two detuned saws, the filter blooms and closes
   const dur = x.short ? .1 : Math.max(.12, x.dur || .3), f = hz(m), top = 1500 - 700 * (x.dark || 0); tr(m, !x.short && dur > .25);
@@ -163,7 +170,7 @@ function brass(m, t, v, out, x = {}) {             // muted brass: two detuned s
   lp.frequency.setValueAtTime(300, t); lp.frequency.linearRampToValueAtTime(top, t + .05); lp.frequency.exponentialRampToValueAtTime(Math.max(380, top * .45), t + dur);
   g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .02); g.gain.linearRampToValueAtTime(v * .7, t + dur); g.gain.linearRampToValueAtTime(0, t + dur + .08);
   lp.connect(g); g.connect(out);
-  for (const dt of [-7, 7]) { const o = osc("sawtooth", f); o.detune.value = dt; o.connect(lp); o.start(t); o.stop(t + dur + .1); }
+  const os = [-7, 7].map(dt => { const o = osc("sawtooth", f); o.detune.value = dt; o.connect(lp); o.start(t); o.stop(t + dur + .1); return o; }); free(os[1], os[0], lp, g);
 }
 // The organ is MEGAjam's Tonewheel Lite (js/tonewheel.js, an AudioWorklet drawbar organ with key click, percussion,
 // scanner vibrato/chorus, drive and a rotating speaker). Each call gets its own little organ: the notes go on at t and off
@@ -176,44 +183,63 @@ function organReady(ctx) {
   return false;
 }
 const ORGAN_PRESET = { lead: "jazz", stab: "soul", haze: "ballad" };
+// One organ per part, kept: the melody's, the counter-melody's, the stabs', the haze's (the key is the part and where it
+// plays). Each organ's processor runs its scanner vibrato and rotating speaker on every sample while it exists, so
+// building one per note (as this used to) stacked dozens of them in Act IV and choked the audio thread. The part's
+// level follows the notes (it's one line at a time: a melody, or one chord); an organ silent for four seconds is retired
+// and comes back on its next note.
+const ORGANS = new Map();   // "kind|out id" → { o, g, last }
+let organIds = new WeakMap(), organN = 0;
+function organFor(kind, out) {
+  if (!organIds.has(out)) organIds.set(out, ++organN);
+  const key = kind + "|" + organIds.get(out);
+  let e = ORGANS.get(key); if (e && e.ctx === C) return e;
+  const g = C.createGain(); g.gain.value = 0; g.connect(out);
+  e = { ctx: C, g, last: 0, o: TONEWHEEL.create(C, g, { ...TONEWHEEL.presets[ORGAN_PRESET[kind] || "jazz"], level: 1 }) };
+  ORGANS.set(key, e); return e;
+}
+function retireOrgans() {
+  if (!C || C instanceof OfflineAudioContext) return;
+  for (const [k, e] of ORGANS) if (e.ctx !== C || C.currentTime > e.last + 4) { try { e.o.dispose(); e.g.disconnect(); } catch (x) {} ORGANS.delete(k); }
+}
 function organ(notes, t, dur, v, out, att = .01, kind = "lead") {
   const hold = Math.max(att, dur);
   for (const m of notes) tr(m, dur > .25);
   if (!organReady(C)) return organOld(notes, t, dur, v, out, att);
-  const g = C.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * ORGAN_K, t + Math.max(.004, att)); g.gain.setValueAtTime(v * ORGAN_K, t + hold); g.gain.linearRampToValueAtTime(0, t + hold + .15);
-  g.connect(out);
-  const o = TONEWHEEL.create(C, g, { ...TONEWHEEL.presets[ORGAN_PRESET[kind] || "jazz"], level: 1 });
-  for (const m of notes) { o.noteOn(m, 100, t); o.noteOff(m, t + hold); }
-  if (!(C instanceof OfflineAudioContext)) setTimeout(() => { try { o.dispose(); g.disconnect(); } catch (e) {} }, Math.max(0, (t + hold + .8 - C.currentTime) * 1000));
+  const e = organFor(kind, out), lv = v * ORGAN_K;
+  if (att > .05) { e.g.gain.setValueAtTime(0, t); e.g.gain.linearRampToValueAtTime(lv, t + att); }   // the haze swells in
+  else e.g.gain.setValueAtTime(lv, t);
+  for (const m of notes) { e.o.noteOn(m, 100, t); e.o.noteOff(m, t + hold); }
+  e.last = Math.max(e.last, t + hold);
 }
 const ORGAN_K = 4.8;   // matches the old organ's loudness
 function organOld(notes, t, dur, v, out, att = .01) {  // the stand-in: a soft drawbar organ (8', 4', a little 2 2/3')
   const g = C.createGain(), lp = C.createBiquadFilter(), hold = Math.max(att, dur); lp.type = "lowpass"; lp.frequency.value = 2400;
   g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + att); g.gain.setValueAtTime(v, t + hold); g.gain.linearRampToValueAtTime(0, t + hold + .12);
   lp.connect(g); g.connect(out);
-  for (const m of notes) { for (const [mul, a] of [[1, 1], [2, .4], [3, .12]]) { const o = osc("sine", hz(m) * mul), og = C.createGain(); og.gain.value = a; o.connect(og); og.connect(lp); o.start(t); o.stop(t + hold + .15); } }
+  for (const m of notes) { for (const [mul, a] of [[1, 1], [2, .4], [3, .12]]) { const o = osc("sine", hz(m) * mul), og = C.createGain(); og.gain.value = a; o.connect(og); og.connect(lp); o.start(t); o.stop(t + hold + .15); free(o, og); } }
 }
 function flute(m, t, v, out, x = {}) {             // breathy: a triangle with vibrato, a chiff of noise on the attack
   const dur = x.short ? .13 : Math.max(.2, x.dur || .5), f = hz(m), a = x.short ? .02 : .07; tr(m, !x.short);
   const o = osc("triangle", f), lfo = osc("sine", 5), ld = C.createGain(), lp = C.createBiquadFilter(), g = C.createGain();
   ld.gain.value = f * .006; lfo.connect(ld); ld.connect(o.frequency); lp.type = "lowpass"; lp.frequency.value = 2400;
   g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + a); g.gain.linearRampToValueAtTime(v * .8, t + dur); g.gain.linearRampToValueAtTime(0, t + dur + .14);
-  o.connect(lp); lp.connect(g); g.connect(out); o.start(t); lfo.start(t); o.stop(t + dur + .2); lfo.stop(t + dur + .2);
+  o.connect(lp); lp.connect(g); g.connect(out); o.start(t); lfo.start(t); o.stop(t + dur + .2); lfo.stop(t + dur + .2); free(o, lfo, ld, lp, g);
   noiseHit(t, f * 2, 2, v * .12, .05, out);
 }
 function bass(m, t, d, v, out) {
   tr(m, true);
   const o = C.createOscillator(), s = C.createOscillator(), g = C.createGain();
   o.type = "triangle"; o.frequency.value = hz(m); s.type = "sine"; s.frequency.value = hz(m) / 2;
-  env(g, t, .005, v, d); o.connect(g); s.connect(g); g.connect(out); o.start(t); s.start(t); o.stop(t + d + .1); s.stop(t + d + .1);
+  env(g, t, .005, v, d); o.connect(g); s.connect(g); g.connect(out); o.start(t); s.start(t); o.stop(t + d + .1); s.stop(t + d + .1); free(o, s, g);
 }
 function noiseHit(t, f, q, v, d, out, type = "bandpass") {
   const a = sfx.audio(); const s = C.createBufferSource(), fl = C.createBiquadFilter(), g = C.createGain();
   s.buffer = a.noise; fl.type = type; fl.frequency.value = f; fl.Q.value = q; env(g, t, .001, v, d);
-  s.connect(fl); fl.connect(g); g.connect(out); s.start(t, Math.random()); s.stop(t + d + .05);
+  s.connect(fl); fl.connect(g); g.connect(out); s.start(t, Math.random()); s.stop(t + d + .05); free(s, fl, g);
 }
 function kick(t, v) { const o = C.createOscillator(), g = C.createGain(); o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(45, t + .12);
-  env(g, t, .002, v, .18); o.connect(g); g.connect(B.drum); o.start(t); o.stop(t + .25); }
+  env(g, t, .002, v, .18); o.connect(g); g.connect(B.drum); o.start(t); o.stop(t + .25); free(o, g); }
 const hat = (t, v) => noiseHit(t, 8000, 1.2, v, .035, B.drum, "highpass");
 const clap = (t, v) => noiseHit(t, 1500, 1.5, v, .09, B.drum);
 const shaker = (t, v) => noiseHit(t, 6500, .7, v, .05, B.drum, "highpass");
@@ -221,21 +247,21 @@ const brush = (t, v, d = .16) => noiseHit(t, 2800, .5, v, d, B.drum);
 const rim = (t, v) => { noiseHit(t, 2300, 8, v, .03, B.drum); wood(t, v * .5, 1700); };
 function wood(t, v, f = 1000) {                     // a woodblock: a short knocked sine (percussion, not a note)
   const o = osc("sine", f), g = C.createGain(); o.frequency.exponentialRampToValueAtTime(f * .92, t + .04);
-  env(g, t, .001, v, .045); o.connect(g); g.connect(B.drum); o.start(t); o.stop(t + .08);
+  env(g, t, .001, v, .045); o.connect(g); g.connect(B.drum); o.start(t); o.stop(t + .08); free(o, g);
 }
 function drip(m, t, v) {                            // a drip underground: a sine that chirps up onto a chord tone
   tr(m, false); const o = osc("sine", hz(m) * .75), g = C.createGain(); o.frequency.exponentialRampToValueAtTime(hz(m), t + .03);
-  env(g, t, .001, v, .16); o.connect(g); g.connect(B.arp); o.start(t); o.stop(t + .2);
+  env(g, t, .001, v, .16); o.connect(g); g.connect(B.arp); o.start(t); o.stop(t + .2); free(o, g);
 }
 function blip(m, t, v) {                            // the server room: a tiny square data blip
   tr(m, false); const o = osc("square", hz(m)), g = C.createGain(), hp = C.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 900;
-  env(g, t, .001, v, .04); o.connect(hp); hp.connect(g); g.connect(B.arp); o.start(t); o.stop(t + .07);
+  env(g, t, .001, v, .04); o.connect(hp); hp.connect(g); g.connect(B.arp); o.start(t); o.stop(t + .07); free(o, hp, g);
 }
 // the distant knock of the MRI: a low thud, muffled, with a gradient click on top
 function knock(t, v) {
   const o = C.createOscillator(), g = C.createGain(), lp = C.createBiquadFilter();
   o.frequency.setValueAtTime(70, t); o.frequency.exponentialRampToValueAtTime(38, t + .14); lp.type = "lowpass"; lp.frequency.value = 220;
-  env(g, t, .004, v, .22); o.connect(lp); lp.connect(g); g.connect(B.throb); o.start(t); o.stop(t + .3);
+  env(g, t, .004, v, .22); o.connect(lp); lp.connect(g); g.connect(B.throb); o.start(t); o.stop(t + .3); free(o, lp, g);
   noiseHit(t, 420, 6, v * .25, .05, B.throb);
 }
 function knockTop(t, v) { noiseHit(t, 420, 6, v * .3, .05, B.throb); noiseHit(t, 1900, 3, v * .08, .025, B.throb); }
@@ -245,21 +271,22 @@ function pulseBass(m, t, v, open = 0) {
   const o = C.createOscillator(), q = C.createOscillator(), f = C.createBiquadFilter(), g = C.createGain();
   o.type = "sawtooth"; o.frequency.value = hz(m); q.type = "square"; q.frequency.value = hz(m) / 2;
   f.type = "lowpass"; f.Q.value = 7; f.frequency.setValueAtTime(700 + 900 * open, t); f.frequency.exponentialRampToValueAtTime(160, t + .11);
-  env(g, t, .002, v, .13); o.connect(f); q.connect(f); f.connect(g); g.connect(B.bass); o.start(t); q.start(t); o.stop(t + .2); q.stop(t + .2);
+  env(g, t, .002, v, .13); o.connect(f); q.connect(f); f.connect(g); g.connect(B.bass); o.start(t); q.start(t); o.stop(t + .2); q.stop(t + .2); free(o, q, f, g);
 }
 // the scanner's gradients: a short square beep, the sound of an EPI sequence running
 function beep(t, v, f0 = 1180) {
   tr(Math.round(69 + 12 * Math.log2(f0 / 440)), false);
   const o = C.createOscillator(), g = C.createGain(), hp = C.createBiquadFilter();
   o.type = "square"; o.frequency.value = f0; hp.type = "highpass"; hp.frequency.value = 700;
-  env(g, t, .001, v, .028); o.connect(hp); hp.connect(g); g.connect(B.throb); o.start(t); o.stop(t + .05);
+  env(g, t, .001, v, .028); o.connect(hp); hp.connect(g); g.connect(B.throb); o.start(t); o.stop(t + .05); free(o, hp, g);
 }
 // a pad chord for a bar: two detuned saws per note through a lowpass that closes as the dread rises
 function pad(notes, t, dur, v, cutoff) {
   const f = C.createBiquadFilter(), g = C.createGain(); f.type = "lowpass"; f.frequency.value = cutoff; f.Q.value = .7;
   g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + Math.min(1.2, dur * .4)); g.gain.setValueAtTime(v, t + dur * .8); g.gain.linearRampToValueAtTime(0, t + dur + .6);
   f.connect(g); g.connect(B.pad);
-  for (const m of notes) { tr(m, true); for (const dt of [-8, 7]) { const o = C.createOscillator(); o.type = "sawtooth"; o.frequency.value = hz(m); o.detune.value = dt; o.connect(f); o.start(t); o.stop(t + dur + .7); } }
+  const os = []; for (const m of notes) { tr(m, true); for (const dt of [-8, 7]) { const o = C.createOscillator(); o.type = "sawtooth"; o.frequency.value = hz(m); o.detune.value = dt; o.connect(f); o.start(t); o.stop(t + dur + .7); os.push(o); } }
+  if (os.length) free(os[os.length - 1], ...os.slice(0, -1), f, g);
 }
 // the lead voices, by name: f, a loudness trim (against the pluck), and where the tune sits for it
 const INST = {
@@ -454,7 +481,11 @@ function scheduleStep(s, t) {
   const L = S.build ? Math.max(0, Math.floor((s - buildStart) / 128)) : 9;   // build layers: 0 Rhodes alone (dry), 1 + bass, 2 + drums, counter-melody and the delay
   if (i === 0 && B.dsend) B.dsend.gain.setTargetAtTime(L >= 2 ? 1 : 0, t, L >= 2 ? 1.5 : .05);
   // reverb: bands that ask for it; a build starts dry and lets the room in with the bass, fuller with the drums
-  if (i === 0 && B.rsend) B.rsend.gain.setTargetAtTime((S.reverb || 0) * (S.build ? [0, .6, 1][Math.min(2, L)] : 1), t, 1.2);
+  if (i === 0 && B.rsend) { const rv = (S.reverb || 0) * (S.build ? [0, .6, 1][Math.min(2, L)] : 1);
+    B.rsend.gain.setTargetAtTime(rv, t, 1.2);
+    // plug the convolver in when a band wants reverb; unplug it a bar after the send has faded (the tail rings out first)
+    if (rv > 0) { B.rdry = 0; if (!B.rplug) { B.rsend.connect(B.rconv); B.rplug = true; } }
+    else if (B.rplug && ++B.rdry > 3) { try { B.rsend.disconnect(B.rconv); } catch (e) {} B.rplug = false; } }
   if (S.ctr && L >= 2 && i % 2 === 0) {
     const arr = sec === "V" ? COUNTER_A : br ? COUNTER_B : sec === "A" && slot === 0 && bar % 4 === 3 && k >= 4 ? COUNTER_A : null, m = arr && arr[bar][k];
     if (m != null) voice(S.ctr, m, tt, S.night ? .1 : .085, B.ctr, { raw: true, dur: spb * Math.min(8, hold(arr, bar, k) * 2) });
@@ -472,8 +503,10 @@ function scheduleStep(s, t) {
   // the throb: the MRI, two floors away, on the beat; doubled when it's close
   if (P.throb > 0 && i % 4 === 0) { knock(t, .5); if (d > .7) knock(t + spb * 1.5, .32); }
 }
+let retireT = 0;
 function tick() {
   if (!C || C.state !== "running") return;
+  if (++retireT % 40 === 0) retireOrgans();   // once a second
   // if the page stalled (a heavy animation frame, a background tab), don't cram the missed steps into the past, where
   // they'd all fire at once as a flam of drums: skip ahead to the next step that can still be played on time
   const spb = 60 / P.tempo / 4;
@@ -504,7 +537,7 @@ async function renderOffline(scene, secs = 30, rate = 22050, from = 0) {
   const realAudio = sfx.audio; sfx.audio = () => ({ ctx: O, master, noise: nb });
   if (O.audioWorklet) { try { await TONEWHEEL.init(O); ORG.set(O, "ready"); } catch (e) {} }
   C = null; B = {}; init(); S = null; pend = null; P.on = false; music.scene(scene);
-  for (const k in B) B[k].gain.cancelScheduledValues(0);
+  for (const k in B) if (B[k] && B[k].gain) B[k].gain.cancelScheduledValues(0);
   { const G = gains(); for (const k in G) B[k].gain.value = G[k]; }
   const bs = buildStart; buildStart = from; step = from; nextT = .05; while (nextT < secs) { scheduleStep(step, nextT); nextT += 60 / P.tempo / 4; step++; }
   const buf = await O.startRendering();
@@ -549,7 +582,7 @@ export const music = {
   glitch() {
     if (!C || C.state !== "running") return; const t = C.currentTime + .01;
     for (const m of [38, 44, 51]) { const o = C.createOscillator(), g = C.createGain(); o.type = "sawtooth"; o.frequency.setValueAtTime(hz(m), t); o.frequency.exponentialRampToValueAtTime(hz(m - 5), t + .45);
-      env(g, t, .01, .05, .45); o.connect(g); g.connect(bus); o.start(t); o.stop(t + .5); }
+      env(g, t, .01, .05, .45); o.connect(g); g.connect(bus); o.start(t); o.stop(t + .5); free(o, g); }
     bus.gain.setValueAtTime(.5, t); bus.gain.linearRampToValueAtTime(.15, t + .05); bus.gain.linearRampToValueAtTime(.5, t + .5);
   },
   // fade the score out (and back): for moments that need the room silent, like the coda's quote
