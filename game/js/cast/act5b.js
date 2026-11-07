@@ -6,7 +6,7 @@ import { AUD } from "../figures.js";
 const pump = (x, y) => `<path class="k sW" d="M${x},${y} L${x + 13},${y} C${x + 17},${y} ${x + 17},${y + 4.5} ${x + 13},${y + 4.5} L${x},${y + 4.5} Z"/>`;
 
 // her head (the portrait's: INK bun, BRASS glasses on a chain, SKIN jaw), bowed forward on the neck
-const irisHead = `
+const irisHead = `<g class="hd">
   <path class="sK" d="M153,84 L153,90 M167,84 L167,90"/>
   <path class="k sK" d="M139,50 C138,71 148,84 160,84 C172,84 182,71 181,50"/>
   <path class="sK" d="M139,56 C134,55 134,65 139,66"/>
@@ -17,7 +17,7 @@ const irisHead = `
   <path class="sA" d="M143,57 L157,56 L156,63 L145,64 Z M163,56 L177,57 L175,64 L164,63 Z M157,58 L163,58"/>
   <path class="sA dash" d="M143,60 C134,72 136,88 146,96"/>
   <path class="sK" d="M160,63 C157,69 160,71 163,70 M146,70 L149,72.5 M174,70 L171,72.5"/>
-  <path class="sK" d="M153,75 C157,77 163,77 167,74"/>`;
+  <path class="sK" d="M153,75 C157,77 163,77 167,74"/></g>`;
 
 /* ---- Prof. Iris Candor, 88, walking: a slight stoop (shoulders rounded, head bowed forward), cardigan ROBE over a
  *  DIM skirt, short steps, and the SIGNAL staple gun held out in her right hand like a sidearm. ---- */

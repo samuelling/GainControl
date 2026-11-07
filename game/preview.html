@@ -29,13 +29,14 @@ const G = { act: +(q.get("act") || 3), mode: q.get("mode") || "day", char: q.get
 document.getElementById("frame").classList.toggle("night", G.mode === "night");
 if (q.get("hs")) document.body.classList.add("hs");
 const d = R.draw(G);
+const { decor } = await import("./js/holidays.js");
 const mark = (x, y, c, t) => `<circle cx="${x}" cy="${y}" r="2" fill="var(--${c})"/><text x="${x + 3}" y="${y - 2}" font-size="5" fill="var(--${c})" font-family="monospace">${t}</text>`;
 const marks = q.get("hs") ? Object.entries(R.stand || {}).map(([k, [x, y]]) => mark(x, y, "G", k)).join("")
   + Object.entries(R.entries || {}).map(([k, [x, y]]) => mark(x, y, "B", k)).join("") : "";
-document.getElementById("game").innerHTML = `<g>${d.back}</g><g>${d.sortables.filter(o => o.svg).sort((a, b) => a.depth - b.depth).map(o => o.svg).join("")}</g>${marks}`;
+document.getElementById("game").innerHTML = `<g>${d.back}</g>${decor(R, G)}<g>${d.sortables.filter(o => o.svg).sort((a, b) => a.depth - b.depth).map(o => o.svg).join("")}</g>${marks}`;
 document.getElementById("ctl").textContent = `${R.name} · ${G.mode} · act ${G.act} · flags ${Object.keys(G.flags).join(",") || "-"} · hotspots: ${[...new Set([...document.querySelectorAll("[data-hs]")].map(e => e.dataset.hs))].join(" ")}`;
 // run the ambient pose clocks so animated groups can be checked
-const clocks = { nod: 800, alarm: 380, wave: 520, type: 260, jam: 700, blink: 300, drip: 600, tube: 450, chant: 700, hum: 420 };
+const clocks = { nod: 800, alarm: 380, wave: 520, type: 260, jam: 700, blink: 300, drip: 600, tube: 450, chant: 700, hum: 420, hol: 700 };
 for (const [g, ms] of Object.entries(clocks)) { let i = 0; setInterval(() => { i ^= 1; document.querySelectorAll(`[data-g="${g}"]`).forEach(e => e.classList.toggle("on", +e.dataset.i === i)); }, ms); }
 </script>
 </body>

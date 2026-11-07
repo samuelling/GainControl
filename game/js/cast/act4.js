@@ -30,7 +30,7 @@ const impactHair = `
   <path class="hl sW" d="M145,43 C151,32 164,27 181,29 M151,39 C158,31 170,28 185,34 M158,39 C166,34 176,34 186,41 M141,49 C142,40 148,32 156,28"/>`;
 export function impactHead(p = false, frozen = false) {
   const fz = frozen;
-  return `${ears}${jaw}${impactHair}
+  return `<g class="hd">${ears}${jaw}${impactHair}
     <path class="hl sK" d="M141,57 L138,56 M141,60 L138,61 M180,57 L183,56 M180,60 L183,61"/>
     <path class="sW" d="M145,51 C148,49 153,49 156,50.5 M165,50.5 C168,49 173,49 176,51"/>
     ${fz ? `<circle class="k sW" cx="151" cy="57" r="3"/><circle class="k sW" cx="170" cy="57" r="3"/><circle class="fW" cx="151" cy="57" r=".9"/><circle class="fW" cx="170" cy="57" r=".9"/>`
@@ -40,7 +40,7 @@ export function impactHead(p = false, frozen = false) {
       : mouth(p, `<path class="k sW" d="M148,71 C153,78.5 168,78.5 173,71 C166,73.5 155,73.5 148,71 Z"/><path class="hl sK" d="M153,74 L153,75.5 M160,74.3 L160,76.3 M167,74 L167,75.5"/>`,
         `<path class="k sK" d="M149,71 C154,70 167,70 172,71 C170,80 151,80 149,71 Z"/><path class="sW" d="M150.5,71.6 L170.5,71.6"/>`)}
     ${fz ? "" : `<path class="hl sB" d="M185,46 C183,49 183,51 185,52 C187,51 187,49 185,46 Z"/>`}
-    <path class="sK" d="M155,80 L155,84 M166,80 L166,84"/>`;
+    <path class="sK" d="M155,80 L155,84 M166,80 L166,84"/></g>`;
 }
 const impactSuit = `
   <path class="k sM" d="M130,96 C135,90 145,88 152,88 L160,104 L168,88 C175,88 185,90 190,96 L193,138 L127,138 Z"/>
@@ -137,7 +137,7 @@ export function codyFloating(x, y, k) {
 export function adlineHead(p = false) {
   const open = `<circle class="k sW" cx="151" cy="58" r="3.2"/><circle class="k sW" cx="170" cy="58" r="3.2"/><circle class="fW" cx="151" cy="58" r="1.1"/><circle class="fW" cx="170" cy="58" r="1.1"/>
     <path class="hl sR" d="M147.9,57 L149.6,57.6 M173.1,57 L171.4,57.6"/>`;
-  return `${ears}${jaw}
+  return `<g class="hd">${ears}${jaw}
     <path class="sR" d="M146,6 L172,30"/><path class="sB" d="M174,8 L150,30"/><path class="sG" d="M160,4 L161,30"/>
     <path class="k sW" d="M149,30 C144,20 150,12 160,12 C170,12 176,20 171,30 Z"/><path class="hl sW" d="M151,24 C154,18 162,16 168,20 M154,28 C158,23 164,22 168,25"/>
     <path class="sR" d="M146,6 L144,4"/><path class="sB" d="M174,8 L176,6"/><path class="sG" d="M160,4 L160,1"/>
@@ -148,7 +148,7 @@ export function adlineHead(p = false) {
     ${p ? `<g class="eyes-open">${open}</g><g class="eyes-closed"><path class="sW" d="M147,58.5 L155,58.5 M166,58.5 L174,58.5"/></g>` : open}
     <path class="hl sK" d="M147,63 C149,64.5 153,64.5 155,63 M166,63 C168,64.5 172,64.5 174,63 M148,65.5 C150,67 152,67 154,66 M167,66 C169,67 171,67 173,65.5"/>
     ${nose}
-    ${mouth(p, `<path class="sK" d="M154,74 C156,73 158,74.5 160.5,73.5 C163,74.5 165,73 167,74"/>`, `<path class="k sK" d="M154,73 C158,72 163,72 167,73 C165,78 156,78 154,73 Z"/>`)}${neck}`;
+    ${mouth(p, `<path class="sK" d="M154,74 C156,73 158,74.5 160.5,73.5 C163,74.5 165,73 167,74"/>`, `<path class="k sK" d="M154,73 C158,72 163,72 167,73 C165,78 156,78 154,73 Z"/>`)}${neck}</g>`;
 }
 const adlineCardigan = `
   <path class="k sB" d="M130,94 C136,87 147,85 153,86 L160,104 L167,86 C173,85 184,87 190,94 L193,140 L127,140 Z"/>

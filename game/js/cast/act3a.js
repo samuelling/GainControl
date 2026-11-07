@@ -28,7 +28,7 @@ export const insignia = (x, y, r = 2.4) => `<circle class="hl sX" cx="${x}" cy="
  *  a dark suit (STRUCT), insignia cufflinks lit SIGNAL. "Officially 39 since 1979."
  * ====================================================================== */
 export function quorumHead(p = false) {
-  return `${ears}${jaw}
+  return `<g class="hd">${ears}${jaw}
     <path class="hl sK" d="M145,70 C146,75 149,79 152,80 M176,70 C175,75 172,79 169,80 M150,42 C156,40.5 165,40.5 171,42 M152,45.5 C157,44.5 164,44.5 169,45.5"/>
     <path class="k sW" d="M137,55 C132,36 143,22 160,21 C177,22 188,36 183,55 C182,47 180,42 176,38 C168,35 152,35 144,38 C140,42 138,47 137,55 Z"/>
     <path class="hl sW" d="M148,37 C149,30 153,25 158,23 M156,36 C157,29 161,25 166,24 M165,36 C167,30 171,27 175,28 M142,42 C142,36 145,31 149,28 M178,42 C178,37 176,32 172,29"/>
@@ -36,7 +36,7 @@ export function quorumHead(p = false) {
     ${eyes(p, [151, 56], [170, 56], 1.5)}
     <path class="hl sK" d="M147,59.5 C149,61 153,61 155,59.5 M166,59.5 C168,61 172,61 174,59.5"/>
     <path class="sK" d="M160,57 C156,66 159,69 164,67"/>
-    ${mouth(p, `<path class="sK" d="M152,73 C156,74.5 163,74.5 169,71"/>`, `<path class="k sK" d="M152,72.5 C156,72 163,72 169,71 C167,77 155,78 152,72.5 Z"/>`)}${neck}`;
+    ${mouth(p, `<path class="sK" d="M152,73 C156,74.5 163,74.5 169,71"/>`, `<path class="k sK" d="M152,72.5 C156,72 163,72 169,71 C167,77 155,78 152,72.5 Z"/>`)}${neck}</g>`;
 }
 const quorumCollar = `
   <path class="sW" d="M152,86 L160,93 L168,86"/>
@@ -105,7 +105,7 @@ export function facultyHead(i, down = false) {
     : `<circle class="fW" cx="151" cy="${ey}" r="1.5"/><circle class="fW" cx="170" cy="${ey}" r="1.5"/>`;
   const brows = i === 0 || i === 2 ? `<path class="sM" d="M145,51 L156,51 M165,51 L176,51"/>` : `<path class="sM" d="M146,52 L156,51 M165,51 L175,52"/>`;
   const mth = i === 1 ? "" : `<path class="sK" d="M154,74 L167,74"/>`;
-  return `<g transform="translate(0,${d})">${ears}${jaw}${brows}${face}${nose}${mth}${facHair[i]}</g>`;
+  return `<g class="hd"><g transform="translate(0,${d})">${ears}${jaw}${brows}${face}${nose}${mth}${facHair[i]}</g></g>`;
 }
 // the seated body for faculty member i: chair back behind, shoulders and the collar mark
 export function facultyBody(i) {
@@ -137,7 +137,7 @@ export function facultySeated(x, y, k, i) {
  *  and from behind in a chair (the conference room).
  * ====================================================================== */
 function gusHead() {
-  return `<path class="sK" d="M154,76 L154,82 M166,76 L166,82"/>
+  return `<g class="hd"><path class="sK" d="M154,76 L154,82 M166,76 L166,82"/>
     <path class="k sK" d="M137,47 C136,66 148,77 160,77 C172,77 184,66 183,47"/>
     <path class="sW" d="M137,50 C134,54 135,60 138,62 M183,50 C186,54 185,60 182,62"/>
     <path class="k sW" d="M136,50 C133,32 146,21 160,21 C175,21 187,32 184,50 C180,42 172,38 160,39 C150,38 141,42 136,50 Z"/>
@@ -146,7 +146,7 @@ function gusHead() {
     <circle class="fW" cx="150.5" cy="55.5" r="1.1"/><circle class="fW" cx="169.5" cy="55.5" r="1.1"/>
     <path class="hl sK" d="M146,59.5 C148,61.5 153,61.5 155,59.5 M165,59.5 C167,61.5 172,61.5 174,59.5"/>
     <path class="sK" d="M160,56 C156,63 159,66 164,64"/>
-    <path class="k sW" d="M144,68 C150,62 157,65 160,67 C163,65 170,62 176,68 C170,72 163,70 160,70 C157,70 150,72 144,68 Z"/>`;
+    <path class="k sW" d="M144,68 C150,62 157,65 160,67 C163,65 170,62 176,68 C170,72 163,70 160,70 C157,70 150,72 144,68 Z"/></g>`;
 }
 const gusTorso = `
   <path class="k sV" d="M135,88 C140,82 150,81 160,84 C170,81 180,82 185,88 L188,130 L132,130 Z"/>
@@ -177,7 +177,7 @@ export function gusBack(x, y, k) {
  *  PROF. EMERITA IRIS CANDOR, seated at her desk: the portrait drawing (bun, glasses on a chain,
  *  pearls, ROBE cardigan), hands on the blotter.
  * ====================================================================== */
-const irisHead = () => `
+const irisHead = () => `<g class="hd">
   <path class="sK" d="M153,84 L153,90 M167,84 L167,90"/>
   <path class="k sK" d="M139,50 C138,71 148,84 160,84 C172,84 182,71 181,50"/>
   <path class="k sW" d="M137,56 C134,37 146,29 160,29 C174,29 186,37 183,56 C178,46 168,42 160,42 C152,42 142,46 137,56 Z"/>
@@ -186,7 +186,7 @@ const irisHead = () => `
   <path class="sA" d="M143,57 L157,56 L156,63 L145,64 Z M163,56 L177,57 L175,64 L164,63 Z M157,58 L163,58"/>
   <path class="sA dash" d="M143,60 C134,72 136,88 146,96"/>
   <path class="sK" d="M160,63 C157,69 160,71 163,70 M146,70 L149,72.5 M174,70 L171,72.5"/>
-  <path class="sK" d="M153,75 C157,77 163,77 167,74"/>`;
+  <path class="sK" d="M153,75 C157,77 163,77 167,74"/></g>`;
 export function irisSeated(x, y, k) {
   return at(x, y, k, `
     <path class="k sV" d="M128,98 C132,90 146,88 152,88 L160,100 L168,88 C174,88 188,90 192,98 L194,142 L126,142 Z"/>

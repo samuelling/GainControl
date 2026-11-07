@@ -22,6 +22,11 @@ import { titleArt, titleGlitch, titleExit } from "./title.js";
 import { installGuide } from "./guide.js";
 import { installNudge } from "./nudge.js";
 import { music } from "./music.js";
+import { decor, current as holidaysNow } from "./holidays.js";
+import { opt, onChange as onOptions, activeCheats } from "./options.js";
+import { installMenu } from "./menu.js";
+import { remark } from "./remarks.js";
+import { fxLayer, confetti, installWhimsy } from "./whimsy.js";
 import { applyOverrides, rewriteSay, jumpFromHash } from "./tools/overrides.js";
 import seminar from "./rooms/seminar.js";
 import hall from "./rooms/hallway.js";
@@ -113,9 +118,9 @@ function idleFigures() {   // the other playable character, if they're standing 
 function build() {
   const d = R().draw(G);
   const sorts = [...d.sortables.filter(o => o.svg), ...idleFigures()];
-  svg.innerHTML = `<g id="roomBack">${d.back}</g><g id="sortables">
+  svg.innerHTML = `<g id="roomBack">${d.back}</g>${decor(R(), G)}<g id="sortables">
     ${sorts.map(o => `<g data-depth="${o.depth}">${o.svg}</g>`).join("")}
-    <g data-depth="actor" id="actorWrap"><g id="actor" data-pose="0"></g></g></g><g id="extras"></g><g id="hud"></g><g id="chooser"></g>`;
+    <g data-depth="actor" id="actorWrap"><g id="actor" data-pose="0"></g></g></g><g id="extras"></g><g id="fx" pointer-events="none">${fxLayer(G)}</g><g id="hud"></g><g id="chooser"></g>`;
   $("#actor").innerHTML = FIGURE[G.char]();
   render(); hud(); drawExtras();
 }
@@ -136,11 +141,11 @@ function musicScene(force) {
 let wipeT = null;
 function swipe(dir) {
   const W = $("#wipe"); if (!W) return;
-  const old = ["#roomBack", "#sortables", "#extras"].map(q => svg.querySelector(q)).filter(Boolean).map(e => e.outerHTML).join("")
+  const old = ["#roomBack", "#game > .decor", "#sortables", "#extras", "#fx"].map(q => svg.querySelector(q)).filter(Boolean).map(e => e.outerHTML).join("")
     .replace(/ id="[^"]*"/g, "").replace(/ data-hs="[^"]*"/g, "");
   return () => {   // call after the new room is built
     clearInterval(wipeT);
-    const live = ["#roomBack", "#sortables", "#extras"].map(q => svg.querySelector(q)).filter(Boolean);
+    const live = ["#roomBack", "#game > .decor", "#sortables", "#extras", "#fx"].map(q => svg.querySelector(q)).filter(Boolean);
     const N = 10; let k = 0;
     const frameAt = () => {
       const p = k / N, xo = dir * 640 * p, xn = -dir * 640 * (1 - p), seam = dir > 0 ? 640 * p : 640 * (1 - p);
@@ -164,6 +169,19 @@ function loadRoom(id, entry, pos) {
   Object.assign(a, { x: e[0], y: e[1], dir: e[2], tx: e[0], ty: e[1], walking: false, cb: null });
   build();
   if (finishSwipe) finishSwipe();
+  if (moving) pendingRemark = true;
+}
+// someone notices the decorations, or the codes (js/remarks.js): a moment after you come in, if nothing else is happening
+let pendingRemark = false;
+function maybeRemark() {
+  // "codes": now and then someone lets one slip (the menu promises they're around, if you listen)
+  const topics = [...activeCheats(), ...(opt("holidays") ? holidaysNow().on : []), ...(Math.random() < .35 ? ["codes"] : [])]; if (!topics.length) return;
+  const room = G.room;
+  setTimeout(() => {
+    if (G.room !== room || G.busy || G.chooser || G.using || onTitle || $("#panel").innerHTML) return;
+    const present = [...new Set([...svg.querySelectorAll("#sortables [data-hs], #roomBack [data-hs]")].map(e => e.dataset.hs))];
+    const line = remark({ G, topics, present, room }); if (line) say(line);
+  }, 1400);
 }
 const refresh = () => build();
 
@@ -217,9 +235,10 @@ function hud() { musicScene();
   s += seg("BODIES", 462, 300, 4.2, "sR", .8) + seg(String(G.bodies).padStart(2, "0"), 462, 308, 20, "sR", 1.4);
   s += chip(G.status || R().name, 522, 300, 5.5, G.status === "RECORDING" ? "fR" : night ? "fG" : "fB");
   s += seg(ACT().TITLE[0], 522, 324, 4.2, "sM", .8) + seg(ACT().TITLE[1], 522, 333, 7, "sW", 1.1);
-  const snd = sfx.muted ? "SOUND OFF" : "SOUND ON";
-  s += `<g data-mute style="cursor:pointer">${seg(snd + "  M", 522, 347, 3.6, sfx.muted ? "sD" : "sM", .7)}<rect x="518" y="343" width="70" height="12" fill="transparent"/></g>`;
-  s += FULL.hudChip(562, 347);
+  { const ow = segW("OPTIONS", 4.6) + 4.6 * .9;
+    s += `<g data-options style="cursor:pointer">${chip("OPTIONS", 522, 342.5, 4.6, "fW")}${seg("O", 522 + ow + 4, 345.5, 3.6, "sM", .7)}<rect x="518" y="338" width="${ow + 14}" height="17" fill="transparent"/></g>`;
+    s += `<g data-mute style="cursor:pointer">${seg(sfx.muted ? "MUTED" : "SOUND", 522 + ow + 16, 345.5, 3.6, sfx.muted ? "sD" : "sM", .7)}<rect x="${522 + ow + 12}" y="341" width="28" height="13" fill="transparent"/></g>`;
+    s += FULL.hudChip(522 + ow + 48, 345.5); }
   h.innerHTML = s;
 }
 
@@ -228,7 +247,7 @@ function hud() { musicScene();
  * ================================================================ */
 let actx;
 function blip(fs = [880, 1320]) { sfx.blip(fs); }
-function addScore(key, n) { if (!key || G.scored.has(key)) return; G.scored.add(key); G.score += n; hud(); sfx.play("score"); }
+function addScore(key, n) { if (!key || G.scored.has(key)) return; G.scored.add(key); G.score += n; hud(); sfx.play("score"); confetti(svg); }
 const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br>");
 
 function typeInto(el, html, speed, onTick) {
@@ -521,6 +540,7 @@ async function respond(r) {
 async function afterAction() {
   G.min += 1; if (G.room === "seminar" && !G.busy) refresh(); else hud();   // the room clock is part of the drawing
   const t = await ACT().check(api); if (t) await respond(t);
+  if (pendingRemark) { pendingRemark = false; if (!t) maybeRemark(); }   // a room change with nothing else going on
 }
 
 /* ================================================================ *
@@ -596,8 +616,12 @@ FULL.install(() => hud());
 const GUIDE = installGuide({ G });
 // stuck? after a while without progress, a glint on the next thing, then a line said in voice (js/nudge.js)
 const NUDGE = installNudge({ G, svg, say, idle: () => !onTitle && !G.busy && !G.chooser && !G.using && !G.actor.walking && !!G.room
-  && document.visibilityState === "visible" && !$("#panel").innerHTML && !$("#card").classList.contains("show") && !(window.GC && window.GC.noNudge) });
+  && opt("hints") && document.visibilityState === "visible" && !$("#panel").innerHTML && !$("#card").classList.contains("show") && !(window.GC && window.GC.noNudge) });
 frame.addEventListener("pointerdown", (e) => { if (e.target.closest && e.target.closest("[data-mute]")) { e.stopPropagation(); sfx.toggle(); hud(); } }, true);
+// the options menu (js/menu.js): HUD chip or O. Settings and codes redraw the room when they change.
+const MENU = installMenu({ G, sfx, FULL, GUIDE, onChange: () => { if (G.room && !onTitle) build(); } });
+frame.addEventListener("pointerdown", (e) => { if (e.target.closest && e.target.closest("[data-options]")) { e.stopPropagation(); if (!G.busy) MENU.show(); } }, true);
+onOptions(() => { if (G.room && !onTitle && !MENU.isOpen()) build(); });
 window.addEventListener("keydown", (e) => {
   if (G.busy) return;
   if (e.key === "Escape") cancelAll();
@@ -680,8 +704,9 @@ setInterval(() => {
  *  AMBIENT POSE CLOCKS
  * ================================================================ */
 function poseSet(group, i) { document.querySelectorAll(`#game [data-g="${group}"]`).forEach(el => el.classList.toggle("on", +el.dataset.i === i)); }
-const clocks = { blink: 300, drip: 600, tube: 450, chant: 700, nod: 800, tail: 650, parm: 1700, brett: 900, phone: 1100, saver: 1500, hum: 420, alarm: 380, wave: 520, type: 260, jam: 700 };
+const clocks = { blink: 300, drip: 600, tube: 450, chant: 700, nod: 800, tail: 650, parm: 1700, brett: 900, phone: 1100, saver: 1500, hum: 420, alarm: 380, wave: 520, type: 260, jam: 700, hol: 700 };
 for (const [g, ms] of Object.entries(clocks)) { let i = 0; setInterval(() => poseSet(g, i ^= 1), ms); }
+installWhimsy({ G, sfx, poseSet });
 (function flicker() { poseSet("flicker", Math.random() < .25 ? 1 : 0); setTimeout(flicker, 90 + Math.random() * 600); })();
 (function blank() { const p = $("#preston"); if (p && G.mode === "day" && !G.busy) { p.classList.add("blank"); setTimeout(() => p.classList.remove("blank"), 700); }
   setTimeout(blank, 5500 + Math.random() * 4000); })();
@@ -697,7 +722,7 @@ setInterval(() => document.querySelectorAll("#game .needle").forEach(n => { cons
 /* ================================================================ *
  *  START: title and chapter select
  * ================================================================ */
-window.GC = { G, api, FULL, GUIDE, get NUDGE() { return NUDGE; }, act, itemAct, useItemOn, loadRoom, walkTo, runConvo, switchTo, startAct };   // for testing
+window.GC = { G, api, FULL, GUIDE, MENU, get NUDGE() { return NUDGE; }, act, itemAct, useItemOn, loadRoom, walkTo, runConvo, switchTo, startAct };   // for testing
 async function start() {
   await applyOverrides(ACTS, ITEMS);
   // a PLAY link from the Script Room lands straight in a scene. Browsers won't make a sound until the page has been

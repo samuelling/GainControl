@@ -20,7 +20,7 @@ const place = (x, y, k, inner, flip = 1) => { const q = k * AUD;
 
 /* ---- Dr. Rex Jected: postdoc, year 9. Receding gray hair, stubble, bags, a loosened tie, a lanyard badge "9", an empty mug. ---- */
 export function rexHead(p = false) {
-  return `${ears}${jaw}
+  return `<g class="hd">${ears}${jaw}
     <path class="k sM" d="M137,58 C133,40 144,30 160,30 C176,30 187,40 183,58 C181,50 179,45 175,43 C171,46 167,41 162,44 C157,40 152,45 147,42 C142,45 139,50 137,58 Z"/>
     <path class="hl sM" d="M150,34 C154,31 158,31 161,33 M166,32 C170,32 174,34 176,37 M158,30 L156,25 L161,29"/>
     <path class="sM" d="M145,53.5 L156,51.5 M165,51.5 L176,53.5"/>
@@ -30,7 +30,7 @@ export function rexHead(p = false) {
     <path class="hl sK" d="M147,62 C150,64.5 154,64.5 156,62.5 M165,62.5 C167,64.5 171,64.5 174,62 M148,65 C151,67 154,66.5 155,65.5 M166,65.5 C167,66.5 170,67 173,65"/>
     ${nose}
     <path class="hl sM dash" d="M143,67 C146,77 153,80.5 160.5,80.5 C168,80.5 175,77 178,67"/><path class="hl sM dash" d="M151,77 C155,78.5 166,78.5 170,77"/>
-    ${mouth(p, `<path class="sK" d="M154,73.5 C158,72.5 163,72.5 167,75"/>`, `<path class="k sK" d="M154,73 C158,72 163,72 167,74 C165,77.5 156,77.5 154,73 Z"/>`)}${neck}`;
+    ${mouth(p, `<path class="sK" d="M154,73.5 C158,72.5 163,72.5 167,75"/>`, `<path class="k sK" d="M154,73 C158,72 163,72 167,74 C165,77.5 156,77.5 154,73 Z"/>`)}${neck}</g>`;
 }
 const rexShirt = `
   <path class="k sW" d="M133,92 C139,87 148,85 154,86 L160,95 L166,86 C172,85 181,87 187,92 L190,131 L178,133 L170,130 L160,132 L130,131 Z"/>
@@ -55,14 +55,14 @@ export function rexStanding(x, y, k, flip = 1) {
 /* ---- Dana Outlier: Preston's labmate. Dark ponytail with one strand standing straight up, a brass rain jacket, a messenger bag
         with a bike helmet clipped to it, cool sneakers. ---- */
 export function danaHead(p = false) {
-  return `<path class="k sW" d="M181,44 C192,44 198,56 195,72 C193,66 189,59 183,55 Z"/><path class="hl sW" d="M186,50 C190,56 192,62 193,67"/>
+  return `<g class="hd"><path class="k sW" d="M181,44 C192,44 198,56 195,72 C193,66 189,59 183,55 Z"/><path class="hl sW" d="M186,50 C190,56 192,62 193,67"/>
     ${ears}${jaw}
     <path class="k sW" d="M137,58 C133,38 146,28 160,28 C175,28 187,38 183,58 C180,49 173,43 166,42 C163,45 156,44 154,42 C147,43 140,49 137,58 Z"/>
     <path class="hl sW" d="M148,34 C153,31 158,31 160,33 M166,31 C172,32 177,35 179,40"/>
     <path class="sW" d="M163,29 L164,11"/>
     <path class="sW" d="M146,50.5 C149,48 153,48 156,50 M165,52 L175,52.5"/>
     ${eyes(p, [151, 57.5], [170, 58])}${nose}
-    ${mouth(p, `<path class="sK" d="M154,74 C158,74 163,73.5 167,72"/>`, `<path class="k sK" d="M154,73 C158,72 163,72 167,72 C165,77 156,77 154,73 Z"/>`)}${neck}`;
+    ${mouth(p, `<path class="sK" d="M154,74 C158,74 163,73.5 167,72"/>`, `<path class="k sK" d="M154,73 C158,72 163,72 167,72 C165,77 156,77 154,73 Z"/>`)}${neck}</g>`;
 }
 const danaJacket = `
   <path class="k sA" d="M132,94 C137,88 146,86 153,86 L160,90 L167,86 C174,86 183,88 188,94 L191,134 L129,134 Z"/>
@@ -86,7 +86,7 @@ export function danaStanding(x, y, k, flip = 1) {
 /* ---- Preston, standing: same head as his portrait and seminar bust. Blazer SIGNAL, hair BRASS, earbuds ON.
         Wrap the result in <g class="pt" id="preston"> so the engine's blank-out (normal-only / blank-only) works. ---- */
 function prestonHead() {
-  return `<path class="sK" d="M152,84 L152,92 M168,84 L168,92"/>
+  return `<g class="hd"><path class="sK" d="M152,84 L152,92 M168,84 L168,92"/>
     <path class="k sK" d="M132,50 C131,72 145,86 160,86 C175,86 189,72 188,50"/>
     <path class="sK" d="M133,56 C127,55 127,66 133,66 M187,56 C193,55 193,66 187,66"/>
     <path class="k sA" d="M129,56 C124,34 138,19 158,17 C179,15 196,26 193,46 C192,50 190,54 188,56 C184,45 176,41 167,43 C173,36 168,30 159,33 C148,37 139,45 129,56 Z"/>
@@ -101,7 +101,7 @@ function prestonHead() {
     <g class="blank-only">
       <circle class="k sW" cx="150" cy="60" r="4.2"/><circle class="fW" cx="150" cy="60" r=".9"/><circle class="k sW" cx="170" cy="60" r="4.2"/><circle class="fW" cx="170" cy="60" r=".9"/>
       <path class="sA" d="M143,52 L157,52 M163,52 L177,52"/><path class="sK" d="M150,75 L170,75"/>
-      <circle class="fG" cx="129.5" cy="62" r="3.2"/><circle class="fG" cx="190.5" cy="62" r="3.2"/>${arcs(124, 62, -1, "sG")}${arcs(196, 62, 1, "sG")}</g>`;
+      <circle class="fG" cx="129.5" cy="62" r="3.2"/><circle class="fG" cx="190.5" cy="62" r="3.2"/>${arcs(124, 62, -1, "sG")}${arcs(196, 62, 1, "sG")}</g></g>`;
 }
 export function prestonStanding(x, y, k, flip = 1) {
   return place(x, y, k, `

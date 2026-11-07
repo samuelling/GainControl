@@ -141,7 +141,7 @@ export function quorumUnhooded(x, y, k, up = false) {
  *  three pens in her breast pocket, a COOL blazer. Det. Small: the BRASS trench coat and his notebook.
  * ====================================================================== */
 export function adlineHead(p = false) {
-  return `${ears}${jaw}
+  return `<g class="hd">${ears}${jaw}
     <path class="k sM" d="M136,64 C130,38 144,27 160,27 C176,27 190,38 184,64 C182,74 186,82 190,86 C182,86 178,80 180,70 C178,54 170,44 160,44 C152,44 144,50 140,58 C140,70 138,80 130,86 C134,80 136,72 136,64 Z"/>
     <path class="hl sM" d="M146,34 C152,31 160,31 164,33 M168,32 C174,34 178,38 180,44 M156,27 L153,21 M163,27 L166,20 M171,29 L176,24"/>
     <rect class="sW" x="143" y="35" width="13" height="7" rx="3"/><rect class="sW" x="164" y="35" width="13" height="7" rx="3"/><path class="sW" d="M156,38 L164,38"/>
@@ -151,7 +151,7 @@ export function adlineHead(p = false) {
       : `<circle class="sW" cx="150.5" cy="57.5" r="3.4"/><circle class="sW" cx="170.5" cy="57.5" r="3.4"/><circle class="fW" cx="150.5" cy="57.5" r="1.3"/><circle class="fW" cx="170.5" cy="57.5" r="1.3"/>`}
     <path class="hl sK" d="M146,63 C148,65 153,65 155,63 M166,63 C168,65 173,65 175,63 M147,65.5 C149,67 152,67 154,66 M167,66 C169,67 172,67 174,65.5"/>
     ${nose}
-    ${mouth(p, `<path class="sK" d="M154,74 C158,72.5 163,72.5 167,74"/>`, `<path class="k sK" d="M154,73 C158,72 163,72 167,73 C165,77.5 156,77.5 154,73 Z"/>`)}${neck}`;
+    ${mouth(p, `<path class="sK" d="M154,74 C158,72.5 163,72.5 167,74"/>`, `<path class="k sK" d="M154,73 C158,72 163,72 167,73 C165,77.5 156,77.5 154,73 Z"/>`)}${neck}</g>`;
 }
 const adlineBody = `
   <path class="k sB" d="M126,98 C130,89 145,86 152,86 L160,98 L168,86 C175,86 190,89 194,98 L195,140 L125,140 Z"/>

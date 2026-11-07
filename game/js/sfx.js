@@ -181,12 +181,12 @@ const VOICE = { NELL: [520, "triangle"], MORRIS: [980, "square"], GUS: [300, "tr
   QUORUM: [180, "sawtooth"], "THE CORRESPONDING AUTHOR": [180, "sawtooth"], HOOD: [150, "sawtooth"], "A HOOD": [150, "sawtooth"], REX: [240, "square"], DANA: [560, "triangle"],
   TESS: [480, "square"], PENNY: [640, "triangle"], ETHEL: [400, "sine"], CODY: [700, "square"], SMALL: [260, "sine"], DET: [260, "sine"], IMPACT: [340, "sawtooth"],
   ADLINE: [460, "triangle"], "PROF. ADLINE": [460, "triangle"], BRETT: [620, "square"], NARRATOR: [0, ""] };
-let vt = 0;
+let vt = 0, pitch = 1;   // pitch: the HELIUM code (every voice up a fifth and a bit)
 // force: tick now (one tick for a new coach line), instead of every other / every fourth letter while typing
 function voiceTick(who, force) {
   const key = Object.keys(VOICE).find(k => (who || "").toUpperCase().startsWith(k)); const v = VOICE[key || "NARRATOR"] || [0];
   if (!v[0]) { if (force || (vt++ & 3) === 0) noise(.012, { f: 2400, q: 3, g: .02 }); return; }
-  if (force || (vt++ & 1) === 0) tone(v[0] * (1 + (Math.random() - .5) * .14), .045, { type: v[1], g: v[1] === "sine" ? .045 : .022 });
+  if (force || (vt++ & 1) === 0) tone(v[0] * pitch * (1 + (Math.random() - .5) * .14), .045, { type: v[1], g: v[1] === "sine" ? .045 : .022 });
 }
 
 /* ---------------- room tone ---------------- */
@@ -257,6 +257,7 @@ export const sfx = {
   ambience(room, mode) { const key = room + "/" + mode; if (!ac() || ambNow.key === key) return; stopAmb(); ambNow.key = key; if (ctx.state === "running" && !muted) startAmb(room, mode); else ambNow.pending = [room, mode]; },
   resumeAmbience() { if (ambNow.pending && ctx && ctx.state === "running" && !muted) { const [r, m] = ambNow.pending; delete ambNow.pending; startAmb(r, m); } },
   get muted() { return muted; },
+  set pitch(v) { pitch = v; },
   // the live context, for the music: { ctx, master, noise }
   audio() { if (!ac()) return null; return { ctx, master, noise: noiseBuf }; },
   toggle() { muted = !muted; try { localStorage.setItem("gaincontrol.mute", muted ? "1" : "0"); } catch (e) {}

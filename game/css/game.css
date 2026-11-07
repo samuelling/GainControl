@@ -216,3 +216,22 @@
 .mzend .mzurl { font:600 1.5cqw/1 "Spline Sans",Arial,sans-serif; letter-spacing:.12em; color:#9cc3ff; margin-top:.9cqw; }
 .mzend .mzhint { position:absolute; bottom:4%; font-size:1.1cqw; letter-spacing:.14em; color:var(--M); }
 .mzend svg.mzpart { position:relative; inset:auto; width:30cqw; height:auto; }
+
+/* ---- the options menu (js/menu.js) and its code field ---- */
+#menu { position: absolute; inset: 0; display: none; z-index: 20; }
+#menu.show { display: block; }
+#menu [data-row]:hover path, #menu [data-close]:hover path { stroke: var(--A); }
+#menu [data-off]:hover rect { fill: var(--R); }
+/* the field that takes the keys sits over the drawn code box, invisible (the box is drawn in the stroke alphabet) */
+#codeInput { position: absolute; left: 53.1%; top: 23.9%; width: 26.25%; height: 8.3%; opacity: .01; display: none; z-index: 21;
+  font-size: 16px; border: 0; padding: 0; background: transparent; color: transparent; caret-color: transparent; }
+#codeInput.show { display: block; }
+
+/* ---- codes: heads (every head is a <g class="hd">, scaled about the neck) ---- */
+#game .hd, #wipe .hd { transform-box: view-box; transform-origin: 160px 88px; transition: none; }
+body.c-pinhead #game .hd, body.c-pinhead #wipe .hd { transform: scale(.5); }
+body.c-bighead #game .hd, body.c-bighead #wipe .hd { transform: scale(1.65); }
+/* colour codes: the scene only, never the HUD chips' meaning (the HUD is drawn inside #game, so this is the room layers) */
+body.c-afterimage #game #roomBack, body.c-afterimage #game #sortables, body.c-afterimage #game .decor { filter: hue-rotate(180deg); }
+body.c-disco #game #roomBack, body.c-disco #game #sortables, body.c-disco #game .decor { filter: hue-rotate(var(--disco, 0deg)); }
+body.no-holidays #game .decor { display: none; }
