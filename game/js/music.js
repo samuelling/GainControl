@@ -77,7 +77,9 @@ function init() {
   delay = C.createDelay(1); const fb = C.createGain(), wet = C.createGain(), lp = C.createBiquadFilter(), cs = C.createGain();
   delay.delayTime.value = .32; fb.gain.value = .32; wet.gain.value = .35; lp.type = "lowpass"; lp.frequency.value = 2400; cs.gain.value = .3;
   delay.connect(lp); lp.connect(fb); fb.connect(delay); lp.connect(wet); wet.connect(bus);
-  B.mel.connect(delay); B.arp.connect(delay); B.ctr.connect(cs); cs.connect(delay);
+  // the melody and arpeggio reach the delay through one send, so a build can start dry (a clean Rhodes) and open it later
+  B.dsend = C.createGain(); B.mel.connect(B.dsend); B.arp.connect(B.dsend); B.dsend.connect(delay); B.ctr.connect(cs); cs.connect(delay);
+  TINE.clear();
   return true;
 }
 
@@ -115,18 +117,31 @@ function vibes(m, t, v, out, x = {}) {             // sine + a soft fourth parti
 }
 // a Rhodes (tine electric piano): an FM pair at 1:1 whose index starts high and falls (the bark of the tine), a quiet
 // high tine ping on the strike, a long warm decay, and the suitcase amp's tremolo
+// The Rhodes is MEGAjam's Tine engine (instruments/tine.js, "keys"), lightly: a two-operator FM electric piano, carrier
+// and modulator at 1:1 with the index settling as the note decays, a 14x "tine" strike that dies in 25 ms, and a shared
+// output stage per destination: a touch of tanh drive, a 6 kHz tone filter and the tremolo as a slow auto-pan.
+const TINE = new Map();
+function tineOut(out) {
+  if (TINE.has(out)) return TINE.get(out);
+  const pre = C.createGain(), sh = C.createWaveShaper(), post = C.createGain(), tone = C.createBiquadFilter(), pan = C.createStereoPanner(), lfo = C.createOscillator(), amt = C.createGain();
+  const n = 2048, c = new Float32Array(n); for (let k = 0; k < n; k++) { const x = k / (n - 1) * 2 - 1; c[k] = Math.tanh(x * 1.8) / Math.tanh(1.8); }
+  sh.curve = c; pre.gain.value = 1 + .08 * 5; post.gain.value = 1 / (1 + .08 * 2); tone.type = "lowpass"; tone.Q.value = .5; tone.frequency.value = 6000;
+  lfo.frequency.value = 4.8; amt.gain.value = .22 * .7; lfo.connect(amt); amt.connect(pan.pan); lfo.start();
+  pre.connect(sh); sh.connect(post); post.connect(tone); tone.connect(pan); pan.connect(out);
+  TINE.set(out, pre); return pre;
+}
 function rhodes(m, t, v, out, x = {}) {
-  const hold = x.short ? .2 : Math.max(.4, Math.min(3.2, (x.dur || 1) * 1.15)), rel = x.short ? .3 : .75, d = hold + rel; tr(m, !x.short);
-  const f = hz(m), car = osc("sine", f), mod = osc("sine", f), mi = C.createGain(), g = C.createGain();
-  const ping = osc("sine", f * 7.02), pg = C.createGain(), tm = C.createGain(), lfo = osc("sine", 4.6), ld = C.createGain(), lp = C.createBiquadFilter();
-  const bark = f * (.9 + 1.1 * Math.min(1, v * 6));                  // harder notes bark more (gently: this is a relaxed Rhodes)
-  mi.gain.setValueAtTime(bark, t); mi.gain.exponentialRampToValueAtTime(f * .16, t + .4);
-  // legato: a soft 12 ms attack, the tone sagging slowly while held, then a gentle release
-  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .012); g.gain.exponentialRampToValueAtTime(v * .45, t + .012 + hold); g.gain.exponentialRampToValueAtTime(.0001, t + d);
-  env(pg, t, .001, v * .035, .05);
-  lp.type = "lowpass"; lp.frequency.value = 3200; tm.gain.value = .84; ld.gain.value = .16;
-  mod.connect(mi); mi.connect(car.frequency); car.connect(g); ping.connect(pg); g.connect(lp); pg.connect(lp); lp.connect(tm); lfo.connect(ld); ld.connect(tm.gain); tm.connect(out);
-  for (const o of [car, mod, lfo]) { o.start(t); o.stop(t + d + .1); } ping.start(t); ping.stop(t + .08);
+  const f = hz(m), k = Math.min(1, v * 7), D = 2.5, bright = .4, bell = .3;   // keys preset, a little lighter
+  const hold = x.short ? .18 : Math.max(.35, Math.min(3, (x.dur || 1) * 1.1)), R = x.short ? .2 : .3; tr(m, !x.short);
+  const car = osc("sine", f), mod = osc("sine", f), tine = osc("sine", f * 14), mg = C.createGain(), tg = C.createGain(), amp = C.createGain();
+  const idx = (.3 + bright * 5) * (.35 + .65 * k);
+  mg.gain.setValueAtTime(idx * f, t); mg.gain.setTargetAtTime(idx * f * .2, t, D / 5);
+  tg.gain.setValueAtTime(bell * k * f * 2.5, t); tg.gain.setTargetAtTime(0, t, .025);
+  mod.connect(mg); mg.connect(car.frequency); tine.connect(tg); tg.connect(car.frequency); car.connect(amp); amp.connect(tineOut(out));
+  const pk = v * .75, off = t + hold;
+  amp.gain.setValueAtTime(0, t); amp.gain.linearRampToValueAtTime(pk, t + .003); amp.gain.setTargetAtTime(0, t + .003, D / 3);
+  amp.gain.cancelScheduledValues(off); amp.gain.setTargetAtTime(0, off, R / 4);   // note-off: the release
+  for (const o of [car, mod, tine]) { o.start(t); o.stop(off + R * 2.5 + .05); }
 }
 function box(m, t, v, out, x = {}) {               // a music box: a high sine tine with a quick twelfth on the strike
   const f = hz(m + 12), d = x.short ? .14 : .9; tr(m + 12, !x.short);
@@ -404,7 +419,8 @@ function scheduleStep(s, t) {
     }
   }
   // the counter-melody: through A' and the bridge, and answering at the ends of the first A's phrases
-  const L = S.build ? Math.floor((s - buildStart) / 128) : 9;   // build layers: 0 Rhodes alone, 1 + bass, 2 + drums and counter-melody
+  const L = S.build ? Math.floor((s - buildStart) / 128) : 9;   // build layers: 0 Rhodes alone (dry), 1 + bass, 2 + drums, counter-melody and the delay
+  if (i === 0 && B.dsend) B.dsend.gain.setTargetAtTime(L >= 2 ? 1 : 0, t, L >= 2 ? 1.5 : .05);
   if (S.ctr && L >= 2 && i % 2 === 0) {
     const arr = sec === "V" ? COUNTER_A : br ? COUNTER_B : sec === "A" && slot === 0 && bar % 4 === 3 && k >= 4 ? COUNTER_A : null, m = arr && arr[bar][k];
     if (m != null) voice(S.ctr, m, tt, S.night ? .1 : .085, B.ctr, { raw: true, dur: spb * Math.min(8, hold(arr, bar, k) * 2) });
