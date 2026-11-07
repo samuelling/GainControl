@@ -28,6 +28,7 @@ const quick = (ctx, q, f) => ctx.choose("How long?", [["q", q], ["f", f]]).then(
 /* ---------------- Campbell & Robson (1968): the contrast sensitivity function ---------------- */
 export const CSF = { id: "csf", group: "CLASSICS", tag: "CAMPBELL & ROBSON 1968", title: "Contrast sensitivity",
   sub: "How faint can a grating be before it disappears? Depends on how fine it is.",
+  ref: "Campbell, F. W., & Robson, J. G. (1968). Application of Fourier analysis to the visibility of gratings. Journal of Physiology, 197(3), 551–566.",
   blurb: "Two intervals, each marked by a tick; a faint striped patch is in one of them. Press 1 or 2 for the interval that had it. Guess when you're unsure; the computer adjusts the contrast for each stripe width separately.",
   instructions: { lines: ["Each trial has two intervals, each marked by a tick. A faint striped patch appears in ONE of them, in the middle of the screen.", "Press 1 or 2 for the interval that had the patch. If you're not sure, guess: the computer makes it fainter when you're right and stronger when you're wrong."],
     keys: [["1", "PATCH IN INTERVAL 1"], ["2", "PATCH IN INTERVAL 2"]] },
@@ -69,6 +70,7 @@ export const CSF = { id: "csf", group: "CLASSICS", tag: "CAMPBELL & ROBSON 1968"
 /* ---------------- Posner (1980): orienting of attention ---------------- */
 export const POSNER = { id: "posner", group: "CLASSICS", tag: "POSNER 1980", title: "Orienting of attention",
   sub: "An arrow points left or right. It's usually right. What does it buy you?",
+  ref: "Posner, M. I. (1980). Orienting of attention. Quarterly Journal of Experimental Psychology, 32(1), 3–25.",
   blurb: "Keep your eyes on the centre. An arrow (or a plus sign) appears, then a square flashes in one of the boxes. Press SPACE as soon as you see it. The arrow is right 80% of the time. On a few trials nothing comes: don't press.",
   instructions: { lines: ["Keep your eyes on the centre. Two boxes sit left and right of it.", "An arrow (or a plus sign) appears, then a small square flashes in one of the boxes. Press SPACE as fast as you can when you see it.", "The arrow points to the right box most of the time, but not always. On a few trials no square appears: then don't press anything."],
     keys: [["SPACE", "I SAW THE SQUARE"]] },
@@ -116,6 +118,7 @@ export const POSNER = { id: "posner", group: "CLASSICS", tag: "POSNER 1980", tit
 /* ---------------- Cooper & Shepard (1973): mental rotation ---------------- */
 export const ROTATION = { id: "rotation", group: "CLASSICS", tag: "COOPER & SHEPARD 1973", title: "Mental rotation",
   sub: "Is the letter normal or mirror-reversed? The answer takes longer the further it's turned.",
+  ref: "Cooper, L. A., & Shepard, R. N. (1973). Chronometric studies of the rotation of mental images. In W. G. Chase (Ed.), Visual information processing (pp. 75–176). New York: Academic Press.",
   blurb: "A letter appears, rotated. Is it the normal letter (N) or its mirror image (M)? As fast as you can without mistakes.",
   instructions: { lines: ["A letter appears in the middle of the screen, rotated by some angle.", "Decide whether it is the normal letter or its mirror image. Answer as fast as you can without making mistakes."],
     keys: [["N", "NORMAL"], ["M", "MIRROR IMAGE"]] },
@@ -148,6 +151,7 @@ export const ROTATION = { id: "rotation", group: "CLASSICS", tag: "COOPER & SHEP
 /* ---------------- Bouma (1970): crowding ---------------- */
 export const CROWDING = { id: "crowding", group: "CLASSICS", tag: "BOUMA 1970", title: "Crowding",
   sub: "A letter you can read alone becomes unreadable between neighbours.",
+  ref: "Bouma, H. (1970). Interaction effects in parafoveal letter recognition. Nature, 226(5241), 177–178.",
   blurb: "Keep your eyes on the centre dot. A letter flashes 6° to the side, sometimes with a letter on either side of it. Name the MIDDLE letter. Don't look at it; it's gone before your eyes could get there anyway.",
   instructions: { lines: ["Keep your eyes on the centre dot. Don't look to the side.", "A letter flashes 6° to one side, sometimes with another letter close on either side of it. It is gone before your eyes could get there.", "Type the MIDDLE letter. It is always one of D H K N R S V Z. Guess if you have to."],
     keys: [["D H K N R S V Z", "TYPE THE MIDDLE LETTER"]] },
@@ -184,6 +188,7 @@ export const CROWDING = { id: "crowding", group: "CLASSICS", tag: "BOUMA 1970", 
 /* ---------------- Halberda, Mazzocco & Feigenson (2008): the approximate number system ---------------- */
 export const NUMBER = { id: "number", group: "CLASSICS", tag: "HALBERDA, MAZZOCCO & FEIGENSON 2008", title: "Number sense",
   sub: "Which side has more dots? Too fast to count, and still you can tell.",
+  ref: "Halberda, J., Mazzocco, M. M. M., & Feigenson, L. (2008). Individual differences in non-verbal number acuity correlate with maths achievement. Nature, 455(7213), 665–668.",
   blurb: "Two clouds of dots flash for a moment, yellow on the left, blue on the right. Which has more? Too fast to count. D for yellow, K for blue.",
   instructions: { lines: ["Two clouds of dots flash for a moment: yellow on the left, blue on the right.", "Which cloud had more dots? They're gone too fast to count, so go with your impression."],
     keys: [["D", "YELLOW HAD MORE"], ["K", "BLUE HAD MORE"]] },

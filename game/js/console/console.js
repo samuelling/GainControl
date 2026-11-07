@@ -1,11 +1,17 @@
-// THE PERCEPTION CONSOLE — the computer inside the Adline Lab's dark booth. A menu of bistable demos, a replication of
-// Carrasco, Ling & Read (2004), and ports of the PS 327 MATLAB labs. Runs as a minigame in #panel (perceptionConsole)
-// or on its own page (console.html).
+// THE PERCEPTION CONSOLE — the computer inside the Adline Lab's dark booth. A library of perception experiments:
+// bistable demos, illusions, classic replications (Carrasco, Ling & Read, 2004, and more) and ports of the PS 327
+// MATLAB labs. Runs as a minigame in #panel (perceptionConsole) or on its own page (console.html).
+//
+// The menu is a library browser: a row of shelf tabs (one per group, found from MODULES and ordered by GROUPS in
+// modules.js), a grid of tiles for the open shelf, each with its credit chip. Pointing at a tile (or one tap) puts its
+// one-liner and citation on the console's line; a click, a second tap, START or ENTER runs it. Keys: arrows move,
+// TAB / [ ] change shelf, 1-9 and 0 pick a tile, ENTER runs.
 //
 // The console chrome follows the game's line language. The stimuli do not, on purpose: the booth's monitor shows real
 // stimuli (Gabors, grey levels, coloured letters, dot fields) on a <canvas>, because they are the experiment.
 //
-// A module is { id, group, title, sub, blurb, run(ctx) → Promise }. ctx is the module's whole world:
+// A module is { id, group, tag, title, sub, blurb, ref, instructions: { lines, keys }, run(ctx) → Promise }; ref is a
+// citation string, or a list of them. ctx is the module's whole world:
 //   ctx.g / ctx.W / ctx.H / ctx.ppd / ctx.cx / ctx.cy   the stimulus canvas (960×540, 36 px per degree)
 //   ctx.say(text)                                       the console's line of instructions
 //   ctx.key(keys, { buttons, timeout })                 wait for a key (or its on-screen button) → { key, rt }
@@ -16,7 +22,7 @@
 //   ctx.plot(spec) / ctx.csv(name, header, rows)        results as a game-style chart, and a CSV download
 //   ctx.clear(grey) / ctx.fix()                         helpers
 import { seg, segW, chip } from "../gfx.js";
-import { MODULES } from "./modules.js";
+import { MODULES, groupsOf, refsOf } from "./modules.js";
 
 const CSS = `
 .pc { padding: 0 1.2cqw !important; }
@@ -38,17 +44,29 @@ const CSS = `
 #panel .screen.pc.p2 { transform: scale(1, .18); }
 #panel .screen.pc.p3 { transform: scale(1, .7); }
 .pc .pcbody { flex: 1 1 0; min-height: 0; display: flex; gap: 1.2cqw; padding: .6cqw 0; }
-.pc .menu { flex: 1; display: grid; grid-template-columns: .9fr 1.7fr 1.25fr 1.25fr; gap: .6cqw 1cqw; align-content: start; overflow: auto; }
-/* ILLUSIONS is the long column: its tiles run in two sub-columns under one heading */
-.pc .menu .col:nth-child(2) { display: grid; grid-template-columns: 1fr 1fr; gap: .45cqw .6cqw; align-content: start; }
-.pc .menu .col:nth-child(2) .grp { grid-column: 1 / -1; }
-.pc .grp { font-size: 1.15cqw; color: var(--M); letter-spacing: .12em; border-bottom: .08cqw solid var(--D); padding-bottom: .15cqw; margin-bottom: .1cqw; }
-.pc .col { display: flex; flex-direction: column; gap: .35cqw; }
-.pc .tile { border: .12cqw solid var(--W); padding: .3cqw .55cqw; cursor: pointer; background: #000; min-width: 0; }
+/* the library: shelf tabs, then the open shelf's tiles (scrolls when it's long) */
+.pc .lib { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: .7cqw; }
+.pc .shelves { flex: none; display: flex; flex-wrap: wrap; gap: .45cqw; }
+.pc .shelf { font-size: 1.4cqw; font-weight: 600; letter-spacing: .1em; line-height: 1.45; color: var(--W); border: .12cqw solid var(--M); padding: 0 .6cqw; cursor: pointer; white-space: nowrap; }
+.pc .shelf .n { font-size: .78em; color: var(--M); margin-left: .4cqw; letter-spacing: 0; }
+.pc .shelf:hover { border-color: var(--G); color: var(--G); }
+.pc .shelf.on { background: var(--W); border-color: var(--W); color: #000; cursor: default; } .pc .shelf.on .n { color: #000; }
+.pc .tiles { flex: 1 1 0; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .6cqw; align-content: start;
+  padding: 0 .4cqw .2cqw 0; scrollbar-width: thin; scrollbar-color: var(--M) transparent; overscroll-behavior: contain; touch-action: pan-y; }
+.pc .tile { border: .12cqw solid var(--W); padding: .4cqw .6cqw .5cqw; cursor: pointer; background: #000; min-width: 0; display: flex; flex-direction: column; gap: .35cqw; }
+.pc .tile .tr { display: flex; align-items: flex-start; gap: .5cqw; min-width: 0; }
+.pc .tile .tb { background: var(--A); color: #000; font-size: 1.1cqw; font-weight: 600; letter-spacing: .06em; line-height: 1.4; padding: 0 .35cqw; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc .tile .no { margin-left: auto; flex: none; font-size: 1.1cqw; line-height: 1.4; color: var(--M); }
+.pc .tile .tt { font-size: 1.75cqw; font-weight: 600; line-height: 1.08; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .pc .tile:hover { border-color: var(--G); } .pc .tile:hover .tt { color: var(--G); }
-.pc .tile .tt { font-size: 1.5cqw; font-weight: 600; line-height: 1.08; } .pc .tile .ts { font-size: .95cqw; color: var(--M); line-height: 1.15; margin-top: .1cqw;
+.pc .tile.sel { border-color: var(--G); outline: .12cqw solid var(--G); outline-offset: -.36cqw; } .pc .tile.sel .tt { color: var(--G); }
+/* on the menu the console's line holds the pointed-at module's one-liner and its citation, at a fixed height so the grid never jumps */
+#panel .pc .coachline.onmenu { height: 6.6cqw; overflow: hidden; box-sizing: border-box; }
+#panel .pc .coachline.onmenu .txt { font-size: 1.45cqw; }
+.pc .coachline .ref { font-size: 1.25cqw; line-height: 1.25; color: var(--M); margin-top: .2cqw; letter-spacing: .02em; text-transform: none;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.pc .tile .tb { font-size: .9cqw; color: var(--A); letter-spacing: .08em; }
+.pc .coachline .ref:empty { display: none; }
 .pc .crt { flex: 1; position: relative; border: .12cqw solid var(--M); background: #000; min-width: 0; }
 .pc .crt canvas, .pc .crt svg.res { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .pc .crt svg.res { display: none; } .pc .crt.showres svg.res { display: block; } .pc .crt.showres canvas { visibility: hidden; }
@@ -106,27 +124,59 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
     el.innerHTML = `<div class="crtwrap z0">${crtCase()}<div class="screen pc off p0">
       <svg class="t hd" viewBox="0 0 640 40">${seg("PERCEPTION CONSOLE", 16, 9, 16, "sW", 1.5)}${seg("BOOTH 114  ADLINE LAB", 236, 12, 5, "sM", .8)}<g id="pcmode"></g></svg>
       <div class="pcbody"></div>
-      <div class="coachline"><span class="who" style="background:var(--G)">CONSOLE</span> <span class="txt" style="color:var(--G)"></span></div>
+      <div class="coachline"><span class="who" style="background:var(--G)">CONSOLE</span> <span class="txt" style="color:var(--G)"></span><div class="ref"></div></div>
       <div class="bar"><span class="status"></span><span class="btns" style="display:flex;gap:.6cqw;flex-wrap:wrap;align-items:center"></span><button data-b="back" class="off">${standalone ? "MENU" : "CLOSE"}</button></div></div></div><svg class="zoomdash t" viewBox="0 0 640 360">${zoomDashes()}</svg>`;
-    const body = el.querySelector(".pcbody"), txt = el.querySelector(".coachline .txt"), btns = el.querySelector(".btns"), status = el.querySelector(".status"), backB = el.querySelector("[data-b=back]");
+    const body = el.querySelector(".pcbody"), coach = el.querySelector(".coachline"), txt = coach.querySelector(".txt"), refE = coach.querySelector(".ref"), btns = el.querySelector(".btns"), status = el.querySelector(".status"), backB = el.querySelector("[data-b=back]");
     const mode = (t) => { el.querySelector("#pcmode").innerHTML = t ? chip(t, 640 - segW(t, 5) - 18, 13, 5, "fA") : ""; };
     const say = (t) => { txt.textContent = t; };
 
-    /* ---------------- the menu ---------------- */
+    /* ---------------- the menu: a library browser ---------------- */
+    // shelf and selection survive a run, so MENU comes back to where you were
+    let shelf = null, sel = null, ptr = "mouse";
+    const greet = standalone ? "A library of perception experiments. Pick a shelf, then a tile: one tap says what it is and where it comes from, a second tap runs it."
+      : "The booth's computer. Somebody left it logged in as PS327. Pick a shelf, then an experiment.";
+    const byId = (id) => MODULES.find(x => x.id === id);
+    const shelfMods = () => MODULES.filter(m => m.group === shelf);
+    // the console line: the module's one-liner, and its citation(s) underneath
+    const info = (m) => { if (!m) { say(greet); refE.textContent = ""; return; } say(`${m.title}: ${m.sub || ""}`); refE.textContent = refsOf(m).join("  \u00b7  "); };
     function menu() {
-      run = null; mode(""); status.textContent = done ? `${done} RUN${done > 1 ? "S" : ""} THIS SESSION` : ""; btns.innerHTML = ""; backB.textContent = standalone ? "ABOUT" : "CLOSE";
-      const groups = ["AMBIGUOUS", "ILLUSIONS", "CLASSICS", "PS 327 LABS"];
-      body.innerHTML = `<div class="menu">${groups.map(g => `<div class="col"><div class="grp">${g}</div>${MODULES.filter(m => m.group === g).map(m =>
-        `<div class="tile" data-mod="${m.id}">${m.tag ? `<div class="tb">${m.tag}</div>` : ""}<div class="tt">${m.title}</div></div>`).join("")}</div>`).join("")}</div>`;
-      // hovering a tile puts its one-liner on the console's line; leaving puts the greeting back
-      const greet = standalone ? "Pick a demo, a classic experiment or a lab. Everything runs here; results can be saved as CSV." : "The booth's computer. Somebody left it logged in as PS327. Pick a demo, a classic experiment or a lab.";
-      body.querySelectorAll(".tile").forEach(t => { const m = MODULES.find(x => x.id === t.dataset.mod);
-        t.addEventListener("pointerenter", () => { if (!run) say(`${m.title}: ${m.sub}`); }); t.addEventListener("pointerleave", () => { if (!run) say(greet); }); });
-      say(standalone ? "Pick a demo, a classic experiment or a lab. Everything runs here; results can be saved as CSV." : "The booth's computer. Somebody left it logged in as PS327. Pick a demo, a classic experiment or a lab.");
+      run = null; mode(`LIBRARY ${MODULES.length}`); status.textContent = done ? `${done} RUN${done > 1 ? "S" : ""} THIS SESSION` : ""; btns.innerHTML = ""; backB.textContent = standalone ? "ABOUT" : "CLOSE";
+      coach.classList.add("onmenu");
+      const groups = groupsOf(MODULES); if (!groups.includes(shelf)) shelf = groups[0];
+      const mods = shelfMods(); if (sel && !mods.some(m => m.id === sel)) sel = null;
+      body.innerHTML = `<div class="lib"><div class="shelves">${groups.map(g => `<div class="shelf${g === shelf ? " on" : ""}" data-grp="${g}">${g}<span class="n">${MODULES.filter(m => m.group === g).length}</span></div>`).join("")}</div>
+        <div class="tiles">${mods.map((m, i) => `<div class="tile" data-mod="${m.id}"><div class="tr"><span class="tb">${creditOf(m)}</span>${i < 10 ? `<span class="no">${(i + 1) % 10}</span>` : ""}</div><div class="tt">${m.title}</div></div>`).join("")}</div></div>`;
+      // pointing at a tile shows it on the console line; leaving shows the selected one again (or the greeting)
+      body.querySelectorAll(".tile").forEach(t => {
+        t.addEventListener("pointerenter", () => { if (!run) info(byId(t.dataset.mod)); });
+        t.addEventListener("pointerleave", () => { if (!run) info(sel && byId(sel)); }); });
+      paint();
+    }
+    function paint(scroll = false) {
+      body.querySelectorAll(".tile").forEach(t => t.classList.toggle("sel", t.dataset.mod === sel));
+      btns.innerHTML = sel ? `<button data-b="start">START</button><span class="kb">ENTER</span>` : "";
+      info(sel && byId(sel));
+      if (scroll && sel) body.querySelector(`.tile[data-mod="${sel}"]`)?.scrollIntoView({ block: "nearest" });
+    }
+    function pick(id) { if (sel === id) return launch(id); sel = id; sfx("key"); paint(true); }
+    function launch(id) { const m = byId(id); if (!m) return; sel = id; sfx("select"); start(m); }
+    function toShelf(g) { if (g === shelf) return; shelf = g; sel = null; sfx("key"); menu(); }
+    function menuKey(e) {
+      const k = e.key, mods = shelfMods(), groups = groupsOf(MODULES), gi = groups.indexOf(shelf), i = mods.findIndex(m => m.id === sel);
+      const grid = body.querySelector(".tiles"), cols = grid ? getComputedStyle(grid).gridTemplateColumns.split(" ").length : 4;
+      const step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -cols, ArrowDown: cols }[k];
+      if (k === "Tab" || k === "[" || k === "]" || k === "PageUp" || k === "PageDown") {
+        const d = k === "[" || k === "PageUp" || (k === "Tab" && e.shiftKey) ? -1 : 1; toShelf(groups[(gi + d + groups.length) % groups.length]); }
+      else if (step) { if (!mods.length) return true; sel = mods[i < 0 ? 0 : Math.max(0, Math.min(mods.length - 1, i + step))].id; sfx("key"); paint(true); }
+      else if (k === "Enter" || k === " ") { if (sel) launch(sel); }
+      else if (/^[0-9]$/.test(k)) { const m = mods[k === "0" ? 9 : +k - 1]; if (m) pick(m.id); }
+      else return false;
+      return true;
     }
 
     /* ---------------- running a module ---------------- */
     async function start(m) {
+      coach.classList.remove("onmenu"); refE.textContent = "";
       mode(m.title.length > 26 ? m.tag || m.group : m.title); backB.textContent = "MENU";
       body.innerHTML = `<div class="crt"><canvas width="${W}" height="${H}"></canvas><svg class="res t" viewBox="0 0 ${W} ${H}"></svg></div>`;
       const canvas = body.querySelector("canvas"), g = canvas.getContext("2d"), crt = body.querySelector(".crt"), res = body.querySelector("svg.res");
@@ -218,23 +268,29 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
     function stopRun() { if (run) run.stop = true; if (pending) pending(); btns.onclick = null; lastRes = null; }
     const onClick = (e) => {
       const t = e.target.closest ? e.target : null; if (!t) return;
-      const m = t.closest("[data-mod]"); if (m && !run) { sfx("select"); start(MODULES.find(x => x.id === m.dataset.mod)); return; }
+      const sh = t.closest("[data-grp]"); if (sh && !run) { toShelf(sh.dataset.grp); return; }
+      // a mouse click runs (pointing already showed what it is); a tap selects first, and a second tap runs
+      const m = t.closest("[data-mod]"); if (m && !run) { if (ptr === "mouse") launch(m.dataset.mod); else pick(m.dataset.mod); return; }
+      if (t.closest("[data-b=start]") && !run && sel) { launch(sel); return; }
       const b = t.closest("[data-b=back]");
       if (b) { if (run) { stopRun(); sfx("cancel"); menu(); } else if (standalone) about(); else finish(); }
     };
-    const onKey = (e) => { if (e.key === "Escape") { e.stopPropagation(); if (run) { stopRun(); menu(); } else if (!standalone) finish(); } };
-    function about() { say("Ported from the PS 327 Perception lab MATLAB code (magnitude estimation, Muller-Lyer, visual search, lightness, motion aftereffect), plus a replication of Carrasco, Ling & Read (2004), Nature Neuroscience 7:308. Stimuli assume a linear display; contrast and grey levels are nominal."); }
+    const onKey = (e) => { if (e.key === "Escape") { e.stopPropagation(); if (run) { stopRun(); menu(); } else if (!standalone) finish(); return; }
+      if (!run && !leaving && !e.metaKey && !e.ctrlKey && !e.altKey && menuKey(e)) { e.preventDefault(); e.stopPropagation(); } };
+    const onPtr = (e) => { ptr = e.pointerType || "mouse"; };
+    function about() { sel = null; paint(); say("Classic perception experiments, each the simplest faithful version that runs on any screen, plus ports of the PS 327 Perception lab MATLAB code. Point at a tile for its source. Sizes in degrees and contrasts are nominal: the results worth comparing are the differences between conditions.");
+      refE.textContent = "Carrasco, M., Ling, S., & Read, S. (2004). Attention alters appearance. Nature Neuroscience, 7(3), 308\u2013313."; }
     let leaving = false;
     function finish() {
       if (leaving) return; leaving = true;
-      stopRun(); el.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey, true);
+      stopRun(); el.removeEventListener("click", onClick); el.removeEventListener("pointerdown", onPtr, true); window.removeEventListener("keydown", onKey, true);
       const wrapE = el.querySelector(".crtwrap"), scr = el.querySelector(".screen.pc"); sfx("cancel");
       const steps = [[() => { scr.className = "screen pc p2"; }, 0], [() => { scr.className = "screen pc off p1"; }, 60], [() => { scr.className = "screen pc off p0"; }, 130],
         [() => { scr.className = "screen pc off"; }, 200], [() => { el.classList.add("zooming"); wrapE.className = "crtwrap z2"; }, 300], [() => { wrapE.className = "crtwrap z1"; }, 360],
         [() => { wrapE.className = "crtwrap z0"; }, 420], [() => { el.classList.remove("show", "zooming"); el.innerHTML = ""; resolve({ runs: done }); }, 480]];
       for (const [fn, ms] of steps) setTimeout(fn, ms);
     }
-    el.addEventListener("click", onClick); window.addEventListener("keydown", onKey, true);
+    el.addEventListener("click", onClick); el.addEventListener("pointerdown", onPtr, true); window.addEventListener("keydown", onKey, true);
     menu();
     // ENTRY: the monitor rushes up out of the room (the case in four stepped sizes, speed dashes on the middle two),
     // then the tube warms up: a dot, a line, a band, the picture. Poses, not tweens.
@@ -249,6 +305,15 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
   });
 }
 
+// a tile's credit chip: the module's tag, or "FIRST AUTHOR YEAR" from its first citation
+function creditOf(m) {
+  if (m.tag) return m.tag;
+  const r = refsOf(m)[0]; if (!r) return m.group;
+  const y = (r.match(/\((?:c\. )?(\d{4})/) || [])[1] || "", who = r.slice(0, Math.max(0, r.search(/\s\((?:c\. )?\d{4}/))).replace(/&/g, "");
+  const names = who.split(/,\s*/).map(x => x.trim()).filter(x => x && !/^([A-Z]\.\s*)+$/.test(x));
+  const lead = names.length > 2 ? `${names[0]} ET AL.` : names.join(" & ");
+  return `${lead} ${y}`.trim().toUpperCase();
+}
 function download(name, text) {
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "text/csv" })); a.download = name; document.body.appendChild(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);

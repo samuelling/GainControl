@@ -46,6 +46,9 @@ async function magEst(ctx, P) {
 }
 
 export const HV = { id: "hv", group: "PS 327 LABS", tag: "LAB 01", title: "Horizontal-vertical illusion", sub: "Magnitude estimation of line length, horizontal vs vertical.",
+  ref: [
+    "Fick, A. (1851). De errore quodam optico asymmetria bulbi effecto. Marburg: J. A. Koch.",
+    "Stevens, S. S. (1957). On the psychophysical law. Psychological Review, 64(3), 153–181."],
   blurb: "Lines flash for a second, horizontal or vertical, 70 to 130 pixels long. After each one, type a number for how long it looked, where the standard line is 100.",
   instructions: { lines: ["A line flashes for a second, either horizontal or vertical. Lengths vary.", "First you'll see the standard line, which counts as 100. After each line, type a number for how long it looked compared with the standard: twice as long is 200, half as long is 50.", "Use the number keys, then ENTER."],
     keys: [["0-9 .", "TYPE THE LENGTH"], ["ENTER", "SUBMIT"], ["BKSP", "DELETE"]] },
@@ -66,6 +69,7 @@ export const HV = { id: "hv", group: "PS 327 LABS", tag: "LAB 01", title: "Horiz
   } };
 
 export const ML = { id: "ml", group: "PS 327 LABS", tag: "LAB 02", title: "Muller-Lyer illusion", sub: "Fins in, fins out: three ways to measure it.",
+  ref: "Müller-Lyer, F. C. (1889). Optische Urtheilstäuschungen. Archiv für Anatomie und Physiologie, Physiologische Abtheilung, Supplement-Band, 263–270.",
   blurb: "The same line looks shorter between arrowheads and longer between tails. Measure it by magnitude estimation, by adjustment, or with constant stimuli and a psychometric function.",
   instructions: { lines: ["Lines with arrowheads (fins in) or tails (fins out) at their ends. The fins change how long the line looks.", "You'll choose a method. MAGNITUDE ESTIMATION: type a number for each line's length, where the standard is 100. ADJUSTMENT: stretch one line until it matches the other. CONSTANT STIMULI: say which of two lines is longer.", "Judge the line itself, not the fins."],
     keys: [["0-9 ENTER", "ESTIMATION: TYPE A NUMBER"], ["UP DOWN", "ADJUSTMENT: LONGER / SHORTER"], ["SPACE", "ADJUSTMENT: IT MATCHES"], ["D / K", "PSE: LEFT / RIGHT LONGER"]] },

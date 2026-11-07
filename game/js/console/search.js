@@ -19,6 +19,7 @@ function positions(n, cx, cy) {
 }
 
 export const SEARCH = { id: "search", group: "PS 327 LABS", tag: "LAB 03", title: "Visual search", sub: "Pop-out vs conjunction: does the target find you?",
+  ref: "Treisman, A. M., & Gelade, G. (1980). A feature-integration theory of attention. Cognitive Psychology, 12(1), 97–136.",
   blurb: "Find the target as fast as you can. K if it's there, D if it isn't. Some targets pop out; others you have to hunt for, item by item.",
   instructions: { lines: ["A screen full of items appears. Somewhere among them there may be ONE target that is different from the rest.", "Decide as fast as you can whether the target is there. Try not to make mistakes.", "You'll pick the kind of search: colour pop-out, a colour-and-shape conjunction, or tilted lines."],
     keys: [["K", "TARGET PRESENT"], ["D", "TARGET ABSENT"]] },

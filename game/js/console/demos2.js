@@ -44,6 +44,7 @@ const f2 = (v) => isFinite(v) ? v.toFixed(2) : "-", f1 = (v) => isFinite(v) ? v.
 
 /* ---------------- Kanizsa (1955) ---------------- */
 export const KANIZSA = { id: "kanizsa", group: "ILLUSIONS", title: "Kanizsa triangle", sub: "A bright triangle with edges. None of it is on the screen.",
+  ref: "Kanizsa, G. (1955). Margini quasi-percettivi in campi con stimolazione omogenea. Rivista di Psicologia, 49(1), 7–30.",
   blurb: "Three discs with bites taken out, and a white triangle that is whiter than white, with edges where there is no change in light at all. Shrink the discs until the edges go. (Kanizsa, 1955.)",
   instructions: { lines: ["You will see three black discs with bites taken out of them.", "Look for the edges of a white triangle between them.", "Make the discs smaller until the triangle's edges disappear, then press SPACE.", "Try turning the discs around, or flipping black and white, along the way."],
     keys: [["UP", "BIGGER DISCS"], ["DOWN", "SMALLER DISCS"], ["R", "TURN THE DISCS AROUND"], ["O", "OUTLINE TRIANGLE ON / OFF"], ["N", "NEGATIVE"], ["SPACE", "THE EDGES ARE GONE"]] },
@@ -78,6 +79,10 @@ export const KANIZSA = { id: "kanizsa", group: "ILLUSIONS", title: "Kanizsa tria
 
 /* ---------------- the Hermann grid, the scintillating grid, and the wavy grid ---------------- */
 export const GRIDS = { id: "grids", group: "ILLUSIONS", title: "Scintillating grids", sub: "Dark dots that are only where you're not looking.",
+  ref: [
+    "Schrauf, M., Lingelbach, B., & Wist, E. R. (1997). The scintillating grid illusion. Vision Research, 37(8), 1033–1038.",
+    "Hermann, L. (1870). Eine Erscheinung simultanen Contrastes. Pflügers Archiv für die gesammte Physiologie, 3, 13–15.",
+    "Geier, J., Bernáth, L., Hudák, M., & Séra, L. (2008). Straightness as the main factor of the Hermann grid illusion. Perception, 37(5), 651–665."],
   blurb: "Grey smudges at the crossings of a Hermann grid (Hermann, 1870), black dots flashing in the white discs of a scintillating grid (Schrauf, Lingelbach & Wist, 1997). Then bend the streets (Geier et al., 2008) and watch a textbook explanation fall over.",
   instructions: { lines: ["You will see a grid of black squares with light streets between them.", "Look around the grid. Notice what appears at the crossings you are not looking at.", "Look straight at one crossing: is anything there?", "Then make the streets wavy and look again."],
     keys: [["H", "HERMANN GRID"], ["S", "SCINTILLATING GRID"], ["W", "STRAIGHT / WAVY STREETS"], ["SPACE", "DONE"]] },
@@ -107,6 +112,7 @@ export const GRIDS = { id: "grids", group: "ILLUSIONS", title: "Scintillating gr
 
 /* ---------------- motion-induced blindness: Bonneh, Cooperman & Sagi (2001) ---------------- */
 export const MIB = { id: "mib", group: "ILLUSIONS", title: "Motion-induced blindness", sub: "Three yellow dots. Bright, steady, and gone.",
+  ref: "Bonneh, Y. S., Cooperman, A., & Sagi, D. (2001). Motion-induced blindness in normal observers. Nature, 411(6839), 798–801.",
   blurb: "Three bright yellow dots sit perfectly still while a blue pattern turns behind them. Keep your eyes on the centre and they vanish, one or two at a time, for seconds. (Bonneh, Cooperman & Sagi, 2001, Nature 411:798.)",
   instructions: { lines: ["Keep your eyes on the white dot in the centre the whole time.", "Three yellow dots sit still while a blue pattern moves behind them.", "Press and hold SPACE whenever at least one yellow dot has disappeared. Let go when they are all back.", "There are two runs: one with the blue pattern turning, one with it still."],
     keys: [["SPACE (HOLD)", "A YELLOW DOT IS GONE"]] },
@@ -146,6 +152,7 @@ export const MIB = { id: "mib", group: "ILLUSIONS", title: "Motion-induced blind
 
 /* ---------------- Troxler (1804): peripheral fading ---------------- */
 export const TROXLER = { id: "troxler", group: "ILLUSIONS", title: "Troxler fading", sub: "Hold still and the edge of the world fills in.",
+  ref: "Troxler, I. P. V. (1804). Über das Verschwinden gegebener Gegenstände innerhalb unseres Gesichtskreises. In K. Himly & J. A. Schmidt (Eds.), Ophthalmologische Bibliothek, 2(2), 1–53. Jena: Frommann.",
   blurb: "A faint pink blob off to the side. Don't look at it. If your eyes hold still, it fades into the grey, because neurons stop signalling what doesn't change. Blurred versus sharp edges, timed. (Troxler, 1804.)",
   instructions: { lines: ["Keep your eyes on the black cross in the centre. Do not look at the pink blob.", "After a while the blob will fade into the grey background.", "Press SPACE the moment it is completely gone.", "If nothing happens after 20 seconds, the trial ends by itself."],
     keys: [["SPACE", "THE BLOB IS GONE"]] },
@@ -175,6 +182,9 @@ export const TROXLER = { id: "troxler", group: "ILLUSIONS", title: "Troxler fadi
 
 /* ---------------- the lilac chaser (Jeremy Hinton; Bach, 2005) ---------------- */
 export const LILAC = { id: "lilac", group: "ILLUSIONS", title: "Lilac chaser", sub: "Twelve lilac discs. A green one that isn't there.",
+  ref: [
+    "Hinton, J. (c. 2005). Lilac chaser [visual demonstration; no formal publication]. Popularised on M. Bach's website, Optical Illusions & Visual Phenomena.",
+    "Bach, M. (2014). Visual illusions on the internet: 15 years of change in technology and user behaviour. Perception, 43(9), 873–880."],
   blurb: "Twelve blurred lilac discs in a ring, one missing at a time, the gap running round. Fixate the cross: a green disc chases round and the lilac ones fade away. Three effects at once: Troxler fading, a negative afterimage and apparent motion. (Jeremy Hinton, after Bach, 2005.)",
   instructions: { lines: ["Keep your eyes on the black cross in the centre.", "Twelve lilac discs sit in a ring; one at a time goes missing.", "Watch what travels round the ring, and what happens to the lilac discs.", "Try sharp discs and a slower gap. At the end you will be asked what you saw."],
     keys: [["B", "BLURRED / SHARP DISCS"], ["S", "FAST / SLOW"], ["F", "CROSS ON / OFF"], ["SPACE", "DONE"]] },
@@ -210,6 +220,7 @@ function scene(ctx, map) {
 }
 const ADAPT = (c) => { const Y = luma(c); return c.map(v => cl(Y - 1.3 * (v - Y))); }, GREY = (c) => { const v = cl(128 + (luma(c) - 128) * .55); return [v, v, v]; };
 export const AFTER = { id: "afterimage", group: "ILLUSIONS", title: "Colour afterimage", sub: "Stare at a wrong-coloured picture, then see a grey one in colour.",
+  ref: "Daw, N. W. (1962). Why after-images are not seen in normal circumstances. Nature, 196(4860), 1143–1145.",
   blurb: "A house in the wrong colours: orange sky, magenta grass, a cyan house. Stare at the dot on it, then the picture turns grey and fills with the right colours. Your cones and the colour-opponent cells after them have adapted, and the grey picture borrows their imbalance. Timed. (After Sadowski's Spanish castle.)",
   instructions: { lines: ["Keep your eyes on the small dot in the middle of the picture. Don't look around.", "After the countdown, the picture turns grey.", "Keep looking at the dot. Press SPACE when the colours you see in the grey picture have gone."],
     keys: [["SPACE", "THE COLOUR HAS GONE"]] },
@@ -231,6 +242,7 @@ export const AFTER = { id: "afterimage", group: "ILLUSIONS", title: "Colour afte
 
 /* ---------------- the stepping feet: Anstis (2001) ---------------- */
 export const FEET = { id: "feet", group: "ILLUSIONS", title: "Stepping feet", sub: "Two bars glide side by side. Or do they walk?",
+  ref: "Anstis, S. (2001). Footsteps and inchworms: Illusions show that contrast affects apparent speed. Perception, 30(7), 785–794.",
   blurb: "A yellow bar and a dark blue bar slide across stripes at exactly the same steady speed. They seem to take turns, step, step, like feet, because apparent speed goes with contrast and the stripes change each bar's contrast in opposite directions. (Anstis, 2001, Perception 30:785.)",
   instructions: { lines: ["A yellow bar and a blue bar move back and forth together, at a constant speed.", "Watch them, then look a little above them. Do they move smoothly, or take turns?", "Take the stripes away to see what they are really doing."],
     keys: [["S", "STRIPES ON / OFF"], ["P", "PAUSE"], ["SPACE", "DONE"]] },
@@ -252,6 +264,9 @@ export const FEET = { id: "feet", group: "ILLUSIONS", title: "Stepping feet", su
 
 /* ---------------- peripheral drift: Fraser & Wilcox (1979), Kitaoka & Ashida (2003) ---------------- */
 export const DRIFT = { id: "drift", group: "ILLUSIONS", title: "Peripheral drift", sub: "Two still wheels that turn. Make them stop.",
+  ref: [
+    "Kitaoka, A., & Ashida, H. (2003). Phenomenal characteristics of the peripheral drift illusion. VISION (Journal of the Vision Society of Japan), 15(4), 261–262.",
+    "Fraser, A., & Wilcox, K. J. (1979). Perception of illusory movement. Nature, 281(5732), 565–566."],
   blurb: "Rings of black, dark grey, white and light grey. Nothing moves, yet out of the corner of your eye they turn, black towards dark grey, white towards light grey. Spin them the other way for real until they stand still. (Fraser & Wilcox, 1979; Kitaoka & Ashida's rotating snakes, 2003.)",
   instructions: { lines: ["Keep your eyes on the cross in the centre. The wheels are to the left and right.", "They may seem to turn, most of all just after a blink or a glance.", "Make them really turn the other way until, from the centre, they look still. Then press SPACE.", "The control wheels have no light-to-dark order and should not drift at all."],
     keys: [["LEFT", "TURN ANTICLOCKWISE"], ["RIGHT", "TURN CLOCKWISE"], ["C", "CONTROL WHEELS"], ["SPACE", "THEY LOOK STILL"]] },
@@ -279,6 +294,7 @@ export const DRIFT = { id: "drift", group: "ILLUSIONS", title: "Peripheral drift
 
 /* ---------------- Ebbinghaus / Titchener circles ---------------- */
 export const EBBING = { id: "ebbinghaus", group: "ILLUSIONS", title: "Ebbinghaus circles", sub: "Same orange circle. Big neighbours make it small.",
+  ref: "Titchener, E. B. (1901). Experimental psychology: A manual of laboratory practice. Vol. I: Qualitative experiments. New York: Macmillan.",
   blurb: "An orange circle ringed by big circles looks smaller than one ringed by little ones. Adjust one to match the other; then the same with no rings, to show you can do it. Six settings. (Ebbinghaus, popularised by Titchener, 1901.)",
   instructions: { lines: ["You will see two orange circles, each with its own ring of grey circles.", "Change the size of the adjustable orange circle until the two orange circles look the same size.", "Ignore the grey circles. Press SPACE when they match.", "There are six settings."],
     keys: [["UP", "BIGGER"], ["DOWN", "SMALLER"], ["SPACE", "THEY MATCH"]] },

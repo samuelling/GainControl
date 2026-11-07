@@ -42,6 +42,7 @@ function plaid(ctx, UT, LT, control, s = 1.15) {
 }
 
 export const ADELSON = { id: "adelson", group: "PS 327 LABS", tag: "LAB 04", title: "Adelson's corrugated plaid", sub: "Same grey, different lightness, depending on depth.",
+  ref: "Adelson, E. H. (1993). Perceptual organization and the judgment of brightness. Science, 262(5142), 2042–2044.",
   blurb: "Two small patches in the middle of a folded plaid. Adjust the lower one until it looks the same shade of grey as the upper one. Then do it again on a control figure with the same neighbours but no fold.",
   instructions: { lines: ["A folded, chequered plaid with two small grey patches in the middle.", "Adjust the LOWER patch until it looks the same shade of grey as the UPPER patch. Go by what you see, not by what you think the paint is.", "Later you'll do the same on a control figure with no fold."],
     keys: [["UP", "LOWER PATCH LIGHTER"], ["DOWN", "LOWER PATCH DARKER"], ["LEFT RIGHT", "SMALLER / BIGGER STEPS"], ["SPACE", "THEY MATCH"]] },

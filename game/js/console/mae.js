@@ -23,6 +23,9 @@ async function play(ctx, corr, secs, col) {
 }
 
 export const MAE = { id: "mae", group: "PS 327 LABS", tag: "LAB 05", title: "Motion aftereffect", sub: "Stare at expanding dots, then watch still-ish ones contract.",
+  ref: [
+    "Addams, R. (1834). An account of a peculiar optical phænomenon seen after having looked at a moving body. London and Edinburgh Philosophical Magazine and Journal of Science, 5(29), 373–374.",
+    "Blake, R., & Hiris, E. (1993). Another means for measuring the motion aftereffect. Vision Research, 33(11), 1589–1592."],
   blurb: "Keep your eyes on the centre dot the whole time. Green dots stream for a while (adaptation); then red dots flash for half a second, some moving out, some in. Say which way the red ones went overall: D inward, K outward.",
   instructions: { lines: ["Keep your eyes on the centre dot for the whole run, even while the dots are moving.", "First, green dots stream for a while: that's the adaptation. Then red dots flash for half a second, some moving in and some moving out.", "Report which way the red dots went overall."],
     keys: [["D", "INWARD"], ["K", "OUTWARD"]] },

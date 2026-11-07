@@ -22,6 +22,7 @@ export function gabor(g, x, y, { c, sf, ori, ppd, size = 2, sd = .4, bg = .5 }) 
 
 export const CARRASCO = { id: "carrasco", group: "CLASSICS", tag: "CARRASCO, LING & READ 2004", title: "Attention alters appearance",
   sub: "Does a flicker of attention make a stimulus look higher in contrast?",
+  ref: "Carrasco, M., Ling, S., & Read, S. (2004). Attention alters appearance. Nature Neuroscience, 7(3), 308–313.",
   blurb: "Keep your eyes on the centre. A dot will flash, then two striped patches. Report the tilt of the patch that looks HIGHER IN CONTRAST: left patch Z (tilts left) or X (tilts right); right patch . (left) or / (right). Ignore the dot. It tells you nothing.",
   instructions: { lines: ["Keep your eyes on the small square in the centre for the whole trial. Don't look at the patches.", "A dot flashes briefly, then two striped patches flash at once, one left and one right. Each patch is tilted left or right.", "Decide which patch looked HIGHER IN CONTRAST (the stripes more vivid), then report the tilt of that patch. The dot tells you nothing about the answer."],
     keys: [["Z", "LEFT PATCH TILTS LEFT"], ["X", "LEFT PATCH TILTS RIGHT"], [".", "RIGHT PATCH TILTS LEFT"], ["/", "RIGHT PATCH TILTS RIGHT"]] },
