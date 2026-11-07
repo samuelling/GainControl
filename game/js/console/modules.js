@@ -9,7 +9,8 @@ import { SEARCH } from "./search.js";
 import { ADELSON } from "./lightness.js";
 import { MAE } from "./mae.js";
 import { LIB_VISION } from "./lib_vision.js";
-export const MODULES = [NECKER, RUBIN, QUARTET, SPHERE, KANIZSA, GRIDS, MIB, TROXLER, LILAC, AFTER, FEET, DRIFT, EBBING, CARRASCO, CSF, POSNER, ROTATION, CROWDING, NUMBER, HV, ML, SEARCH, ADELSON, MAE, ...LIB_VISION];
+import { LIB_ADJUST } from "./lib_adjust.js";
+export const MODULES = [NECKER, RUBIN, QUARTET, SPHERE, KANIZSA, GRIDS, MIB, TROXLER, LILAC, AFTER, FEET, DRIFT, EBBING, CARRASCO, CSF, POSNER, ROTATION, CROWDING, NUMBER, HV, ML, SEARCH, ADELSON, MAE, ...LIB_VISION, ...LIB_ADJUST];
 
 // the shelves, in the order the menu shows them
 export const GROUPS = ["AMBIGUOUS", "ILLUSIONS", "CLASSICS", "PS 327 LABS", "ATTENTION", "ACTION", "MEMORY", "LEARNING", "FORM", "MOTION", "NUMBER",
