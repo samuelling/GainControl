@@ -126,8 +126,12 @@ function tube(G) {
 // the access hatch: the tube drops down the right wall to a junction box at reachable height
 function hatch(G) {
   const k1 = .71, k2 = .81, km = (k1 + k2) / 2;
-  let s = `<g data-hs="hatch">${ln(P(TX, TY1, km - .015), P(640, TY1, km - .015), "sW")}${ln(P(TX, TY2, km + .015), P(640, TY2, km + .015), "sW")}
-    ${ln(P(640, TY1, km - .015), P(640, 150, km - .015), "sW")}${ln(P(640, TY2, km + .015), P(640, 150, km + .015), "sW")}`;
+  // the tube's run across to the right wall and down to the box is still the tube (LISTEN anywhere along it): only the box is the hatch
+  const r1 = P(TX, TY1, km - .015), r2 = P(640, TY2, km + .015), d1 = P(640, TY1, km - .015), d2 = P(640, 150, km + .015);
+  let s = `<g data-hs="tube">${ln(P(TX, TY1, km - .015), P(640, TY1, km - .015), "sW")}${ln(P(TX, TY2, km + .015), P(640, TY2, km + .015), "sW")}
+    ${ln(P(640, TY1, km - .015), P(640, 150, km - .015), "sW")}${ln(P(640, TY2, km + .015), P(640, 150, km + .015), "sW")}
+    ${hit(fx(Math.min(r1[0], r2[0]) - 4), fx(Math.min(r1[1], r2[1]) - 6), fx(Math.abs(r2[0] - r1[0]) + 8), fx(Math.abs(r2[1] - r1[1]) + 12))}
+    ${hit(fx(Math.min(d1[0], d2[0]) - 6), fx(d1[1]), fx(Math.abs(d2[0] - d1[0]) + 12), fx(d2[1] - d1[1] - 2))}</g><g data-hs="hatch">`;
   const box = quad(640, 150, 196, k1, k2), pnl = quad(640, 156, 190, k1 + .015, k2 - .015);
   s += `<polygon class="k sW mech" points="${poly(...box)}"/>${chip("TUBE", box[0][0] - 2, box[0][1] - 11, 3.6, "fW")}`;
   if (G.flags.hatchOpen) {
@@ -180,7 +184,7 @@ export default {
   floor: { yMin: 236, yMax: 287, margin: 16 },
   entries: { fromServer: [578, 280, -1] },
   draw(G) { return { back: corridor() + pipes() + bricked(G) + (G.act === 4 ? coatCheck(G) : "") + tube(G) + hatch(G) + valve() + backDoor(), sortables: [] }; },
-  stand: { bricked: [152, 244], tube: [380, 252], hatch: [522, 262], pipes: [440, 246], valve: [96, 282], back: [578, 280],
+  stand: { bricked: [152, 244], tube: [452, 254], hatch: [522, 262], pipes: [440, 246], valve: [96, 282], back: [578, 280],
     rack: [246, 246], reel: [290, 246], map: [200, 248] },
   labels: {
     night: { bricked: { use: "KNOCK", talk: "LISTEN" }, hatch: { use: "OPEN" }, back: { go: "BACK", use: "BACK" }, valve: { use: "TURN" }, pipes: { use: "TOUCH" }, tube: { use: "LISTEN" },
