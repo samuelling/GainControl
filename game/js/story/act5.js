@@ -175,6 +175,11 @@ async function climax(api) {
   for (const i of [0, 1, 2]) { await frame("bore", i, 240); if (i === 2) api.sfx("crash"); }
   F.quorumIn = true; endFx(); await shake(3, 3);
   await api.say("After fifty years on the Table, he's finally been scanned.\n\nMORRIS (LOOKING DOWN THROUGH THE HOLE)|…Did I do that? I did that.");
+  // the verdict, whatever else is true: under the hoods, a lunch table for people who never got invited to one
+  await api.say("In the dust, the members get up. Their clasps are still stuck to the ring, so the hoods just slide off.\n\nUnder them: a study section regular. An associate dean. The man who reviewed Nell's fellowship. A lanyard from a 2009 conference. They stand there in their robes, blinking, holding them shut.");
+  await api.say("IRIS|Look at them, Nell. Fifty years of passwords and candles and a skull gavel. Do you know what this is?\n\nIRIS|A sorority. For people who spent every Friday night of their lives in a library and never got the letter. Then somebody finally sent them one, on cream paper, and they couldn't say no.");
+  await api.say("NELL|They ran grant panels. They ended careers. They killed Gus.\n\nIRIS|Some of them did. Some of it's true. And if none of it were true, this still would be: grown scientists, who should know better, in matching robes, toasting a schism nobody remembers.\n\nNELL|That's sad.\n\nIRIS|It's sad. It's also pathetic. You're allowed both, dear.");
+  await api.say("A MEMBER (UNHOODED, VERY QUIETLY)|…Is there still dinner on Friday?");
   return ending(api, F.archiveSent ? "accepted" : "major");
 }
 const ENDINGS = {
@@ -183,7 +188,7 @@ const ENDINGS = {
   major: { title: "MAJOR REVISIONS", chip: "THE TABLE IS STOPPED. THE ARCHIVE IS GONE.", bodies: "BODIES 05.", next: "NO PROOF.  NOT YET.",
     epilogue: "The Table is stopped. Quorum is pulled out of the bore of a 3T, and then into custody. But the magnet took the Archive with the mill, and without the rolls, it's a story.\n\nNell passes her defense, with major revisions.\n\nThe last shot: Gus's empty desk. His laptop is still on, still running the replication. In the other window, Dendroboard: one unread reply to his last thread. Somewhere in the walls, a canister rattles." },
   inducted: { title: "INDUCTED", chip: "CONGRATULATIONS ON YOUR R01", bodies: "BODIES 05.  YOURS, SPIRITUALLY.", next: "THE END.",
-    epilogue: "NELL|Yes.\n\nTwelve hoods applaud, softly, like a grant panel. Someone hands Nell a small velvet box. Inside: a pair of earbuds.\n\nThey fit perfectly. Everything does, now.\n\nCongratulations on your R01, the big grant everyone wants." },
+    epilogue: "NELL|Yes.\n\nTwelve hoods applaud, softly, like a grant panel. Someone hands Nell a small velvet box. Inside: a pair of earbuds.\n\nThey fit perfectly. Everything does, now.\n\nThe Friday dinner is in the back room of a chain restaurant. The same eleven people tell the same story about a reviewer from 1998. Nobody leaves early. Nobody has anywhere else to be.\n\nCongratulations on your R01, the big grant everyone wants." },
   deskreject: { title: "DESK REJECT", chip: "THE INDUCTION SUCCEEDED", bodies: "BODIES 05.", next: "THE END.",
     epilogue: "QUORUM|Of course. Take all the time you need.\n\nQUORUM|You'll have plenty of it on the Curriculum Committee.\n\nPreston gets the job. Nell is appointed to the curriculum committee, effective immediately, for life. She is still on it." },
 };

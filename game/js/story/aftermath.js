@@ -106,10 +106,23 @@ const gusDesk = () => ({ n: 6, ms: 280, hold: 3200, sfx: (i) => i === 4 && windo
     return s + segC("THE LAST SHOT", 320, 40, 8, "sW", 1.1);
   } });
 
+// the lost and found, B1: the robes go in a box, one by one, and nobody comes back for them
+const lostFound = (line, chipTxt) => ({ n: 6, ms: 260, hold: 2800, sfx: (i) => i && window.SFX && window.SFX.play("cloth"),
+  draw: (i) => {
+    const hood = (x, y, r, c) => `<g transform="translate(${x},${y}) rotate(${r})"><path class="k ${c}" d="M-14,12 C-16,-2 -8,-16 0,-22 C8,-16 16,-2 14,12 Z"/><path class="hl ${c}" d="M-7,8 C-8,-2 -3,-8 0,-10 C3,-8 8,-2 7,8"/></g>`;
+    let s = `<path class="sM" d="M110,280 L530,280"/>${cc("LOST & FOUND  B1", 320, 70, 7, "fW")}
+      <path class="k sA" d="M240,280 L240,190 L400,190 L400,280 Z"/><path class="hl sA" d="M240,190 L222,170 M400,190 L418,170 M240,206 L400,206"/>
+      ${segC("ROBES  (12)", 320, 226, 9, "sA", 1.2)}${segC("UNCLAIMED", 320, 248, 6, "sM", .9)}`;
+    [[268, 182, -20, "sM"], [300, 176, 8, "sD"], [334, 180, -6, "sM"], [366, 178, 18, "sD"], [318, 160, -30, "sM"]].slice(0, i).forEach(([x, y, r, c]) => s += hood(x, y, r, c));
+    if (i >= 5) s += `${segC(line, 320, 30, 8, "sW", 1.1)}${cc(chipTxt, 320, 300, 6, "fM")}`;
+    return s;
+  } });
+
 export async function aftermath(api, which) {
   if (which === "accepted") return montage(api, [
     paper("SECRET SOCIETY RAN NEURO", "DEPT FOR FIFTY YEARS", "THE NEUROSCIENTIFIC ROUND TABLE · DISSOLVED"),
     mugshot("QUORUM", "AGE 39", "ARRESTED · CHARGE SHEET AMENDED"),
+    lostFound("NOBODY CAME BACK FOR THE ROBES.", "THE FRIDAY DINNER IS CANCELLED"),
     counter("PRESTON VALU", "PAPERS RETRACTED", 31, "THE NOTICES ARE THE FIRST THING HE'S WRITTEN HIMSELF IN YEARS"),
     envelopes("FIFTY YEARS OF REVIEWER 2", "UNSEALED"),
     stamp("J. NEUROSCI. NULLS", "NULL RESULTS", "FOR GUS IAN. METHODS: FINE."),
@@ -119,6 +132,7 @@ export async function aftermath(api, which) {
   if (which === "major") return montage(api, [
     paper("PROFESSOR PULLED FROM", "BORE OF 3T SCANNER", "THE TABLE IS STOPPED · THE ARCHIVE IS GONE"),
     mugshot("QUORUM", "AGE 39", "IN CUSTODY · NO PROOF, NOT YET"),
+    lostFound("NOBODY CAME BACK FOR THE ROBES.", "THE FRIDAY DINNER IS CANCELLED"),
     stamp("J. NEUROSCI. NULLS", "NULL RESULTS", "RESUBMIT WITH THE ROLLS", "MAJOR REVISIONS"),
     gusDesk(),
   ]);
