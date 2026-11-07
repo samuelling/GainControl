@@ -162,6 +162,40 @@ function pennants(text, cx, y, h, cols, fall = -1) {
   return s;
 }
 
+// THE LAB'S CHRISTMAS LIGHTS (December into the new year), megaZINE style: someone tacked a string of big C9 bulbs up
+// wherever there was something to tack it to. It sags, loops over the door, and the far end gives up and dangles.
+// Each lit bulb is a palette outline with a megaZINE ink pass printed a hair out of register; two of them are dead,
+// one flickers, the rest chase in two sets (pose group "hol").
+function drapeLights() {
+  // the wire, through hand-placed points (lab coordinates): corner, a tack on the whiteboard frame, a deep sag, a tack,
+  // a loop that hangs down by Adline's door, over the door, a tack at the far corner, the loose end hanging down
+  const W = [[178, 75], [192, 88], [207, 79], [224, 94], [244, 101], [262, 84], [290, 92], [318, 88], [336, 96], [341, 112], [335, 119],
+    [345, 116], [350, 100], [378, 107], [406, 99], [426, 84], [446, 78], [460, 75], [462, 88], [459, 106], [455, 122]];
+  const tacks = [[178, 75], [207, 79], [262, 84], [318, 88], [350, 100], [406, 99], [446, 78]];
+  // Catmull-Rom through the points, sampled finely so the bulbs can sit along it by arc length
+  const pts = [];
+  for (let i = 0; i < W.length - 1; i++) { const p0 = W[i - 1] || W[i], p1 = W[i], p2 = W[i + 1], p3 = W[i + 2] || W[i + 1];
+    for (let t = 0; t < 1; t += .1) { const t2 = t * t, t3 = t2 * t, c = (a, b, c1, d) => .5 * (2 * b + (-a + c1) * t + (2 * a - 5 * b + 4 * c1 - d) * t2 + (-a + 3 * b - 3 * c1 + d) * t3);
+      pts.push([c(p0[0], p1[0], p2[0], p3[0]), c(p0[1], p1[1], p2[1], p3[1])]); } }
+  pts.push(W[W.length - 1]);
+  let s = `<polyline class="hl sD" fill="none" points="${poly(pts)}"/>` + tacks.map(([x, y]) => `<circle class="fM" cx="${x}" cy="${y}" r="1"/>`).join("");
+  // bulbs every ~11 units along the wire
+  const outl = ["sR", "sB", "sA", "sG"], ink = ["fZP", "fZB", "fZG", "fZP", "fZB", "fG"], sets = ["", ""];
+  let acc = 0, n = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; acc += Math.hypot(x1 - x0, y1 - y0);
+    if (acc < 11) continue; acc = 0;
+    const r = ((n * 41) % 31) - 15 + (n % 2 ? 8 : -8), bulb = "M0,1.6 C-2.3,2.6 -2.6,5.6 0,7.6 C2.6,5.6 2.3,2.6 0,1.6 Z";
+    const g = (inner) => `<g transform="translate(${f1(x1)},${f1(y1)}) rotate(${r})">${inner}</g>`;
+    const dead = n === 5 || n === 19, o = outl[n % 4];
+    s += g(`<rect class="hl sD" x="-1" y="0" width="2" height="1.8"/><path class="k ${dead ? "sD" : o}" d="${bulb}"/>`);
+    if (!dead) { const lit = g(`<path class="${ink[n % 6]} mis" transform="translate(.9,.6) rotate(-4)" d="${bulb}"/><path class="hl ${o}" d="${bulb}"/>`);
+      if (n === 11) s += `<g class="pz on" data-g="flicker" data-i="0">${lit}</g>`; else sets[n % 2] += lit; }
+    n++;
+  }
+  return s + `<g class="pz on" data-g="hol" data-i="0">${sets[0]}</g><g class="pz" data-g="hol" data-i="1">${sets[1]}</g>`;
+}
+
 /* ---------------- what each holiday puts up ---------------- */
 // garland: [kind, …args]; banner: text (or fn of info); cut: art for the walls; hang: art for the ceiling; props: art for desks
 const KIT = {
@@ -209,7 +243,8 @@ export function decorFor(roomId, pp, info, ids) {
   const scal = Math.max(3, Math.round((TR[0] - TL[0]) / 70));
   let s = "";
   // one string across the back wall: the holiday's garland, or its lights if that's all it has
-  if (has("garland") && K.garland) s += garland(K, ...span(4), scal);
+  if (roomId === "lab" && (ids.includes("winter") || ids.includes("newyear"))) s += drapeLights();
+  else if (has("garland") && K.garland) s += garland(K, ...span(4), scal);
   else if ((has("garland") || has("lights")) && (K.lights || ids.slice(1).some(i => KIT[i].lights))) {
     const L = K.lights ? K : KIT[ids.find(i => KIT[i].lights)]; s += GARLAND.lights(...span(4), scal, 4, L.lightCols); }
   // the banner

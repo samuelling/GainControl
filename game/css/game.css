@@ -235,3 +235,9 @@ body.c-bighead #game .hd, body.c-bighead #wipe .hd { transform: scale(1.65); }
 body.c-afterimage #game #roomBack, body.c-afterimage #game #sortables, body.c-afterimage #game .decor { filter: hue-rotate(180deg); }
 body.c-disco #game #roomBack, body.c-disco #game #sortables, body.c-disco #game .decor { filter: hue-rotate(var(--disco, 0deg)); }
 body.no-holidays #game .decor { display: none; }
+
+/* ---- megaZINE inks, for things that are ON in the zine's own print (the lab's Christmas lights): pink, blue and gold
+   passes laid slightly out of register over a palette outline. They stay the same day and night (they're lit). ---- */
+#frame { --ZP: #f2369b; --ZB: #7db0ff; --ZG: #e0b04a; }
+.fZP{fill:var(--ZP);stroke:none} .fZB{fill:var(--ZB);stroke:none} .fZG{fill:var(--ZG);stroke:none}
+.mis { mix-blend-mode: screen; opacity: .9; }

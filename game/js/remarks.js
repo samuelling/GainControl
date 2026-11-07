@@ -90,12 +90,12 @@ const L = {
   },
   winter: {
     NELL: ["The tree's made of pipette tip boxes. Blue ones and yellow ones. With a paper star. It's somehow both sad and perfect.",
-      "Somebody's tinsel has come untaped at one end. Nobody's going to fix it. It's tradition now."],
-    GUS: ["Secret Santa again. Last year I got a stress ball shaped like a brain. I squeezed it so hard the cerebellum came off."],
+      "Somebody strung Christmas lights across the lab with six thumbtacks and no plan. Two bulbs are dead. One is thinking about it."],
+    GUS: ["The lab lights come down in March. Every year. Nobody decides it. It just happens, like grant deadlines.", "Secret Santa again. Last year I got a stress ball shaped like a brain. I squeezed it so hard the cerebellum came off."],
     PENNY: ["One of the S's fell off HAPPY HOLIDAYS. I've emailed about it. Twice."],
     TESS: ["The lights in the hall are on the same circuit as my coffee machine. If they trip it, they come down."],
     IRIS: ["The tip-box tree. We had one in 1979. Glass pipettes. Several people went to the hospital."],
-    MORRIS: ["Morris eyes the tinsel. Shiny. Stringy. Morris has questions about the tinsel."],
+    MORRIS: ["Morris eyes the loose end of the Christmas lights, dangling just within reach. Morris has questions about the lights."],
   },
   hanukkah: {
     NELL: ["The paper menorah has the right number of candles lit tonight. Someone's updating it every day. I respect that."],
@@ -103,7 +103,7 @@ const L = {
   },
   newyear: {
     NELL: ["New year. Same p-values.", "There's a party hat by the kitchen sink. It's been there since midnight. Nobody will claim it."],
-    GUS: ["My resolution is to stop checking Google Scholar. I checked it twice writing that down."],
+    GUS: ["My resolution is to stop checking Google Scholar. I checked it twice writing that down.", "The Christmas lights are still up in the lab. They'll be up till March. They're new year lights now."],
     PENNY: ["Happy new year, hon. Your annual report's due Friday. Happy new year."],
   },
   lunar: {
