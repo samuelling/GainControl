@@ -257,8 +257,7 @@ function hold(arr, bar, k, q) { let n = 1; while (k + n < 8 && (arr[bar][k + n] 
 // q (night: the tune on the beats only), bass / drums / comp patterns, compAll (comp under the tune too), swing,
 // angular (octave leaps in the tune), fx (room extras), vel (tune loudness), tempo (at the act's own dread)
 const BANDS = {
-  // the main menu: the OP-1 tune (square pluck, bouncy bass, a small drum machine, marimba answers)
-  title: null,   // set below: the title plays day 1's Rhodes band
+  title: null,   // the main menu: set below to day 1's Rhodes band, so the build runs straight on into Act I
   // the game itself opens on a Rhodes (Act I): the tune on electric piano, syncopated Rhodes chords, a soft bass, a lazy beat
   d1: { tempo: 92, lead: "rhodes", leadV: "rhodes", leadB: "flute", ctr: "vibes", hand: "vibes", bass: "two", drums: "soft", comp: "rhodes", compAll: true, swing: .2, build: true },
   // the OP-1 arrives in Act II: the square pluck and its arpeggios, over the bossa
