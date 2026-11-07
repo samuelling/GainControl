@@ -493,6 +493,8 @@ export const music = {
       env(g, t, .01, .05, .45); o.connect(g); g.connect(bus); o.start(t); o.stop(t + .5); }
     bus.gain.setValueAtTime(.5, t); bus.gain.linearRampToValueAtTime(.15, t + .05); bus.gain.linearRampToValueAtTime(.5, t + .5);
   },
+  // fade the score out (and back): for moments that need the room silent, like the coda's quote
+  hush(on = true, sec = 1.4) { if (!C || !bus) return; const t = C.currentTime; bus.gain.cancelScheduledValues(t); bus.gain.setValueAtTime(bus.gain.value, t); bus.gain.linearRampToValueAtTime(on ? 0 : .5, t + sec); },
   get state() { return { ...P, band: S && S.name, lead: S && S.lead, fx: S && S.fx, pending: pend && pend.name, step }; },
 };
 window.MUSIC = music;

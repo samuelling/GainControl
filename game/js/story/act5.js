@@ -164,15 +164,16 @@ async function climax(api) {
   // everyone runs: Preston for the door, Iris already there, Nell after them
   F.irisAt = [-385, 612, 0];
   const run = (async () => { for (const p of [[-300, 600], [-345, 604], [-385, 600]]) { F.preAt = p; api.refresh(); await api.wait(160); } F.preAt = "gone"; api.refresh(); })();
-  await Promise.all([run, api.walk(80, 268)]);
+  await Promise.all([run, api.walk(122, 276)]);   // beside Iris in the doorway, not on top of her
   // the 3T comes through
   for (const i of [0, 1]) { await frame("fall", i, 170); api.sfx(i ? "crash" : "creak"); }
   F.crash = true; F.quorumUp = true; F.creak = false; await frame("fall", 2, 120); await shake(8, 9); await api.wait(500);
   endFx();
   await api.say("Six tonnes of superconductor, still humming, on the Round Table. The Table splits. The Gain Controller is a coin.\n\nGus's scanner. His 2:30 slot.");
   await api.say("QUORUM|Fifty years of honors.\n\nQUORUM|All of them ferromagnetic.");
+  F.quorumOff = true;
   for (const i of [0, 1, 2]) { await frame("bore", i, 240); if (i === 2) api.sfx("crash"); }
-  endFx(); await shake(3, 3);
+  F.quorumIn = true; endFx(); await shake(3, 3);
   await api.say("After fifty years on the Table, he's finally been scanned.\n\nMORRIS (LOOKING DOWN THROUGH THE HOLE)|…Did I do that? I did that.");
   return ending(api, F.archiveSent ? "accepted" : "major");
 }
@@ -204,6 +205,7 @@ async function ending(api, which, { shown = false } = {}) {
   Object.assign(END, ENDINGS[which]);
   if (shown) END.epilogue = "";   // already played, before the choice to revise
   api.flag("ending", which);
+  if (which === "accepted" || which === "major") await api.blackout();   // the room goes dark; what follows plays over black
   if (which === "accepted") {
     await api.say("Monday. Ethel Bord's office. The reels, transcribed: fifty years of membership rolls.\n\nIRIS|This is the part they never thought anyone would do. It's just matching.");
     await api.mini(crossref, { score: api.score });

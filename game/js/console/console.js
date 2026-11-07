@@ -131,6 +131,13 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
       body.innerHTML = `<div class="crt"><canvas width="${W}" height="${H}"></canvas><svg class="res t" viewBox="0 0 ${W} ${H}"></svg></div>`;
       const canvas = body.querySelector("canvas"), g = canvas.getContext("2d"), crt = body.querySelector(".crt"), res = body.querySelector("svg.res");
       const R = run = { stop: false };
+      const toCanvas = (e) => {   // the canvas is drawn object-fit: contain, so undo the letterbox
+        const r = canvas.getBoundingClientRect(), k = Math.min(r.width / W, r.height / H), ox = r.left + (r.width - W * k) / 2, oy = r.top + (r.height - H * k) / 2;
+        return { x: (e.clientX - ox) / k, y: (e.clientY - oy) / k }; };
+      const PTR = { x: W / 2, y: H / 2, down: false };
+      crt.addEventListener("pointermove", (e) => Object.assign(PTR, toCanvas(e)));
+      crt.addEventListener("pointerdown", (e) => { Object.assign(PTR, toCanvas(e)); PTR.down = true; });
+      window.addEventListener("pointerup", () => { PTR.down = false; });
       const chk = () => { if (R.stop) throw ABORT; };
       const ctx = {
         g, W, H, ppd: PPD, cx: W / 2, cy: H / 2, canvas,
@@ -170,6 +177,19 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
             const onB = (e) => { const b = e.target.closest?.("[data-n]"); if (b) put(b.dataset.n); };
             const cleanup = () => { window.removeEventListener("keydown", onK, true); btns.removeEventListener("click", onB); btns.innerHTML = ""; pending = null; };
             window.addEventListener("keydown", onK, true); btns.addEventListener("click", onB); draw();
+            pending = () => { cleanup(); rej(ABORT); };
+          });
+        },
+        // the pointer, in stimulus-canvas pixels: pointer() is where it is now; click() waits for a press on the screen
+        pointer() { return { ...PTR }; },
+        click({ timeout = 0 } = {}) {
+          chk();
+          return new Promise((res, rej) => {
+            const t0 = performance.now(); let tm = null;
+            const f = (e) => { const p = toCanvas(e); cleanup(); res({ ...p, rt: performance.now() - t0 }); };
+            const cleanup = () => { crt.removeEventListener("pointerdown", f); clearTimeout(tm); pending = null; };
+            crt.addEventListener("pointerdown", f);
+            if (timeout) tm = setTimeout(() => { cleanup(); res({ x: null, y: null, rt: timeout }); }, timeout);
             pending = () => { cleanup(); rej(ABORT); };
           });
         },

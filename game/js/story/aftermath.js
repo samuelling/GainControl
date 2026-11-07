@@ -59,14 +59,14 @@ const envelopes = (title, sub) => ({ n: 7, ms: 150, hold: 2400, sfx: (i) => i &&
     return s + (i >= 6 ? cc(sub, 320, 248, 7, "fW") : "");
   } });
 // a journal cover, then the ACCEPTED stamp comes down
-const stamp = (journal, title, dedic) => ({ n: 3, ms: 260, hold: 2800, sfx: (i) => i === 2 && window.SFX && window.SFX.play("stamp"),
+const stamp = (journal, title, dedic, word = "ACCEPTED") => ({ n: 3, ms: 260, hold: 2800, sfx: (i) => i === 2 && window.SFX && window.SFX.play("stamp"),
   draw: (i) => {
     let s = `<rect class="k sW" x="220" y="40" width="200" height="270"/>${segC(journal, 320, 54, 8, "sW", 1.1)}<path class="sW" d="M232,72 L408,72"/>
       ${segC(title, 320, 96, 12, "sW", 1.4)}${segC("N. NULL", 320, 120, 6, "sM", 1)}
       <path class="hl sM" d="M250,170 L390,170 L390,240 L250,240 Z M250,236 L276,200 L300,226 L330,190 L360,232 L390,206"/>
       ${segC(dedic, 320, 262, 5, "sA", .8)}`;
-    if (i === 1) s += `<g transform="translate(330,110) rotate(-12)"><rect class="k sR" x="-70" y="-120" width="140" height="44"/>${segC("ACCEPTED", 0, -112, 16, "sR", 1.8)}</g>`;
-    if (i === 2) s += `<g transform="translate(330,190) rotate(-12)"><rect class="sR" x="-80" y="-24" width="160" height="48"/>${segC("ACCEPTED", 0, -15, 20, "sR", 2.2)}</g>${arcs(226, 190, -1, "sR", 3, 1.2)}${arcs(424, 190, 1, "sR", 3, 1.2)}`;
+    if (i === 1) s += `<g transform="translate(330,110) rotate(-12)"><rect class="k sR" x="-70" y="-120" width="140" height="44"/>${segC(word, 0, -112, word.length > 10 ? 10 : 16, "sR", 1.8)}</g>`;
+    if (i === 2) s += `<g transform="translate(330,190) rotate(-12)"><rect class="sR" x="-80" y="-24" width="160" height="48"/>${segC(word, 0, -15, word.length > 10 ? 12 : 20, "sR", 2.2)}</g>${arcs(226, 190, -1, "sR", 3, 1.2)}${arcs(424, 190, 1, "sR", 3, 1.2)}`;
     return s;
   } });
 // Alpha the dart frog on Nell's desk; the clock turns nine and the mister comes on
@@ -117,7 +117,7 @@ export async function aftermath(api, which) {
   if (which === "major") return montage(api, [
     paper("PROFESSOR PULLED FROM", "BORE OF 3T SCANNER", "THE TABLE IS STOPPED · THE ARCHIVE IS GONE"),
     mugshot("QUORUM", "AGE 39", "IN CUSTODY · NO PROOF, NOT YET"),
-    stamp("J. NEUROSCI. NULLS", "NULL RESULTS", "MAJOR REVISIONS REQUESTED"),
+    stamp("J. NEUROSCI. NULLS", "NULL RESULTS", "RESUBMIT WITH THE ROLLS", "MAJOR REVISIONS"),
     gusDesk(),
   ]);
 }
@@ -155,12 +155,13 @@ export async function credits(api, { score = 0 } = {}) {
   line("MORRIS WAS HARMED A LITTLE. HE ASKED FOR IT.", 6, "sW", 34);
   line("IN MEMORY OF GUS IAN, WHOSE GLM WAS FINE.", 7, "sB", 40);
   line(`H-INDEX ${String(score).padStart(2, "0")}  ·  BODIES 05`, 8, "sA", 30);
-  line("THE MAGNET IS ALWAYS ON.", 10, "sW", 0);
+  line("THE MAGNET IS ALWAYS ON.", 10, "sW", 26);
+  line("THANKS FOR PLAYING.", 7, "sG", 0);
   const H = y + 40, end = H - 200;   // stop with the last line a little above the middle
   if (window.MUSIC) window.MUSIC.scene({ act: 1, mode: "day", room: "" });   // the light theme again, to close
   const id = "roll" + Math.floor(Math.random() * 1e6), STEP = 3, MS = 60, steps = Math.ceil(end / STEP);
   const done = api.bigCard(`<g id="${id}">${s}</g>`, { auto: steps * MS + 3500, hold: 800 });
   (async () => { for (let i = 1; i <= steps; i++) { await api.wait(MS); const g = document.getElementById(id); if (!g) return; g.setAttribute("transform", `translate(0 ${-i * STEP})`); } })();
   await done;
-  await api.mini(megazineEnd, {}, "mzwrap");   // the close, as in Ashland: part of megaZINE
+  await api.mini(megazineEnd, { hint: "CLICK TO RETURN TO THE TITLE" }, "mzwrap");   // the close, as in Ashland: part of megaZINE
 }

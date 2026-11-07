@@ -32,7 +32,7 @@
   .sV{stroke:var(--V)} .sN{stroke:var(--N)} .sD{stroke:var(--D)} .sM{stroke:var(--M)} .sX{stroke:var(--X)} .s0{stroke:#000}
   .fW{fill:var(--W);stroke:none} .fR{fill:var(--R);stroke:none} .fB{fill:var(--B);stroke:none} .fG{fill:var(--G);stroke:none}
   .fK{fill:var(--K);stroke:none} .fA{fill:var(--A);stroke:none} .fV{fill:var(--V);stroke:none} .fX{fill:var(--X);stroke:none}
-  .fM{fill:var(--M);stroke:none}
+  .fM{fill:var(--M);stroke:none} .fD{fill:var(--D);stroke:none}
   #frame.night .day-only, #frame:not(.night) .night-only { display: none; }
   [data-hs] { cursor: pointer; }
   .opt { cursor: pointer; }

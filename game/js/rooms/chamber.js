@@ -138,7 +138,7 @@ function head(G) {
     <path class="k sD" d="M112,187 L112,24 Q112,-14 160,-34 Q208,-14 208,24 L208,187"/><path class="hl sD" d="M120,187 L120,28 Q120,-6 160,-24 Q200,-6 200,28 L200,187"/>
     ${insignia(160, -6, 7)}</g>`;
   const [fx_, fy_] = c(0, HEAD.h, HEAD.z);
-  if (G.flags.crash) return s;   // the head of the table is empty: Quorum is in the bore (see scanner)
+  if (G.flags.crash && G.flags.quorumOff) return s;   // the head of the table is empty: Quorum is on his way into (or in) the bore
   const box = hit(fx_ - 24 * q, fy_ - 176 * q, 48 * q, 176 * q);
   if (G.flags.unhooded && G.flags.quorumUp) {
     // lifted off the dais and drawn in over the back of the ring: two fixed positions, a notch apart, speed dashes trailing
@@ -328,19 +328,13 @@ function cutscene(G) {
     s += star4(x + dx, y, 7, "sR") + segC("KCHK", x + dx, y - 26, 8, "sR", 1.1);
     for (let j = 0; j <= fx.i % 3; j++) s += `<path class="sW" d="M${f(x + [-14, 0, 14][j] - 3)},${f(y + 2)} L${f(x + [-14, 0, 14][j] - 3)},${f(y - 2)} L${f(x + [-14, 0, 14][j] + 3)},${f(y - 2)} L${f(x + [-14, 0, 14][j] + 3)},${f(y + 2)}"/>`;
   }
-  if (fx.k === "fall") {             // the 3T coming through: a wireframe cylinder at three fixed heights, then the impact
-    // the housing, as it lies after the crash: a rounded box with the bore through it, seen end-on
-    const h = [255, 165, 70][fx.i], R = 112, z0 = HC.z - 150, z1 = HC.z + 150, rc = 34;
-    const box = (z) => { const c = [[R - rc, R - rc, 0], [-(R - rc), R - rc, 1], [-(R - rc), -(R - rc), 2], [R - rc, -(R - rc), 3]];
-      return c.flatMap(([cx, cy, q]) => sweep(q * Math.PI / 2, (q + 1) * Math.PI / 2, 6, t => W(HC.lat + cx + rc * Math.cos(t), h + cy + rc * Math.sin(t), z))); };
-    const fr = box(z0), bk = box(z1), E = (x, y, z) => W(HC.lat + x, h + y, z);
-    s += `<polygon class="k sM" points="${pts(bk)}"/>
-      <path class="sW" d="${[[R, R - rc], [-R, R - rc], [R - rc, R], [-(R - rc), R], [R, -(R - rc)], [-R, -(R - rc)]].map(([x, y]) => line([E(x, y, z0), E(x, y, z1)])).join(" ")}"/>
-      <polygon class="k sW mech" points="${pts(fr)}"/><path class="hl sW" d="${line(sweep(0, TAU, 40, t => E(62 * Math.cos(t), 62 * Math.sin(t), z0)))}"/>
-      <path class="hl sM" d="${line(sweep(0, TAU, 40, t => E(48 * Math.cos(t), 48 * Math.sin(t), z0 + 60)))}"/>
-      ${chip("3T", ...W(HC.lat - 12, h + 84, z0), 6, "fA")}`;
-    if (fx.i < 2) { const top = E(0, R, z0); for (let j = -3; j <= 3; j++) s += `<path class="hl sW" d="M${f(top[0] + j * 26)},${f(top[1] - 18 - Math.abs(j) * 6)} L${f(top[0] + j * 26)},${f(top[1] - 58 - Math.abs(j) * 6)}"/>`; }
-    else { const [cx, cy] = W(HC.lat, RH, HC.z - 160);
+  if (fx.k === "fall") {             // the 3T coming through: the same scanner that lands, at two fixed heights, then the impact
+    if (fx.i < 2) {
+      const dy = [230, 120][fx.i];
+      s += `<g transform="translate(0,${-dy})">${scanner(G, { falling: true })}</g>`;
+      const [tx_, ty_] = W(T3.lat, RH + 2 * T3.HH, T3.z);   // speed dashes above it
+      for (let j = -3; j <= 3; j++) s += `<path class="hl sW" d="M${f(tx_ + j * 26)},${f(ty_ - dy - 22 - Math.abs(j) * 6)} L${f(tx_ + j * 26)},${f(ty_ - dy - 62 - Math.abs(j) * 6)}"/>`;
+    } else { const [cx, cy] = W(HC.lat, RH, HC.z - 160);
       s += segC("WHUMP", 320, 54, 26, "sR", 2) + arcs(cx - 200, cy - 10, -1, "sW", 4, 2) + arcs(cx + 200, cy - 10, 1, "sW", 4, 2);
       for (let j = 0; j < 14; j++) s += `<circle class="fM" cx="${f(cx - 220 + j * 34)}" cy="${f(cy - 20 - (j * 37 % 40))}" r="1.4"/>`; }
   }
@@ -540,7 +534,7 @@ function hull(P) {
   for (const q of p.reverse()) { while (up.length > 1 && cr(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
   return lo.slice(0, -1).concat(up.slice(0, -1));
 }
-function scanner(G) {
+function scanner(G, { falling = false } = {}) {
   const F = frame3(), { S, P3, u, v, a, facing } = F, { L, RF, RB, HW, HH } = T3, L2 = L / 2;
   const nrm = (nU, nV) => [u[0] * nU + v[0] * nV, u[1] * nU + v[1] * nV, u[2] * nU + v[2] * nV];
   const xs = xsec(), k = kz(T3.z);
@@ -617,8 +611,8 @@ function scanner(G) {
       <path class="hl sA" d="M${f(m2[0])},${f(m2[1] - 6)} L${f(m2[0])},${f(m2[1])}"/><circle class="k sA" cx="${f(m2[0])}" cy="${f(m2[1] + 2.5)}" r="${f(3.4 * k * 1.6)}"/>`; }
   { const hs = [...bore, ...fp]; const xs_ = hs.map(p => p[0]), ys_ = hs.map(p => p[1]);
     q += hit(f(Math.min(...xs_) - 6), f(Math.min(...ys_) - 4), f(Math.max(...xs_) - Math.min(...xs_) + 12), f(Math.max(...ys_) - Math.min(...ys_) + 14)); }
-  s += q + `</g>`;
-  // impact: ((( ))) off the sides, sparks where the cover met the ring
+  if (G.flags.quorumIn && !falling) s += q + `</g>`;   // his feet only once the bore has taken him
+  if (!falling) // impact: ((( ))) off the sides, sparks where the cover met the ring
   { const L0 = S(-HW - 10, -HH * .4, 0), R0 = S(HW + 10, -HH * .4, L2 * .5);
     s += `<g class="pz on" data-g="hum" data-i="0">${arcs(L0[0] - 4, L0[1], -1, "sW", 3, 1.1)}${arcs(R0[0] + 4, R0[1], 1, "sW", 3, 1.1)}</g>
       <g class="pz" data-g="hum" data-i="1">${arcs(L0[0] - 8, L0[1], -1, "sW", 2, 1.4)}${arcs(R0[0] + 8, R0[1], 1, "sW", 2, 1.4)}</g>`;

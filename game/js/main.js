@@ -98,6 +98,9 @@ function restore() {
 function idleFigures() {   // the other playable character, if they're standing in this room
   return Object.entries(G.chars).filter(([c, p]) => c !== G.char && p.room === G.room && G.cast.includes(c)).map(([c, p]) => {
     const s = R().pp.kAtY(p.y) * AUD;
+    // two characters who came in through the same door would stand inside each other: the idle one steps aside (and stays there)
+    const taken = [G.actor, ...Object.entries(G.chars).filter(([o, q]) => o !== c && o !== G.char && q.room === G.room).map(([, q]) => q)];
+    for (let n = 0; n < 3 && taken.some(q => Math.abs(p.x - q.x) < 70 * s && Math.abs(p.y - q.y) < 30); n++) p.x += (p.x < 320 ? 1 : -1) * 80 * s;
     return { depth: p.y, svg: `<g data-pose="0" class="idle" transform="translate(${p.x},${p.y}) scale(${p.dir * s},${s}) translate(-160,-187)">${FIGURE[c]()}</g>` };
   });
 }
@@ -446,9 +449,20 @@ async function startAct(n, { fresh = false } = {}) {
   G.act = n; saveProgress();
   await ACTS[n].start(api, { fresh });
 }
+// the room switches off like an old TV, in poses: squash, a line, a dot, dark. Cards after it play over black.
+async function blackout(on = true) {
+  const wipe = $("#wipe");
+  if (!on) { svg.style.visibility = ""; svg.style.transform = ""; wipe.innerHTML = ""; return; }
+  if (svg.style.visibility === "hidden") return;
+  svg.style.transition = "none"; svg.style.transformOrigin = "50% 50%"; sfx.play("powerdown");
+  const P = [[.35, ""], [.07, ""], [0, `<path class="sW" style="stroke-width:2" d="M0,180 L640,180"/>`], [0, `<path class="sW" style="stroke-width:1.5" d="M220,180 L420,180"/>`],
+    [0, `<circle class="fW" cx="320" cy="180" r="2.6"/>`], [0, `<circle class="fW" cx="320" cy="180" r="1.2"/>`], [0, ""]];
+  for (const [sy, g] of P) { svg.style.transform = sy ? `scaleY(${sy})` : ""; svg.style.visibility = sy ? "visible" : "hidden"; wipe.innerHTML = g; await new Promise(r => setTimeout(r, 70)); }
+}
 async function endAct() {
   const E = ACT().END;
   await new Promise(r => setTimeout(r, 300));
+  if (!ACTS[G.act + 1]) await blackout();                  // the last act: the room switches off before the end card
   const sc = "H-INDEX " + String(G.score).padStart(2, "0");
   await showCard(`${centered(E.title, 96, 30, "sW", 1.8)}${cchip(E.chip, 148, 7, "fA")}
     ${centered(sc, 186, 12, "sA", 1.3)}${centered(E.bodies, 212, 6, "sR", 1)}
@@ -456,8 +470,7 @@ async function endAct() {
   if (E.epilogue) await say(E.epilogue);
   if (ACTS[G.act + 1]) { await startAct(G.act + 1); return; }
   await coda(api);                                         // the real record, after the last act
-  await credits(api, { score: G.score });                  // and the credits roll
-  await showCard(`${centered("GAIN CONTROL", 120, 34, "sW", 2)}${cchip(E.thanks, 186, 7, "fG")}${centered("CLICK TO RETURN TO THE TITLE", 232, 5, "sM", .9)}`, { hold: 800, auto: 0 });
+  await credits(api, { score: G.score });                  // the credits roll, and close on the megaZINE masthead
   location.hash = ""; location.reload();
 }
 
@@ -471,7 +484,7 @@ const api = {
   give: (id, who = G.char) => { (G.inv[who] ||= []); if (!G.inv[who].includes(id)) { G.inv[who].push(id); sfx.play("pickup"); } hud(); },
   sfx: (name, o) => sfx.play(name, o),
   take: (id) => { for (const m in G.inv) G.inv[m] = G.inv[m].filter(x => x !== id); if (G.using === id) G.using = null; hud(); },
-  score: addScore, refresh, say, die, endAct, shift, switchTo, chooseFrom, blip,
+  score: addScore, refresh, say, die, endAct, shift, switchTo, chooseFrom, blip, blackout,
   convo: runConvo,
   card: (t1, t2, t3, f, ms = 2800) => showCard(dayCard(t1, t2, t3, f), { auto: ms + 500, crt: true }),
   bigCard: (inner, opts) => showCard(inner, opts), centered, cchip, button,

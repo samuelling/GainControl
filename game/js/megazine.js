@@ -86,9 +86,9 @@ export function mountMegazine(root) {
 // address). The masthead keeps megaZINE's own look, the one place outside the console where the line rules give way.
 // Click anywhere but the masthead to finish; the masthead itself opens megazine.org.
 import { segC } from "./gfx.js";
-export function megazineEnd(el) {
+export function megazineEnd(el, { hint = "CLICK TO FINISH" } = {}) {
   return new Promise((resolve) => {
-    el.innerHTML = `<div class="mzend"><svg class="t mzpart" viewBox="0 0 200 14">${segC("PART OF", 100, 3, 7, "sA", 1)}</svg>${MEGAZINE_HTML}<div class="mzhint">CLICK TO FINISH</div></div>`;
+    el.innerHTML = `<div class="mzend"><svg class="t mzpart" viewBox="0 0 200 14">${segC("PART OF", 100, 3, 7, "sA", 1)}</svg>${MEGAZINE_HTML}<div class="mzhint">${hint}</div></div>`;
     const root = el.querySelector(".mzend"), stop = mountMegazine(root);
     const parts = [".mzpart", ".mzqr", ".mzlogo", ".mztag", ".mzurl", ".mzhint"].map((q) => root.querySelector(q));
     parts.forEach((p) => p && (p.style.visibility = "hidden"));
