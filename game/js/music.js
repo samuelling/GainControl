@@ -264,11 +264,13 @@ function hold(arr, bar, k, q) { let n = 1; while (k + n < 8 && (arr[bar][k + n] 
 // q (night: the tune on the beats only), bass / drums / comp patterns, compAll (comp under the tune too), swing,
 // angular (octave leaps in the tune), fx (room extras), vel (tune loudness), tempo (at the act's own dread)
 const BANDS = {
-  title: null,   // the main menu: set below to day 1's Rhodes band, so the build runs straight on into Act I
-  // the game itself opens on a Rhodes (Act I): the tune on electric piano, syncopated Rhodes chords, a soft bass, a lazy beat
-  d1: { tempo: 92, lead: "rhodes", leadV: "rhodes", leadB: "flute", ctr: "vibes", hand: "vibes", bass: "two", drums: "soft", comp: "rhodes", compAll: true, swing: .2, build: true, reverb: .45 },
-  // the OP-1 arrives in Act II: the square pluck and its arpeggios, over the bossa
-  d2: { tempo: 100, lead: "pluck", leadV: "pluck", leadB: "marimba", ctr: "marimba", hand: "marimba", bass: "bossa", drums: "bossa", comp: "arp", compAll: true },
+  title: null,   // the main menu: set below to day 1's band, so the build runs straight on into Act I
+  // Act I (and the title): the OP-1 tune: square pluck, arpeggios, a bouncy bass, a small drum machine, marimba answers.
+  // It builds: the pluck alone and dry, then the bass and the room, then the drums, the counter-melody and the delay
+  d1: { tempo: 104, lead: "pluck", leadV: "pluck", leadB: "marimba", ctr: "marimba", hand: "marimba", bass: "bounce", drums: "bounce", comp: "arp", build: true, reverb: .3, vel: 1.25 },
+  // Act II: the Rhodes (MEGAjam's Tine): the tune on electric piano, syncopated Rhodes chords, a soft bass, a lazy swung beat,
+  // building the same way, with more room
+  d2: { tempo: 92, lead: "rhodes", leadV: "rhodes", leadB: "flute", ctr: "vibes", hand: "vibes", bass: "two", drums: "soft", comp: "rhodes", compAll: true, swing: .2, build: true, reverb: .45 },
   d3: { tempo: 97, lead: "brass", leadV: "pluck", leadB: "organ", ctr: "marimba", hand: "marimba", bass: "angular", drums: "broken", comp: "bstab", compAll: true, angular: true, stacc: true },
   d4: { tempo: 96, lead: "vibes", leadV: "brass", leadB: "pluck", ctr: "organ", hand: "brass", bass: "pulse8", drums: "restless", comp: "ostinato", compAll: true },
   d5: { tempo: 92, lead: "brass", leadV: "bell", leadB: "organ", ctr: "brass", hand: "bell", bass: "pulse8", drums: "march", comp: "arp" },
