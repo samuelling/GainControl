@@ -35,7 +35,7 @@ wrap("notebook", (api) => {
     t("clueMetamer", "Library, 2F: the back issues. Where did his sentences come from?"), t("clueHours", "Penny's receipts: where does everyone go on Fridays?"),
     t("clueDark", "Morris says Preston's ears light up. Gus wants a measurement. (Talk to Gus.)"),
     t("fourOClock", "Four o'clock: Impact's office, 3F.") + four,
-    t("clueCard", "What did Impact want to tell Ethel? (His desk drawer.)"), t("clueReviewer2", "Who wrote Reviewer 2?"), t("clueRetainer", "His Figure 2. Something about the dropout.")];
+    t("clueCard", "What did Impact want to tell Ethel? (His desk drawer.)"), t("clueReviewer2", "Who wrote Reviewer 2?"), t("clueRetainer", "His Figure 2. Something about the dropout, the blank hole metal leaves in a scan.")];
   if (f.clueCard) L.push(t("codyLeft", "Cody's in the hallway, about to do something brave. Talk to him."));
   if (f.codyLeft) L.push(t("codyDead", "Cody took the back stairs, past the animal facility. You'd need booties. Morris wouldn't. (Click his name; the vents.)"));
   if (f.morrisPast) L.push(t("chased", "Tell Small. Now. (Hallway.)"));
@@ -79,14 +79,14 @@ export const CONVOS = {
   gusDark: { L: "nell", R: "gus", score: ["gusDark", 1], lines: [
     ["R", "Morris says Preston's ears light up. Small says that's an anecdote from a rat. I want a measurement."],
     ["L", "Of what?"],
-    ["R", "Of the earbuds. Anything that drives current through a coil next to living tissue leaks a little. Heat. Field. And light. A few photons a second. Ultraweak emission."],
+    ["R", "Of the earbuds. Anything that drives current through a coil leaks a little. Heat. And light. A few photons a second: single specks of light."],
     ["L", "Nobody can see a few photons a second."],
-    ["R", "You can. After twenty minutes in perfect dark, your rods catch single photons. Hecht did it in 1942: a dim flash of about a hundred photons at the eye, half a dozen caught by rods, and people saw it."],
+    ["R", "You can. Your rods, the night-vision cells in your eye, can catch single photons after twenty minutes in perfect dark. Hecht proved it in 1942: people saw flashes so dim that only about six photons landed."],
     ["L", "So I'd need Preston in the dark booth for twenty minutes."],
     ["R", "He's in there now. I told him you were piloting a rod study and needed a sub-01. Middle authorship."],
     ["L", "He said yes to middle author?"],
     ["R", "He said 'co-first?' I said 'we'll see.' He's been in there since nine, networking with the dark."],
-    ["R", "Don't look straight at him in there. Your fovea's got no rods. Look beside him."],
+    ["R", "Don't look straight at him in there. The center of your eye, the fovea, has no rods. Look beside him, the way you'd catch a faint star."],
   ], after: (api) => { api.flag("darkReady", true); api.refresh(); } },
   darkAfter: { L: "nell", R: "preston", score: ["darkAfter", 1], lines: [
     ["N", "The booth door opens. Preston steps out, blinking, delighted."],
@@ -197,15 +197,15 @@ async function stairs(api) {
 }
 async function impactFound(api) {
   api.flag("impactDead", true); api.G.bodies = 3; api.refresh(); api.sfx("sting"); api.sfx("hiss");
-  await api.say("The −80 room. The walk-in at the back is open, fog spilling out across the floor.\n\nProf. Maximilian Impact is inside it. Standing. Mid-stride. Neck pillow on. Frozen solid next to a box labeled DO NOT THAW.");
+  await api.say("The −80 room, where the department keeps its samples at eighty below. The walk-in at the back is open, fog spilling out across the floor.\n\nProf. Maximilian Impact is inside it. Standing. Mid-stride. Neck pillow on. Frozen solid next to a box labeled DO NOT THAW.");
   return "c:smallFreezer";
 }
 async function impactDoor(api) {
   const f = api.G.flags;
   if (!f.fourOClock) return "PROF. M. IMPACT. A keypad on the door, three digits. He said four o'clock. It isn't four o'clock.";
-  if (!f.impactDead) { f.impactMissing = true; return "You knock. Nothing. Down the hall, Penny's voice on the phone: '…no, he went down to B1 to check on a sample, twenty minutes ago. B1, hon. The −80 room.'"; }
+  if (!f.impactDead) { f.impactMissing = true; return "You knock. Nothing. Down the hall, Penny's voice on the phone: '…no, he went down to B1 to check on a sample, twenty minutes ago. B1, hon. The −80 room. The big freezers.'"; }
   if (!f.impactOpen) {
-    if (!f.sawHindex) return "The keypad wants three digits. Impact's password would be the number he loved most. His h-index. Which you'd have to look up. The library has a faculty directory.";
+    if (!f.sawHindex) return "The keypad wants three digits. Impact's password would be the number he loved most. His h-index: a professor's high score, built from how often other papers cite his. Which you'd have to look up. The library has a faculty directory.";
     const ok = await api.keypad("112", ["1", "2"]);
     if (!ok) return "Nell steps back from the keypad. His h-index. The directory said.";
     f.impactOpen = true; api.score("impactOpen", 2);
@@ -327,7 +327,7 @@ export const HS = {
 
   impactoffice: {
     desk: { label: "Impact's laptop", day: { look: "Impact's laptop, open. A folder: REVIEWS I DIDN'T WRITE.", use: async (api) => {
-      await api.readout(REVIEW(), "Reviewer 2's report on your paper. Last spring. 'Nueron.' 'Utilize.' 'Thier.' Saved from P. VALU's laptop into Impact's folder.\n\nThe LTM never misspells anything. A person wrote this. Preston wrote this.");
+      await api.readout(REVIEW(), "Reviewer 2's report on your paper. Last spring. 'Nueron.' 'Utilize.' 'Thier.' Saved from P. VALU's laptop into Impact's folder.\n\nThe LTM, his paper-writing machine, never misspells anything. A person wrote this. Preston wrote this.");
       if (!api.flag("clueReviewer2")) { api.flag("clueReviewer2", true); api.score("clueReviewer2", 3); } return "NELL|The one thing he wrote himself was my rejection."; } } },
     figure: { label: "framed Figure 2", day: { look: "A framed print of the Big Finding's Figure 2 on the wall, signed by Preston: 'To the boss! Synergy!'", use: doRetainer } },
     drawer: { label: "desk drawer", day: { look: "The top drawer, not quite shut. The only thing in this office that isn't framed. Men like Impact keep the thing that matters closest to hand.", use: async (api) => {
@@ -394,7 +394,7 @@ function gusHint(api) {
   if (!f.clueHours) return "GUS|Penny has everyone's calendar. Nobody knows that. Ask her about the Friday receipts.";
   if (!f.clueDark) return "GUS|He's in the booth. Twenty minutes in the dark, Nell. Then look beside him, not at him.";
   if (!f.impactDead) return f.impactMissing ? "GUS|Penny said B1. The −80 room. Go." : "GUS|It's four. Impact's office, third floor.";
-  if (!f.impactOpen) return "GUS|His office password's his h-index. Of course it is. The directory's in the library.";
+  if (!f.impactOpen) return "GUS|His office password's his h-index. His academic high score. Of course it is. The directory's in the library.";
   if (!f.clueCard) return "GUS|What's in his office? Men like Impact keep the thing that matters in the top drawer.";
   if (!f.codyLeft) return "GUS|Cody's in the hallway, rehearsing something under his breath. That's never good. Go talk to him.";
   if (!f.codyDead) return "GUS|Cody's taking the back stairs past the animal facility. Nobody goes down there, Nell. Except rats. Send the rat.";

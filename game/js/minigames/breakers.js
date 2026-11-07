@@ -18,7 +18,7 @@ const BRK = {
 const PRINTED = "ABEFCD";   // the engineer's order, as printed
 const LINES = {
   intro: ["IRIS", "Page fourteen. Cold start. The printed order is the engineer's. He never ran it. I did."],
-  intro2: ["IRIS", "The pencil in the margins is mine. Trust the pencil."],
+  intro2: ["IRIS", "The pencil in the margins is mine. Throw all six in my order, not his. Trust the pencil."],
   ok: {
     A: ["IRIS", "Control power. The pilot lamps still come on. So do I."],
     C: ["IRIS", "Water. Cool the coils before you ask anything of them. People too."],

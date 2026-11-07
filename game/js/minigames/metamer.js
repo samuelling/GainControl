@@ -8,12 +8,12 @@ import { seg } from "../gfx.js";
 
 // the Big Finding: Valu et al., Nurture Neuroscience
 export const SENTS = [
-  "Top-down attention is known to reach early visual cortex, yet where in the cortical sheet it arrives has never been resolved.",
-  "Using 7T laminar fMRI, we sampled the BOLD response at six depths through V1, from the pial surface down to white matter.",
-  "Attention boosted responses only in layer 1 and the deep layers, where feedback from higher areas terminates.",
-  "Layer 4, the input layer fed by the thalamus, did not change with attention.",
-  "This double-bump profile is the laminar signature of top-down gain control.",
-  "These findings overturn decades of feedforward models and call for sustained investment in laminar research.",
+  "Attention is known to reach V1, the cortex's first stop for vision, yet how deep into its layers it arrives has never been resolved.",
+  "Using a 7T scanner, we measured V1's blood-flow signal at six depths, from the brain's surface down to the white matter beneath.",
+  "Attention boosted responses only in the top layer and the deep layers, where feedback from higher brain areas arrives.",
+  "Layer 4, the input layer where signals from the eyes come in (via the thalamus), did not change with attention.",
+  "This double-bump pattern, high at both ends and flat in the middle, is the signature of top-down gain control.",
+  "These findings overturn decades of bottom-up thinking and call for sustained investment in layer research.",
 ];
 // the shelf: s = the Big Finding sentence it was lifted into (−1: a decoy). lab: a feeder lab key, or null.
 export const LABS = { hindex: ["THE HINDEX LAB", "A"], sinecure: ["SINECURE GROUP", "V"], quorum: ["QUORUM LAB", "R"] };
@@ -55,7 +55,9 @@ export const REFS = [
   { t: "VALU, P. & MICK, P. (2025). LAMINAR GAIN WITHOUT END. J. ENDLESS RES. 1, 1-∞.", src: null, id: "endless" },
 ];
 const LINES = {
-  intro: ["NELL", "Gus's printout taught me the seams. Every sentence of the Big Finding is somebody else's sentence in new clothes."],
+  // a metamer, in colour vision: two lights that look identical but are mixed from different wavelengths
+  intro: ["NELL", "A metamer: two colours that look identical but are mixed from different lights. His paper's one. Every sentence is an older paper's claim in new words."],
+  key: ["NELL", "Old papers talk funny. Striate cortex means V1. A lamina is a layer. The geniculate is the thalamus. Click one of his sentences to start."],
   how: ["NELL", "Now the back issue that makes the same claim in older words. Same meaning, not same words."],
   howC: ["NELL", "Now the sentence of his that says the same thing."],
   ok: [["MORRIS", "Same claim, fancier hat."], ["NELL", "Lifted. Re-spelled, re-dated, same idea."], ["MORRIS", "Old words, new suit, pal."],
@@ -77,7 +79,7 @@ const LINES = {
   refShow: ["MORRIS", "The two I've marked, pal. Look at the years and the journal. Nobody's shelving those."],
   labs: ["NELL", "Six sentences, six back issues, three labs. The Hindex Lab, the Sinecure Group, the Quorum Lab. Every single one."],
   labs2: ["MORRIS", "The feeder labs. Same names on every Rising Stars wall, pal."],
-  refs: ["NELL", "Now his references. Eight citations. Everything real should be on this shelf."],
+  refs: ["NELL", "Now his references: the papers he says he got it from. Eight. Every real one should be on this shelf."],
   real: (c) => ["NELL", `No, that one's real. It's right there on the shelf: ${SRC[c].au} ${SRC[c].yr}.`],
   "1979b": ["NELL", "Quorum, 1979b. There's only one Quorum paper from 1979 on this shelf. There is no b. Pages 20 to 31 are somebody's obituary."],
   endless: ["NELL", "Journal of Endless Research. Volume one, pages one to infinity. That's not a journal, that's a mission statement."],
@@ -224,5 +226,6 @@ export function metamer(el, { score = () => {} } = {}) {
     }
     el.classList.add("show"); draw();
     el.addEventListener("click", onClick); window.addEventListener("keydown", onKey);
+    later(5200, () => { if (S.say === LINES.intro) S.say = LINES.key; });
   });
 }

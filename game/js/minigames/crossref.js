@@ -131,8 +131,8 @@ export function crossref(el, { score = () => {} } = {}) {
       MEMBERS.forEach((_, m) => matches(m).forEach(i => s += `<path class="hl sV" d="M${inP[m][0].toFixed(1)},${inP[m][1].toFixed(1)} L${outP[i][0].toFixed(1)},${outP[i][1].toFixed(1)}"/>`));
       outP.forEach((q, i) => s += `<circle class="${ROWS[i].m < 0 ? "hl sM" : "fA"}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="1.4"/>`);
       inP.forEach(q => s += `<circle class="fA" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="2"/>`);
-      if (p >= 6) s += seg("FIG. 1", 486, 30, 7, "sW", 1) + seg("FIFTY YEARS OF REVIEW", 486, 42, 4.6, "sM", .8) + seg("MIDSAGITTAL VIEW", 486, 50, 4.6, "sM", .8)
-        + seg("A ANTERIOR", 150, 258, 4, "sD", .7) + seg("P POSTERIOR", 430, 258, 4, "sD", .7);
+      if (p >= 6) s += seg("FIG. 1", 486, 30, 7, "sW", 1) + seg("FIFTY YEARS OF REVIEW", 486, 42, 4.6, "sM", .8) + seg("CUT DOWN THE MIDDLE", 486, 50, 4.6, "sM", .8)
+        + seg("FRONT", 150, 258, 4, "sD", .7) + seg("BACK", 430, 258, 4, "sD", .7);
       return s;
     }
     function anatomy() {
@@ -188,7 +188,7 @@ export function crossref(el, { score = () => {} } = {}) {
       later(1100 + 7 * 320, () => {
         S.revealed = true; score("crossref", 3); sfx("chime"); draw();
         say(["NELL", "It's a brain. Fifty years of peer review, and it's one brain."],
-          ["IRIS", "One brain, thinking one thought, for fifty years. The rolls along the middle. Every panel on the surface."],
+          ["IRIS", "One brain, thinking one thought, for fifty years. The members are the bridge down the middle. The panels are the surface."],
           ["IRIS", "I'm on there once, you know. 1976. They never asked me back."],
           ["ETHEL", "I'm going to need a much bigger binder."]);
       });
@@ -206,7 +206,7 @@ export function crossref(el, { score = () => {} } = {}) {
     }
     el.classList.add("show"); draw();
     qT = setTimeout(nextLine, 2000);
-    S.q.push(["IRIS", "Membership on the left. Fifty years of panels and boards on the right. Click a member, and draw a line wherever the name turns up again."]);
+    S.q.push(["IRIS", "Members on the left. On the right, fifty years of the panels that decide whose grants and papers get through. Click a member to draw a line to every place the name turns up."]);
     el.addEventListener("click", onClick); window.addEventListener("keydown", onKey);
   });
 }

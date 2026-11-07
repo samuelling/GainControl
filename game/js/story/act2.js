@@ -129,7 +129,7 @@ export const CONVOS = {
 
   penny: { L: "nell", R: "penny", score: ["pennyTalk", 1], lines: [
     ["R", "Main office. Take a number."], ["L", "There's nobody else here."], ["R", "Take a number anyway. It's policy."],
-    ["L", "I need to see a purchase order. For a 7T. Or a laminar coil. Anything Preston Valu bought."],
+    ["L", "I need to see a purchase order. For a 7T. Or a laminar coil: the antenna helmet you'd need to scan brain layers. Anything Preston Valu bought."],
     ["R", "Purchase orders are confidential, hon. File Form PO-7, signed by a PI."],
     ["L", "My PI is unavailable until after the 15th."],
     ["R", "Everyone important is unavailable. Friday nights, it's every single one of them. Every Friday. For decades. I've stopped asking where."],
@@ -140,14 +140,14 @@ export const CONVOS = {
     ["R", "Signed by a PI. In ink, even. Well, well."],
     ["R", "Valu, Preston. Purchase orders: fourteen boxes of espresso pods. One ring light. A 'synergy consultant,' two days."],
     ["L", "A 7T? A laminar coil? A head coil of any kind?"],
-    ["R", "Nobody ordered a coil. Not ever. Not one coil in thirty years, hon. You can't buy a 7T on a p-card."],
+    ["R", "Nobody ordered a coil. Not ever. Not one coil in thirty years, hon. You can't buy a 7T on the department credit card."],
     ["N", "\"Nobody ordered a coil\" is exactly the kind of sentence worth having on tape."],
   ], after: (api) => { api.flag("clueCoil", true); api.take("po7s"); } },
 
   ethel: { L: "nell", R: "ethel", score: ["ethelTalk", 1], lines: [
     ["R", "Research Integrity. Whisper."],
     ["L", "I'd like to see an ethics protocol. Preston Valu's."],
-    ["R", "Protocols are public record. Find it yourself. Everything is filed by the Binder of Binders."],
+    ["R", "Protocols are public record. No study touches a single human being until one is approved. Find it yourself. Everything is filed by the Binder of Binders."],
     ["R", "And do not pull binders at random. The shelves are load-bearing."],
   ] },
 
@@ -258,7 +258,7 @@ export const HS = {
     fountain: { label: "water fountain", day: { look: "The fountain from 1962.", use: "Still tastes like 1962." }, morris: { look: "Morris can't reach. Morris has never been able to reach." },
       night: { look: "The fountain hums.", use: "Gus drinks." } },
     stars: { label: "Rising Stars wall",
-      day: { look: "RISING STARS. Preston's photo is bigger again, and there's a new line under it: CITATIONS 147,794. For a third-year.", use: "You straighten the photo. It un-straightens.", score: { look: ["starsCites", 1] } },
+      day: { look: "RISING STARS. Preston's photo is bigger again, and there's a new line under it: CITATIONS 147,794. That's how many times other papers have cited his. Most professors retire with a few thousand. He's a third-year.", use: "You straighten the photo. It un-straightens.", score: { look: ["starsCites", 1] } },
       morris: { look: "Morris looks up at Preston's photo. His head itches." },
       night: { look: "Preston's photo, smiling in the dark. CITATIONS 147,794. Six digits.\n\nGus files that away.", score: { look: ["starsNight", 1] } } },
     board: { label: "bulletin board", day: { look: "The two flyers. DEFENSE: NELL NULL. JOB TALK: PRESTON VALU. Same room, same hour. Someone has drawn a heart on his." },
@@ -318,10 +318,10 @@ export const HS = {
       morning: { look: "The locker door hangs open. Empty." } },
     sign: { label: "sign", day: { look: "THE MAGNET IS ALWAYS ON. Underlined three times." }, morning: { look: "THE MAGNET IS ALWAYS ON. Someone forgot." } },
     console: { label: "scanner console",
-      day: { look: "The scanner console: three screens, a helium gauge, and a big red button labeled QUENCH. Nobody presses QUENCH.", use: (api) => api.flag("heliumAlarm") ? "You don't touch the console. You came for the calendar." : "TESS|Hands off my console." },
+      day: { look: "The scanner console: three screens, a helium gauge, and a big red button labeled QUENCH. It boils off all the helium and kills the magnet in under a minute. Nobody presses QUENCH.", use: (api) => api.flag("heliumAlarm") ? "You don't touch the console. You came for the calendar." : "TESS|Hands off my console." },
       morris: { look: "Behind the console: warm wires. Morris's favorite kind." } },
     wires: { label: "wires",
-      morris: { look: "A bundle of warm wires behind the console. One is labeled HE LEVEL SENSOR.",
+      morris: { look: "A bundle of warm wires behind the console. One is labeled HE LEVEL SENSOR: helium, the liquid that keeps the magnet cold. Tess loves her helium more than people.",
         use: (api) => { if (api.flag("heliumAlarm")) return "Already chewed. Morris has standards.";
           if (api.flag("clueCalendar")) return "Morris has done enough damage here. Probably.";
           api.flag("heliumAlarm", true); api.score("wires", 2); api.refresh(); api.sfx("alarm");
@@ -394,7 +394,7 @@ export const HS = {
           if (!api.flag("stoolPlaced")) return "Too high, even on tiptoe. There's a step stool by Ethel's desk.";
           if (!api.flag("sawIndex")) return "Forty red binders. Which one? Pulling at random is how people end up under Shelf B.";
           if (api.flag("clueIRB")) return "You already have what you need from R-12.";
-          await api.readout(PROTOCOL(), "Approved June 3. His paper says the data were collected January through March.\n\nEthics approval, three months after the fact. 'Expedited,' says the binder. 'No continuing review.' Rising Stars don't get reviewed. They get filed.");
+          await api.readout(PROTOCOL(), "The IRB, the ethics board, approved it June 3. His paper says the data were collected January through March.\n\nEthics approval, three months after the fact. 'Expedited,' says the binder. 'No continuing review.' Rising Stars don't get reviewed. They get filed.");
           api.flag("clueIRB", true); api.score("clueIRB", 3); return null; } } },
     stool: { label: "step stool", day: { look: (api) => api.flag("stoolPlaced") ? "The step stool, under the red shelf." : "A step stool by Ethel's desk. Sturdy. Beige.",
       use: (api) => { if (api.flag("stoolPlaced")) return "It's where it needs to be."; api.flag("stoolPlaced", true); api.score("stool", 1); api.refresh(); return "You drag the step stool under the red shelf.\n\nETHEL|Shh. (She means the stool.)"; } } },

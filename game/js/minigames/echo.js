@@ -44,7 +44,7 @@ const COL = { IRIS: "V", QUORUM: "R", NELL: "G", NARRATOR: "W", "A HOODED MEMBER
 const L = (who, text) => [who, text];
 const R = {
   introA: [
-    L("IRIS", "The Echo. We did it in 1962 with sherry. You answer the phrase that comes back around after one other."),
+    L("IRIS", "The Echo. Your lot call it a 2-back: Kirchner's memory test, 1958. We stole it in 1962 and added sherry."),
     L("IRIS", "Miss two and they look at you. Miss three and you're quarry."),
     L("IRIS", "I'll be the Board. When the same words come back from two turns ago, you say SECONDED. Press S. Otherwise you sit there and look tenured."),
     L("NELL", "And the staple gun?"),
@@ -69,10 +69,10 @@ const R = {
   ],
   goC: L("IRIS", "Grant panel. Begin."),
   passC: [
-    L("IRIS", "There. Their founders published that the Echo makes you smarter. 1979. Nobody has ever replicated it."),
+    L("IRIS", "There. Their founders published that the Echo makes you smarter. 1979. Nobody has ever managed it again."),
     L("NELL", "Does it? Make you smarter?"),
-    L("IRIS", "It makes them agree. That isn't the same thing. It isn't even close."),
-    L("IRIS", "One more thing. If he suspects someone, the Corresponding Author 'advances the Echo.' Three back. Nobody likes that."),
+    L("IRIS", "It makes you better at the Echo. And it makes them agree. Neither one is smart."),
+    L("IRIS", "One more thing. If the man at the head of the table suspects someone, he 'advances the Echo.' Three back. Nobody likes that."),
     L("IRIS", "Wear the hood low. Answer late rather than wrong. And don't look at me if you see me."),
   ],
   // tempo: Iris hurries, then slows down to taunt
@@ -109,7 +109,7 @@ const R = {
   still: L("QUORUM", "The Echo remains advanced."),
   retreat: L("QUORUM", "The Echo returns to its customary depth."),
   passI: [L("QUORUM", "The motion carries."),
-    L("NARRATOR", "The hoods face the table again. Nobody in this room has heard of signal detection theory, and you have just passed theirs.")],
+    L("NARRATOR", "The hoods face the table again. Out there it's a 2-back, a working-memory test, scored on hits and false alarms. In here it's tradition. You passed both.")],
   death: "The authors have failed to address the reviewers' concerns.",
 };
 const pick = (a, i) => a[i % a.length];

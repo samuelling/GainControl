@@ -24,7 +24,7 @@ export function tiltOf(out, rot) {                            // out[p] = bolts 
 const DEATH = "Morris has been archived under six tonnes of superconductor. So has the induction. So, unfortunately, has Nell.";
 
 const LINES = {
-  intro: [["MORRIS", "Under the 3T. Six tonnes of magnet on four rusty sticks. Pal, I have been waiting my whole life for this."],
+  intro: [["MORRIS", "Under the 3T, the big scanner. Six tonnes of magnet on four rusty sticks. Pal, I have been waiting my whole life for this."],
     ["NARRATOR", "Four jack posts, three bolts each, rotten with fifty years of the Table's stolen chilled water. Every bolt out tips the pad toward that corner."],
     ["IRIS", "Kssh. Morris, dear. Bolts out, but keep the bubble in the middle. Opposite corners, one then the other. It comes down when I throw the switch, not before. Kssh."]],
   quips: [
@@ -140,7 +140,7 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
       s += `<path class="hl sB" d="M${pt(p1)} L${pt(p2)} M${f1(p1[0])},${f1(p1[1] + 5)} L${f1(p2[0])},${f1(p2[1] + 5)}"/>`;
       s += `<path class="hl sB" d="M${f1(tap[0])},${f1(tap[1] + 5)} L${f1(tap[0])},${f1(tap[1] + 12)} C${f1(tap[0])},${f1(tap[1] + 22)} ${f1(tap[0] + 10)},${f1(tap[1] + 20)} ${f1(tap[0] + 12)},${f1(br[1])}"/>
         <rect class="k hl sB" x="${f1(tap[0] - 3)}" y="${f1(tap[1] + 6)}" width="6" height="4"/>`;
-      s += seg("CHW SUPPLY  3T", p1[0] + 160, p1[1] - 7, 3, "sD", .6);
+      s += seg("CHILLED WATER  3T", p1[0] + 160, p1[1] - 7, 3, "sD", .6);
       if (S.amb % 2) s += `<path class="hl sB" d="M${f1(tap[0])},${f1(tap[1] + 15)} L${f1(tap[0])},${f1(tap[1] + 17)}"/>`;
       else s += `<path class="hl sB" d="M${f1(tap[0])},${f1(tap[1] + 24)} L${f1(tap[0])},${f1(tap[1] + 26)}"/>`;
       // steel I-beams running back, just under the pad's edges
@@ -166,7 +166,7 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
       const fx = top[0][0], fy = top[0][1];
       const ang = Math.atan2(c[1][1] - c[0][1], c[1][0] - c[0][0]) * 180 / Math.PI;
       s += `<g transform="translate(${f1(fx)},${f1(fy)}) rotate(${ang.toFixed(2)})">
-        ${seg("3T PAD  B1  6 T", 14, 9, 7, "sM", .9)}${chip("THE MAGNET IS ALWAYS ON", 240, 7, 5, "fA")}</g>`;
+        ${seg("3T SCANNER PAD  B1  6 TONNES", 14, 9, 7, "sM", .9)}${chip("THE MAGNET IS ALWAYS ON", 240, 7, 5, "fA")}</g>`;
       return s;
     }
     function post(p) {
@@ -289,7 +289,7 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
       if (S.done) s += chip("LEVEL", cx - chipFor("LEVEL", 6) / 2, 236, 6, "fG");
       else if (dropping) s += chip("DROPPING", cx - chipFor("DROPPING", 6) / 2, 236, 6, "fR");
       else if (M >= YELLOW) s += chip("CAREFUL", cx - chipFor("CAREFUL", 6) / 2, 236, 6, "fA");
-      s += seg("BUBBLE RIDES HIGH", cx - segW("BUBBLE RIDES HIGH", 4) / 2, 256, 4, "sD", .7);
+      s += seg("THE BUBBLE FLOATS TO THE HIGH SIDE", cx - segW("THE BUBBLE FLOATS TO THE HIGH SIDE", 4) / 2, 256, 4, "sD", .7);
       return s;
     }
 

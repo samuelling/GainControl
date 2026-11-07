@@ -43,7 +43,7 @@ const LABN = { hindex: "THE HINDEX LAB", sinecure: "SINECURE GROUP", quorum: "QU
 const SHARED = ["hindex", "sinecure", "quorum"];
 const LINES = {
   intro: ["PENNY", "Here. Yesterday's 'invited talk' receipts, and the calendars. I've decided I'm angry."],
-  how: ["NELL", "Turn their calendars on, all three. Then put each receipt on its day."],
+  how: ["NELL", "Turn on all three calendars and find when they're all free at once. Then put each receipt on its day."],
   one: { P: ["NELL", "Preston books everything. Even sleep. 'Optimized.'"], I: ["NELL", "Impact lives on planes."], Q: ["NELL", "Quorum. Committees, then bed by nine."] },
   two: (n) => ["NELL", `Two calendars. ${n} hours a week they're both free. Add the third.`],
   three: ["NELL", "One hole. Friday, eleven at night to three in the morning. All three of them, empty."],
@@ -57,7 +57,7 @@ const LINES = {
   talk: ["NELL", "Invited talk. No venue. Friday night."],
   night: ["NELL", "Every receipt from that night says INVITED TALK. Same template, same total, same typo. 'Entertainmnet.'"],
   night2: ["PENNY", "And I approved every one. It's a form. Compare their CVs, hon. I printed those too."],
-  cv: ["NELL", "Three CVs. Click the labs all three of them came through."],
+  cv: ["PENNY", "A CV is every job you've ever had, in order, hon. Click the labs that turn up on all three."],
   found: { hindex: ["PENNY", "The Hindex Lab. Their alumni all file the same receipt."], sinecure: ["NELL", "Sinecure Group. All three. Different decades."],
     quorum: ["PENNY", "Quorum's own lab. Well. Of course it is."] },
   miss: (k, who) => ["NELL", `${LABN[k]} is only on ${who}. It has to be on all three.`],
@@ -168,7 +168,7 @@ export function hours(el, { score = () => {} } = {}) {
       const nPlaced = S.placed.filter(Boolean).length, nFound = Object.keys(S.found).length;
       const hd = S.stage === "cal"
         ? seg("THE MISSING HOURS", 16, 10, 18, "sW", 1.6) + seg("THREE CALENDARS  ·  ONE WEEK  ·  PENNY'S RECEIPTS", 250, 17, 5, "sM", .8)
-        : seg("CURRICULA VITAE", 16, 10, 18, "sW", 1.6) + seg("NEVER PUT THE TABLE ON YOUR CV. THE LABS GO ON ANYWAY.", 226, 17, 5, "sM", .8);
+        : seg("THEIR CVS", 16, 10, 18, "sW", 1.6) + seg("EVERY JOB, IN ORDER  ·  THE TABLE NEVER GOES ON A CV. THE LABS DO.", 126, 17, 5, "sM", .8);
       const body = S.stage === "cal"
         ? `<svg class="t week" viewBox="0 0 ${W} ${H}">${week()}</svg><div class="rcol">${receipts()}</div>`
         : cvs();

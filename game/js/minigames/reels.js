@@ -142,11 +142,11 @@ export function reels(el, { seconds = 90, score = () => {} } = {}) {
     }
     function clock() {
       const x = 446, m = Math.floor(Math.max(0, S.t) / 60), sec = String(Math.max(0, S.t) % 60).padStart(2, "0"), hot = S.t <= 20 && !S.done;
-      let s = seg("MAGNET RAMP", x, 2, 4.4, "sM", .8) + seg(`${m}:${sec}`, x, 10, 20, hot ? "sR" : "sW", 1.5);
+      let s = seg("TAPE WIPES IN", x, 2, 4.4, "sM", .8) + seg(`${m}:${sec}`, x, 10, 20, hot ? "sR" : "sW", 1.5);
       if (S.pen) s += seg("-" + S.pen, x + 58, 12, 8, "sR", 1.1);
       const f = 1 - Math.max(0, S.t) / S.total;
       for (let k = 0; k < 16; k++) s += `<rect class="${f * 16 > k ? "fR" : "hl sD"}" x="${x + 92 + k * 6.4}" y="16" width="4.6" height="14"/>`;
-      s += seg("FIELD", x + 92, 2, 4.4, "sM", .8);
+      s += seg("MAGNET", x + 92, 2, 4.4, "sM", .8);
       if (S.over) s += arcs(x + 200, 22, 1, "sR", 3, .7);
       return s;
     }
@@ -166,7 +166,7 @@ export function reels(el, { seconds = 90, score = () => {} } = {}) {
         </svg>
         <div class="coachline"><span class="who" style="background:var(--${col})">${S.say[0]}</span><span style="color:var(--${col})">${S.say[1]}</span></div>
         <div class="bar">${S.over ? `<button data-b="retry">REVISE &amp; RESUBMIT</button>` : `<button data-b="send" ${S.load >= 0 && !lock ? "" : "disabled"}>SEND</button><button data-b="out" ${S.load >= 0 && !lock ? "" : "disabled"}>UNLOAD</button>`}
-          <span class="status">${S.done ? (S.sent === 4 ? "ALL FOUR DELIVERED" : S.sent + " OF 4 DELIVERED") : S.over ? `THE MAGNET IS AT FIELD  ·  ${S.sent} OF 4 DELIVERED  ·  TRY AGAIN?` : S.load >= 0 ? "LOADED: " + REELS[S.load].t.join(" ") + "  →  " + DEST[S.dial].t + "  ·  SEND" : `PICK A REEL  ·  SEND THE 4 THAT ARE EVIDENCE TO ETHEL BORD 2F  ·  ${S.sent} OF 4`}</span>
+          <span class="status">${S.done ? (S.sent === 4 ? "ALL FOUR DELIVERED" : S.sent + " OF 4 DELIVERED") : S.over ? `THE MAGNET IS ON. THE TAPE IS WIPED  ·  ${S.sent} OF 4 DELIVERED  ·  TRY AGAIN?` : S.load >= 0 ? "LOADED: " + REELS[S.load].t.join(" ") + "  →  " + DEST[S.dial].t + "  ·  SEND" : `PICK A REEL  ·  SEND THE 4 THAT ARE EVIDENCE TO ETHEL BORD 2F  ·  ${S.sent} OF 4`}</span>
           <button data-b="off" class="off ${S.confirm ? "warn" : ""}">${S.done ? "DONE" : S.confirm ? "LEAVE ANYWAY" : S.over ? "LEAVE IT" : "CLOSE"}</button></div></div>`;
     }
 
@@ -210,7 +210,7 @@ export function reels(el, { seconds = 90, score = () => {} } = {}) {
     function timeUp() {
       if (S.over || S.done) return;
       S.over = true; S.load = -1; S.confirm = false; clearInterval(tick); sfx("alarm"); sfx("ramp");
-      say(["MORRIS", "My itch just went through the roof. That's the field, pal."], ["NARRATOR", "Every reel left in the Archive is now a very long piece of brown ribbon. REVISE & RESUBMIT to try again; what reached Ethel stays with Ethel."]);
+      say(["MORRIS", "My itch just went through the roof. That's the magnet at full strength, pal."], ["NARRATOR", "Every reel left in the Archive is now a very long piece of brown ribbon. REVISE & RESUBMIT to try again; what reached Ethel stays with Ethel."]);
       draw();
     }
     // Revise & Resubmit: the clock winds back; the shelf is as it was; delivered reels stay delivered
@@ -252,7 +252,7 @@ export function reels(el, { seconds = 90, score = () => {} } = {}) {
       resolve({ sent: S.sent, wrongSends: S.wrong, decoys: S.decoys, lost: S.lost, timeLeft: Math.max(0, S.t), done: S.done });
     }
     el.classList.add("show");
-    say(S.say, ["MORRIS", "Magnets eat tape, pal. Click a reel that's evidence, the dial's already on Ethel, SEND. Four of 'em. Before the field comes up."]);
+    say(S.say, ["MORRIS", "Magnets scramble tape, pal, like a fridge magnet on a bank card. Click a reel that's evidence, then SEND. The dial's on Ethel. Four of 'em."]);
     startTick();
     el.addEventListener("click", onClick); window.addEventListener("keydown", onKey);
   });

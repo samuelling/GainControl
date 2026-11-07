@@ -20,6 +20,7 @@ const WATCH_LINES = {
   9: ["NELL", "Gaps of four, then two. There's no rhythm. So what are they nodding at?"],
 };
 const SOLVED = [["NELL", "Wait. Every time, the motion came back after exactly one other. They're answering the motion from two ago."],
+  ["GUS", "A 2-back. It's a memory test. Like juggling: each new motion lands, the oldest drops, and you keep the last two in the air."],
   ["GUS", "Then prove it. When the motion is the same as the one TWO before it, hit NOW (or SPACE) before the heads move. Otherwise, nothing."]];
 // one practice run: eight motions, three of them repeats of the motion two before, one a three-back lure. The positions
 // rotate between tries so nobody can learn them, but every run is continuous with the notes on screen (the motion two
@@ -177,7 +178,7 @@ export function nod(el, { onPose = () => {}, onQuorum = () => {}, score = () => 
     el.addEventListener("click", onClick); window.addEventListener("keydown", onKey);
     later(() => run(WATCH, "watch", 1, WATCH_LINES, () => {
       cur = null; coach = SOLVED[0]; phase = "post"; draw();
-      later(() => { coach = SOLVED[1]; draw(); later(predict, 3800); }, 3400);
+      later(() => { coach = SOLVED[1]; draw(); later(() => { coach = SOLVED[2]; draw(); later(predict, 3800); }, 4200); }, 3400);
     }), 1600);
     // test hook
     el.__nod = { T, get log() { return log; }, get cur() { return cur; }, get phase() { return phase; }, now, get hints() { return { errs, fails, mark, elbow }; } };

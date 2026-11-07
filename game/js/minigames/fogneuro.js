@@ -110,6 +110,7 @@ export function fogNeuro(el, { canPrint = true } = {}) {
     function draw() {
       let h = `<div class="screen"><svg class="t hd" viewBox="0 0 640 40">${head()}</svg>`;
       if (!cur) h += `<div class="empty">PRESS GENERATE.<br><em>The machine is warm. It has been waiting.</em>
+        <br><em>THE LTM: AUTOCOMPLETE THAT READ A LIBRARY OF CLASSICS. IT WRITES WHAT SOUNDS RIGHT, NOT WHAT'S TRUE.</em>
         <br><em>GENERATE WRITES A PAPER · SOURCES SHOWS WHERE EACH SENTENCE CAME FROM · FEUD WRITES THE FURIOUS REPLY${canPrint ? " · PRINT TAKES ONE WITH YOU" : ""}</em></div>`;
       else h += paperHTML(cur, rival ? "THE PAPER" : "") + (rival ? paperHTML(rival, "THE FURIOUS REPLY") : "");
       h += `<div class="bar">

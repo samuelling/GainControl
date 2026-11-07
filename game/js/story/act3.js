@@ -29,7 +29,7 @@ wrap("notebook", (api) => {
   const f = api.G.flags, t = (k, s) => `- ${f[k] ? "(done) " : ""}${s}`;
   if (f.quorumDead) return "Your lab notebook. Today's last line, in handwriting you don't recognize as your own:\n\nTHE FACULTY ANSWER THE MOTION FROM TWO AGO. QUORUM IS DEAD. NOBODY MOVED TO ADJOURN.\n\nAnd under it: the old woman on four.";
   return "Your lab notebook. Today: prove the Big Finding is fake. Not suspicious. Fake.\n\n"
-    + [t("proofGrim", "Table 1: brain predicts behaviour at r = .94. Gus says that's impossible. (Click Gus: TABLE 1.)"), t("proofOverlay", "Figure 3: the two participants look… familiar. (Your monitor.)"),
+    + [t("proofGrim", "Table 1: brain scans predict behaviour at .94, nearly perfect. Gus says that's impossible. (Click Gus: TABLE 1.)"), t("proofOverlay", "Figure 3: the two participants look… familiar. (Your monitor.)"),
       t("proofLogs", "Who used the GPU cluster? Rex knows. Rex wants coffee. (Kitchen.)" + (f.proofLogs ? ""
         : f.rexLogin ? " You have his login. The terminal's in the server room, B1. (Stairwell.)"
         : f.descaled ? " The machine says READY. A mug, a coffee, Rex."
@@ -116,7 +116,7 @@ export const CONVOS = {
     ["R", "Ms. Null. Quick chat. Your thermos was found stuck to a magnet with a dead physicist next to it."],
     ["L", "I locked it in the locker. Tess made me. Anyone could have taken it out."],
     ["R", "Anyone could have. That's the problem with anyone. N equals everybody."],
-    ["R", "One body, one thermos. Underpowered. I don't arrest people on an N of one."],
+    ["R", "One body, one thermos. Underpowered: too little data to conclude anything. I don't arrest people on an N of one."],
     ["L", "Thank you?"],
     ["R", "Don't thank me. I'm collecting data. Don't leave the building."],
   ], after: (api) => { api.flag("smallLab", true); api.refresh(); } },
@@ -126,10 +126,10 @@ export const CONVOS = {
     ["L", "Gus. Small thinks I did it."],
     ["R", "Then we prove the paper's fake, and the rest follows. Not suspicious. Fake. The kind of fake Ethel Bord can file."],
     { choice: [
-      { text: "Where do we start?", lines: [["R", "Table 1. His brain-behaviour correlations are higher than his own measurements allow. Not 'surprising'. Impossible. Click me and pick TABLE 1."]] },
+      { text: "Where do we start?", lines: [["R", "Table 1. His brain scans match behaviour better than his own measurements allow. Not 'surprising'. Impossible. Click me and pick TABLE 1."]] },
       { text: "His figures look too clean.", lines: [["R", "Figure 3. Two participants. Put them side by side on your monitor and tell me they're two people."]] },
-      { text: "Where did the layers come from?", lines: [["R", "Somebody burned a lot of GPU. Rex watches the cluster logs like a soap opera. Rex works for coffee. The machine's been broken since 2012."]] },
-      { text: "Can we just replicate it?", lines: [["R", "He deposited his raw data. We need his stimulus log, the timing. It's in 116."], ["L", "I can't get into 116."], ["R", "No. But something in your drawer can."]] },
+      { text: "Where did the layers come from?", lines: [["R", "Somebody burned a lot of GPU. The kind of computing you'd use to AI-upscale a blurry photo. Rex watches the cluster logs like a soap opera. Rex works for coffee. The machine's been broken since 2012."]] },
+      { text: "Can we just replicate it?", lines: [["R", "He posted his raw scans online. To rerun them we need his stimulus log: what was on screen, and when. It's in 116."], ["L", "I can't get into 116."], ["R", "No. But something in your drawer can."]] },
     ], retry: true },
     ["R", "Four things. Then Ethel. Then nobody can say it's a grudge."],
   ], after: (api) => { api.flag("gusPlanned", true); api.flag("morrisHint3", true); } },
@@ -190,7 +190,7 @@ export const CONVOS = {
     ["R", "Enough that I can file it. In a binder. Binders don't have feelings either."],
   ] },
   ethelNew: { L: "nell", R: "ethel", score: ["ethelFile", 2], lines: [
-    ["L", "Correlations in Table 1 above the noise ceiling. Figure 3b and 3d are the same panel, flipped. Four thousand GPU-hours of 'super-resolution'. And the replication: attention turns V1 up, the same at every depth, because at 3T there's only one depth."],
+    ["L", "Table 1 matches better than his own measurements can. His two participants are one brain, flipped. Four thousand hours of AI upscaling. And rerun, his six layers are one."],
     ["R", "…"],
     ["R", "That's a binder. That's a whole binder."],
     ["R", "Misconduct in this department is raised at the faculty meeting, under New Business. Today. Three o'clock. Third floor."],
@@ -213,8 +213,8 @@ export const CONVOS = {
   irisTruth: { L: "nell", R: "irisNamed", score: ["irisTruth", 3], lines: [
     ["L", "What table?"],
     ["R", "The Neuroscientific Round Table. Under forty, officially. Six on the Board; they call themselves the Editorial Board, and the members call them the Secret Six."],
-    ["R", "Members review each other kindly and everyone else as Reviewer 2. They never write it on a CV. They never tell anyone where they go on Fridays."],
-    ["R", "At forty, you retire. Not from the job. From the table. They turn your gain to zero, and you sit in faculty meetings nodding for the rest of your career."],
+    ["R", "Members review each other's papers kindly. Everyone else gets Reviewer 2: the anonymous one who hates your work and says so. They never write it on a CV. They never tell anyone where they go on Fridays."],
+    ["R", "At forty, you retire. Not from the job. From the table. They turn your gain to zero, like a volume knob, and you sit in faculty meetings nodding for the rest of your career."],
     ["L", "The nodding. Two back."],
     ["R", "The Echo. We did it in 1962 with sherry."],
     ["R", "My invitation came on cream paper, too. They wanted my date of birth, to make sure I wasn't 'wizened.' And a Revelation: ten minutes of my unpublished work, read to a room of men who would review it the following spring."],
@@ -225,8 +225,8 @@ export const CONVOS = {
     { choice: [
       { text: "Why are they killing people?", lines: [["R", "Because people noticed. Tess saw the power draw. Dana was going to follow him. Quorum isn't dead, by the way. Nobody checked his pulse for forty minutes."]] },
       { text: "What does this have to do with me?", correct: true, lines: [
-        ["R", "Every year they choose a quarry. Someone promising. Unconnected. Then they close ranks: Reviewer 2, triaged grants, job searches that go cold."],
-        ["R", "Your paper was sent to Impact. Impact gave it to his student. That was the student's test."],
+        ["R", "Every year they choose a quarry. Someone promising. Unconnected. Then they close ranks: Reviewer 2, grants binned without discussion, job searches that go cold."],
+        ["R", "Your paper went to Prof. Impact for review. Impact handed it to his student, Preston. Reviewing you was Preston's test."],
         ["R", "You're this year's quarry, dear. Your paper didn't get rejected."],
         ["R", "You got selected."],
       ] },
@@ -271,10 +271,10 @@ async function stairs(api) {
 
 /* ---------------- minigames ---------------- */
 async function doGrim(api) {
-  if (api.flag("proofGrim")) return "GUS|Three correlations above the ceiling, from voxels picked for correlating. I'd frame it, but frames are evidence too.";
+  if (api.flag("proofGrim")) return "GUS|Three matches above the most they could be, from brain spots picked for matching. I'd frame it, but frames are evidence too.";
   const r = await api.mini(ceiling, { score: api.score });
   if (!r.done) return missed(api, "grimFails") < 2 ? "GUS|Take your time. Table 1 isn't going anywhere. It's above the ceiling. It can't go anywhere."
-    : "GUS|Cheat sheet. One: the ceiling comes from his own reliability panels, S2A and S2C, not head motion and not pizza. Two: any bar above .60 beats the ceiling, and three of them do. Three: find the methods sentence where he picks voxels by how well they correlate with attention. Then watch it work on pure noise.";
+    : "GUS|Cheat sheet. One: S2A and S2C, the two panels that measure the same thing twice. Two: any bar above .60, the most it could be. Three of them are. Three: the sentence where he keeps only the brain spots that already match the scores. Then watch it work on pure noise.";
   api.flag("proofGrim", true); api.score("proofGrim", 2);
   return "GUS|A measure can't agree with anything better than it agrees with itself. His do. That's not a finding, Nell. That's a selection procedure. Nobody checks. That's why it works.";
 }
@@ -288,7 +288,7 @@ async function doOverlay(api) {
 async function doGLM(api) {
   if (api.flag("proofGLM")) return "ATTEND > IGNORE, by the same amount in every layer. One voxel. You don't need to run it again. You'll run it again tonight anyway.";
   if (!api.has("log")) return "GUS|We need his timing. The stimulus log. It's in 116.";
-  await api.say("Gus rolls his chair over. He has the raw data. You have Preston's log. Time to replicate the Big Finding.");
+  await api.say("Gus rolls his chair over. He has the raw data. You have Preston's log. Time to replicate the Big Finding: run his own data his own way, and see if it says what he says.");
   await api.mini(glm, { score: api.score, die: dieKeep(api) }, "glmwrap");
   api.flag("proofGLM", true); api.score("proofGLM", 2); api.take("log");
   return "GUS|Attention's real. His layers aren't. One voxel can't tell you which floor of the building the party's on.\n\nNELL|So the fancy layers?\n\nGUS|Painted on.";
@@ -305,7 +305,7 @@ async function meeting(api) {
   await api.say("You sit. Gus slides in beside you. Quorum raps the table, once.\n\nQUORUM|We'll take New Business at the end. As always. Ethel, the first motion.");
   const r = await api.mini(nod, { score: api.score, onPose: (i) => { api.pose("vote", i); if (i) api.sfx("nod"); }, onQuorum: () => { api.sfx("thud"); api.flag("quorumDead", true); api.G.bodies = 3; api.refresh(); } }, "nodmode");
   api.flag("nodDone", true);
-  await api.say(`NELL|My d′ was ${r.dprime.toFixed(1)}. Theirs was higher. They weren't even listening.\n\nGUS|They weren't conscious, Nell.`);
+  await api.say(`NELL|My d′, my score for catching the repeats without crying wolf, was ${r.dprime.toFixed(1)}. Theirs was higher. They weren't even listening.\n\nGUS|They weren't conscious, Nell.`);
   await api.convo("ethelAfter");
   return null;
 }
@@ -533,7 +533,7 @@ function brew(api) {
 async function logs(api) {
   if (api.flag("proofLogs")) { await api.readout(JOBS(), "PVALU. 4,012 GPU-hours of super-resolution on one subject. And every Friday at midnight: ltm_generate.py, reading from /mnt/B3/archive."); return null; }
   if (!api.has("login")) return "LOGIN: _\n\nYou try 'admin.' You try 'password.' You try 'preston.' The cursor waits, like a reviewer.";
-  await api.readout(JOBS(), "USER: PVALU. 4,012 GPU-hours of superres_laminar.py, all on one subject, sub-01: 3T in, 7T out, six layers.\n\nAnd a job that runs every Friday at 00:00: ltm_generate.py --corpus /mnt/B3/archive --byline \"P. Valu.\" Forty drafts in the queue, dated next year. One is called \"The Null Result of N. Null Is an Artifact.\"");
+  await api.readout(JOBS(), "USER: PVALU. 4,012 GPU-hours of superres_laminar.py on one subject: 3T in, 7T out, six layers. Super-resolution is AI upscaling. The detail isn't measured. It's painted in.\n\nAnd a job that runs every Friday at 00:00: ltm_generate.py --corpus /mnt/B3/archive --byline \"P. Valu.\" Forty drafts in the queue, dated next year. One is called \"The Null Result of N. Null Is an Artifact.\"");
   api.flag("proofLogs", true); api.score("proofLogs", 3); api.take("login");
   return "NELL|B3. There's no B3.\n\nNELL|And he's already written the paper that says I'm wrong. For next year.";
 }
@@ -622,7 +622,7 @@ export async function check(api) {
     return f.danaClosed ? null : "c:smallDana";
   }
   if (proofs(api) === 4 && !f.proofsDone) { f.proofsDone = true;
-    return "NELL|Correlations above the ceiling. One brain, two names. Four thousand GPU-hours. And when you actually run it: nothing.\n\nNELL|That's not a sloppy paper. That's a fake one.\n\nGUS|Ethel. Second floor. Before anyone else ends up in a bin."; }
+    return "NELL|Correlations above the ceiling. One brain, two names. Four thousand GPU-hours. And when you actually run it: no layers.\n\nNELL|That's not a sloppy paper. That's a fake one.\n\nGUS|Ethel. Second floor. Before anyone else ends up in a bin."; }
   if (G.room === "conference" && !f.meeting) { f.meeting = true; api.refresh();
     return "The faculty meeting. Prof. Quorum presides. Six senior faculty, three to a side. Ethel takes the minutes.\n\nGus slips in behind you in a borrowed tie and sits down. The student representative's chair, by the door, is empty."; }
   if (f.irisDone && !f.dayDone) { f.dayDone = true; await nightfall(api); return null; }
@@ -640,7 +640,7 @@ export async function start(api, { fresh, skipCard } = {}) {
   G.cast = ["nell", "morris"]; G.chars = { morris: { room: "lab", x: 222, y: 284, dir: 1 } }; G.bodies = 1;
   api.shift({ mode: "day", char: "nell", room: "lab", entry: "start", min: 10 * 60 + 12 });
   if (!skipCard) await api.card("WEDNESDAY", "ACT III  MAJOR REVISIONS", "ADLINE LAB 114  10:12", "fV", 2800);
-  await api.say("Wednesday. Tess is dead, Nell's thermos did it, and a detective is waiting by her door.\n\nGus hasn't gone home. He's at his desk with the Big Finding open, and the expression of a man who has found a correlation of .94 in Table 1.");
+  await api.say("Wednesday. Tess is dead, Nell's thermos did it, and a detective is waiting by her door.\n\nGus hasn't gone home. He's at his desk with the Big Finding open. Table 1 says brain scans predict people's scores at .94, where 1.00 is perfect. Gus has the expression of a man watching a horse do long division.");
   await api.convo("smallLab");
 }
 export async function debugNight(api) {

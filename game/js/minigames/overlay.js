@@ -28,12 +28,12 @@ function nextMove(t) {
   return null;
 }
 const LINES = {
-  intro: ["GUS", "3b is participant 7. 3d is participant 12. Different people, different brains, he says. Turn and flip 3d until it sits on 3b. If they're different people, it never will."],
+  intro: ["GUS", "3b is person 7 and 3d is person 12, he says. Brains fold like fingerprints: no two alike. Turn and flip 3d until it sits on 3b. If they're different people, it never will."],
   mirror: ["GUS", "Still mirrored. The fold runs the wrong way round. A flip fixes that."],
   turn: ["GUS", "Not mirrored any more. Now it just needs turning. Closer."],
   hint: ["GUS", "Watch the blob. On 3b it sits top right, tucked in the second hump. Flip once if 3d is mirrored, then turn until its blob's top right too."],
   show: ["GUS", "Here. Press the amber button. Then the next amber one. I've done this before. On other people's figures."],
-  match: ["NELL", "Every dot. Every fold. Participant 12 is participant 7 in a mirror."],
+  match: ["NELL", "Every dot. Every fold. Person 12 is person 7 in a mirror."],
   after: ["GUS", "Two subjects, one brain, flipped. That's not a mistake, Nell. That's a choice."],
 };
 const HINT_AT = 5, SHOW_AT = 9;   // moves without a match before the hint, then the answer
@@ -54,13 +54,13 @@ export function overlay(el, { score = () => {} } = {}) {
       if (closed) return;
       const m = same(), lit = !m && S.moves >= SHOW_AT ? nextMove(S.t) : null;
       el.innerHTML = `<div class="screen ovl">
-        <svg class="t hd" viewBox="0 0 640 40">${seg("FIGURE 3", 16, 10, 18, "sW", 1.6)}${seg("LAMINAR RESPONSE PROFILES  TWO INDEPENDENT PARTICIPANTS", 170, 17, 5, "sM", .8)}</svg>
+        <svg class="t hd" viewBox="0 0 640 40">${seg("FIGURE 3", 16, 10, 18, "sW", 1.6)}${seg("LAYER BY LAYER  TWO DIFFERENT PEOPLE, HE SAYS", 170, 17, 5, "sM", .8)}</svg>
         <svg class="t ovsvg" viewBox="0 0 640 230">
-          ${fig(40, "pB", "", "3B  SUB-07", "sB")}
-          ${fig(190, "pA", tf(S.t), "3D  SUB-12", "sA")}
+          ${fig(40, "pB", "", "3B  PERSON 7", "sB")}
+          ${fig(190, "pA", tf(S.t), "3D  PERSON 12", "sA")}
           <g transform="translate(410,22) scale(1.5)"><rect class="hl sD" x="-4" y="-4" width="108" height="108"/>
             <g class="${m ? "pG" : "pB"}">${PANEL}</g><g class="${m ? "pG" : "pA"} ov" transform="${tf(S.t)}">${PANEL}</g></g>
-          ${segC(m ? "IDENTICAL. EVERY VOXEL." : "OVERLAY", 485, 196, 8, m ? "sG" : "sW", 1.2)}
+          ${segC(m ? "IDENTICAL. EVERY DOT." : "OVERLAY", 485, 196, 8, m ? "sG" : "sW", 1.2)}
           ${seg("MOVES " + S.moves, 410, 214, 5, "sM", .8)}
         </svg>
         <div class="coachline"><span class="who" style="background:var(--${S.say[0] === "GUS" ? "B" : "G"})">${S.say[0]}</span>

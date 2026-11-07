@@ -241,7 +241,7 @@ export const WALKTHROUGH = {
       { t: "Click the desk drawer and choose OPEN: Impact's expired membership card. This brings Cody to the hallway.", flag: "clueCard",
         hs: ["impactoffice.drawer", "hall.stairs"], nudge: ["NELL|He was going to tell me something at four. What did he want Ethel to know?", "GUS (TEXT)|men like impact keep the thing that matters in the top drawer", "NELL|Impact's desk drawer. Open it."] },
       { t: "OPTIONAL (story clue; the act advances without it): click Impact's laptop and choose READ THE REVIEW.", flag: "clueReviewer2" },
-      { t: "OPTIONAL (story clue): framed Figure 2, OVERLAY YOUR SCAN. Press ← 3 times, ↓ 2 times, SCALE − 4 times (it snaps into register); click all six painted layers. DONE.", flag: "clueRetainer" },
+      { t: "OPTIONAL (story clue): framed Figure 2, OVERLAY YOUR SCAN. Press ← 3 times, ↓ 2 times, SCALE − 4 times (it snaps into line); click all six painted layers. DONE.", flag: "clueRetainer" },
     ] },
     { name: "CODY, AND THE FOG", steps: [
       { t: "In the hallway, TALK to Cody (by the tube station).", flag: "codyLeft",
@@ -296,7 +296,7 @@ export const WALKTHROUGH = {
     { name: "FRIDAY  2 PM  THE DEFENSE  (NELL)", steps: [
       { t: "Click your lectern and choose BEGIN THE DEFENSE. Answer each question by clicking evidence cards; two right cards (or one decisive card) close it.", flag: "defenseDone",
         hs: ["defense.lectern"], nudge: ["NELL|Four days of evidence. One lectern. Gus should be in the front row.", "PROF. ADLINE|Whenever you're ready, Nell. I've cleared all day. I've never said that before.", "NELL|My lectern. Begin the defense."] },
-      { t: "Q1, WAS THE STUDY RUN? → two of SCANNER CALENDAR, PURCHASE ORDERS, IRB PROTOCOL, SIGN-IN SHEET, THE RECORDER.", flag: "defenseDone",
+      { t: "Q1, WAS THE STUDY RUN? → two of SCANNER CALENDAR, PURCHASE ORDERS, ETHICS APPROVAL, SIGN-IN SHEET, THE RECORDER.", flag: "defenseDone",
         hs: ["defense.lectern"], nudge: ["NELL|Was the study ever run? Tuesday answered that. Four times.", "NELL|Tuesday's paper trail. Plus Preston, on tape, at journal club.", "NELL|Any two: the calendar, the purchase orders, the protocol, the sign-in sheet, the recorder."] },
       { t: "Q2, ARE THE DATA REAL? → TABLE 1 CEILING and FIGURE 3B = 3D. (Save GPU LOGS and THE REPLICATION.)", flag: "defenseDone",
         hs: ["defense.lectern"], nudge: ["NELL|Are the data real? Wednesday was all about that.", "NELL|Gus's ceiling, and the two participants who turned out to be one brain.", "NELL|The Table 1 ceiling, and Figure 3b equals 3d. Save the logs and the replication."] },

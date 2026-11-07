@@ -430,7 +430,7 @@ export function stairwell(el, opts = {}) {
         s += `<rect class="${lit && !blink ? "fG" : blink ? "hl sW" : "hl sR"}" x="${414 + i * 12}" y="310" width="9" height="16"/>`;
       }
       if (fx) s += chip((fx.d > 0 ? "+" : "") + fx.d, 414 + GAP_MAX * 12 + 2, 312, 5, fx.d > 0 ? "fG" : "fR");
-      s += seg(`REVERSALS ${ST.reversals.length}/${REVERSALS}`, 414, 334, 4.2, "sM", .8);
+      s += seg(`TURNAROUNDS ${ST.reversals.length}/${REVERSALS}`, 414, 334, 4.2, "sM", .8);
       const Z = ZONES[S.zone];
       s += chip(`${Z.fl} ${Z.short}`, 532, 300, 5.5, Z.f) + seg("THE FOG", 532, 322, 7, "sW", 1.1) + seg(clock(), 532, 336, 6, "sM", 1);
       return s;
@@ -582,6 +582,7 @@ export function stairwell(el, opts = {}) {
       else if (!correct) once("wrongway", () => quip("MORRIS", "WRONG WAY, PAL. THAT'S UP. THE NEXT MARK WILL BE EASIER.", "K"));
       else if (S.said.cantsee && !S.said.gut) once("gut", () => quip("NELL", "PICK ANYWAY. YOUR GUT'S BETTER THAN YOU THINK.", "G"));
       else if (move === -1 && ST.phase === "main") once("atmos", () => quip("VOICE BELOW", "SHE'S GETTING AWAY. MORE ATMOSPHERE.", "V"));
+      else if (ST.reversals.length >= 2 && S.said.atmos) once("hunt", () => quip("NELL", "RIGHT: MORE FOG. WRONG: LESS. IT TURNS AROUND RIGHT AT MY LIMIT.", "G"));
       else if (S.streak === 5) once("streak5", () => quip("MORRIS", "LOOK AT YOU GO, PAL.", "K"));
       svg.innerHTML = `<rect width="640" height="360" fill="#000"/>`; await tick(70);
       next();
@@ -1006,7 +1007,7 @@ export function stairwell(el, opts = {}) {
       const px = (i) => 300 + (i / Math.max(1, n)) * 310, py = (c) => 120 + (Math.log10(0.4) - Math.log10(c)) / 2.4 * 150;
       let s = `<rect x="0" y="0" width="640" height="290" fill="#000"/>`;
       s += chip("B3 ANTECHAMBER", 20, 14, 6, "fV");
-      s += seg("CONTRAST THRESHOLD", 20, 40, 4.6, "sA", .9) + seg((thr * 100).toFixed(1) + "%", 20, 50, 40, "sA", 2.2);
+      s += seg("THE FAINTEST MARK YOU COULD SEE", 20, 40, 4.6, "sA", .9) + seg((thr * 100).toFixed(1) + "%", 20, 50, 40, "sA", 2.2);
       s += chip(rk, 20, 104, 7, rf);
       s += seg("SCORE", 20, 130, 4.2, "sA", .8) + seg(pts(S.score), 20, 138, 18, "sA", 1.4);
       s += seg("TIME", 120, 130, 4.2, "sW", .8) + seg(S.tEnd || clock(), 120, 138, 18, "sW", 1.4);
@@ -1015,11 +1016,11 @@ export function stairwell(el, opts = {}) {
       if (S.notes) s += seg("NOTEBOOK", 186, 166, 4.2, S.notes === "KEPT" ? "sG" : "sR", .8) + seg(S.notes, 186, 174, 12, S.notes === "KEPT" ? "sG" : "sR", 1.2);
       // what the number means, and what was left out of it
       const R = ST.reminders, rOk = R.filter(r => r.correct).length;
-      s += seg("THE FOG SETTLED WHERE YOU PICK THE RIGHT DOOR", 20, 204, 4.4, "sW", .8);
-      s += seg("ABOUT 71% OF THE TIME. THAT CONTRAST IS YOUR THRESHOLD.", 20, 213, 4.4, "sW", .8);
-      s += seg(`2AFC  2-DOWN-1-UP  ${ST.reversals.length} REVERSALS  ${n} LANDINGS COUNTED`, 20, 228, 4.2, "sM", .8);
+      s += seg("TWO RIGHT DOORS: MORE FOG. ONE WRONG: LESS. SO THE FOG", 20, 204, 4.4, "sW", .8);
+      s += seg("SETTLED WHERE YOU'RE RIGHT ABOUT 71% OF THE TIME: YOUR THRESHOLD.", 20, 213, 4.4, "sW", .8);
+      s += seg(`${ST.reversals.length} TURNAROUNDS  ${n} LANDINGS COUNTED  2AFC 2-DOWN-1-UP (LEVITT 1971)`, 20, 228, 4.2, "sM", .8);
       s += seg(`NOT COUNTED: ${S.events.length - R.length} EVENTS${R.length ? `, ${R.length} EASY REMINDER${R.length > 1 ? "S" : ""} (${rOk}/${R.length} RIGHT)` : ""}`, 20, 238, 4.2, "sM", .8);
-      s += seg("UNCALIBRATED SCREEN. DON'T PUT IT IN A PAPER.", 20, 252, 4.4, "sR", .8);
+      s += seg("YOUR SCREEN, NOT A LAB SCREEN. DON'T PUT IT IN A PAPER.", 20, 252, 4.4, "sR", .8);
       // the run, drawn as stairs
       s += `<path class="hl sM" d="M294,114 L294,276 L616,276"/>` + seg("CONTRAST", 294, 104, 4.2, "sM", .8) + seg("LANDING", 580, 280, 4.2, "sM", .8);
       for (const c of [0.3, 0.1, 0.03, 0.01, 0.003]) { const y = py(c); if (y > 276) continue;

@@ -49,7 +49,7 @@ export const CONVOS = {
   ], after: (api) => { api.flag("recorded", true); api.status("RECORDING", 3500); api.sfx("tape"); } },
 
   iris: { L: "nell", R: "iris", score: ["iris", 2], lines: [
-    ["R", "Young lady."], ["L", "Me?"], ["R", "Ask him who reviewed it."], ["L", "Who reviewed… his paper?"],
+    ["R", "Young lady."], ["L", "Me?"], ["R", "Ask him who reviewed it."], ["L", "Who reviewed… his paper? The anonymous experts who okayed it?"],
     ["R", "Mm. And while you're at it, ask yourself who reviewed yours."], ["N", "She goes back to her crossword. It's in pen."],
   ], after: (api) => api.flag("irisMet", true) },
 
@@ -113,7 +113,7 @@ const tubeNight = { look: "The canisters are rattling. Going down. Past the base
 export const HS = {
   seminar: {
     screen: { label: "projector screen",
-      day: { look: "Preston's slide: a close-up of cortex, six layers, each one perfectly resolved. Error bars so small they'd embarrass a ruler. The methods say 7T.\n\nThe building has a 3T.", use: "You cannot use a slide. You can only envy it.", score: { look: ["screen", 1] } },
+      day: { look: "Preston's slide: a close-up of cortex, six layers, each one perfectly resolved. Error bars so small they'd embarrass a ruler. The methods say 7T: a scanner magnet more than twice as strong as ours.\n\nThe building has a 3T.", use: "You cannot use a slide. You can only envy it.", score: { look: ["screen", 1] } },
       night: { look: "Dark. The faint ghost of six cortical layers is burned into the screen.", use: "Gus wipes the screen. The ghost stays." } },
     preston: { label: "Preston", day: { look: "Preston \"P.\" Valu. Third-year. First author. Rising Star. Never takes his earbuds out, not even for pizza.",
       talk: (api) => api.flag("recorded") ? "PRESTON|Nell! Love that you're still here. Let's circle back. Let's circle forward." : "c:preston", use: "Hands off. He's networking." } },
@@ -163,7 +163,7 @@ export const HS = {
   lab: {
     door: { label: "door to hallway", day: { look: "Back to the hallway.", go: "hall@fromLab" }, night: { look: "Back to the hallway.", go: "hall@fromLab" } },
     monitor: { label: "your monitor",
-      day: { look: (api) => api.flag("noteReady") && !api.flag("noteRead") ? readNote(api) : "Your experiment. A dialog box: RESULTS NOT SIGNIFICANT. MATLAB is getting judgmental.",
+      day: { look: (api) => api.flag("noteReady") && !api.flag("noteRead") ? readNote(api) : "Your experiment. A dialog box: RESULTS NOT SIGNIFICANT. p = .48. To count as real it needs a p under .05. MATLAB is getting judgmental.",
         use: (api) => api.flag("noteReady") && !api.flag("noteRead") ? readNote(api) : "You rerun the analysis. p = .48. Again." },
       night: { look: "Nell's screensaver: the letters N.S. bouncing gently around the screen, forever.", use: "Gus taps the space bar. Her MATLAB is still open: p = .48. He winces in solidarity." } },
     drawer: { label: "desk drawer",
@@ -173,7 +173,7 @@ export const HS = {
         use: (api) => !api.flag("morrisMoved") ? "Shredded rejection letters. You recognize a few." : "He bites you. Lightly. Professionally." },
       night: { look: "The rat is asleep in the drawer, twitching. Dreaming of mazes.", talk: "MORRIS|Squeak… (He's asleep.)", use: "Gus closes the drawer most of the way. Rats need air." } },
     whiteboard: { label: "whiteboard", day: { look: "Your whiteboard. Eleven months of results. p = .48. N.S. A circled WHY. And, in red: DEFENSE FRI 2PM!!", use: "You add a question mark to WHY. It doesn't help." },
-      night: { look: "Nell's whiteboard. p = .48. Gus ran the power analysis for her last month: to see an effect that small she'd need four hundred subjects. He didn't write that on the board. He's not a monster.", use: "Gus never erases a labmate's whiteboard. That's how labs fall apart." } },
+      night: { look: "Nell's whiteboard. p = .48. Gus ran the numbers for her last month (a power analysis): to see an effect that small she'd need four hundred subjects. He didn't write that on the board. He's not a monster.", use: "Gus never erases a labmate's whiteboard. That's how labs fall apart." } },
     adline: { label: "Prof. Adline's office",
       day: { look: "Prof. Dee Adline's office. A sign: AFTER THE 15TH. Muffled phone voices: a grant deadline, in progress.", talk: "PROF. ADLINE (THROUGH THE DOOR)|Nell? Is it urgent? Can it wait until after the 15th?", use: "Locked. She's in there. She's always in there." },
       night: { look: "Prof. Adline's office. Still a light on. Still on the phone. It's 2 AM.", use: "Gus knocks. \"AFTER THE 15TH!\"" } },

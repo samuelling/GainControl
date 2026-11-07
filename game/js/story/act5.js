@@ -180,9 +180,9 @@ const ENDINGS = {
   accepted: { title: "ACCEPTED", chip: "THE BEST ENDING", bodies: "BODIES 05.  ONE QUORUM, ARRESTED.", next: "THE TABLE IS DISSOLVED.",
     epilogue: "Monday. Ethel Bord's office. The reels, transcribed: fifty years of membership rolls. Iris brings the panel rosters. 'This is the part they never thought anyone would do,' she says. 'It's just matching.'" },
   major: { title: "MAJOR REVISIONS", chip: "THE TABLE IS STOPPED. THE ARCHIVE IS GONE.", bodies: "BODIES 05.", next: "NO PROOF.  NOT YET.",
-    epilogue: "The Table is stopped. Quorum is pulled out of the bore of a 3T, and then into custody. But the magnet took the Archive with the mill, and without the rolls, it's a story.\n\nNell passes her defense, with major revisions.\n\nThe last shot: Gus's empty desk. His laptop is still on, still running a GLM. In the other window, Dendroboard: one unread reply to his last thread. Somewhere in the walls, a canister rattles." },
+    epilogue: "The Table is stopped. Quorum is pulled out of the bore of a 3T, and then into custody. But the magnet took the Archive with the mill, and without the rolls, it's a story.\n\nNell passes her defense, with major revisions.\n\nThe last shot: Gus's empty desk. His laptop is still on, still running the replication. In the other window, Dendroboard: one unread reply to his last thread. Somewhere in the walls, a canister rattles." },
   inducted: { title: "INDUCTED", chip: "CONGRATULATIONS ON YOUR R01", bodies: "BODIES 05.  YOURS, SPIRITUALLY.", next: "THE END.",
-    epilogue: "NELL|Yes.\n\nTwelve hoods applaud, softly, like a grant panel. Someone hands Nell a small velvet box. Inside: a pair of earbuds.\n\nThey fit perfectly. Everything does, now.\n\nCongratulations on your R01." },
+    epilogue: "NELL|Yes.\n\nTwelve hoods applaud, softly, like a grant panel. Someone hands Nell a small velvet box. Inside: a pair of earbuds.\n\nThey fit perfectly. Everything does, now.\n\nCongratulations on your R01, the big grant everyone wants." },
   deskreject: { title: "DESK REJECT", chip: "THE INDUCTION SUCCEEDED", bodies: "BODIES 05.", next: "THE END.",
     epilogue: "QUORUM|Of course. Take all the time you need.\n\nQUORUM|You'll have plenty of it on the Curriculum Committee.\n\nPreston gets the job. Nell is appointed to the curriculum committee, effective immediately, for life. She is still on it." },
 };
@@ -301,7 +301,7 @@ async function doorkeeper(api) {
   await api.say("A HOOD|The authors should consider…");
   const p = await api.chooseFrom("THE AUTHORS SHOULD CONSIDER…", [["a", "…FURTHER RESEARCH."], ["b", "…ADDITIONAL CONTROLS."], ["c", "…A CAREER IN INDUSTRY."]]);
   if (!p) return null;
-  if (p === "c") return api.die("NELL: …a career in industry.\n\nSilence. Then, from every hood at once: 'Desk reject.'\n\nYour application has been forwarded to industry. Industry did not ask for it.");
+  if (p === "c") return api.die("NELL: …a career in industry.\n\nSilence. Then, from every hood at once: 'Desk reject.' Rejected unread, straight off the editor's desk.\n\nYour application has been forwarded to industry. Industry did not ask for it.");
   if (p === "b") return "A HOOD|…\n\nThe hood tilts, very slightly. Not wrong. Not right. It waits, the way a reviewer waits for the last line of every report.";
   await api.say("A HOOD|Further research is needed.\n\nA HOOD|Your date of birth.");
   let d = await api.chooseFrom("YOUR DATE OF BIRTH.", [["card", "SHOW IRIS'S CARD (BORN 1987)"], ["truth", "TELL THE TRUTH"]]);

@@ -66,7 +66,7 @@ function makeData() {
  *  THE SCREEN
  * ================================================================ */
 const X0 = 46, X1 = 604, tx = (t) => X0 + (t / (NV * TR)) * (X1 - X0);
-const STAGES = ["READ THE LOG", "LINE IT UP", "MAKE IT SLOW", "FIT BY HAND", "SOLVE", "CONTRAST", "LAYERS", "THE PAPER"];
+const STAGES = ["COPY THE LOG", "LINE IT UP", "BLOOD IS SLOW", "FIT BY HAND", "SOLVE", "THE DIFFERENCE", "LAYERS", "THE PAPER"];
 const FORKS = ["NEW ROI: 'V1-ISH'", "DROP RUN 2", "MORE SMOOTHING", "EXCLUDE OUTLIERS", "ONE-TAILED, ACTUALLY", "ADD A COVARIATE: VIBES", "ONLY THE LEFT HEMISPHERE",
   "ONLY THE RIGHT HEMISPHERE", "CHANGE THE HRF", "REMOVE SUBJECT 'P. GAGE'", "SMALL-VOLUME CORRECTION", "TRIM THE LAST BLOCK", "RE-REFERENCE TO BASELINE 2", "REPORT THE PEAK VOXEL"];
 const FORK_P = [.48, .31, .27, .19, .22, .14, .11, .09, .12, .08, .07, .06, .051, .049];
@@ -74,6 +74,8 @@ const FORK_P = [.48, .31, .27, .19, .22, .14, .11, .09, .12, .08, .07, .06, .051
 const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
 const clock = (t) => `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
 const ROWN = { A: "ATTEND", I: "IGNORE" };
+// the plain answer to "is it real?", read off p
+const sure = (p) => p < .001 ? "VERY" : p < .01 ? "FAIRLY" : p < .05 ? "BARELY" : "NOT";
 
 export function glm(root, opts = {}) {
   const die = opts.die || (async () => "revise");
@@ -155,7 +157,7 @@ export function glm(root, opts = {}) {
       return `<g data-b="${id}" style="cursor:pointer"><rect class="${fill}" x="${x}" y="${y}" width="${w}" height="${h}"/>${segC(label, x + w / 2, y + (h - 6) / 2, 6, kind === "o" ? "sW" : "s0", 1.1)}</g>`;
     };
     function header() {
-      let s = `<rect width="640" height="360" fill="#000"/>` + seg("GLM", 14, 10, 12, "sW", 1.5) + seg("SUB-01  V1  3T  TR 2 SEC", 50, 14, 5, "sM", .9);
+      let s = `<rect width="640" height="360" fill="#000"/>` + seg("GLM", 14, 10, 12, "sW", 1.5) + seg("PERSON 1  V1  3T  SNAPSHOT EVERY 2 SEC", 50, 14, 5, "sM", .9);
       STAGES.forEach((n, i) => { const x = 196 + i * 54, on = i === S.stage, done = i < S.stage || (i === 7 && S.done);
         s += on ? chip(String(i + 1), x, 9, 5, "fA") : `<rect class="hl ${done ? "sG" : "sD"}" x="${x - 1}" y="8" width="11" height="12"/>${segC(String(i + 1), x + 4.5, 11, 5, done ? "sG" : "sM", .9)}`;
         if (on) s += seg(n, x + 13, 12, 4.4, "sA", .8); });
@@ -166,7 +168,7 @@ export function glm(root, opts = {}) {
       let s = `<path class="hl sD" d="M${X0},${Y0 - 6} L${X0},${Y1 + 4} L${X1},${Y1 + 4}"/>`;
       for (let t = 0; t <= DUR; t += 16) { const major = t % 32 === 0;
         s += `<path class="hl sD" d="M${tx(t)},${Y1 + 4} L${tx(t)},${Y1 + (major ? 7 : 5.5)}"/>` + segC(clock(t), tx(t), Y1 + 9, major ? 4 : 3.4, major ? "sM" : "sD", .7); }
-      s += seg("V1 SIGNAL", X0, Y0 - 16, 4.4, "sW", .8) + seg("% CHANGE", X0 + 48, Y0 - 16, 4.4, "sM", .8);
+      s += seg("V1 SIGNAL", X0, Y0 - 16, 4.4, "sW", .8) + seg("% ABOVE REST", X0 + 48, Y0 - 16, 4.4, "sM", .8);
       s += `<path class="hl dash sD" d="M${X0},${yv(0)} L${X1},${yv(0)}"/>`;
       return s;
     }
@@ -217,10 +219,10 @@ export function glm(root, opts = {}) {
     }
 
     const L2 = [["GUS", "Lined up. But look: your blocks are square, and the signal isn't."],
-      ["GUS", "Neurons answer instantly. The blood arrives about five seconds later, lingers, then dips. Lightning, then thunder."],
-      ["GUS", "So stamp the HRF onto your blocks. That turns each one into the shape the blood actually makes."]];
-    const TASK = ["COPY HIS LOG ONTO THE TIMELINE, THEN CHECK IT", "SLIDE THE BLOCKS UNTIL THEY START WITH THE SIGNAL", "BLOOD IS SLOW: STAMP THE HRF",
-      "TURN THE KNOBS UNTIL THE RED LINES ARE SHORT", "NOW LET THE COMPUTER DO IT", "ATTEND MINUS IGNORE IS THE ATTENTION EFFECT", "ONE 3T VOXEL. HOW MANY LAYERS?", "FIND THREE THINGS NO REAL DATA WOULD DO"];
+      ["GUS", "The scanner can't see neurons, only the fresh blood they call for. Neurons fire instantly; the blood shows up five seconds later and lingers. Lightning, then thunder."],
+      ["GUS", "That thunder shape is the HRF, the hemodynamic response. Hemo means blood. Stamp it on your blocks."]];
+    const TASK = ["COPY HIS LOG ONTO THE TIMELINE, THEN CHECK IT", "SLIDE THE BLOCKS UNTIL THEY START WITH THE SIGNAL", "STAMP THE HRF: THE SHAPE THE BLOOD MAKES",
+      "TURN THE KNOBS UNTIL THE RED LINES ARE SHORT", "NOW LET THE COMPUTER DO IT", "ATTEND MINUS IGNORE IS THE ATTENTION EFFECT", "ONE VOXEL: THE SCANNER'S SMALLEST BOX OF BRAIN. HOW MANY LAYERS?", "FIND THREE THINGS NO REAL DATA WOULD DO"];
     // the brass arrow: where to click next
     function pointerAt() {
       const st = S.stage;
@@ -232,7 +234,7 @@ export function glm(root, opts = {}) {
       if (st === 2) return [535, 244];
       if (st === 3) return S.lampSeen ? [570, 268] : [74, 242];
       if (st === 4) return [548, 268];
-      if (st === 5) return [558, 274];
+      if (st === 5) return [606, 274];
       if (st === 6) return [545, 268];
       if (st === 7) { const i = ["veins", "copy", "clean"].findIndex(k => !S.tells[k]); return i < 0 ? [540, 260] : [[120, 58], [330, 58], [530, 58]][i]; }
       return null;
@@ -295,31 +297,33 @@ export function glm(root, opts = {}) {
         <path class="sB" d="M${cx + 53},${cy - 2 - (f.beta[1] + 1.96 * f.seI) * 26} L${cx + 53},${cy - 2 - (f.beta[1] - 1.96 * f.seI) * 26}"/></g>`;
       s += `<path class="sW" d="M${cx - 7},${cy + 14} L${cx},${cy + 2} L${cx + 7},${cy + 14} Z"/>`;
       s += segC("ATTEND", cx - 53, cy + 18, 4.4, "sG", .8) + segC("IGNORE", cx + 53, cy + 18, 4.4, "sB", .8);
-      s += seg("ATTEND - IGNORE", 492, 238, 4.4, "sM", .8) + seg((f.beta[0] - f.beta[1] >= 0 ? "+" : "") + (f.beta[0] - f.beta[1]).toFixed(2), 492, 246, 12, "sW", 1.3);
-      s += seg(`T = ${f.t.toFixed(2)}`, 560, 246, 5.5, "sA", 1) + seg(f.p < .001 ? "P < .001" : `P = ${f.p.toFixed(3).replace("0.", ".")}`, 560, 257, 5.5, "sA", 1);
+      s += seg("ATTENTION EFFECT", 492, 238, 4.4, "sM", .8) + seg((f.beta[0] - f.beta[1] >= 0 ? "+" : "") + (f.beta[0] - f.beta[1]).toFixed(2), 492, 246, 12, "sW", 1.3);
+      // the plain readout first; the statistics stay underneath, small
+      s += seg("HOW SURE", 560, 238, 4.4, "sM", .8) + seg(sure(f.p), 560, 246, 12, "sA", 1.3)
+        + seg(`T = ${f.t.toFixed(2)}  ${f.p < .001 ? "P < .001" : `P = ${f.p.toFixed(3).replace("0.", ".")}`}`, 560, 262, 3.8, "sM", .7);
       if (S.stage === 5) s += btn("layers", "LOOK FOR LAYERS", 492, 276, 132, "w", 16);
       return s;
     }
     function layers() {
       // a fold of cortex at 1 mm = 24 px: pial surface, six layer lines, white-matter boundary, a depth probe, and the 3T voxel grid
       const mm = 24, thick = 2 * mm, pial = (x) => 120 + 46 * Math.sin((x - 60) / 82);
-      let s = seg("V1, CLOSE UP", 20, 34, 6, "sW", 1) + seg("1 MM = 24 PX", 120, 36, 4.4, "sM", .8);
+      let s = seg("V1, CLOSE UP", 20, 34, 6, "sW", 1) + `<path class="hl sM" d="M120,40 L144,40 M120,37 L120,43 M144,37 L144,43"/>` + seg("1 MM", 150, 36, 4.4, "sM", .8);
       const path = (off, x0 = 30, x1 = 610) => { let d = ""; for (let x = x0; x <= x1; x += 6) d += `${x === x0 ? "M" : "L"}${x},${(pial(x) + off).toFixed(1)}`; return d; };
       s += `<path class="sK" d="${path(0)}"/>` + [1, 2, 3, 4, 5].map(i => `<path class="hl sK" d="${path(i * thick / 6)}"/>`).join("") + `<path class="sW" d="${path(thick)}"/>`;
-      s += seg("PIAL SURFACE", 470, pial(470) - 16, 4.4, "sK", .8) + seg("WHITE MATTER", 470, pial(470) + thick + 8, 4.4, "sW", .8);
+      s += seg("BRAIN SURFACE", 470, pial(470) - 16, 4.4, "sK", .8) + seg("WHITE MATTER: THE WIRING", 470, pial(470) + thick + 8, 4.4, "sW", .8);
       // voxel grid aligned so one 3 mm voxel holds the whole cortex at the probe
       const vox = 3 * mm, px = 300, top = pial(px) - (vox - thick) / 2, gy0 = top - vox * 2, gx0 = px - vox / 2 - vox * 4;
       const gTop = Math.max(46, gy0), gBot = gy0 + vox * 4;
       for (let x = gx0; x <= 640; x += vox) if (x >= 20) s += `<path class="hl dash sA" d="M${x},${gTop} L${x},${gBot}"/>`;
       for (let y = gy0; y <= gBot; y += vox) if (y >= 46) s += `<path class="hl dash sA" d="M${Math.max(20, gx0)},${y} L620,${y}"/>`;
       s += `<rect class="sA" x="${px - vox / 2}" y="${top}" width="${vox}" height="${vox}"/>`;
-      s += seg("ONE 3T VOXEL", px + vox / 2 + 6, top + 4, 5, "sA", .9) + seg("3 MM", px + vox / 2 + 6, top + 14, 5, "sA", .9);
+      s += seg("ONE VOXEL", px + vox / 2 + 6, top + 4, 5, "sA", .9) + seg("3 MM BOX", px + vox / 2 + 6, top + 14, 5, "sA", .9);
       // depth probe with six ticks
       const p0 = pial(px); s += `<path class="sW mech" d="M${px},${p0 - 6} L${px},${p0 + thick + 6}"/>`;
       for (let i = 0; i < 6; i++) s += `<path class="hl sW" d="M${px - 4},${p0 + (i + .5) * thick / 6} L${px + 4},${p0 + (i + .5) * thick / 6}"/>` + seg(String(i + 1), px - 14, p0 + (i + .5) * thick / 6 - 2.5, 4, "sM", .7);
       s += seg("CORTEX 2 MM", px - 92, p0 + thick / 2 - 3, 5, "sK", .9);
       if (S.layerFit) {
-        s += `<rect class="k sW" x="40" y="236" width="400" height="54"/>` + seg("ATTEND - IGNORE, PER LAYER", 52, 244, 5, "sW", .9);
+        s += `<rect class="k sW" x="40" y="236" width="400" height="54"/>` + seg("ATTENTION EFFECT, LAYER BY LAYER", 52, 244, 5, "sW", .9);
         for (let i = 0; i < 6; i++) s += seg(`L${i + 1}`, 52 + i * 62, 258, 5, "sM", .9) + seg("+" + (D.fit.beta[0] - D.fit.beta[1]).toFixed(2).replace("0.", "."), 52 + i * 62, 268, 8, "sA", 1.1);
         s += seg("SIX LAYERS. ONE VOXEL. THE SAME EFFECT SIX TIMES.", 52, 282, 4.4, "sR", .8);
         s += btn("fork", "TRY ANOTHER ANALYSIS", 470, 292, 150, "r", 14) + btn("paper", "COMPARE TO HIS PAPER", 470, 270, 150, "w");
@@ -333,9 +337,9 @@ export function glm(root, opts = {}) {
       const bx = 30, by = 60, bw = 180, bh = 150, prof = { A: [1.6, 1.0, 1.0, 1.0, 1.6, 1.6], I: [1, 1, 1, 1, 1, 1] };
       const px = (i) => bx + 20 + i * 28, py = (v) => by + bh - 20 - (v - 0.6) * 70;
       s += `<g data-tell="veins" style="cursor:pointer"><rect class="hl ${S.tells.veins ? "sG" : "sD"}" x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="transparent"/>`;
-      s += seg("A  DEPTH PROFILE", bx + 6, by + 6, 4.4, "sM", .8) + seg("PIAL", bx + 12, by + bh - 12, 4, "sM", .7) + seg("WM", bx + bw - 26, by + bh - 12, 4, "sM", .7);
+      s += seg("A  DEPTH PROFILE", bx + 6, by + 6, 4.4, "sM", .8) + seg("SURFACE", bx + 12, by + bh - 12, 4, "sM", .7) + seg("DEEP", bx + bw - 26, by + bh - 12, 4, "sM", .7);
       for (const [k, cls] of [["A", "sG"], ["I", "sB"]]) s += `<path class="${cls}" d="${prof[k].map((v, i) => `${i ? "L" : "M"}${px(i)},${py(v)}`).join(" ")}"/>` + prof[k].map((v, i) => `<path class="hl ${cls}" d="M${px(i) - 2},${py(v) - 1} L${px(i) + 2},${py(v) - 1} M${px(i) - 2},${py(v) + 1} L${px(i) + 2},${py(v) + 1}"/>`).join("");
-      if (S.tells.veins) { const honest = [1.75, 1.5, 1.3, 1.15, 1.02, 0.92]; s += `<path class="sA dash" d="${honest.map((v, i) => `${i ? "L" : "M"}${px(i)},${py(v)}`).join(" ")}"/>` + seg("REAL GE-BOLD: LOUDEST AT THE SURFACE", bx + 6, by + 18, 3.8, "sA", .7); }
+      if (S.tells.veins) { const honest = [1.75, 1.5, 1.3, 1.15, 1.02, 0.92]; s += `<path class="sA dash" d="${honest.map((v, i) => `${i ? "L" : "M"}${px(i)},${py(v)}`).join(" ")}"/>` + seg("REAL SCANS: LOUDEST AT THE SURFACE", bx + 6, by + 18, 3.8, "sA", .7); }
       s += `</g>`;
       // (b, d) layer time courses with copy-pasted noise
       const r = rng(7), noise = Array.from({ length: 64 }, () => (r() - .5) * 0.08), cx0 = 230, cw = 200;
@@ -348,9 +352,9 @@ export function glm(root, opts = {}) {
       // (c) the fit, and its leftovers
       const fx = 450, fw = 160;
       s += `<g data-tell="clean" style="cursor:pointer"><rect class="hl ${S.tells.clean ? "sG" : "sD"}" x="${fx}" y="${by}" width="${fw}" height="${bh}" fill="transparent"/>`;
-      s += seg("C  MODEL FIT + RESIDUALS", fx + 6, by + 6, 4.4, "sM", .8);
+      s += seg("C  FIT + LEFTOVERS", fx + 6, by + 6, 4.4, "sM", .8);
       s += `<path class="sA" d="M${fx + 10},${by + 60} L${fx + 40},${by + 60} L${fx + 46},${by + 30} L${fx + 76},${by + 30} L${fx + 82},${by + 60} L${fx + 112},${by + 60} L${fx + 118},${by + 30} L${fx + 150},${by + 30}"/>`;
-      s += `<path class="hl sR" d="M${fx + 10},${by + 100} L${fx + 150},${by + 100}"/>` + seg("RESIDUALS", fx + 10, by + 106, 3.8, "sR", .7);
+      s += `<path class="hl sR" d="M${fx + 10},${by + 100} L${fx + 150},${by + 100}"/>` + seg("LEFTOVERS", fx + 10, by + 106, 3.8, "sR", .7);
       if (S.tells.clean) { let d = ""; for (let i = 0; i < 70; i++) d += `${i ? "L" : "M"}${fx + 10 + i * 2},${(by + 128 + (D.y[i] - D.fit.beta[0] * XA[i] - D.fit.beta[1] * XI[i] - D.fit.beta[2]) * 22).toFixed(1)}`;
         s += `<path class="sW" d="${d}"/>` + seg("YOURS. REAL DATA WOBBLE.", fx + 10, by + 140, 3.8, "sW", .7); }
       s += `</g>`;
@@ -364,8 +368,8 @@ export function glm(root, opts = {}) {
     function finale() {
       let s = chip("THE REPLICATION", 20, 40, 7, "fA");
       s += seg("ATTENTION EFFECT IN V1", 20, 70, 5, "sM", .9) + seg("REAL", 20, 80, 40, "sG", 2.2);
-      s += seg(`ATTEND ${D.fit.beta[0].toFixed(2)}   IGNORE ${D.fit.beta[1].toFixed(2)}   T = ${D.fit.t.toFixed(1)}`, 20, 134, 6, "sA", 1);
-      s += seg("LAYERS RESOLVED AT 3T", 20, 160, 5, "sM", .9) + seg("ZERO", 20, 170, 24, "sR", 1.8);
+      s += seg(`ATTEND ${D.fit.beta[0].toFixed(2)}   IGNORE ${D.fit.beta[1].toFixed(2)}   HOW SURE: ${sure(D.fit.p)} (T = ${D.fit.t.toFixed(1)})`, 20, 134, 6, "sA", 1);
+      s += seg("LAYERS A 3T CAN SEE", 20, 160, 5, "sM", .9) + seg("ZERO", 20, 170, 24, "sR", 1.8);
       s += seg("TELLS IN HIS FIGURE", 220, 160, 5, "sM", .9) + seg("3/3", 220, 170, 24, "sG", 1.8);
       s += seg(`H-INDEX +${S.total}`, 20, 214, 9, "sA", 1.2);
       s += btn("close", "CLOSE", 520, 262, 100, "w");
@@ -390,7 +394,7 @@ export function glm(root, opts = {}) {
       if (S.k[id] !== was) sfx("ktick", { v: (S.k[id] - lo) / (hi - lo) }); afterKnob(); }
     function afterKnob() {
       if (S.stage === 3) { const { xa, xi } = model(), rss = RSS(D.y, xa, xi, [S.k.A, S.k.I, S.k.B]);
-        if (fitOK(rss) && !S.lampSeen) { S.lampSeen = true; sfx("lamp"); add("fitByHand", 3); coach("GUS", "That's it. Close enough to call. You just ran a GLM by hand. Press THAT'S THE FIT."); }
+        if (fitOK(rss) && !S.lampSeen) { S.lampSeen = true; sfx("lamp"); add("fitByHand", 3); coach("GUS", "That's it. You just ran a GLM by hand: a general linear model. Fancy name for stretching templates until they fit. Press THAT'S THE FIT."); }
         // lots of turning and no lamp: the ladder climbs by itself
         else if (!S.lampSeen && ++S.turns === 70 && !S.knobHint) { S.knobHint = true; coach("GUS", "You're going round in circles. I've marked where each knob wants to point, in brass."); } }
       draw();
@@ -418,9 +422,9 @@ export function glm(root, opts = {}) {
           coach("GUS", logDiff()); draw(); return;
         }
         if (!S.helped.log) add("log", 2); S.stage = 1; sfx("good");
-        if (aligned()) { add("timing", 2); add("timingBonus", 1); S.stage = 2; coach("NELL", "The log is in scanner time. The data start after four dummy scans, so I took eight seconds off every block before I entered them.");
+        if (aligned()) { add("timing", 2); add("timingBonus", 1); S.stage = 2; coach("NELL", "His log runs on the scanner's clock. The data start after four warm-up scans the scanner throws away, so I took eight seconds off every block.");
           setTimeout(() => S.stage === 2 && lesson(L2), 5200); }
-        else lesson([["GUS", "Now lay your blocks over the data. The white line is V1, one point every two seconds."],
+        else lesson([["GUS", "Now lay your blocks over the data. The white line is V1, the brain's first stop for vision: one snapshot every two seconds."],
           ["NELL", "Wait. The signal starts climbing right away. His first block doesn't even start until " + clock(LOG_ONSETS[0]) + "."],
           ["GUS", "Then every block is late by the same amount. Slide them all EARLIER until they start where the signal does. Then press LINED UP."]]);
         draw(); return;
@@ -438,13 +442,13 @@ export function glm(root, opts = {}) {
         }
         if (!S.helped.align) add("timing", 2); S.stage = 2; sfx("good");
         lesson([...(near ? [["GUS", "Close enough. It's noisy; nobody lines this up to the second by eye. I nudged it the last two seconds."]] : []),
-          ["NELL", "Dummies. The scanner throws away its first four volumes, eight seconds, and his log counts from the scanner start. The data clock and the scanner clock aren't the same clock."], ...L2]);
+          ["NELL", "Dummies. The scanner throws away its first four snapshots as warm-ups: eight seconds. His log started the stopwatch before the race did."], ...L2]);
         draw(); return;
       }
       if (id === "stamp") {
         S.hrf = true; add("hrf", 2); S.stage = 3; sfx("stamp");
         lesson([["GUS", "There. Square blocks in, slow smooth humps out. That's what the blood does with them."],
-          ["GUS", "Green is the ATTEND template, blue is IGNORE. Each knob stretches one of them taller or shorter. BASELINE slides the whole fit up or down."],
+          ["GUS", "Green is the ATTEND template, blue is IGNORE. Each knob stretches one taller or shorter, and how far you stretch it is the answer. BASELINE slides the whole fit up or down."],
           ["GUS", "The red lines are the leftovers: data minus your fit. Turn the knobs until they're short. Drag a knob, scroll on it, or tap + and −."],
           ["NELL", "And when they're short?"], ["GUS", "The FIT lamp lights. Close counts. It's noisy data; nobody fits it to the second decimal."]]);
         draw(); return;
@@ -456,20 +460,21 @@ export function glm(root, opts = {}) {
           if (n >= 3) { S.knobHint = true; coach("GUS", "I've marked where each knob wants to point, in brass. Turn them to the marks."); draw(); return; }
           coach("GUS", n >= 2 ? knobAdvice() : "Not yet. Watch the leftovers: the red lines between the data and your fit. Make them as short as you can."); return;
         }
-        S.stage = 4; sfx("select"); coach("GUS", "Now let MATLAB do it. It does exactly what you just did, but instantly. That's all 'running a GLM' means."); draw(); return;
+        S.stage = 4; sfx("select"); coach("GUS", "Now let the computer do it. Same knob-turning, only perfect and instant. Press SOLVE."); draw(); return;
       }
       if (id === "solve") {
         S.k = { A: +D.fit.beta[0].toFixed(2), I: +D.fit.beta[1].toFixed(2), B: +D.fit.beta[2].toFixed(2) }; S.solved = true; add("solve", 1); S.stage = 5; sfx("compute"); sfx("seesaw");
         const eff = (D.fit.beta[0] - D.fit.beta[1]).toFixed(2).replace("0.", ".");
         lesson([["GUS", "Same picture on screen in both kinds of block. The only thing that changes is attention. So ATTEND minus IGNORE is the attention effect."],
           ["NELL", `Plus ${eff}. Attending to it turns V1 up by about a third.`],
+          ["GUS", `And HOW SURE: that gap is ${Math.round(D.fit.t)} times bigger than its own wobble. That's the T. Luck doesn't do that.`],
           ["GUS", "That part's real. People have shown it since the nineties. That isn't his claim. His claim is where it lives: layers 1, 5 and 6, and not the rest."],
           ["NELL", "Then let's look for layers."]]);
         add("contrast", 2); draw(); return;
       }
       if (id === "layers") {
-        S.stage = 6; sfx("whoosh"); lesson([["GUS", "His paper says six layers. V1 is about two millimeters thick. A 3T voxel is about three millimeters on a side."],
-          ["GUS", "Like measuring the six layers of a cake with a spoon bigger than the cake. Go on: FIT PER LAYER."]]);
+        S.stage = 6; sfx("whoosh"); lesson([["GUS", "Our 3T scanner sees in voxels: 3D pixels, little boxes of brain. Ours are three millimeters a side."],
+          ["GUS", "V1 is two millimeters thick, all six layers. That's measuring a cake's layers with a spoon bigger than the cake. Go on: FIT PER LAYER."]]);
         draw(); return;
       }
       if (id === "perlayer") { S.layerFit = true; sfx("compute"); add("layers", 2);
@@ -485,7 +490,7 @@ export function glm(root, opts = {}) {
       if (id === "close") { cleanup(); resolve({ tells: S.tells, score: S.total }); return; }
       if (id === "fork") {
         const i = S.forks++; sfx("compute");
-        if (i === 0) coach("GUS", "Nell. That button is how this whole building got here.");
+        if (i === 0) coach("GUS", `${FORKS[0]}: P = ${String(FORK_P[0]).replace("0.", ".")}. P is how often pure luck would hand you a difference this big; journals want under .05. Nell, that button is how this whole building got here.`);
         else if (i === 10 || i === 12) {   // fair warning before the fourteenth
           const p = String(FORK_P[i]).replace("0.", ".");
           coach("GUS", i === 10 ? `${FORKS[i]}: P = ${p}. Nell, every one of these is another test. Keep clicking and one WILL come up significant. That's what the button is for.`
@@ -504,9 +509,9 @@ export function glm(root, opts = {}) {
     function tell(k) {
       if (S.tells[k]) return;
       S.tells[k] = true; add("tell_" + k, 3); sfx("stamp");
-      const L = { clean: "His leftovers are a flat line. Real fMRI noise drifts and wobbles every two seconds. Yours do. His don't.",
-        copy: "Layer 2 and layer 5 have the same noise. Wiggle for wiggle. Six layers, one noise.",
-        veins: "Real gradient-echo BOLD is loudest at the surface, because the blood drains outward into the veins up there. His profile has no slope at all. The top floor always gets the most water pressure. His building has no plumbing." };
+      const L = { clean: "His leftovers are dead flat. Real people breathe, pulse and fidget, so a real fit always misses a little. Yours wobble. His is a weather forecast that's never once been wrong.",
+        copy: "Layer 2 and layer 5 have the same wiggles, wiggle for wiggle. Noise is random. Two layers matching exactly is two snowflakes matching. He copied one and pasted it.",
+        veins: "Used blood drains up to big veins on the surface, so real scans are always loudest up top, like a river widest at its mouth. His has no slope at all. His building has no plumbing." };
       coach(k === "veins" ? "GUS" : "NELL", L[k]); draw();
     }
     const onDown = (e) => {
@@ -527,7 +532,8 @@ export function glm(root, opts = {}) {
 
     // test hook
     root.__glm = { S, D, press, tell, nudge, LOG_ONSETS, TRUE_ONSETS, cellClick };
-    lesson([["GUS", "Okay. Every scan is a little play, and the log is the script: what was on screen, and when."],
+    lesson([["GUS", "A replication: his own data, the standard recipe, our hands. If his result is real, we'll get it too."],
+      ["GUS", "Every scan is a little play, and the log is the script: what was on screen, and when."],
       ["GUS", "His run: sixteen seconds of ATTEND, sixteen of IGNORE, back to back, eight blocks. Same checkerboard every time. Only attention changes."],
       ["NELL", "And then thirty-two seconds of rest, so the signal can come back down."],
       ["GUS", "Copy his log onto the timeline. Click the cell where each block starts: green row for ATTEND, blue for IGNORE. The brass arrow shows the next one. Then CHECK IT."]]);

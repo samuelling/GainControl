@@ -65,9 +65,9 @@ const START = { dx: 16, dy: -12, s: 1.25 }, STEP = 4, SSTEP = 0.05;
 export const regScore = ({ dx, dy, s }) => Math.round(100 * Math.exp(-((dx / 14) ** 2 + (dy / 14) ** 2 + ((s - 1) / 0.12) ** 2)));
 const tf = ({ dx, dy, s }) => `translate(${dx},${dy}) translate(100,100) scale(${s.toFixed(2)}) translate(-100,-100)`;
 const LINES = {
-  intro: ["NELL", "My pilot scan. Sub-01 is me, last spring, retainer in. See the hole by my mouth? Metal does that."],
+  intro: ["NELL", "My practice scan from last spring. Subject 01 is me, retainer in. See the black hole by my mouth? Metal blanks out an MRI. No signal at all."],
   intro2: ["MORRIS", "Like a thumb over the lens, pal."],
-  how: ["NELL", "His Figure 2 is 'upscaled.' Lay it over mine. Nudge it and scale it until they register."],
+  how: ["NELL", "His Figure 2 is 'upscaled.' Lay it over mine and nudge and resize it till the skulls match. Lining scans up is called registering them."],
   far: ["NELL", "Not yet. Line up the skull first."],
   close: ["NELL", "Closer. The folds are starting to line up."],
   // what's still off, biggest first, in the player's own buttons
@@ -77,7 +77,7 @@ const LINES = {
   snap: ["MORRIS", "Gimme that, pal. ...There. Skull on skull."],
   inHole: ["NELL", "The stripes inside the black hole. Click each one."],
   match: ["NELL", "They register. Same skull, same folds, same hole in the same place."],
-  zoom: ["NELL", "And in the hole, where there's no brain at all, six perfect layers. Show me every one."],
+  zoom: ["NELL", "And in the hole, where there's no brain at all: six perfect layers. Upscaling invents what it never saw, like zooming a blurry photo into a face. Click every layer."],
   marks: { 1: ["NELL", "One. Painted on."], 3: ["MORRIS", "That's a lot of brain for a mouth, pal."], 5: ["NELL", "Five. He didn't even make them crooked."] },
   done: ["NELL", "That's not his data. That's my mouth."],
   done2: ["NELL", "His sub-01 had my null. Because his sub-01 is me."],
@@ -135,20 +135,20 @@ export function retainer(el, { score = () => {} } = {}) {
         ${panel(18, 14, 168, `${voxelGrid(10)}<g class="pB">${nellScan()}</g>`, "w1")}
         ${panel(212, 14, 168, `<g class="pA" transform="${tf(START)}">${figure2("rtHoleA", false)}</g>`, "w1")}
         ${big}
-        ${seg("PILOT  SUB-01  N. NULL  3T", 18, 190, 5, "sB", .9)}${seg("FIG. 2  VALU ET AL.  SUB-01  7T", 212, 190, 5, "sA", .9)}
-        ${S.zoom ? segC(`DROPOUT  ×3   LAYERS ${nMarked()}/6`, 515, 228, 6, nMarked() === 6 ? "sR" : "sW", 1)
-                 : segC(m ? "REGISTERED" : "OVERLAY", 515, 228, 6, m ? "sG" : "sW", 1)}
-        ${seg("REGISTRATION", 18, 205, 4.2, "sM", .8)}${seg(String(pct).padStart(2, "0") + "%", 18, 213, 18, m ? "sG" : pct >= 60 ? "sA" : "sW", 1.4)}
-        ${seg(`DX ${sgn(S.t.dx)}   DY ${sgn(-S.t.dy)}   SCALE ${Math.round(S.t.s * 100)}%   MOVES ${S.moves}`, 96, 222, 4.6, "sM", .8)}`;
+        ${seg("MY SCAN  SUBJECT 01  N. NULL  3T", 18, 190, 5, "sB", .9)}${seg("HIS FIGURE 2  SUBJECT 01  7T", 212, 190, 5, "sA", .9)}
+        ${S.zoom ? segC(`THE HOLE  ×3   LAYERS ${nMarked()}/6`, 515, 228, 6, nMarked() === 6 ? "sR" : "sW", 1)
+                 : segC(m ? "LINED UP" : "OVERLAY", 515, 228, 6, m ? "sG" : "sW", 1)}
+        ${seg("LINED UP  (REGISTRATION)", 18, 205, 4.2, "sM", .8)}${seg(String(pct).padStart(2, "0") + "%", 18, 213, 18, m ? "sG" : pct >= 60 ? "sA" : "sW", 1.4)}
+        ${seg(`SIDEWAYS ${sgn(S.t.dx)}   UP/DOWN ${sgn(-S.t.dy)}   SIZE ${Math.round(S.t.s * 100)}%   MOVES ${S.moves}`, 96, 222, 4.6, "sM", .8)}`;
       const dis = m ? "disabled" : "";
       el.innerHTML = `<div class="screen retainer">
-        <svg class="t hd" viewBox="0 0 640 40">${seg("THE RETAINER", 16, 10, 18, "sW", 1.6)}${seg("YOUR PILOT SCAN  ·  HIS FIGURE 2  ·  LAY ONE OVER THE OTHER", 214, 17, 5, "sM", .8)}</svg>
+        <svg class="t hd" viewBox="0 0 640 40">${seg("THE RETAINER", 16, 10, 18, "sW", 1.6)}${seg("YOUR SCAN  ·  HIS FIGURE 2  ·  LAY HIS OVER YOURS", 214, 17, 5, "sM", .8)}</svg>
         <svg class="t rtsvg" viewBox="0 0 640 236">${svg}</svg>
         <div class="coachline">${coach()}</div>
         <div class="bar">
           <button class="nudge" data-b="L" ${dis}>←</button><button class="nudge" data-b="R" ${dis}>→</button><button class="nudge" data-b="U" ${dis}>↑</button><button class="nudge" data-b="D" ${dis}>↓</button>
           <button data-b="S-" ${dis}>SCALE −</button><button data-b="S+" ${dis}>SCALE +</button>
-          <span class="status">${S.zoom ? `${nMarked()} / 6 LAYERS` : `REGISTRATION ${pct}%`}</span>
+          <span class="status">${S.zoom ? `${nMarked()} / 6 LAYERS` : `LINED UP ${pct}%`}</span>
           <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
     }
     function move(b) {

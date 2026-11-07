@@ -42,14 +42,14 @@ export const TRIALS = [
   { answer: "dialMax", opts: ["dialOff", "dialMid", "dialMax", "dialNone"], sig: 7, noise: 5, needleBoost: true },
 ];
 const LINES = {
-  prep: ["GUS", "Perfect dark means perfect. Kill every light in there: the booth's ON lamp, your phone, the gap under the door."],
-  leak: { led: ["GUS", "Tape on the lamp. It's the brightest thing in the room, which says a lot about the room."], phone: ["GUS", "Phone face down, screen off. Notifications bleach rhodopsin. That's not science, that's just true."],
+  prep: ["GUS", "His earbuds leak a few specks of light a second. Only an eye in perfect dark can catch that. So kill every light: the ON lamp, your phone, the gap under the door."],
+  leak: { led: ["GUS", "Tape on the lamp. It's the brightest thing in the room, which says a lot about the room."], phone: ["GUS", "Phone face down. One glance at a screen undoes twenty minutes of dark. Ask any astronomer."],
     door: ["GUS", "Hoodie under the door. Mine. You can keep it. It's seen worse."] },
-  adapt: ["GUS", "Now we wait. Cones give up first, around eight minutes. That kink is the rod-cone break. Then the rods take over, slowly."],
-  break: ["GUS", "There's the break. Rods now. Nobody's ever seen anything with their cones in here. Just wait."],
+  adapt: ["GUS", "Now we wait. The white line is the dimmest light you can see. When it sinks below his earbuds, you'll see them."],
+  break: ["GUS", "See the kink? Your cones, the daylight cells, just hit bottom. That's the rod-cone break. Now the rods take over: the night cells. Slow, but far more sensitive."],
   phone: ["GUS", "You checked your phone. Your rods are bleached. Twenty minutes, from the top. Everybody does it once."],
   ready: ["NELL", "Twenty minutes. I can see the dark, Gus. It's not black. It's grey, and it moves."],
-  look: ["GUS", "That grey is your own rods misfiring. Dark noise. Now: don't look straight at him. Your fovea has no rods. Look just beside where you think it is."],
+  look: ["GUS", "That grey fizz is your rods misfiring. Ignore it. The centre of your eye, the fovea, has no rods, so look beside him, not at him. Astronomers do it with faint stars."],
   ok: [["GUS", "A ring. That's a coil, Nell. Current going round and round, right at his ear."],
     ["NELL", "A circle, seated around a smaller circle. Gus, that's the Table."],
     ["GUS", "Gain at maximum. Somebody has him turned all the way up."]],
@@ -60,7 +60,7 @@ const LINES = {
     ["GUS", "Two circles, but one is INSIDE the other. Not side by side. Small in the middle, big around it."],
     ["GUS", "It's a dial, every time. The question is the needle. Watch where the dots pile up: far right. All the way up."]],
   show: ["GUS", "Okay. I'm tracing it for you. Green line, green button. Rods are hard; nobody's grading this. Except me. Kind of."],
-  phoneWarn: ["GUS", "Don't. One look at that screen bleaches your rods and we're back to minute zero. Press it again if you really have to."],
+  phoneWarn: ["GUS", "Don't. One look at that screen bleaches your rods, like a camera flash, and we're back to minute zero. Press it again if you really have to."],
   stare: ["GUS", "You're staring right at it. No rods there. Look a little to the side."],
 };
 
@@ -106,7 +106,7 @@ export function darkbooth(el, { score = () => {} } = {}) {
       if (S.phase === "adapt") {
         // dark-adaptation curve: x = minutes 0..25, y = log threshold 0..4.5 (up = brighter needed)
         const X0 = 120, Y0 = 220, W = 440, H = 180, xm = (m) => X0 + m / 25 * W, yv = (v) => Y0 - v / 4.5 * H;
-        let s = seg("DARK ADAPTATION", 20, 8, 5.5, "sM", .8) + seg("LOG THRESHOLD", X0 + 6, Y0 - H - 8, 4, "sM", .6) + seg("MINUTES IN THE DARK", X0 + W - 92, Y0 + 10, 4, "sM", .6);
+        let s = seg("DARK ADAPTATION", 20, 8, 5.5, "sM", .8) + seg("DIMMEST LIGHT YOU CAN SEE (LOG SCALE)", X0 + 6, Y0 - H - 8, 4, "sM", .6) + seg("MINUTES IN THE DARK", X0 + W - 92, Y0 + 10, 4, "sM", .6);
         for (let m = 0; m <= 25; m += 5) s += `<path class="hl sD" d="M${xm(m)},${Y0} L${xm(m)},${Y0 - H}"/>` + seg(String(m), xm(m) - 3, Y0 + 3, 4.4, "sM", .6);
         s += `<path class="sM" d="M${X0},${Y0 - H} L${X0},${Y0} L${X0 + W},${Y0}"/>`;
         s += `<path class="sG dash" d="M${X0},${yv(EMIT)} L${X0 + W},${yv(EMIT)}"/>` + chip("HIS EARBUDS", X0 + W - 60, yv(EMIT) - 12, 4.4, "fG");
@@ -120,7 +120,7 @@ export function darkbooth(el, { score = () => {} } = {}) {
       }
       // LOOK: the dark. Only photons, and a faint mark where your rods aren't
       const t = TRIALS[S.trial]; const now = performance.now();
-      let s = seg(`TRIAL ${S.trial + 1} OF 3`, 20, 8, 5.5, "sM", .8);
+      let s = seg(`SHAPE ${S.trial + 1} OF 3`, 20, 8, 5.5, "sM", .8);
       for (const d of S.dots) { const age = now - d.t; if (age > 1500) continue;
         if (Math.hypot(d.x - S.gaze[0], d.y - S.gaze[1]) < FOVEA) continue;          // fovea: no rods, nothing seen
         s += `<circle class="${age < 450 ? "fW" : "fM"}" cx="${d.x.toFixed(1)}" cy="${d.y.toFixed(1)}" r="${age < 450 ? 1.5 : 1.1}"/>`; }
@@ -134,12 +134,12 @@ export function darkbooth(el, { score = () => {} } = {}) {
     function draw() {
       if (S.say !== spoken) { spoken = S.say; window.SFX && window.SFX.voice(S.say[0], true); }
       const c = COL[S.say[0]] || "W";
-      const step = S.phase === "prep" ? "STEP 1  MAKE IT DARK" : S.phase === "adapt" ? "STEP 2  ADAPT" : "STEP 3  LOOK BESIDE IT";
+      const step = S.phase === "prep" ? "STEP 1  MAKE IT DARK" : S.phase === "adapt" ? "STEP 2  LET YOUR EYES ADJUST" : "STEP 3  LOOK BESIDE IT";
       el.innerHTML = `<div class="screen grim dark">
         <svg class="t hd" viewBox="0 0 640 40">${seg("THE DARK", 16, 10, 18, "sW", 1.6)}${seg(step, 150, 17, 5.5, "sA", .8)}</svg>
         <div class="ceilbody"><svg class="t" id="darkfield" viewBox="0 0 640 250">${svgBody()}</svg></div>
         <div class="coachline"><span class="who" style="background:var(--${c})">${S.say[0]}</span> <span style="color:var(--${c})">${S.say[1]}</span></div>
-        <div class="bar"><span class="status">${S.phase === "look" ? (S.done ? "3 / 3 NAMED" : `${S.trial} / 3 NAMED  ·  KEEP THE POINTER BESIDE HIM, THEN CLICK THE SHAPE YOU SEE`) : S.phase === "adapt" ? (thresh(S.min) < EMIT ? "BELOW THE EMISSION" : "WAITING  ·  JUST WAIT, IT TAKES A FEW SECONDS") : `${S.leaks.size} / 3 SEALED  ·  CLICK EACH LIGHT LEAK`}</span>
+        <div class="bar"><span class="status">${S.phase === "look" ? (S.done ? "3 / 3 NAMED" : `${S.trial} / 3 NAMED  ·  KEEP THE POINTER BESIDE HIM, THEN CLICK THE SHAPE YOU SEE`) : S.phase === "adapt" ? (thresh(S.min) < EMIT ? "DARK-ADAPTED  ·  DIM ENOUGH TO SEE HIS EARBUDS" : "WAITING  ·  JUST WAIT, IT TAKES A FEW SECONDS") : `${S.leaks.size} / 3 SEALED  ·  CLICK EACH LIGHT LEAK`}</span>
           ${S.phase === "adapt" && !S.done ? `<button data-b="phone" class="red">CHECK PHONE</button>` : ""}
           <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
     }
@@ -149,7 +149,7 @@ export function darkbooth(el, { score = () => {} } = {}) {
       tick = setInterval(() => { S.min += .25;                                    // 20 minutes in about six seconds
         if (!S.broke && S.min >= 7.75) { S.broke = true; S.say = LINES.break; sfx("tock"); draw(); }
         if (S.min >= 20) { clearInterval(tick); S.say = LINES.ready; sfx("chime"); draw(); timer = setTimeout(startLook, 2200); return; }
-        drawField(); el.querySelector(".status") && (el.querySelector(".status").textContent = thresh(S.min) < EMIT ? "BELOW THE EMISSION" : "WAITING  ·  JUST WAIT, IT TAKES A FEW SECONDS"); }, 75);
+        drawField(); el.querySelector(".status") && (el.querySelector(".status").textContent = thresh(S.min) < EMIT ? "DARK-ADAPTED  ·  DIM ENOUGH TO SEE HIS EARBUDS" : "WAITING  ·  JUST WAIT, IT TAKES A FEW SECONDS"); }, 75);
     }
     function startLook() {
       S.phase = "look"; S.trial = 0; S.dots = []; S.say = LINES.look; draw(); clearInterval(tick);
