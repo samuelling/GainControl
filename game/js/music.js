@@ -63,7 +63,7 @@ const rnd = (s, k = 0) => (Math.imul(s * 7 + k * 131 + 17, 2654435761) >>> 0) / 
 const FINALE = new Set(["tunnels", "antechamber", "chamber", "plant", "tubehub", "crawlspace"]);
 const UNDER = new Set(["tunnels", "antechamber", "chamber", "plant", "tubehub", "crawlspace", "freezer", "maze", "server"]);
 
-let C = null, bus = null, B = {}, delay = null, timer = null, step = 0, nextT = 0;
+let C = null, bus = null, B = {}, delay = null, timer = null, step = 0, nextT = 0, buildStart = 0;
 let S = null, pend = null, TR = null, cur = { s: 0, tones: new Set() };   // S: the band playing; pend: the next, at the barline
 const P = { arr: "day", dread: 0, tempo: 104, target: 104, throb: 0, on: false, climax: false };
 
@@ -116,12 +116,14 @@ function vibes(m, t, v, out, x = {}) {             // sine + a soft fourth parti
 // a Rhodes (tine electric piano): an FM pair at 1:1 whose index starts high and falls (the bark of the tine), a quiet
 // high tine ping on the strike, a long warm decay, and the suitcase amp's tremolo
 function rhodes(m, t, v, out, x = {}) {
-  const d = x.short ? .3 : Math.max(.7, Math.min(2.4, (x.dur || 1) * 1.4)); tr(m, !x.short);
+  const hold = x.short ? .2 : Math.max(.4, Math.min(3.2, (x.dur || 1) * 1.15)), rel = x.short ? .3 : .75, d = hold + rel; tr(m, !x.short);
   const f = hz(m), car = osc("sine", f), mod = osc("sine", f), mi = C.createGain(), g = C.createGain();
   const ping = osc("sine", f * 7.02), pg = C.createGain(), tm = C.createGain(), lfo = osc("sine", 4.6), ld = C.createGain(), lp = C.createBiquadFilter();
-  const bark = f * (1.4 + 1.6 * Math.min(1, v * 6));                 // harder notes bark more
-  mi.gain.setValueAtTime(bark, t); mi.gain.exponentialRampToValueAtTime(f * .18, t + .22);
-  env(g, t, .004, v, d); env(pg, t, .001, v * .06, .05);
+  const bark = f * (.9 + 1.1 * Math.min(1, v * 6));                  // harder notes bark more (gently: this is a relaxed Rhodes)
+  mi.gain.setValueAtTime(bark, t); mi.gain.exponentialRampToValueAtTime(f * .16, t + .4);
+  // legato: a soft 12 ms attack, the tone sagging slowly while held, then a gentle release
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .012); g.gain.exponentialRampToValueAtTime(v * .45, t + .012 + hold); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  env(pg, t, .001, v * .035, .05);
   lp.type = "lowpass"; lp.frequency.value = 3200; tm.gain.value = .84; ld.gain.value = .16;
   mod.connect(mi); mi.connect(car.frequency); car.connect(g); ping.connect(pg); g.connect(lp); pg.connect(lp); lp.connect(tm); lfo.connect(ld); ld.connect(tm.gain); tm.connect(out);
   for (const o of [car, mod, lfo]) { o.start(t); o.stop(t + d + .1); } ping.start(t); ping.stop(t + .08);
@@ -240,9 +242,9 @@ function hold(arr, bar, k, q) { let n = 1; while (k + n < 8 && (arr[bar][k + n] 
 // angular (octave leaps in the tune), fx (room extras), vel (tune loudness), tempo (at the act's own dread)
 const BANDS = {
   // the main menu: the OP-1 tune (square pluck, bouncy bass, a small drum machine, marimba answers)
-  title: { tempo: 104, lead: "pluck", leadV: "pluck", leadB: "marimba", ctr: "marimba", hand: "marimba", bass: "bounce", drums: "bounce", comp: "arp" },
+  title: null,   // set below: the title plays day 1's Rhodes band
   // the game itself opens on a Rhodes (Act I): the tune on electric piano, syncopated Rhodes chords, a soft bass, a lazy beat
-  d1: { tempo: 92, lead: "rhodes", leadV: "rhodes", leadB: "flute", ctr: "vibes", hand: "vibes", bass: "two", drums: "soft", comp: "rhodes", compAll: true, swing: .2 },
+  d1: { tempo: 92, lead: "rhodes", leadV: "rhodes", leadB: "flute", ctr: "vibes", hand: "vibes", bass: "two", drums: "soft", comp: "rhodes", compAll: true, swing: .2, build: true },
   // the OP-1 arrives in Act II: the square pluck and its arpeggios, over the bossa
   d2: { tempo: 100, lead: "pluck", leadV: "pluck", leadB: "marimba", ctr: "marimba", hand: "marimba", bass: "bossa", drums: "bossa", comp: "arp", compAll: true },
   d3: { tempo: 97, lead: "brass", leadV: "pluck", leadB: "organ", ctr: "marimba", hand: "marimba", bass: "angular", drums: "broken", comp: "bstab", compAll: true, angular: true, stacc: true },
@@ -268,6 +270,7 @@ const ROOMS = {   // flavours: instrument, register, a little extra; never a new
   conference: () => ({ lead: "brass" }), defense: () => ({ lead: "brass", leadB: "organ" }),
   tunnels: () => DRIPS, freezer: () => DRIPS, maze: () => DRIPS, crawlspace: () => DRIPS, tubehub: () => DRIPS, plant: () => DRIPS,
 };
+BANDS.title = { ...BANDS.d1 };
 function band({ act, mode, room, title, arr }) {
   const name = arr === "finale" ? "finale" : title ? "title" : mode === "morning" ? "morning" : (mode === "night" ? "n" : "d") + Math.max(1, Math.min(5, act));
   const base = BANDS[name] || {}, S = { name, arr, ...base, ...(!title && arr !== "finale" && ROOMS[room] ? ROOMS[room](base) : {}) };
@@ -381,7 +384,7 @@ function fxStep(fx, s, i, ch, root, t) {
 const bar16 = (s) => Math.floor(s / 16);
 function scheduleStep(s, t) {
   const i = s % 16;
-  if (i === 0 && pend) { S = pend; pend = null; P.arr = S.arr; }     // a new band comes in on the barline
+  if (i === 0 && pend) { if (!(S && S.build && pend.build)) buildStart = s; S = pend; pend = null; P.arr = S.arr; }     // a new band comes in on the barline (a build carries on across title → day 1)
   if (P.arr === "finale") return finaleStep(s, t);
   const bar = bar16(s) % 8, slot = Math.floor(s / 128) % FORM.length, sec = FORM[slot], d = P.dread, spb = 60 / P.tempo / 4;
   const br = sec === "B", ch = (br ? BCHORDS : CHORDS)[bar], root = (br ? BROOTS : ROOTS)[bar];
@@ -401,14 +404,15 @@ function scheduleStep(s, t) {
     }
   }
   // the counter-melody: through A' and the bridge, and answering at the ends of the first A's phrases
-  if (S.ctr && i % 2 === 0) {
+  const L = S.build ? Math.floor((s - buildStart) / 128) : 9;   // build layers: 0 Rhodes alone, 1 + bass, 2 + drums and counter-melody
+  if (S.ctr && L >= 2 && i % 2 === 0) {
     const arr = sec === "V" ? COUNTER_A : br ? COUNTER_B : sec === "A" && slot === 0 && bar % 4 === 3 && k >= 4 ? COUNTER_A : null, m = arr && arr[bar][k];
     if (m != null) voice(S.ctr, m, tt, S.night ? .1 : .085, B.ctr, { raw: true, dur: spb * Math.min(8, hold(arr, bar, k) * 2) });
   }
   // comping: the breath's arpeggio, or (compAll) under everything, quieter
   if (S.comp && (sec === "R" || S.compAll)) compStep(S.comp, s, i, bar, ch, root, tt, spb, sec === "R" ? 1 : .6);
-  bassStep(S.bass, i, root, tt, spb);
-  drumStep(S.drums, i, bar, sec, tt);
+  if (L >= 1) bassStep(S.bass, i, root, tt, spb);
+  if (L >= 2) drumStep(S.drums, i, bar, sec, tt);
   fxStep(S.fx, s, i, ch, root, tt);
   // pad: one chord a bar; with real dread, the root doubled inside it and, later, the whole chord an octave down (dark, still in key)
   if (i === 0 && (S.night || d > .25)) {
@@ -464,7 +468,7 @@ function trace(scene, steps = 640, from = 0) {
 }
 export const music = {
   renderOffline, trace,
-  start() { if (!init() || P.on) return; P.on = true; if (pend) { S = pend; pend = null; P.arr = S.arr; } P.tempo = P.target; nextT = C.currentTime + .1; timer = setInterval(tick, 25); mix(); },
+  start() { if (!init() || P.on) return; P.on = true; if (pend) { S = pend; pend = null; P.arr = S.arr; } buildStart = step; P.tempo = P.target; nextT = C.currentTime + .1; timer = setInterval(tick, 25); mix(); },
   // where we are → band, dread, tempo, throb. The same scene twice changes nothing; a new band waits for the barline.
   scene({ act = 1, mode = "day", room = "", flags = {}, title = false } = {}) {
     let d = { 1: 0, 2: .12, 3: .3, 4: .48, 5: .62 }[act] || 0, arr = mode === "day" ? "day" : mode === "morning" ? "morning" : "night";
