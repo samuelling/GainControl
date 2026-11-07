@@ -1,7 +1,7 @@
 // B3 · THE ROUND TABLE — the centerpiece. The Table meets around a decommissioned 1960s research magnet: a giant iron
 // ring wound with copper coil, lying at table height, with the round iron pole face inside it serving as the table top.
 // Drawn as a true wireframe torus in one-point perspective (silhouettes and the visible half of every winding).
-// Twelve hooded members around the far side, facing the room, each with a lamp on the ring (pose groups seat0…seat11,
+// Twelve hooded members around the far side, facing the room, a candle on the ring beside each (pose groups seat0…seat11,
 // numbered left to right across the screen); Quorum at the head on a dais (hooded; unhooded with his gold when
 // G.flags.unhooded); the skull gavel on the table; the Gain Controller on a plinth (front left) with Preston hooded
 // beside it, earbuds lit; the knife switch on its iron stand by the service stair (front right).
@@ -106,19 +106,20 @@ const seatPos = (th) => { const lat = RS * Math.cos(th), z = RZ + RS * Math.sin(
 // hood pin (sheet 174, 98+34) in screen space, for the finale
 const pinAt = (s) => { const q = s.k * AUD; return [s.x + 14 * q, s.y - 55 * q]; };
 
-// a small gooseneck lamp standing on the ring top; lit = bulb on, light falling on the iron
+// a candle on the ring top, set half a seat along from its member so the flame never sits in front of a face.
+// Every candle burns (a small flame: lit things are filled); lit = that member's candle flares: a tall flame, a flicker,
+// a drip running down the wax, a hairline halo round the flame.
+const CANDLE_OFF = 7.75 * DEG;   // half the spacing between seats
 function lamp(th, lit) {
-  const p = ring3(th, Math.PI / 2), base = W(p[0], p[1], p[2]), k = kz(p[2]), s = k * 1.7;
-  const dir = p[0] > 0 ? -1 : 1, [x, y] = base;
-  // (s is the lamp's own scale: lamps are drawn a little large so twelve of them read at the back of the room)
-  const tx = x + dir * 9 * s, ty = y - 30 * s;
-  const shade = `M${f(tx - 6 * s)},${f(ty + 4 * s)} Q${f(tx)},${f(ty - 7 * s)} ${f(tx + 6 * s)},${f(ty + 4 * s)} Z`;
-  const body = (c) => `<ellipse class="hl ${c}" cx="${f(x)}" cy="${f(y)}" rx="${f(6 * s)}" ry="${f(2 * s)}"/>
-    <path class="hl ${c}" d="M${f(x)},${f(y)} L${f(x)},${f(y - 24 * s)} Q${f(x)},${f(ty - 3 * s)} ${f(tx)},${f(ty - 3 * s)}"/>`;
-  return lit
-    ? `${body("sA")}<path class="k sA" d="${shade}"/><circle class="fA" cx="${f(tx)}" cy="${f(ty + 4 * s)}" r="${f(2.2 * s)}"/>
-       <path class="hl sA" d="M${f(tx - 4 * s)},${f(ty + 9 * s)} L${f(tx - 7 * s)},${f(ty + 15 * s)} M${f(tx)},${f(ty + 10 * s)} L${f(tx)},${f(ty + 17 * s)} M${f(tx + 4 * s)},${f(ty + 9 * s)} L${f(tx + 7 * s)},${f(ty + 15 * s)}"/>`
-    : `${body("sM")}<path class="k sM" d="${shade}"/>`;
+  const p = ring3(th + CANDLE_OFF, Math.PI / 2), [x, y] = W(p[0], p[1], p[2]), k = kz(p[2]), s = k * 1.5;
+  const w = 2.4 * s, top = y - 11 * s, fy = top - 1.5 * s;
+  const flame = (h, wd) => `M${f(x)},${f(fy)} C${f(x - wd * s)},${f(fy - h * .35 * s)} ${f(x - wd * .4 * s)},${f(fy - h * .75 * s)} ${f(x)},${f(fy - h * s)} C${f(x + wd * .4 * s)},${f(fy - h * .75 * s)} ${f(x + wd * s)},${f(fy - h * .35 * s)} ${f(x)},${f(fy)} Z`;
+  let o = `<ellipse class="hl sA" cx="${f(x)}" cy="${f(y)}" rx="${f(5 * s)}" ry="${f(1.6 * s)}"/>
+    <path class="k sW" d="M${f(x - w)},${f(y)} L${f(x - w)},${f(top)} L${f(x + w)},${f(top)} L${f(x + w)},${f(y)} Z"/>
+    <path class="hl sD" d="M${f(x)},${f(top)} L${f(x)},${f(fy)}"/>`;
+  if (!lit) return o + `<path class="fZG" d="${flame(4, 1.6)}"/>`;
+  return o + `<path class="fZG" d="${flame(9, 2.4)}"/><path class="hl sW" d="M${f(x + w)},${f(top)} L${f(x + w)},${f(top + 4 * s)}"/>
+    <path class="hl sW" transform="translate(${f(x)},${f(fy + 1.5 * s)}) scale(1.6) translate(${f(-x)},${f(-fy)})" d="${flame(9, 2.4)}"/>`;
 }
 
 /* ---- the head of the table: a dais, the Corresponding Author's chair, Quorum ---- */
