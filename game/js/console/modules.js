@@ -11,7 +11,8 @@ import { MAE } from "./mae.js";
 import { LIB_VISION } from "./lib_vision.js";
 import { LIB_ADJUST } from "./lib_adjust.js";
 import { LIB_ATTENTION } from "./lib_attention.js";
-export const MODULES = [NECKER, RUBIN, QUARTET, SPHERE, KANIZSA, GRIDS, MIB, TROXLER, LILAC, AFTER, FEET, DRIFT, EBBING, CARRASCO, CSF, POSNER, ROTATION, CROWDING, NUMBER, HV, ML, SEARCH, ADELSON, MAE, ...LIB_VISION, ...LIB_ADJUST, ...LIB_ATTENTION];
+import { LIB_MEMORY } from "./lib_memory.js";
+export const MODULES = [NECKER, RUBIN, QUARTET, SPHERE, KANIZSA, GRIDS, MIB, TROXLER, LILAC, AFTER, FEET, DRIFT, EBBING, CARRASCO, CSF, POSNER, ROTATION, CROWDING, NUMBER, HV, ML, SEARCH, ADELSON, MAE, ...LIB_VISION, ...LIB_ADJUST, ...LIB_ATTENTION, ...LIB_MEMORY];
 
 // the shelves, in the order the menu shows them
 export const GROUPS = ["AMBIGUOUS", "ILLUSIONS", "CLASSICS", "PS 327 LABS", "ATTENTION", "ACTION", "MEMORY", "LEARNING", "FORM", "MOTION", "NUMBER",
