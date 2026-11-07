@@ -185,7 +185,7 @@ const KIT = {
 // lvl 2 = the full treatment, 1 = a token effort. banner: [world X, world Y] on the back wall (null = no banner).
 // props: [x, y, scale] in screen coordinates, on a desk or the floor. cut: [side(0/640 or "b" for the back wall), k or X, Y].
 const ROOMS = {
-  lab: { lvl: 2, banner: [320, 30], cut: [["b", 120, 120], [640, .5, 112]], props: [[282, 203, .75], [232, 206, .6]] },
+  lab: { lvl: 2, banner: [150, 30, 118], cut: [["b", 120, 120], [640, .5, 112]], props: [[282, 203, .75], [232, 206, .6]] },
   kitchen: { lvl: 2, banner: [320, 26], cut: [["b", 90, 110], ["b", 560, 150]], props: [[372, 172, .55], [276, 172, .55]] },
   office: { lvl: 2, banner: [180, 26], cut: [["b", 470, 150], [640, .56, 120]], props: [[395, 184, .55], [440, 184, .5]] },
   hall: { lvl: 2, banner: [180, 26], cut: [["b", 110, 112], ["b", 530, 120]], props: [] },
@@ -223,7 +223,7 @@ export function decorFor(roomId, pp, info, ids) {
   }
   // the banner
   const bt = typeof K.banner === "function" ? K.banner(info) : K.banner;
-  if (bt && spec.banner) { const p = P(spec.banner[0], spec.banner[1], KB), wall = TR[0] - TL[0] - 16;
+  if (bt && spec.banner) { const p = P(spec.banner[0], spec.banner[1], KB), wall = spec.banner[2] || (TR[0] - TL[0] - 16);
     let h = 6.4; while ((bt.length * h * 1.75) > wall && h > 3.6) h -= .4;
     const cx = Math.max(TL[0] + 8 + bt.length * h * .88, Math.min(TR[0] - 8 - bt.length * h * .88, p[0]));
     s += pennants(bt, cx, p[1], h, K.cols || ["sW"], K.fall ?? -1); }
