@@ -20,6 +20,7 @@ import { sfx } from "./sfx.js";
 import * as FULL from "./fullscreen.js";
 import { titleArt, titleGlitch, titleExit } from "./title.js";
 import { installGuide } from "./guide.js";
+import { installNudge } from "./nudge.js";
 import { music } from "./music.js";
 import { applyOverrides, rewriteSay, jumpFromHash } from "./tools/overrides.js";
 import seminar from "./rooms/seminar.js";
@@ -575,6 +576,9 @@ for (const ev of ["pointerdown", "pointerup", "touchend", "click", "keydown"]) w
 window.addEventListener("keydown", (e) => { if ((e.key === "m" || e.key === "M") && !e.target.closest?.("input,textarea")) { sfx.toggle(); hud(); } });
 FULL.install(() => hud());
 const GUIDE = installGuide({ G });
+// stuck? after a while without progress, a glint on the next thing, then a line said in voice (js/nudge.js)
+const NUDGE = installNudge({ G, svg, say, idle: () => !onTitle && !G.busy && !G.chooser && !G.using && !G.actor.walking && !!G.room
+  && document.visibilityState === "visible" && !$("#panel").innerHTML && !$("#card").classList.contains("show") && !(window.GC && window.GC.noNudge) });
 frame.addEventListener("pointerdown", (e) => { if (e.target.closest && e.target.closest("[data-mute]")) { e.stopPropagation(); sfx.toggle(); hud(); } }, true);
 window.addEventListener("keydown", (e) => {
   if (G.busy) return;
@@ -675,7 +679,7 @@ setInterval(() => document.querySelectorAll("#game .needle").forEach(n => { cons
 /* ================================================================ *
  *  START: title and chapter select
  * ================================================================ */
-window.GC = { G, api, FULL, GUIDE, act, itemAct, useItemOn, loadRoom, walkTo, runConvo, switchTo, startAct };   // for testing
+window.GC = { G, api, FULL, GUIDE, get NUDGE() { return NUDGE; }, act, itemAct, useItemOn, loadRoom, walkTo, runConvo, switchTo, startAct };   // for testing
 async function start() {
   await applyOverrides(ACTS, ITEMS);
   // a PLAY link from the Script Room lands straight in a scene. Browsers won't make a sound until the page has been

@@ -45,7 +45,7 @@ wrap("printout", () => "The FOG NEURO printout. Gus's handwriting in the margin:
 wrap("phone", (api) => { const f = api.G.flags, t = (k, s) => `- ${f[k] ? "(done) " : ""}${s}`;
   return "Texts from Nell, 23:58:\n\nNELL: they killed cody. morris saw\nNELL: preston chased me down the stairwell in FOG. actual fog\nNELL: iris says don't go to the basement\nNELL: gus\nNELL: gus please\n\nGus's list:\n"
     + [t("gotRobe4", "A robe from that coat check. The one with the lit pin. She'll need to get in."), t("gotMap4", "The map on the rack."),
-      t("robeLeft", "Leave Nell the robe. Her chair. (Lab, upstairs.)"), t("mapSent", "Send her the map. The tube station goes up as well as down."), "- Scan at 2:30."].join("\n"); });
+      t("robeLeft", "Leave Nell the robe where she'll see it first: her desk, her monitor. (Lab, upstairs.)"), t("mapSent", "Send her the map. Not on her desk, where anyone walks past. The hallway tube station goes up as well as down."), "- Scan at 2:30."].join("\n"); });
 
 /* ---------------- readouts ---------------- */
 const REVIEW = () => {
@@ -226,7 +226,7 @@ export const HS = {
   lab: {
     door: { label: "door to hallway", day: { look: "The hallway.", go: "hall@fromLab" }, morris: { look: "Door.", go: "hall@fromLab" }, night: { look: "The hallway.", go: "hall@fromLab" }, morning: { look: "The hallway.", go: "hall@fromLab" } },
     monitor: { label: "your monitor", day: { look: "Your monitor. Your defense slides, half done. Slide 1: NULL RESULTS: A DEFENSE. Slide 2: blank." }, morris: look("Morris sits on the space bar."),
-      night: { look: "Nell's monitor. Her chair is pushed back, like she left in a hurry." }, morning: { look: "Your monitor. Your defense is today. Slide 2 is still blank." } },
+      night: { look: (api) => "Nell's monitor. Her chair is pushed back, like she left in a hurry." + (api.has("robe") ? " Whatever he leaves here, it's the first thing she'll see in the morning." : "") }, morning: { look: "Your monitor. Your defense is today. Slide 2 is still blank." } },
     drawer: { label: "desk drawer", day: look("Your drawer. Morris's bed."), morris: { look: "Home.", use: "Morris naps for four seconds." }, night: look("Nell's drawer. Empty tonight. The rat's with her."), morning: look("Your drawer.") },
     whiteboard: { label: "whiteboard", day: look("IS ANY OF IT REAL? NO. And new, in your writing: WHO IS PULLING THE STRINGS?"), morris: look("Too high."),
       night: look("WHO IS PULLING THE STRINGS? Gus writes underneath: THE ARCHIVE. B3."), morning: look("WHO IS PULLING THE STRINGS? And under it, in Gus's handwriting: THE ARCHIVE. B3.") },
@@ -254,7 +254,8 @@ export const HS = {
       night: look("The Rising Stars in the dark."), morning: look("Gus was never on the Rising Stars wall. Nobody notices a grad student at 2 AM.") },
     board: { label: "bulletin board", day: look("NELL NULL, DEFENSE, FRIDAY 2 PM, 101. P. VALU, JOB TALK, FRIDAY 3 PM, 101. Somebody moved his to after yours. So he can watch."), night: look("The flyers."), morning: look("The flyers.") },
     impact: { label: "Impact Lab 116", day: { look: "116. Locked.", use: "123456." }, morris: look("116."), night: look("116."), morning: look("116.") },
-    tube: { label: "tube station", day: look("Canisters, going down."), night: { look: "The tube station. A canister, empty, waiting in the hatch." },
+    tube: { label: "tube station", day: look("Canisters, going down."), night: { look: (api) => "The tube station. A canister, empty, waiting in the hatch."
+      + (api.has("map") ? " Room in it for something rolled up. The address card says: ANY ROOM. Up goes to people. Down goes to them." : "") },
       morning: { look: (api) => api.flag("gotMap") ? "Empty." : "A canister is sitting in the hatch, addressed by hand: N. NULL, ADLINE LAB.",
         use: (api) => { if (api.flag("gotMap")) return "Empty."; api.give("map"); api.flag("gotMap", true); api.score("gotMap", 1);
           return "Inside the canister: a hand-drawn map of the steam tunnels, B3 circled twice. On the back, in Gus's handwriting:\n\n'Tomorrow. Bring the rat. —G.'"; } } },
@@ -329,7 +330,7 @@ export const HS = {
       await api.readout(REVIEW(), "Reviewer 2's report on your paper. Last spring. 'Nueron.' 'Utilize.' 'Thier.' Saved from P. VALU's laptop into Impact's folder.\n\nThe LTM never misspells anything. A person wrote this. Preston wrote this.");
       if (!api.flag("clueReviewer2")) { api.flag("clueReviewer2", true); api.score("clueReviewer2", 3); } return "NELL|The one thing he wrote himself was my rejection."; } } },
     figure: { label: "framed Figure 2", day: { look: "A framed print of the Big Finding's Figure 2 on the wall, signed by Preston: 'To the boss! Synergy!'", use: doRetainer } },
-    drawer: { label: "desk drawer", day: { look: "The top drawer.", use: async (api) => {
+    drawer: { label: "desk drawer", day: { look: "The top drawer, not quite shut. The only thing in this office that isn't framed. Men like Impact keep the thing that matters closest to hand.", use: async (api) => {
       await api.readout(CARD(), "A membership card. NEUROSCIENTIFIC ROUND TABLE. M. IMPACT. AGE: 41. EXPIRED.");
       if (!api.flag("clueCard")) { api.flag("clueCard", true); api.score("clueCard", 3); api.refresh(); }
       return "Under the card, a draft letter on department letterhead, never sent:\n\n'Dear Ethel. I can no longer stay silent about the Table. I have reviewed my own student's papers for three years without reading them. I know where he goes on Friday nights, because I used to go. I am forty-one—'\n\nIt stops there."; } } },
@@ -457,9 +458,15 @@ export const WITH = {
   "library.backissues": { printout: doMetamer },
   "office.penny": { receipts: doHours },
   "impactoffice.figure": { notebook: doRetainer },
-  "lab.monitor": { robe: (api) => { if (api.G.mode !== "night") return null; api.take("robe"); api.flag("robeLeft", true); if (api.has("reel")) { api.take("reel"); api.flag("reelLeft", true); } api.score("robeLeft", 2);
+  "lab.monitor": { map: (api) => api.G.mode === "night" ? "GUS|Not on her desk. Anyone walks past her desk. Things in tubes, nobody checks. Not if they're going up." : null,
+    robe: (api) => { if (api.G.mode !== "night") return null; api.take("robe"); api.flag("robeLeft", true); if (api.has("reel")) { api.take("reel"); api.flag("reelLeft", true); } api.score("robeLeft", 2);
     return "Gus drapes the robe over Nell's chair, pin facing out, so she'll see it first thing." + (api.flag("reelLeft") ? " He tucks the reel into the hood." : "") + "\n\nGUS|You'll need it more than me."; } },
   "lab.robe": { robe: (api) => WITH["lab.monitor"].robe(api) },
+  "lab.drawer": { robe: (api) => api.G.mode === "night" ? "Gus starts folding the robe into Nell's drawer. It won't go. Ramen packets, rejection letters, a rat-shaped dent. Somewhere she'll see it first: her desk. Her monitor." : null },
+  "lab.gusdesk": { robe: (api) => api.G.mode === "night" ? "GUS|My desk? She won't look at my desk. Nobody looks at a grad student's desk. Hers. By her monitor." : null,
+    map: (api) => api.G.mode === "night" ? "GUS|Not here. If they come looking, they'll come looking here." : null },
+  "tunnels.hatch": { map: "Gus holds the map over the hatch. Down this line, it goes through the brick, to them. He needs a station that sends things up." },
+  "tunnels.bricked": { map: "Gus is not posting the map to the cult." },
   "hall.tube": { map: (api) => { if (api.G.mode !== "night") return null; api.take("map"); api.flag("mapSent", true); api.score("mapSent", 2);
     return "Gus rolls the map into a canister, addresses it by hand: N. NULL, ADLINE LAB, and drops it in. It goes up, not down. Good.\n\nGUS|Tomorrow. Bring the rat."; } },
   "hall.prof": { recorder: "IMPACT|Turn that off. Four o'clock." },

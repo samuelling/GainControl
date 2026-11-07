@@ -11,7 +11,7 @@ import { openConsole } from "../console/open.js";
 
 /* ---------------- items ---------------- */
 Object.assign(ITEMS, {
-  can: { name: "energy drink (Gus's)", look: "A can of NULL HYPOTHESIS, from Gus's emergency stash. The label says pH 2.4. That's not a drink. That's a cleaning product with a marketing budget.",
+  can: { name: "energy drink (Gus's)", look: "A can of NULL HYPOTHESIS, from Gus's emergency stash. The label says CITRIC ACID, PHOSPHORIC ACID, pH 2.4. That's not a drink. That's a cleaning product with a marketing budget.",
     g: (x, y) => `<rect class="sW" x="${x - 5}" y="${y - 10}" width="10" height="20"/><path class="hl sW" d="M${x - 5},${y - 6} L${x + 5},${y - 6}"/>${seg("H0", x - 4, y - 1, 3.4, "sG", .6)}` },
   mug: { name: "mug", look: "A department mug: WORLD'S OKAYEST PI. Clean, by kitchen standards. Which is to say, not.",
     g: (x, y) => `<path class="sW" d="M${x - 7},${y - 8} L${x + 5},${y - 8} L${x + 4},${y + 9} L${x - 6},${y + 9} Z M${x + 5},${y - 4} C${x + 10},${y - 4} ${x + 10},${y + 4} ${x + 4},${y + 4}"/>` },
@@ -44,7 +44,7 @@ wrap("recorder", (api) => "Your voice memo recorder. Memo 1, PRESTON: \"I ran ev
   + (api.flag("taped") ? "\n\nMemo 3, PRESTON, THIS MORNING: \"…that's what fog neuro is all— Cog. Cog neuro.\"" : ""));
 wrap("printout", (api) => `Gus's printout from Preston's computer: "${api.G.flags.printTitle || "Untitled"}." Footer: LTM v0.9 · FOG NEURO · SEED 0412.\n\nOne machine, one seed, one byline. Every sentence welded from somebody else's finding.`);
 wrap("drink", () => "A can of NULL HYPOTHESIS. Gus's fourth tonight. His hands have a gentle vibrato.");
-wrap("phone", (api) => "Texts from Nell, 11:58 PM:\n\nNELL: dana's dead. quorum's dead. the old woman says I'm the QUARRY\nNELL: please go home\nNELL: you're not going home are you\n\nGus's list:\n- Find where the chilled water's going. It's leaking into the scan.");
+wrap("phone", (api) => "Texts from Nell, 11:58 PM:\n\nNELL: dana's dead. quorum's dead. the old woman says I'm the QUARRY\nNELL: please go home\nNELL: you're not going home are you\n\nGus's list:\n- " + (api.flag("chanting") ? "(done) " : "") + "Find where the chilled water's going. It's leaking into the scan.\n- " + (api.flag("hatchOpen") ? "(done) " : "") + "The canisters. Six a night, all going down. Catch one before it gets wherever it's going.");
 
 /* ---------------- readouts ---------------- */
 const JOBS = () => {
@@ -141,6 +141,8 @@ export const CONVOS = {
     ["R", "For a coffee. A real one. From that."],
     ["L", "That machine says DESCALE."],
     ["R", "It has said DESCALE since 2012. I've watched three chairs and two coups. It'll say DESCALE at my funeral."],
+    ["L", "So descale it."],
+    ["R", "With what? Descaler needs a purchase order. Anything acidic would do. Vinegar. Lemon juice. Nobody in this department owns a lemon."],
   ], after: (api) => api.flag("rexAsked", true) },
 
   rexCoffee: { L: "nell", R: "rex", score: ["rexCoffee", 2], lines: [
@@ -148,6 +150,7 @@ export const CONVOS = {
     ["L", "Descaled. With an energy drink."],
     ["R", "pH 2.4. Of course. Nine years. Nine years and the answer was in a grad student's backpack."],
     ["R", "Here. My login. Look up PVALU. Look at what runs Fridays at midnight."],
+    ["R", "The terminal's on a cart in the GPU server room. B1, down the stairwell. It's thirty-one degrees down there. Don't take anything you love."],
     ["R", "And Nell? There's a secret society in this building. Under forty. I applied at thirty-nine and eleven months."],
     ["L", "What happened?"],
     ["R", "They sent me a letter. Lovely letter. Cream paper. 'Reply with your date of birth.' So I did."],
@@ -330,7 +333,8 @@ export const HS = {
       morris: { look: "Scribbling, inside." }, night: { look: "Dark. Even grant panic sleeps." } },
     booth: { label: "dark booth", day: { look: "The dark booth.", use: boothNap("You sit in the dark booth, just to think for a minute.\n\nYou wake up a ninth-year postdoc. Rex brings you a coffee. He seems pleased."), go: openConsole },
       morris: { look: "MORRIS|No." }, night: { look: "The dark booth. Gus doesn't need it to be dark. Gus is dark.", go: openConsole } },
-    gusdesk: { label: "Gus's desk", day: { look: "Gus's desk. Four empty cans of NULL HYPOTHESIS and one full one, his emergency can.",
+    gusdesk: { label: "Gus's desk", day: { look: (api) => api.has("can") || api.flag("descaled") ? "Gus's desk. Four empty cans of NULL HYPOTHESIS, and a pale ring where the full one stood. The varnish never came back."
+        : "Gus's desk. Four empty cans of NULL HYPOTHESIS and one full one, his emergency can. Under each can, a pale ring where the varnish used to be.\n\nThe small print: CITRIC ACID. PHOSPHORIC ACID. pH 2.4.",
         use: (api) => { if (api.has("can") || api.flag("descaled")) return "GUS|That's my last one. Don't make it weird."; api.give("can"); api.flag("gotDrink", true); api.refresh(); api.score("can", 1);
           return "You take Gus's emergency can.\n\nGUS|That's my emergency can.\n\nNELL|This is an emergency.\n\nGUS|…pH 2.4. Don't drink it. Nobody should drink it. I drink it."; } },
       morris: { look: "Morris sniffs the cans. His whiskers curl." }, night: { look: "His own desk. He hasn't sat at it since Monday." } },
@@ -413,16 +417,20 @@ export const HS = {
 
   kitchen: {
     rex: { label: "Dr. Rex Jected", day: { look: "Dr. Rex Jected, ninth-year postdoc, leaning on the counter with an empty mug, staring at the espresso machine like it's a grant he didn't get.",
-        talk: (api) => api.has("coffee") ? "c:rexCoffee" : api.flag("rexLogin") ? "REX|There's a society, Nell. Under forty. Nobody believes me." : api.flag("rexAsked") ? "REX|Coffee. From the machine. Then we talk." : "c:rexFirst" },
+        talk: (api) => api.has("coffee") ? "c:rexCoffee" : api.flag("rexLogin") ? "REX|There's a society, Nell. Under forty. Nobody believes me." : !api.flag("rexAsked") ? "c:rexFirst"
+          : api.flag("descaled") ? "REX|It says READY. I've never seen it say READY. Mug tree. Go. Before it changes its mind."
+          : api.has("can") ? "REX|Is that one of Gus's? NULL HYPOTHESIS? I've watched that stuff take the varnish off a desk.\n\nREX|Don't hand it to me. I'm not the one with fourteen years of limescale."
+          : "REX|Coffee. From the machine. Then we talk.\n\nREX|It wants acid. I've tried sarcasm. Not acidic enough." },
       morris: { look: "REX|Don't. Don't even, rat." } },
-    espresso: { label: "espresso machine", day: { look: (api) => api.flag("descaled") ? "The espresso machine. READY. A green light nobody in this building has ever seen." : "The espresso machine. A blinking chip: DESCALE. Rex says it's said that since 2012.",
+    espresso: { label: "espresso machine", day: { look: (api) => api.flag("descaled") ? "The espresso machine. READY. A green light nobody in this building has ever seen." : "The espresso machine. A blinking chip: DESCALE. Rex says it's said that since 2012.\n\nA sticker on the side: DESCALE WITH ANY MILD ACID. Under it, in Sharpie: WE HAVE NO ACID. —R",
         use: (api) => api.flag("descaled") ? (api.has("mug") ? brew(api) : "It's ready. You need a mug. There's a mug tree.")
-          : "DESCALE. It won't do anything else. It's been waiting for someone to listen." + (api.has("can") ? "\n\nYou're carrying something with a pH of 2.4. Just saying." : "") },
+          : "DESCALE. It won't do anything else. It's been waiting for someone to listen. The sticker on the side says any mild acid." + (api.has("can") ? "\n\nYou're carrying something with a pH of 2.4. Just saying." : "") },
       morris: { look: "MORRIS|There's fourteen years of limescale in there, pal. I can hear it." }, night: { look: "The espresso machine, READY in the dark." } },
     mugs: { label: "mug tree", day: { look: "The mug tree. WORLD'S OKAYEST PI. I ♥ P < .05. A mug shaped like a brain that nobody uses.",
         use: (api) => { if (api.has("mug") || api.has("coffee") || api.flag("rexLogin")) return "One mug at a time. Kitchen rules."; api.give("mug"); api.flag("gotMug", true); api.refresh(); return "You take WORLD'S OKAYEST PI."; } },
       morris: { look: "Morris can't reach." } },
-    fridge: { label: "fridge", day: { look: "The fridge. A note: DO NOT DRINK — SAMPLE. On a carton of oat milk.", use: (api) => !api.flag("fridgeWarned")
+    fridge: { label: "fridge", day: { look: (api) => "The fridge. A note: DO NOT DRINK — SAMPLE. On a carton of oat milk."
+        + (api.flag("rexAsked") && !api.flag("descaled") ? "\n\nNo lemons. No vinegar. Rex was right: nobody in this department owns a lemon. Unless you count whatever Gus drinks." : ""), use: (api) => !api.flag("fridgeWarned")
         ? (api.flag("fridgeWarned", true), "You open the fridge. A carton of oat milk, with a note taped to it: DO NOT DRINK — SAMPLE.\n\nIt looks like oat milk. It smells like oat milk. You close the fridge before you can find out what else it is.")
         : api.die("You drink the oat milk. It wasn't oat milk.\n\nYou are now part of somebody's control group. Your data will be excluded.") },
       morris: { look: "MORRIS|I've been in there. Don't." } },
@@ -455,7 +463,7 @@ export const HS = {
         use: (api) => !api.flag("knockWarned")
         ? (api.flag("knockWarned", true), "Gus raises his knuckles to the brick. The chanting goes on, very close, very many.\n\nGUS|…Knock on the cult's door. At 2 AM. Alone. Gus, buddy. Think about that for a second.")
         : (api.sfx("knock"), api.die("Gus knocks.\n\nThe chanting stops.\n\nA brick slides out. A hooded face. A voice, kindly: 'The authors are invited to resubmit. In person.'\n\nGus is never seen at 2 AM again.")) } },
-    tube: { label: "tube line", night: { look: "The pneumatic tube line along the ceiling. It runs toward the bricked door and through it.",
+    tube: { label: "tube line", night: { look: "The pneumatic tube line along the ceiling. It runs toward the bricked door and through it. Every canister this week went this way. Halfway along: an access hatch.",
         use: (api) => { if (api.flag("canisterLive")) return "Rattling. Closer. Get the hatch."; api.flag("canisterLive", true); api.refresh();
           return "Gus puts his ear to the tube. Silence. Then, very far away and getting closer: a rattle.\n\nSomething's coming down."; } } },
     hatch: { label: "access hatch", night: { look: "An access hatch on the tube, at shoulder height. Stenciled: 1962.",
@@ -507,9 +515,14 @@ export const HS = {
 
 function gusHint(api) {
   const f = api.G.flags;
+  // a thread Nell has already started comes first, so a player who went to the kitchen (or got the log) early isn't told "Table 1 first"
+  if (!f.proofLogs && f.rexAsked && !f.descaled && !api.has("can")) return "GUS|The machine wants acid? My drink's pH 2.4. It took the varnish off my desk. Emergency can's right there. This is an emergency.";
+  if (!f.proofLogs && (api.has("can") || (f.descaled && !f.rexLogin))) return "GUS|Rex. Kitchen. Coffee. Go.";
+  if (!f.proofLogs && f.rexLogin) return "GUS|You have Rex's login. Server room, B1.";
+  if (!f.proofGLM && api.has("log")) return "GUS|You have the log. Your monitor.";
   if (!f.proofGrim) return "GUS|Table 1 first. Click me, TABLE 1. Bring your skepticism. Leave your calculator.";
   if (!f.proofOverlay) return "GUS|Figure 3. Your monitor. Make the two participants agree.";
-  if (!f.proofLogs) return f.rexLogin ? "GUS|You have Rex's login. Server room, B1." : "GUS|Rex. Kitchen. Coffee. My can is for emergencies." + (f.descaled ? "" : " This is an emergency.");
+  if (!f.proofLogs) return f.rexLogin ? "GUS|You have Rex's login. Server room, B1." : (f.descaled || api.has("can") ? "GUS|Rex. Kitchen. Coffee. Go." : f.rexAsked ? "GUS|The machine wants acid? My drink's pH 2.4. It took the varnish off my desk. Emergency can's right there. This is an emergency." : "GUS|Rex. Kitchen. Coffee. He'll talk for a coffee.");
   if (!f.proofGLM) return api.has("log") ? "GUS|You have the log. Your monitor." : "GUS|The log's in 116. Your drawer has a rat. I'm just saying.";
   return "GUS|That's four. Ethel. Second floor.";
 }
@@ -534,10 +547,14 @@ export const WITH = {
       return api.die("You brew anyway. The machine coughs out one tablespoon of something gray, with a texture.\n\nYou drink it. You have consumed fourteen years of limescale. You are now load-bearing.\n\nREX: I said don't."); },
     drink: "Gus's drink is in his hand. Nell needs the one on his desk.",
   },
-  "kitchen.rex": { coffee: "c:rexCoffee", mug: "REX|An empty mug. Wow. You get me.", can: "REX|I don't drink that. I've seen what it does to Gus." },
+  "kitchen.rex": { coffee: "c:rexCoffee", mug: (api) => api.flag("descaled") ? "REX|An empty mug. Next to a machine that says READY. Nell. Put one under the other." : "REX|An empty mug. Wow. You get me.",
+    can: "REX|I don't drink that. I've seen what it does to Gus. And to Gus's desk.\n\nREX|…Wait. What's the pH on that? Don't give it to me. Give it to the machine." },
+  "kitchen.sink": { can: "You're not wasting pH 2.4 on a sink. The sink isn't the one that's been blinking DESCALE since 2012." },
+  "kitchen.fridge": { can: "The fridge is not the problem. The fridge is a different problem." },
   "server.terminal": { login: (api) => logs(api) },
   "lab.monitor": { log: doGLM, printout: "You hold the FOG NEURO printout up to Figure 3. The same confident voice. The same perfect blob." },
-  "lab.gus": { printout: "GUS|I read it at 2 AM. It made sense at 2 AM. That's the scariest part.", log: "GUS|Your monitor. Let's replicate it." },
+  "lab.gus": { printout: "GUS|I read it at 2 AM. It made sense at 2 AM. That's the scariest part.", log: "GUS|Your monitor. Let's replicate it.",
+    can: (api) => api.flag("rexAsked") ? "GUS|Rex's machine? Pour it in the water tank. pH 2.4 eats limescale. Then never tell me what it does to people." : "GUS|You took my emergency can. I'm choosing to believe there's an emergency." },
   "hall.preston": { recorder: (api) => api.flag("prestonTalked") ? "You already have it on tape." : "You hold up the recorder. Preston leans in, delighted. PRESTON: Is this for a podcast?" },
   "hall.small": { printout: "SMALL|A printout. N of one." },
   "ethics.ethel": { printout: "ETHEL|A printout of a paper by a computer. I'll need the other four things." },

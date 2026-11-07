@@ -428,7 +428,7 @@ export const HS = {
 export const WITH = {
   "lab.adline": { po7: (api) => { api.take("po7"); api.give("po7s"); api.score("signed", 2);
     return "You slide Form PO-7 under the door, between pages 9 and 10 of her grant.\n\nScribbling. Muttering. Sign, sign, sign. It slides back out, signed. So does a parking permit, a request to rename the lab, and somebody's divorce papers.\n\nPROF. ADLINE (THROUGH THE DOOR): AFTER THE FIFTEENTH!"; } },
-  "office.penny": { po7: "PENNY|That's not signed, hon. By a PI.", po7s: "c:pennyPO",
+  "office.penny": { po7: "PENNY|That's not signed, hon. By a PI.", po7s: "c:pennyPO", slip: "PENNY|That's a credit slip, hon. It's Cody's. He's been waiting for it since March.",
     recorder: (api) => { if (!api.flag("clueCoil")) return "PENNY|Are you recording me? Fill out Form R-2."; if (api.flag("pennyMemo")) return "You already have it.";
       api.flag("pennyMemo", true); api.score("pennyMemo", 1); return "You hold up the recorder.\n\nPENNY|Nobody ordered a coil. Not ever.\n\nShe says it again, louder, for the tape. Penny likes a paper trail."; } },
   "office.printer": { thermos: "The printer doesn't need coffee. It needs a rat." },
@@ -437,7 +437,7 @@ export const WITH = {
   "mri.tess": { recorder: "TESS|Recording in my control room? Zone III applies to gossip.", thermos: "TESS|In. The. Locker." },
   "mri.locker": { thermos: (api) => api.use("locker") },
   "mri.magnetdoor": { thermos: "You consider throwing the thermos into the magnet room to see what happens. You know what happens. Everyone knows what happens." },
-  "ethics.ethel": { recorder: "ETHEL|Shh." },
+  "ethics.ethel": { recorder: "ETHEL|Shh.", po7: "ETHEL|Shh. Purchase orders are Penny's. Signatures are a PI's. Integrity is binders.", po7s: "ETHEL|Shh. Purchase orders are Penny's." },
   "hall.impact": { badge: "Gus taps his badge. The keypad blinks red. It wants six digits." },
   "impact.pc": { drink: "Gus considers pouring NULL HYPOTHESIS into Preston's keyboard. He's a scientist. He doesn't destroy evidence." },
 };

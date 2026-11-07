@@ -111,7 +111,7 @@ async function doReels(api) {
   const r = await api.mini(reels, { score: api.score, seconds: 90 });
   api.flag("reelsDone", true);
   const n = (r && r.sent) || 0; api.G.flags.reelsSent = Math.max(n, api.G.flags.reelsSent || 0);
-  if (n >= 3) { api.flag("archiveSent", true); api.score("archiveSent", 5); return "MORRIS|Membership. Panels. Reviews. Boards. All going up, pal. Second floor. Ethel's going to need a bigger binder."; }
+  if (n >= 3) { api.flag("archiveSent", true); api.score("archiveSent", 5); return "MORRIS|Membership. Panels. Reviews. Boards. All going up, pal. Second floor. Ethel's going to need a bigger binder." + (api.flag("supportsOut") ? "" : "\n\nMORRIS|Now the riser. Up to the 3T. The lady said bolts."); }
   return (n ? "MORRIS|Got some of it up the tube, pal. Not all. Not enough." : "MORRIS|I sent the sherry inventory. Twice. I panicked.")
     + "\n\nMORRIS|I could go again. Or I could go up the riser and do the floor. Ethel's best ending needs three reels, minimum.";
 }
@@ -241,7 +241,7 @@ export const HS = {
     portraits: { label: "portraits", night: look("Portraits of members, in robes, hoods back. Every plaque says AGE 39. Some of the faces are seventy. Some are dead. One is Quorum, three times: 1979, 1994, 2009.") },
     book: { label: "guest book", night: look("A guest book. Every entry, in the same hand: WELCOMED, WITH REGRETS. The last page has a column for this year's quarry. It says N. NULL.") },
     doorkeeper: { label: "the doorkeeper", night: { look: "A hood, beside the inner door. It hasn't moved since you came in. It's waiting for something.", talk: doorkeeper } },
-    inner: { label: "inner door", night: { look: "The inner door, with the insignia.", go: (api) => api.flag("passOK") ? "chamber@fromAntechamber" : "The doorkeeper's hood turns, one notch, toward you." } },
+    inner: { label: "inner door", night: { look: "The inner door, with the insignia. Carved in the lintel, worn smooth by fifty years of hoods: FURTHER RESEARCH IS NEEDED.", go: (api) => api.flag("passOK") ? "chamber@fromAntechamber" : "The doorkeeper's hood turns, one notch, toward you." } },
     tunnel: { label: "back to the tunnels", night: { look: "The tunnel.", go: "Not now." } },
   },
   chamber: {
@@ -281,7 +281,7 @@ export const HS = {
       use: brassGavel } },
     ltm: { label: "LTM drives", morris: { look: "The LTM's drive racks, blinking. Two, one, two.", use: "Morris chews through a cable. The lights stutter. Somewhere, a paper loses one sentence and gets better." } },
     pipe: { label: "pipe", morris: look("The pipe Morris came down. It goes up to every room in the building.") },
-    riser: { label: "riser pipe", morris: { look: "A riser pipe going straight up, wet on the outside. UP: 3T. It's the chilled-water line. It's been leaking down here for fifty years.",
+    riser: { label: "riser pipe", morris: { look: "A riser pipe going straight up, wet on the outside. UP: 3T. It's the chilled-water line. It's been leaking down here for fifty years, onto whatever holds that scanner up.",
       go: (api) => api.flag("reelsDone") ? "crawlspace@fromHub" : "MORRIS|Archive first, pal. Ethel needs her reading." } },
     arch: { label: "arch", morris: look("An arch, with the insignia carved in the keystone.") },
   },
@@ -302,7 +302,7 @@ async function doorkeeper(api) {
   const p = await api.chooseFrom("THE AUTHORS SHOULD CONSIDER…", [["a", "…FURTHER RESEARCH."], ["b", "…ADDITIONAL CONTROLS."], ["c", "…A CAREER IN INDUSTRY."]]);
   if (!p) return null;
   if (p === "c") return api.die("NELL: …a career in industry.\n\nSilence. Then, from every hood at once: 'Desk reject.'\n\nYour application has been forwarded to industry. Industry did not ask for it.");
-  if (p === "b") return "A HOOD|…\n\nThe hood tilts, very slightly. Not wrong. Not right. It waits.";
+  if (p === "b") return "A HOOD|…\n\nThe hood tilts, very slightly. Not wrong. Not right. It waits, the way a reviewer waits for the last line of every report.";
   await api.say("A HOOD|Further research is needed.\n\nA HOOD|Your date of birth.");
   let d = await api.chooseFrom("YOUR DATE OF BIRTH.", [["card", "SHOW IRIS'S CARD (BORN 1987)"], ["truth", "TELL THE TRUTH"]]);
   if (d === "truth" && !f.truthWarned) { f.truthWarned = true;
@@ -327,8 +327,8 @@ async function nightfall(api) {
   G.inv.iris = ["stapler"]; G.inv.morris = [];
   G.chars = { iris: { room: "plant", x: 300, y: 270, dir: 1 }, morris: { room: "tubehub", x: 320, y: 280, dir: 1 } };
   api.shift({ mode: "night", char: "nell", room: "antechamber", entry: "fromTunnels", min: 23 * 60 + 40, cast: ["nell", "iris", "morris"] });
-  await api.say("They go down together, Gus's map in Nell's hand. At the bricked door the tunnel splits three ways, the way Iris said it would.\n\nIRIS|I take the old service corridor to the plant. You take the front door, dear. Here: my card. I fixed the year.\n\nMORRIS|And I take the pipes. Obviously.\n\nThe antechamber is warm, and smells of incense and toner.");
-  await api.say("Three of you now. Click a name, or press Tab, to switch.\n\nNELL: the front door, the doorkeeper, the Echo.  IRIS: the power plant, the magnet.  MORRIS: the tube hub, the Archive.");
+  await api.say("They go down together, Gus's map in Nell's hand. At the bricked door the tunnel splits three ways, the way Iris said it would.\n\nIRIS|I take the old service corridor to the plant. You take the front door, dear. Here: my card. I fixed the year. And when the doorkeeper starts a sentence, finish it the way every review in the world ends. Never with a career.\n\nMORRIS|And I take the pipes. Obviously.\n\nIRIS|Rat. Every tube ends in the hub, and so does the Archive: send it up to Ethel. Then the riser. Gus's 3T sits right over their Table, on four posts that have stood in fifty years of leak. Loosen the bolts. When I wake the ring, it will do the rest.\n\nMORRIS|You want me to take the bolts out from under six tonnes of magnet. …Lady, I think I love you.\n\nThe antechamber is warm, and smells of incense and toner.");
+  await api.say("Three of you now. Click a name, or press Tab, to switch.\n\nNELL: the front door, the doorkeeper, the Echo.  IRIS: the power plant, the magnet.  MORRIS: the tube hub, the Archive, then up the riser to the 3T.");
 }
 export const MAXSCORE = 90;
 export const TITLE = ["ACT V", "DECISION"];
