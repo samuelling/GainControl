@@ -132,7 +132,7 @@
   #panel .foot { font-size: 1cqw; color: var(--M); letter-spacing: .08em; padding-bottom: .4cqw; flex: none; }
 
   /* characters never block clicks on what's behind them */
-  #actor, #extras, #game .idle { pointer-events: none; }
+  #actor, #extras, #game .idle, #game .xtra { pointer-events: none; }
 
   /* THE REPLICATION (GLM on Nell's monitor) */
   .glmwrap { position: absolute; inset: 0; z-index: 7; background: #000; }

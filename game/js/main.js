@@ -117,7 +117,9 @@ function idleFigures() {   // the other playable character, if they're standing 
 }
 function build() {
   const d = R().draw(G);
-  const sorts = [...d.sortables.filter(o => o.svg), ...idleFigures()];
+  // depth order, back to front: render() slots the walker in front of everything shallower than her feet, which only
+  // works if the list is sorted (rooms list their things in drawing order, and the idle character comes last)
+  const sorts = [...d.sortables.filter(o => o.svg), ...idleFigures()].map((o, i) => [o, i]).sort((a, b) => (a[0].depth - b[0].depth) || (a[1] - b[1])).map(x => x[0]);
   svg.innerHTML = `<g id="roomBack">${d.back}</g>${decor(R(), G)}<g id="sortables">
     ${sorts.map(o => `<g data-depth="${o.depth}">${o.svg}</g>`).join("")}
     <g data-depth="actor" id="actorWrap"><g id="actor" data-pose="0"></g></g></g><g id="extras"></g><g id="fx" pointer-events="none">${fxLayer(G)}</g><g id="hud"></g><g id="chooser"></g>`;
@@ -193,11 +195,19 @@ function render() {
   const after = [...sort.children].find(c => c !== wrap && parseFloat(c.dataset.depth) > a.y);
   if (wrap.nextSibling !== after) sort.insertBefore(wrap, after || null);
 }
-// scripted walkers (the robed figures): drawn above the room, stepped by the act
+// scripted walkers (the robed figures), stepped by the act: depth-sorted with everyone else (they used to be drawn over
+// the whole room, so someone standing in front of the procession was covered by it), each on one pose (fpN)
 function drawExtras() {
-  const g = $("#extras"); if (!g) return;
-  g.innerHTML = G.extras.map(x => { const s = R().pp.kAtY(x.y) * AUD;
-    return `<g data-pose="${x.pose}" transform="translate(${x.x},${x.y}) scale(${x.dir * s},${s}) translate(-160,-187)">${x.fig()}</g>`; }).join("");
+  const sort = $("#sortables"); if (!sort) return;
+  sort.querySelectorAll(":scope > .xtra").forEach(e => e.remove());
+  for (const x of G.extras) {
+    const s = R().pp.kAtY(x.y) * AUD, g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.setAttribute("class", "xtra"); g.setAttribute("data-depth", x.y);
+    g.innerHTML = `<g class="fp${x.pose | 0}" transform="translate(${x.x},${x.y}) scale(${x.dir * s},${s}) translate(-160,-187)">${x.fig()}</g>`;
+    const before = [...sort.children].find(c => c.id !== "actorWrap" && parseFloat(c.dataset.depth) > x.y);
+    sort.insertBefore(g, before || null);
+  }
+  render();
 }
 
 function hud() { musicScene();
@@ -722,7 +732,7 @@ setInterval(() => document.querySelectorAll("#game .needle").forEach(n => { cons
 /* ================================================================ *
  *  START: title and chapter select
  * ================================================================ */
-window.GC = { G, api, FULL, GUIDE, MENU, get NUDGE() { return NUDGE; }, act, itemAct, useItemOn, loadRoom, walkTo, runConvo, switchTo, startAct };   // for testing
+window.GC = { G, api, FULL, GUIDE, MENU, render, get NUDGE() { return NUDGE; }, act, itemAct, useItemOn, loadRoom, walkTo, runConvo, switchTo, startAct };   // for testing
 async function start() {
   await applyOverrides(ACTS, ITEMS);
   // a PLAY link from the Script Room lands straight in a scene. Browsers won't make a sound until the page has been
