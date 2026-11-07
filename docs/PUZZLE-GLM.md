@@ -8,7 +8,7 @@
 
 ## Why it's in the story
 
-- **Preston's claim** (the slide from Act I): top-down attention boosts the BOLD response **only in V1's feedback layers**, the deep layers (5/6) and layer 1. Layer 4, the feedforward input layer, stays flat. It's a "textbook" double-bump depth profile with tiny error bars, at "7T."
+- **Preston's claim** (the slide from Act I): top-down attention boosts the BOLD response **most in V1's feedback layers**, the outermost (1, 2/3) and innermost (5/6), and least in layer 4, the feedforward input layer that carries the stimulus drive: a U-shaped depth profile. The hypothesis is reasonable (feedback terminates outside layer 4); what is fake is his data, which could never resolve it at 3T. It's a "textbook" double-bump depth profile with tiny error bars, at "7T."
 - **What the data really show** (revised Nov 2026): a clean visual response, and a **real attention effect**: ATTEND is about 30% above IGNORE across the whole time series, as the field has known since the late 1990s. What the data cannot show is *where in depth* it lives: at 3T one voxel spans the whole cortex, so the effect is the same number in all six "layers". The null is a **laminar** null. And at 3T there are no layers to look at in the first place.
 - **The knife twist:** the null is Nell's. The deposited "sub-01" is Nell's pilot scan. Her honest paper reported this null; Reviewer 2 rejected it for being null, then Preston upscaled the same data into a positive laminar result. Nell doesn't realize sub-01 is herself until the retainer reveal in Act IV, so this puzzle *plants* that reveal:
   > **Act III, after the fit:** GUS: "It's not a small effect. It's no effect." / MORRIS: "So the fancy layers?" / NELL: "Painted on."

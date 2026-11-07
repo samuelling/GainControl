@@ -10,9 +10,9 @@ import { seg } from "../gfx.js";
 export const SENTS = [
   "Attention is known to reach V1, the cortex's first stop for vision, yet how deep into its layers it arrives has never been resolved.",
   "Using a 7T scanner, we measured V1's blood-flow signal at six depths, from the brain's surface down to the white matter beneath.",
-  "Attention boosted responses only in the top layer and the deep layers, where feedback from higher brain areas arrives.",
-  "Layer 4, the input layer where signals from the eyes come in (via the thalamus), did not change with attention.",
-  "This double-bump pattern, high at both ends and flat in the middle, is the signature of top-down gain control.",
+  "Attention boosted responses most in the top layer and the deep layers, where feedback from higher brain areas arrives.",
+  "Layer 4, the input layer where signals from the eyes come in (via the thalamus), barely changed with attention.",
+  "This U-shaped pattern, highest at both ends and lowest in the middle, is the signature of top-down gain control.",
   "These findings overturn decades of bottom-up thinking and call for sustained investment in layer research.",
 ];
 // the shelf: s = the Big Finding sentence it was lifted into (−1: a decoy). lab: a feeder lab key, or null.
@@ -70,8 +70,8 @@ const LINES = {
     ["NELL", "Sentence 1: attention gets to V1, but nobody knows at what depth. Look for an old card that grants the first part and says nobody's answered the second."],
     ["NELL", "Sentence 2 is the method: a reading at depth after depth, surface to white matter. Look for somebody lowering an electrode in stages."],
     ["NELL", "Sentence 3: feedback ends in the top layer and the deep ones. Look for fibres from the higher areas ending in the outermost and lowest laminae."],
-    ["NELL", "Sentence 4: the input layer doesn't move. 'Geniculate' is the thalamus, so the geniculate-recipient lamina is layer 4. Find the one that's 'indifferent.'"],
-    ["NELL", "Sentence 5: two bumps with a quiet middle, called a signature. Look for 'two peaks' and a 'fingerprint.'"],
+    ["NELL", "Sentence 4: the input layer barely moves. 'Geniculate' is the thalamus, so the geniculate-recipient lamina is layer 4. Find the one that's 'indifferent.'"],
+    ["NELL", "Sentence 5: a U, high at both ends with a quiet middle, called a signature. Look for 'two peaks' and a 'fingerprint.'"],
     ["NELL", "Sentence 6: overturn the old view, then ask for money. Look for the card that wants another decade of support."],
   ],
   show: (c) => ["MORRIS", `This one, pal. ${SRC[c].au} ${SRC[c].yr}. It's lit up. Click it.`],
@@ -87,7 +87,7 @@ const LINES = {
   done2: ["MORRIS", "So the paper's a family reunion. Who brought the potato salad?"],
 };
 const GIST = ["an open question: where in the cortex attention arrives", "the method: measuring at depth after depth", "feedback ending in the top and deep layers",
-  "the input layer staying put", "a two-peaked 'signature' of top-down gain", "overturning the old view, and asking for more money"];
+  "the input layer barely moving", "a U-shaped 'signature' of top-down gain", "overturning the old view, and asking for more money"];
 const COL = { NELL: "G", MORRIS: "K", GUS: "B", PENNY: "B", NARRATOR: "W" };
 const CSS = `
 .metamer .mbody { flex: 1 1 0; min-height: 0; display: grid; grid-template-columns: 33% 1fr; gap: 1.4cqw; padding: .7cqw 0; }

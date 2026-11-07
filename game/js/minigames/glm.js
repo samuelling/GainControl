@@ -336,7 +336,7 @@ export function glm(root, opts = {}) {
       // Preston's Figure 3, in a journal frame. Three panels, three tells.
       let s = `<rect class="k sW" x="14" y="30" width="612" height="258"/>` + seg("VALU ET AL.  FIGURE 3   LAMINAR SYNERGY AT 7T", 24, 38, 5.5, "sW", .9);
       // (a) depth profile
-      const bx = 30, by = 60, bw = 180, bh = 150, prof = { A: [1.6, 1.0, 1.0, 1.0, 1.6, 1.6], I: [1, 1, 1, 1, 1, 1] };
+      const bx = 30, by = 60, bw = 180, bh = 150, prof = { A: [1.62, 1.42, 1.22, 1.1, 1.36, 1.56], I: [1, 1, 1, 1, 1, 1] };   // his claim: a U, biggest at both ends
       const px = (i) => bx + 20 + i * 28, py = (v) => by + bh - 20 - (v - 0.6) * 70;
       s += `<g data-tell="veins" style="cursor:pointer"><rect class="hl ${S.tells.veins ? "sG" : "sD"}" x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="transparent"/>`;
       s += seg("A  DEPTH PROFILE", bx + 6, by + 6, 4.4, "sM", .8) + seg("SURFACE", bx + 12, by + bh - 12, 4, "sM", .7) + seg("DEEP", bx + bw - 26, by + bh - 12, 4, "sM", .7);
@@ -469,7 +469,10 @@ export function glm(root, opts = {}) {
         lesson([["GUS", "Same picture on screen in both kinds of block. The only thing that changes is attention. So ATTEND minus IGNORE is the attention effect."],
           ["NELL", `Plus ${eff}. Attending to it turns V1 up by about a third.`],
           ["GUS", `And HOW SURE: that gap is ${Math.round(D.fit.t)} times bigger than its own wobble. That's the T. Luck doesn't do that.`],
-          ["GUS", "That part's real. People have shown it since the nineties. That isn't his claim. His claim is where it lives: layers 1, 5 and 6, and not the rest."],
+          ["GUS", "That part's real. People have shown it since the nineties. His claim is where it lives, layer by layer."],
+          ["GUS", "Attention is feedback: orders coming down from higher brain areas. Feedback lands in the outermost and innermost layers. The middle layer takes the input from the eyes."],
+          ["NELL", "So attention should boost the top and bottom layers most, and the middle a little less. A U."],
+          ["GUS", "It's a good idea. It might even be true. Like a building where the memos arrive on the roof and in the basement, and the mail comes in the lobby."],
           ["NELL", "Then let's look for layers."]]);
         add("contrast", 2); draw(); return;
       }
@@ -479,7 +482,7 @@ export function glm(root, opts = {}) {
         draw(); return;
       }
       if (id === "perlayer") { S.layerFit = true; sfx("compute"); add("layers", 2);
-        lesson([["NELL", "The same attention effect in every layer. One voxel, one number, six times."], ["GUS", "Which is the honest answer at 3T: attention turns V1 up, and you can't say where in the depth. So where did his layers come from?"]]);
+        lesson([["NELL", "The same attention effect in every layer. One voxel, one number, six times."], ["GUS", "Which is the honest answer at 3T: attention turns V1 up, and you can't say where in the depth. His U might be real. He just couldn't have seen it. So where did his layers come from?"]]);
         draw(); return; }
       if (id === "paper") { S.stage = 7; sfx("paper"); coach("GUS", "Here's his Figure 3. Real measurements wobble, drift and disagree. Find three things no real data would do."); draw(); return; }
       if (id === "finish") {
@@ -497,7 +500,7 @@ export function glm(root, opts = {}) {
           coach("GUS", i === 10 ? `${FORKS[i]}: P = ${p}. Nell, every one of these is another test. Keep clicking and one WILL come up significant. That's what the button is for.`
             : `${FORKS[i]}: P = ${p}. Stop. The next one comes in under .05, and then you'll believe it. Everybody in this building did.`);
         }
-        else coach("NELL", `${FORKS[i]}…  LAYERS 1+5+6 VS 4: P = ${String(FORK_P[i]).replace("0.", ".")}`);
+        else coach("NELL", `${FORKS[i]}…  OUTER LAYERS VS MIDDLE: P = ${String(FORK_P[i]).replace("0.", ".")}`);
         if (i === 13) {
           coach("NELL", "P = .049. It's… significant?");
           const r = await die("You found significance on the fourteenth try.\n\nA pneumatic canister lands on your desk: an invitation, sealed with a circle inside a circle. The Round Table has noticed your potential. Your earbuds arrive Friday.\n\nINDUCTED EARLY.");
@@ -512,7 +515,7 @@ export function glm(root, opts = {}) {
       S.tells[k] = true; add("tell_" + k, 3); sfx("stamp");
       const L = { clean: "His leftovers are dead flat. Real people breathe, pulse and fidget, so a real fit always misses a little. Yours wobble. His is a weather forecast that's never once been wrong.",
         copy: "Layer 2 and layer 5 have the same wiggles, wiggle for wiggle. Noise is random. Two layers matching exactly is two snowflakes matching. He copied one and pasted it.",
-        veins: "Used blood drains up to big veins on the surface, so real scans are always loudest up top, like a river widest at its mouth. His has no slope at all. His building has no plumbing." };
+        veins: "Used blood drains up to big veins on the surface, so real scans are always loudest up top, like a river widest at its mouth. His IGNORE line is dead flat, and his U is perfectly symmetric. His building has no plumbing." };
       coach(k === "veins" ? "GUS" : "NELL", L[k]); draw();
     }
     const onDown = (e) => {
