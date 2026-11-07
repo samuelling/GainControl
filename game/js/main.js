@@ -70,7 +70,13 @@ const G = {
   get clock() { const h = Math.floor(this.min / 60) % 24, m = this.min % 60; return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0"); },
 };
 const R = () => ROOMS[G.room];
-const invX = (i, n) => 174 + i * (n > 4 ? 100 / (n - 1) : 30);   // the inventory squeezes to fit before the DAY readout
+// the inventory lives between the HUD's dividers (x 152 and 276): slots shrink to fit, and past six items it takes two rows
+function invPos(i, n) {
+  const L = 158, W = 112, rows = n > 6 ? 2 : 1, per = Math.ceil(n / rows), r = Math.floor(i / per), c = i % per;
+  const slot = Math.min(30, W / per), sc = Math.min(1, slot / 29, rows > 1 ? .62 : 1);
+  const used = slot * per, x0 = L + (W - used) / 2;
+  return { x: x0 + slot * (c + .5), y: rows > 1 ? 316 + r * 22 : 327, sc };
+}
 const ACT = () => ACTS[G.act];
 const HS = () => ACT().HS;
 const KEY = () => (G.char === "morris" ? "morris" : G.mode);          // which version of a hotspot applies
@@ -202,8 +208,7 @@ function hud() { musicScene();
   s += seg("INVENTORY", 164, 300, 4.2, "sM", .8);
   const inv = G.inv[G.char] || [];
   if (!inv.length && G.char === "morris") s += seg("CHEEKS FULL OF PEPPERONI", 164, 324, 3.8, "sM", .8);
-  const sc = inv.length > 4 ? .8 : 1;
-  inv.forEach((id, i) => { const x = invX(i, inv.length), y = 327, w = 26 * sc, h = 30 * sc;
+  inv.forEach((id, i) => { const { x, y, sc } = invPos(i, inv.length), w = 26 * sc, h = 30 * sc;
     s += `<g data-item="${id}" style="cursor:pointer">${G.using === id ? `<rect class="hl sA" x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}"/>` : ""}<g transform="translate(${x},${y}) scale(${sc}) translate(${-x},${-y})">${ITEMS[id].g(x, y)}</g><rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" fill="transparent"/></g>`; });
   const day = DAYNAMES[G.mode === "morning" ? G.act + 1 : G.act];
   s += seg("DAY", 290, 300, 4.2, night ? "sG" : "sB", .8) + seg(day, 290, 308, 20, night ? "sG" : "sB", 1.4);
@@ -610,7 +615,7 @@ svg.addEventListener("click", (e) => {
     const id = it.dataset.item;
     if (G.using && G.using !== id) { G.using = null; hud(); say("You hold them together. Nothing. They don't even seem to like each other."); return; }
     if (G.using === id) { G.using = null; hud(); return; }
-    openChooser({ type: "item", id }, invX(G.inv[G.char].indexOf(id), G.inv[G.char].length), 327); return;
+    { const q = invPos(G.inv[G.char].indexOf(id), G.inv[G.char].length); openChooser({ type: "item", id }, q.x, q.y); } return;
   }
   const p = svgPoint(e); if (p.y > 290) return;
   const id = hsFrom(e.target);
