@@ -2,7 +2,7 @@
 // Design: docs/ACT5.md.
 import { seg, segC, chip, chipW, stapler } from "../gfx.js";
 import { ITEMS } from "./act1.js";
-import * as A4 from "./act4.js";
+import "./act4.js";
 import { defense } from "../minigames/defense.js";
 import { echo } from "../minigames/echo.js";
 import { breakers } from "../minigames/breakers.js";
@@ -406,16 +406,93 @@ async function defenseStart(api, { skipCard } = {}) {
 export async function debugNight(api) { for (const it of ["robe", "map", "reel"]) if (!api.has(it)) api.G.inv.nell.push(it); api.G.flags.defenseDone = true; await nightfall(api); }
 export async function debugDefense(api) { Object.assign(api.G.flags, { smallGus: true, gotRobe: true, gotMap: true, rehearsed: true }); await defenseStart(api, { skipCard: true }); }
 
-/* ---------------- Friday morning: borrowed from Act IV, where it used to live ---------------- */
-Object.assign(CONVOS, { smallGus: A4.CONVOS.smallGus, irisPlan: A4.CONVOS.irisPlan });
-for (const [room, spots] of Object.entries(A4.HS)) for (const [id, h] of Object.entries(spots)) {
-  if (!h || !h.morning) continue;
+/* ---------------- Friday morning (moved here from act4.js when it became Act V's opening) ----------------
+ *  Gus found in the 3T, the robe on Nell's chair, the map in the tube, and Iris's rehearsal. Merged into HS below
+ *  (an extra "morning" key on each hotspot), so the Script Room lists it under Act V. */
+const MORNING = {
+  lab: {
+    door: { label: "door to hallway", morning: { look: "The hallway.", go: "hall@fromLab" } },
+    monitor: { label: "your monitor", morning: { look: "Your monitor. Your defense is today. Slide 2 is still blank." } },
+    drawer: { label: "desk drawer", morning: look("Your drawer.") },
+    whiteboard: { label: "whiteboard", morning: look("WHO IS PULLING THE STRINGS? And under it, in Gus's handwriting: THE ARCHIVE. B3.") },
+    adline: { label: "Prof. Adline's office", morning: { look: "Prof. Adline's door, open. She's at her desk, not typing.", talk: "PROF. ADLINE|Two o'clock. I'll be there. Gus would have hated it if we postponed." } },
+    booth: { label: "dark booth", morning: look("Dark.") },
+    gusdesk: { label: "Gus's desk", morning: look("Gus's desk. The mug that says I ♥ GAUSSIANS, still half full. His laptop is open to Dendroboard, logged in, a reply half-typed: 'honestly just give them time, they'll call when they're ready'.") },
+    robe: { label: "the robe on your chair", morning: { look: "A hooded robe, draped over your chair. The pin from Gus's photo on Monday, lit. Folded into the hood: a reel of tape.",
+      use: (api) => { api.give("robe"); if (api.flag("reelLeft")) api.give("reel"); api.flag("gotRobe", true); api.refresh(); api.score("gotRobe", 1);
+        return "You take the robe. It still smells like his cardigan." + (api.flag("reelLeft") ? "\n\nInside the hood, a reel: PANEL SCORES 1983." : ""); } } },
+    vent: { label: "vent", morning: { look: "A vent." } },
+  },
+  hall: {
+    door101: { label: "Seminar Room 101", morning: look("101. Today. Two o'clock.") },
+    fountain: { label: "water fountain", morning: look("1962.") },
+    stars: { label: "Rising Stars wall", morning: look("Gus was never on the Rising Stars wall. Nobody notices a grad student at 2 AM.") },
+    board: { label: "bulletin board", morning: look("The flyers.") },
+    impact: { label: "Impact Lab 116", morning: look("116.") },
+    tube: { label: "tube station", morning: { look: (api) => api.flag("gotMap") ? "Empty." : "A canister is sitting in the hatch, addressed by hand: N. NULL, ADLINE LAB.",
+        use: (api) => { if (api.flag("gotMap")) return "Empty."; api.give("map"); api.flag("gotMap", true); api.score("gotMap", 1);
+          return "Inside the canister: a hand-drawn map of the steam tunnels, B3 circled twice. On the back, in Gus's handwriting:\n\n'Tomorrow. Bring the rat. —G.'"; } } },
+    stairs: { label: "stairwell", morning: { look: "The stairwell.", go: stairsMorning } },
+    office: { label: "main office", morning: { look: "The main office.", go: "Penny isn't in yet. Penny is always in." } },
+    lab: { label: "Adline Lab 114", morning: { look: "Your lab.", go: "lab@fromHall" } },
+    kitchen: { label: "coffee kitchen", morning: look("The kitchen. Rex is in there. Rex is always in there.") },
+    vent: { label: "vent", morning: { look: "A vent." } },
+  },
+  iris: {
+    iris: { label: "Prof. Iris Candor", morning: { look: "Iris, at her desk, the stapler in her hand. She's been waiting for you.",
+        talk: (api) => api.flag("rehearsed") ? "IRIS|Two o'clock, dear. Go." : (api.flag("gotRobe") && api.flag("gotMap")) ? rehearseV(api)
+          : "IRIS|Not yet, dear. Gus left you two things, and he told you where: your chair, and the tube. Go and get them." } },
+    stacks: { label: "journals", morning: look("1961 to now.") },
+    manual: { label: "magnet manual", morning: look("Iris has put the manual by the door. 'I'll need that tonight,' she says, without looking up.") },
+    photo: { label: "photograph", morning: look("1968.") },
+    letter: { label: "framed letter", morning: look("1977.") },
+    stapler: { label: "stapler", morning: look("In her hand.") },
+    kettle: { label: "kettle", morning: look("She's made tea. You don't drink it. She doesn't notice.") },
+    chair: { label: "chair", morning: look("The chair opposite her desk. For you.") },
+    door: { label: "stairs down to the hallway", morning: { look: "The stairwell.", go: "hall@fromStairs" } },
+  },
+  mri: {
+    window: { label: "magnet room window", morning: look("Through the glass: Gus, on the scanner bed, half in the bore. The scan is still running. Its little progress bar says 94%.") },
+    gus: { label: "Gus", morning: look("Gus Ian. His eyes are open. His pupils are pinpoints. He's wearing earbuds that aren't the scanner's, and they're lit, softly, the color of a pin on a robe.") },
+    small: { label: "Det. Sgt. Small", morning: { look: "Det. Sgt. Small, his hat in his hands.", talk: (api) => api.flag("smallGus") ? "SMALL|Go on, Ms. Null. I'll stay with him until the scan finishes." : "c:smallGus" } },
+    console: { label: "console", morning: look("The console. 94%. 95%.") },
+    calendar: { label: "booking calendar", morning: look("GUS IAN, 2:30 AM. Every night this week.") },
+    locker: { label: "locker", morning: look("The locker.") },
+    sign: { label: "sign", morning: look("THE MAGNET IS ALWAYS ON.") },
+    door: { label: "stairs up to the hallway", morning: { look: "The stairwell.", go: "hall@fromStairs" } },
+    magnetdoor: { label: "magnet room door", morning: look("Taped.") },
+    vent: { label: "vent", morning: { look: "A vent." } },
+  },
+};
+for (const [room, spots] of Object.entries(MORNING)) for (const [id, h] of Object.entries(spots)) {
   const mine = ((HS[room] ||= {})[id] ||= { label: h.label });
   if (!mine.label) mine.label = h.label;
   mine.morning = h.morning;
 }
-HS.mri.door.label = "stairs up to the hallway";
-HS.iris.door.label = "stairs down to the hallway";
-HS.iris.iris.morning = { ...A4.HS.iris.iris.morning,
-  talk: (api) => api.flag("rehearsed") ? "IRIS|Two o'clock, dear. Go." : (api.flag("gotRobe") && api.flag("gotMap")) ? rehearseV(api)
-    : "IRIS|Not yet, dear. Gus left you two things, and he told you where: your chair, and the tube. Go and get them." };
+// the stairwell on Friday morning: only the two places the morning needs (the other floors have no morning exits)
+async function stairsMorning(api) {
+  const d = await api.chooseFrom("THE STAIRWELL. WHERE TO?", [["mri", "B1  MRI SUITE"], ["iris", "4F  EMERITUS OFFICE"]]);
+  if (!d) return null;
+  api.goRoom(d === "mri" && !api.flag("smallGus") ? "mri@morning" : d + "@fromStairs");
+  return null;
+}
+Object.assign(CONVOS, {
+  smallGus: { L: "nell", R: "small", lines: [
+    ["R", "…"],
+    ["L", "Gus."],
+    ["R", "The scan's still running. They had to let it finish. The tech says you can't stop a sequence halfway."],
+    ["R", "Those aren't the scanner's headphones."],
+    ["N", "Det. Sgt. Small takes off his hat. He doesn't say anything about sample size."],
+  ], after: (api) => api.flag("smallGus", true) },
+
+  irisPlan: { L: "nell", R: "irisNamed", score: ["irisPlan", 2], lines: [
+    ["L", "They took Gus."],
+    ["R", "I know, dear."],
+    ["L", "I'm going to the induction. Tonight. In his robe. I'm going to get Preston out of those earbuds, and I'm going to take the Archive."],
+    ["R", "They'll make you do the Echo. In front of the whole Board. They'll watch your seat and your mouth at the same time."],
+    ["L", "Then teach me."],
+    ["N", "Iris reaches into her desk drawer for the stapler. She looks at it for a long time. Then she puts it on the desk, between them."],
+    ["R", "Sit in that chair. We'll start with the phrases. Every time you miss, you'll hear this."],
+    ["N", "Click."],
+  ] },
+});
