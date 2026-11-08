@@ -1,3 +1,5 @@
+// THE MISSING HOURS (Act IV, the main office). A case-file banner asks the question (where do three men who never have a
+// free minute all go at once?) and lights its three steps as they're done; solved, it shows the answer.
 // THE MISSING HOURS (Act IV, the main office). Penny's "invited talk" receipts and three calendars: Preston's, Impact's,
 // Quorum's. Lay the calendars over each other and the one block all three leave empty, FRI 23:00–03:00, lights up.
 // File the receipts on their days: every receipt from that night is the same INVITED TALK template. Then the CVs side
@@ -42,11 +44,11 @@ export const CVS = [
 const LABN = { hindex: "THE HINDEX LAB", sinecure: "SINECURE GROUP", quorum: "QUORUM LAB", impact: "IMPACT LAB", fair: "FAIRWEATHER LAB", steady: "THE STEADY LAB" };
 const SHARED = ["hindex", "sinecure", "quorum"];
 const LINES = {
-  intro: ["PENNY", "Here. Yesterday's 'invited talk' receipts, and the calendars. I've decided I'm angry."],
-  how: ["NELL", "Turn on all three calendars and find when they're all free at once. Then put each receipt on its day."],
+  intro: ["PENNY", "Three men who never have a free minute, hon. And every Friday night, all three go missing at once, and I get receipts for 'invited talks' with no venue."],
+  how: ["NELL", "So: where do they go? Step one. Stack their calendars with the buttons down there, and find the hours none of them booked."],
   one: { P: ["NELL", "Preston books everything. Even sleep. 'Optimized.'"], I: ["NELL", "Impact lives on planes."], Q: ["NELL", "Quorum. Committees, then bed by nine."] },
   two: (n) => ["NELL", `Two calendars. ${n} hours a week they're both free. Add the third.`],
-  three: ["NELL", "One hole. Friday, eleven at night to three in the morning. All three of them, empty."],
+  three: ["NELL", "One hole. Friday, eleven at night to three in the morning. All three of them, empty. Step two: file the receipts and see what fills it."],
   three2: ["PENNY", "Every week, hon. Quorum's calendar has that hole back to 1979."],
   pick: ["PENNY", "Put it on its day, hon."],
   wrongDay: (r) => ["PENNY", `Read the date, hon. That one's ${DATES[r.day]}: the ${DAYS[r.day]} column.`],
@@ -56,8 +58,8 @@ const LINES = {
   cvShow: ["PENNY", "I've marked them for you, hon. The ones on every CV. Click them."],
   talk: ["NELL", "Invited talk. No venue. Friday night."],
   night: ["NELL", "Every receipt from that night says INVITED TALK. Same template, same total, same typo. 'Entertainmnet.'"],
-  night2: ["PENNY", "And I approved every one. It's a form. Compare their CVs, hon. I printed those too."],
-  cv: ["PENNY", "A CV is every job you've ever had, in order, hon. Click the labs that turn up on all three."],
+  night2: ["PENNY", "And I approved every one. So they're together, hon, but who are they? Step three: their CVs. I printed those too."],
+  cv: ["PENNY", "A CV is every job you've ever had, in order, hon. If they meet now, they met somewhere first. Click the labs that turn up on all three."],
   found: { hindex: ["PENNY", "The Hindex Lab. Their alumni all file the same receipt."], sinecure: ["NELL", "Sinecure Group. All three. Different decades."],
     quorum: ["PENNY", "Quorum's own lab. Well. Of course it is."] },
   miss: (k, who) => ["NELL", `${LABN[k]} is only on ${who}. It has to be on all three.`],
@@ -90,6 +92,8 @@ const CSS = `
 .hours .cv .lab.found { color: #000; background: var(--G); border: 0; padding: 0 .3cqw; cursor: default; font-weight: 600; }
 .hours .cv .lab.nope { color: var(--R); border-color: var(--R); }
 .hours button.cal { min-width: 7cqw; }
+.hours .callbl { font-size: 1cqw; letter-spacing: .1em; color: var(--A); }
+.hours svg.hd { height: 5cqw !important; margin-top: .3cqw !important; }
 .hours rect[data-day]:hover { stroke: var(--A); stroke-width: .8; }
 .hours .gp1, .hours.p1 .gp0 { display: none; } .hours.p1 .gp1 { display: inline; }
 `;
@@ -137,6 +141,9 @@ export function hours(el, { score = () => {} } = {}) {
         s += `<g class="gp0">${blk(4, 23, 1, 1) + blk(5, 0, 3, 1)}</g><g class="gp1">${blk(4, 23, 1, -1.5) + blk(5, 0, 3, -1.5)}</g>` + inner(4, 23, 1) + inner(5, 0, 3);
         s += chip("ALL THREE FREE", X0 + 4 * CW + 4, Y0 + 20.4 * RH, 5, "fG") + chip("FRI 23:00-03:00", X0 + 5 * CW + 4, Y0 + 3.5 * RH, 5, "fG");
       }
+      // nothing on yet: the grid says what to do, and points at the buttons
+      if (!on.length) s += segC("TURN ON THEIR CALENDARS", X0 + 3.5 * CW, Y0 + 9 * RH, 12, "sA", 1.2) + segC("STACK ALL THREE. LOOK FOR THE HOLE.", X0 + 3.5 * CW, Y0 + 12 * RH, 7, "sM", .9)
+        + `<path class="sA" d="M${X0 + 3.5 * CW},${Y0 + 15 * RH} L${X0 + 3.5 * CW},${Y0 + 22 * RH} M${X0 + 3.5 * CW - 6},${Y0 + 22 * RH - 7} L${X0 + 3.5 * CW},${Y0 + 22 * RH} L${X0 + 3.5 * CW + 6},${Y0 + 22 * RH - 7}"/>`;
       // receipts filed on the calendar
       RECEIPTS.forEach((r, i) => {
         if (!S.placed[i]) return;
@@ -166,9 +173,7 @@ export function hours(el, { score = () => {} } = {}) {
     }
     function draw() {
       const nPlaced = S.placed.filter(Boolean).length, nFound = Object.keys(S.found).length;
-      const hd = S.stage === "cal"
-        ? seg("THE MISSING HOURS", 16, 10, 18, "sW", 1.6) + seg("THREE CALENDARS  ·  ONE WEEK  ·  PENNY'S RECEIPTS", 250, 17, 5, "sM", .8)
-        : seg("THEIR CVS", 16, 10, 18, "sW", 1.6) + seg("EVERY JOB, IN ORDER  ·  THE TABLE NEVER GOES ON A CV. THE LABS DO.", 126, 17, 5, "sM", .8);
+      const hd = banner();
       const body = S.stage === "cal"
         ? `<svg class="t week" viewBox="0 0 ${W} ${H}">${week()}</svg><div class="rcol">${receipts()}</div>`
         : cvs();
@@ -176,12 +181,25 @@ export function hours(el, { score = () => {} } = {}) {
         `<button class="cal" data-b="${k}" style="${S.on[k] ? `background:var(--${c.col});color:#000` : `background:#000;color:var(--${c.col});box-shadow:inset 0 0 0 .1cqw var(--${c.col})`}">${c.name}</button>`).join("") : "";
       const status = S.stage === "cal" ? `${nPlaced} / ${RECEIPTS.length} FILED` : `${nFound} / 3 SHARED LABS`;
       el.innerHTML = `<div class="screen hours ${S.pose ? "p1" : ""}">
-        <svg class="t hd" viewBox="0 0 640 40">${hd}</svg>
+        <svg class="t hd" viewBox="0 0 640 34">${hd}</svg>
         <div class="hbody">${body}</div>
         <div class="coachline">${coach()}</div>
-        <div class="bar">${toggles}<span class="status">${status}</span>
+        <div class="bar">${S.stage === "cal" ? `<span class="callbl">CALENDARS</span>` : ""}${toggles}<span class="status">${status}</span>
           ${S.stage === "cal" && S.night ? `<button data-b="cv">COMPARE CVS</button>` : ""}
           <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
+    }
+    // the case file: the question, and the three steps that answer it (each lights when it's done; the next is brass)
+    function banner() {
+      const done = [allOn() || S.night || S.stage === "cv", S.night, S.done], cur = done.indexOf(false);
+      const steps = [["STACK THE CALENDARS", "FIND THE HOURS NOBODY BOOKED"], ["FILE THE RECEIPTS", "WHAT FILLS THOSE HOURS?"], ["LINE UP THE CVS", "WHAT DO ALL THREE SHARE?"]];
+      let g = seg("THE MISSING HOURS", 2, 6, 15, "sW", 1.5);
+      g += S.done ? seg("TOGETHER. FRIDAYS, 23:00 TO 03:00. THE SAME THREE LABS. A MEMBERSHIP.", 206, 2, 6, "sG", .9)
+        : seg("THREE MEN WHO NEVER HAVE A FREE MINUTE. WHERE DO THEY ALL GO AT ONCE?", 206, 2, 6, "sA", .9);
+      steps.forEach(([a, b], i) => { const x = 206 + i * 146, st = done[i] ? "done" : i === cur ? "now" : "later";
+        g += st === "done" ? `<rect class="fG" x="${x}" y="15" width="13" height="13"/>${seg(String(i + 1), x + 4, 17.5, 8, "s0", 1.2)}`
+          : `<rect class="hl ${st === "now" ? "sA" : "sD"}" x="${x}" y="15" width="13" height="13"/>${seg(String(i + 1), x + 4, 17.5, 8, st === "now" ? "sA" : "sD", 1)}`;
+        g += seg(a, x + 17, 14.5, 6, st === "done" ? "sG" : st === "now" ? "sW" : "sD", 1) + seg(b, x + 17, 24.5, 5, st === "done" ? "sG" : st === "now" ? "sM" : "sD", .8); });
+      return g;
     }
     // the night only needs the receipts that fall in the free block; the others are optional
     const talksFiled = () => RECEIPTS.every((r, i) => !r.talk || S.placed[i]);
