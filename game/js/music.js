@@ -357,23 +357,28 @@ function band({ act, mode, room, title, arr }) {
 // deep bell, alternating with a pulsing arpeggio. Four 8-bar sections: engine only, theme, arpeggio, theme with hats.
 // At the climax (hoods off) the tempo tightens, every section runs full and the beeps go to sixteenths.
 function finaleStep(s, t) {
-  const bar = Math.floor(s / 16) % 8, i = s % 16, hot = P.climax, sec = hot ? 1 + Math.floor(s / 128) % 3 : Math.floor(s / 128) % 4;
+  const { lv, r } = endLayer(s), build = lv < 3;
+  const bar = Math.floor(s / 16) % 8, i = s % 16, hot = P.climax && !build, sec = build ? lv : hot ? 1 + Math.floor(s / 128) % 3 : Math.floor(s / 128) % 4;
   const root = ROOTS[bar], ch = CHORDS[bar];
   cur = { s, tones: new Set([...ch, root].map(pc)) };
   // the engine: root on every sixteenth, the octave on the "and", accents on the beat; the filter opens on bar 8's turnaround
-  pulseBass(root + (i % 4 === 2 ? 12 : 0), t, i % 4 === 0 ? .2 : .13, bar === 7 ? (i / 16) : 0);
+  const fade = lv === 0 ? .3 + .7 * r : 1;   // (the end theme's first layer: the engine fades in)
+  pulseBass(root + (i % 4 === 2 ? 12 : 0), t, (i % 4 === 0 ? .2 : .13) * fade, bar === 7 ? (i / 16) : 0);
   // kick + the MRI's knock, on every beat
-  if (i % 4 === 0) { kick(t, .55); knockTop(t, .4); }   // the knock's low body would fight the kick's, so here it's only the knock's top
+  if (i % 4 === 0 && lv >= 1) { const g = lv === 1 ? .2 + .8 * r : 1; kick(t, .55 * g); knockTop(t, .4 * g); }   // the knock's low body would fight the kick's, so only its top
+  // (the end theme's first layer: the pluck from the opening carries the tune over the engine)
+  if (lv === 0 && i % 2 === 0) { const m = THEME[bar][i / 2]; if (m != null) pluck(m, t, .16, B.mel); }
   // the scanner's gradients
   // (on the beat, at the climax, the beep takes the chord tone nearest its D so it never rubs against the chord)
-  if (hot ? true : i % 2 === 1) beep(t, i % 4 === 3 ? .03 : .02, bar % 4 === 3 && i > 11 ? 1320 : i % 4 === 0 ? hz(near(86)) : 1180);
+  if (lv >= 2 && (hot ? true : i % 2 === 1)) beep(t, i % 4 === 3 ? .03 : .02, bar % 4 === 3 && i > 11 ? 1320 : i % 4 === 0 ? hz(near(86)) : 1180);
   // backbeat and hats once the section is up
-  if (sec > 0 && (i === 4 || i === 12)) clap(t, .14);
-  if ((sec === 3 || hot) && i % 4 === 2) hat(t, .07);
+  if (sec > 0 && (!build || lv >= 2) && (i === 4 || i === 12)) clap(t, .14);
+  if ((sec === 3 || hot || (lv === 2 && r >= .5)) && i % 4 === 2) hat(t, lv === 2 ? .04 : .07);
   // pads: a low dark chord a bar (in key: the chord, its root doubled below)
-  if (i === 0) pad([...ch.map(m => m - 12), root], t, 60 / P.tempo * 4, .05, sec ? 900 : 600);
+  const swell = lv === 1 ? .35 + .65 * r : 1;   // (the end theme's second layer swells in)
+  if (i === 0 && lv >= 1) pad([...ch.map(m => m - 12), root], t, 60 / P.tempo * 4, .05 * swell, sec ? 900 : 600);
   // the theme, on the beat, a deep bell (every on-beat note is a chord tone)
-  if ((sec === 1 || sec === 3) && i % 4 === 0) { const m = THEME[bar][i / 2]; if (m != null) bell(m - 12, t, .15, B.mel); }
+  if ((sec === 1 || sec === 3 || (build && lv >= 1)) && i % 4 === 0) { const m = THEME[bar][i / 2]; if (m != null) bell(m - 12, t, .15 * swell, B.mel); }
   // the arpeggio section: chord tones in sixteenths, dark plucks
   if (sec === 2 || (hot && sec === 3)) pluck(ch[i % ch.length] + (i % 8 < 4 ? 0 : 12), t, .07, B.arp, .75);
 }
@@ -456,23 +461,30 @@ function fxStep(fx, s, i, ch, root, t) {
   }
 }
 const bar16 = (s) => Math.floor(s / 16);
-// THE END THEME (the credits): Act I's sparse opening (the pluck alone, dry, 8 bars), a bar of riser (a snare roll that
-// thickens, kicks on the beat, a noise sweep, the tempo pushing up), then the finale at full climax.
-const END_INTRO = 128;
+// THE END THEME (the credits): Act I's sparse opening (the pluck alone, dry, 8 bars), then the finale built up in layers,
+// 8 bars each, with the tempo creeping from 104 to 128 the whole way: 1) the pulse bass fades in under the pluck, which
+// keeps the tune; 2) the kick and the MRI's knock, the low pads, the tune moves to the deep bell; 3) the backbeat, the
+// gradient beeps, the arpeggio, hats coming in, and a soft roll at the end; 4) the full climax.
+const END_INTRO = 128, END_LAYER = 128;
 function endThemeStep(s, t) {
   const E = P.end, k = s - buildStart;
-  if (E.phase === "intro" && k >= END_INTRO - 16 && k < END_INTRO) {
-    const j = k - (END_INTRO - 16), v = .03 + .1 * j / 16;
-    if (j === 0) P.target = 128;                                            // accelerando through the roll
-    if (j < 8 ? j % 2 === 0 : true) noiseHit(t, 1500 + j * 90, 1.4, v, .07, B.drum);
-    if (j % 4 === 0) kick(t, .25 + .2 * j / 16);
-    if (j % 2 === 1) noiseHit(t, 600 + j * 450, 3, .012 + .03 * j / 16, .12, B.drum, "bandpass");   // the sweep, rising
-  }
   if (E.phase === "intro" && k === END_INTRO) {
-    E.phase = "finale";
+    E.phase = "build"; E.at = s;
     P.mixAt = t; music.scene({ act: 5, mode: "night", room: "chamber", flags: { climax: true }, _end: true }); P.mixAt = 0;
-    P.tempo = P.target; kick(t, .7); noiseHit(t, 4000, .6, .1, .6, B.drum, "highpass");   // the downbeat, with a crash
+    P.target = P.tempo;   // no jump: the tempo is walked up below
   }
+  if (E.phase === "build") {
+    const b = s - E.at, span = END_LAYER * 3;
+    P.target = 104 + 24 * Math.min(1, b / span);
+    // a soft roll into the last layer, quieter than anything around it
+    if (b >= span - 16 && b < span) { const j = b - (span - 16); if (j >= 8 || j % 2 === 0) noiseHit(t, 1500 + j * 60, 1.4, .015 + .035 * j / 16, .07, B.drum); }
+    if (b >= span) E.phase = "finale";
+  }
+}
+// how far the end theme's build has got: the layer (0–3; 3 is the full finale) and how far into it (0–1)
+function endLayer(s) {
+  const E = P.end; if (!E || E.phase !== "build") return { lv: 3, r: 1 };
+  const b = s - E.at; return { lv: Math.min(3, Math.floor(b / END_LAYER)), r: (b % END_LAYER) / END_LAYER };
 }
 function scheduleStep(s, t) {
   const i = s % 16;
