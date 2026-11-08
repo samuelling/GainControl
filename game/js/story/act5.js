@@ -345,7 +345,11 @@ export const END = { title: "THE END", chip: "DECISION", bodies: "", next: "", e
 
 export async function check(api) {
   const { G } = api, f = G.flags;
-  if (G.mode === "morning") return G.room === "mri" && !f.smallGus ? "c:smallGus" : null;
+  if (G.mode === "morning") {
+    if (G.room === "mri" && !f.smallGus) return "c:smallGus";
+    if (f.gotRobe && f.gotMap && !f.toIris) { f.toIris = true; return "NELL|His robe. His map. Now Iris. Fourth floor: the stairs are at the far end of the hall."; }
+    return null;
+  }
   if (G.mode === "night" && f.echoPassed && f.magnetCharged && f.supportsOut && G.char === "iris" && !f.climax && !f.irisReady) { f.irisReady = true;
     return "IRIS|The girl's seated, and the ring's charged. Up the service stair."; }
   return null;
@@ -365,7 +369,25 @@ export async function start(api, { fresh, skipCard } = {}) {
   api.shift({ mode: "morning", char: "nell", room: "mri", entry: "morning", min: 400, cast: ["nell"] });
   if (!skipCard) await api.card("FRIDAY", "ACT V  DECISION", "MRI CONTROL  B1  06:40", "fR", 2800);
   await api.say("Gus Ian was found at 6:15 by the morning tech.\n\nHe is in the 3T. The scan is still running.");
+  await api.convo("smallGus");
+  // then the thing Gus left her, shown: his last text, and the morning's three errands
+  await api.readout(GUSTEXT(), "Gus's last text. 2:31 AM, from this room.\n\nNELL|My chair. And the tube. He left me something.\n\nNELL|Then Iris. Fourth floor.");
+  return null;
 }
+const GUSTEXT = () => {
+  const x = 230, y = 40, w = 180, h = 270;
+  let s = `<rect class="k sW" x="${x}" y="${y}" width="${w}" height="${h}" rx="18"/><path class="hl sW" d="M${x + 70},${y + 12} L${x + w - 70},${y + 12}"/>
+    <rect class="hl sD" x="${x + 10}" y="${y + 24}" width="${w - 20}" height="${h - 50}" rx="4"/>${chip("GUS", x + 18, y + 32, 6, "fB")}${seg("02 31 AM", x + w - 66, y + 34, 5, "sM", .7)}`;
+  const bubbles = [["ROBE'S ON YOUR CHAIR."], ["CHECK THE TUBE."], ["SCANNING NOW.", "IT'S FINE."], ["IT'S ALWAYS FINE", "AT 2AM."]];
+  let by = y + 56;
+  for (const b of bubbles) {
+    const bh = 10 + b.length * 13;
+    s += `<rect class="k sB" x="${x + 18}" y="${by}" width="${w - 44}" height="${bh}" rx="5"/>`;
+    b.forEach((t, i) => s += seg(t, x + 26, by + 6 + i * 13, 7, "sB", 1));
+    by += bh + 8;
+  }
+  return s + seg("DELIVERED", x + w - 70, by, 4, "sM", .6) + seg("NO NEW MESSAGES", x + 46, y + h - 18, 5, "sD", .7);
+};
 async function rehearseV(api) {
   await api.convo("irisPlan");
   let r; do r = await api.mini(echo, { mode: "rehearsal", score: api.score, blip: api.blip, die: dieKeep(api) }); while (!r || !r.passed);
@@ -392,6 +414,8 @@ for (const [room, spots] of Object.entries(A4.HS)) for (const [id, h] of Object.
   if (!mine.label) mine.label = h.label;
   mine.morning = h.morning;
 }
+HS.mri.door.label = "stairs up to the hallway";
+HS.iris.door.label = "stairs down to the hallway";
 HS.iris.iris.morning = { ...A4.HS.iris.iris.morning,
   talk: (api) => api.flag("rehearsed") ? "IRIS|Two o'clock, dear. Go." : (api.flag("gotRobe") && api.flag("gotMap")) ? rehearseV(api)
     : "IRIS|Not yet, dear. Gus left you two things, and he told you where: your chair, and the tube. Go and get them." };

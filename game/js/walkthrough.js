@@ -263,13 +263,13 @@ export const WALKTHROUGH = {
 
   5: { title: "ACT V  DECISION", parts: [
     { name: "FRIDAY MORNING  (NELL)", steps: [
-      { t: "In MRI Control B1, TALK to Det. Sgt. Small (it starts on its own if you click anything).", flag: "smallGus",
+      { t: "The act opens in MRI Control B1: Det. Sgt. Small, then Gus's last text (robe on your chair, check the tube, then Iris). Click through.", flag: "smallGus",
         hs: ["mri.small"], nudge: ["NELL|Det. Sgt. Small has his hat in his hands. Nothing good starts like that.", "NELL|Gus is in there. I have to ask. Even if I know.", "NELL|Talk to Det. Sgt. Small."] },
-      { t: "Door to the stairs (GO UP), Adline Lab 114 (GO IN). Click the robe on your chair and choose TAKE.", flag: "gotRobe",
+      { t: "The stairs door (GO UP) takes you to the 1F hallway. Adline Lab 114 (GO IN): click the robe on your chair and choose TAKE.", flag: "gotRobe",
         hs: ["lab.robe", "hall.lab", "mri.door"], nudge: ["NELL|Gus's last text. ‘robe's on your chair. check the tube.’", "NELL|My chair. In the lab. He left it there for me to find first.", "NELL|Take the robe off my chair in the lab."] },
       { t: "In the hallway, click the tube station and choose OPEN HATCH: Gus's map.", flag: "gotMap",
         hs: ["hall.tube", "lab.door", "mri.door"], nudge: ["NELL|‘check the tube.’ He typed that at 2 AM. It was the last thing he typed.", "NELL|The tube goes up as well as down. Something in there is addressed to me.", "NELL|The tube station in the hallway. Open the hatch."] },
-      { t: "Stairwell, OPEN, 4F EMERITUS OFFICE. TALK to Prof. Iris Candor: THE REHEARSAL.", flag: "rehearsed",
+      { t: "In the hallway, the stairwell (far left), 4F EMERITUS OFFICE. TALK to Prof. Iris Candor: THE REHEARSAL.", flag: "rehearsed",
         hs: ["iris.iris", "hall.stairs", "lab.door", "mri.door"], nudge: ["NELL|The induction is tonight. I can't walk in there without practice.", "NELL|Iris did the Echo in 1962. With sherry. She'll know how to survive it.", "NELL|Stairwell, fourth floor. Talk to Iris."] },
       { t: "THE REHEARSAL (one drill): press SECONDED (S or SPACE) only when the phrase matches the one two turns ago. Ignore the kettle, phone and other noises. Four mistakes restart it.", flag: "rehearsed",
         hs: ["iris.iris"], nudge: ["NELL|Two back. Only when it matches the phrase from two turns ago.", "IRIS|Never mind the kettle, dear. Or the phone. Listen to the phrases.", "NELL|Seconded only on a match with two turns ago. Everything else, silence."] },
