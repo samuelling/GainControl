@@ -112,12 +112,13 @@ const LINES = {
     ["NELL", "Sentence 4: overturn the old view, then ask for money. His figure's a bar chart of funding. Find the old graph of 'support' going off the top of the page."],
   ],
   show: (c) => ["MORRIS", `This one, pal. ${SRC[c].au} ${SRC[c].yr}. It's lit up. Click it.`],
-  refHint: ["NELL", "Check each one against the shelf: authors, year, journal, pages. Two have no card at all."],
-  refShow: ["MORRIS", "The two I've marked, pal. Look at the years and the journal. Nobody's shelving those."],
+  refHint: ["NELL", "Click a reference to look for it. Authors, year, journal, pages: if it's real, its card is up here. Two have nothing behind them."],
+  refs2: ["MORRIS", "So a reference is an IOU, pal. 'This paper exists, go look.' Go look."],
   labs: ["NELL", "Four sentences, four back issues, three labs. The Hindex Lab, the Sinecure Group, the Quorum Lab. Every single one."],
   labs2: ["MORRIS", "The feeder labs. Same names on every Rising Stars wall, pal."],
-  refs: ["NELL", "Now his references: the papers he says he got it from. Six. Every real one should be on this shelf."],
-  real: (c) => ["NELL", `No, that one's real. It's right there on the shelf: ${SRC[c].au} ${SRC[c].yr}.`],
+  refs: ["NELL", "His reference list: the six papers he says he built on. A real paper is a real thing on a real shelf. Click each one and look for it."],
+  real: (c) => ["NELL", `${SRC[c].au} ${SRC[c].yr}, ${SRC[c].j.replace(/ (\d+), /, " volume $1, pages ")}. There it is, on the shelf. That one's real.`],
+  again: (c) => ["NELL", `Already checked: ${SRC[c].au} ${SRC[c].yr}. Real. Keep going.`],
   "1979b": ["NELL", "Quorum, 1979b. There's only one Quorum paper from 1979 on this shelf. There is no b. Pages 20 to 31 are somebody's obituary."],
   endless: ["NELL", "Journal of Endless Research. Volume one, pages one to infinity. That's not a journal, that's a mission statement."],
   done: ["NELL", "It's a collage of the Table's own work. And its real author list is a partial membership roll."],
@@ -167,6 +168,9 @@ const CSS = `
 .metamer .card svg.mfig.old { width: 8.4cqw; height: 5.25cqw; margin-top: .2cqw; }
 .metamer .card .cb .q { flex: 1 1 0; }
 .metamer .pool { grid-template-rows: repeat(3, 1fr); }
+.metamer .ref.real { border-color: var(--G); color: var(--G); } .metamer .ref.real .num { background: var(--G); }
+.metamer .ref .flag.okf { background: var(--G); }
+.metamer .card .refn { flex: none; color: #000; background: var(--G); font-weight: 600; font-size: .9cqw; padding: 0 .3cqw; }
 #panel .mmscan { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: .32; }
 .metamer svg.hd { height: 4.6cqw !important; margin-top: .4cqw !important; }
 /* two bins: NOW (Preston's paper, cool, a solid ribbon down each sentence) and THEN (the back issues: amber index cards) */
@@ -205,7 +209,7 @@ const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
 export function metamer(el, { score = () => {} } = {}) {
   injectStyle("mg-metamer", CSS);
   return new Promise(resolve => {
-    const S = { stage: 1, sel: null, matched: SENTS.map(() => null), wrong: 0, say: LINES.intro, flagged: {}, done: false, okN: 0, flash: -1,
+    const S = { checked: {}, stage: 1, sel: null, matched: SENTS.map(() => null), wrong: 0, say: LINES.intro, flagged: {}, done: false, okN: 0, flash: -1,
       miss: SENTS.map(() => 0), show: SENTS.map(() => false), refMiss: 0 };
     const timers = [];
     const later = (ms, fn) => timers.push(setTimeout(() => { fn(); draw(); }, ms));
@@ -220,7 +224,8 @@ export function metamer(el, { score = () => {} } = {}) {
       const cls = ["card", s >= 0 ? "ok" : "", S.sel && S.sel.side === "c" && S.sel.i === c ? "sel" : "", lit && x.s < 0 ? "dim" : "", S.flash === c || shown ? "flash" : ""].join(" ");
       const lab = x.lab ? LABS[x.lab] : [x.labName, "M"];
       const labHtml = lit && x.lab ? `<span class="lab lit" style="background:var(--${lab[1]})">${lab[0]}</span>` : `<span class="lab">${lab[0]}</span>`;
-      return `<div class="${cls}" data-c="${c}"><div class="meta">${s >= 0 ? `<span class="num">${s + 1}</span>` : ""}
+      const refN = S.stage === 2 ? REFS.findIndex((r, i) => r.src === c && S.checked[i]) : -1;
+      return `<div class="${cls}" data-c="${c}"><div class="meta">${refN >= 0 ? `<span class="refn">REF ${refN + 1} ✓</span>` : s >= 0 ? `<span class="num">${s + 1}</span>` : ""}
         <svg class="t yr" viewBox="0 0 28 10">${seg(x.yr, 1, 2, 6.4, s >= 0 ? "sG" : "sA", 1)}</svg><span class="au">${x.au}</span>${labHtml}</div>
         <div class="cb"><svg class="t mfig old" viewBox="0 0 64 40">${FIG_OLD[x.fig]()}</svg><div class="q">${x.q}</div></div><div class="j">${x.j}</div></div>`;
     }
@@ -229,12 +234,12 @@ export function metamer(el, { score = () => {} } = {}) {
         const ok = cardOf(i) !== null, sel = S.sel && S.sel.side === "s" && S.sel.i === i, src = ok ? SRC[cardOf(i)] : null;
         return `<div class="sent ${ok ? "ok" : ""} ${sel ? "sel" : ""}" data-s="${i}"><span class="num">${i + 1}</span><span class="stx">${t}${src ? `<span class="orig">= ${src.au.replace(/, [A-Z]\./g, "").replace(/\.$/, "")} ${src.yr}</span>` : ""}</span><svg class="t mfig" viewBox="0 0 64 40">${FIG_NEW[i]()}</svg></div>`;
       }).join("");
-      return `<div class="colhd now"><span class="bin now">NOW</span>HIS REFERENCES  ·  CLICK THE ONES THAT DON'T EXIST</div>` + REFS.map((r, i) =>
-        `<div class="ref ${S.flagged[i] ? "fake" : ""}" data-r="${i}"${S.refMiss >= 4 && r.src === null && !S.flagged[i] ? ` style="border-color:var(--A);color:var(--A)"` : ""}><span class="num">${i + 1}</span><span>${r.t}</span>${S.flagged[i] ? `<span class="flag">NOT ON ANY SHELF</span>` : ""}</div>`).join("");
+      return `<div class="colhd now"><span class="bin now">NOW</span>HIS REFERENCES  ·  CLICK ONE TO CHECK IT</div>` + REFS.map((r, i) =>
+        `<div class="ref ${S.flagged[i] ? "fake" : ""} ${S.checked[i] ? "real" : ""}" data-r="${i}"><span class="num">${i + 1}</span><span>${r.t}</span>${S.flagged[i] ? `<span class="flag">NOT ON ANY SHELF</span>` : S.checked[i] ? `<span class="flag okf">✓ ON THE SHELF</span>` : ""}</div>`).join("");
     }
     function draw() {
       const nFake = Object.keys(S.flagged).length;
-      const status = S.stage === 1 ? `${S.matched.filter(v => v !== null).length} / ${SENTS.length} MATCHED` : `${nFake} / 2 FOUND`;
+      const status = S.stage === 1 ? `${S.matched.filter(v => v !== null).length} / ${SENTS.length} MATCHED` : `${Object.keys(S.checked).length} REAL  ·  ${nFake} / 2 GHOSTS`;
       const hd = S.stage === 1 ? goal() : goalRefs(nFake);
       el.innerHTML = `${BEZEL}<div class="screen metamer ${S.stage === 2 ? "stage2" : ""}">${SCAN}
         <svg class="t hd" viewBox="0 0 640 46">${hd}</svg>
@@ -262,10 +267,16 @@ export function metamer(el, { score = () => {} } = {}) {
     }
     function goalRefs(n) {
       let g = seg("CITATIONS FROM NOWHERE", 2, 6, 15, "sW", 1.5);
-      g += seg("HE CITES SIX SOURCES. EVERY REAL ONE IS ON THE SHELF.", 260, 4, 6, "sW", .9) + seg("TWO ARE NOT. FIND THE GHOSTS:", 260, 16, 6, "sR", .9);
-      for (let i = 0; i < 2; i++) { const on = i < n, x = 260 + i * 22;
-        g += on ? `<rect class="fR" x="${x}" y="28" width="18" height="16"/>${seg("?", x + 6, 31, 10, "s0", 1.3)}` : `<rect class="hl sD" x="${x}" y="28" width="18" height="16"/>${seg("?", x + 6, 31, 10, "sD", 1)}`; }
-      g += seg(n === 2 ? "TWO GHOSTS. CASE MADE." : `${n} OF 2`, 312, 33, 6, n === 2 ? "sR" : "sM", .9);
+      // a reference points at a paper: on the shelf, it's real; nothing there, it's a ghost
+      const ref = (x, y) => `<rect class="hl sB" x="${x}" y="${y}" width="16" height="10"/><path class="hl sB" d="M${x + 3},${y + 3.5} L${x + 13},${y + 3.5} M${x + 3},${y + 6.5} L${x + 10},${y + 6.5}"/>`;
+      g += `${ref(214, 4)}<path class="hl sM" d="M232,9 L246,9 M243,6.5 L246,9 L243,11.5"/><rect class="hl sA" stroke-dasharray="2 1" x="249" y="3" width="16" height="12"/><path class="sG" d="M252,9 L255,12 L262,5"/>
+        ${seg("ON THE SHELF: REAL.", 270, 5, 5.4, "sG", .9)}
+        ${ref(214, 22)}<path class="hl sM" d="M232,27 L246,27 M243,24.5 L246,27 L243,29.5"/><rect class="hl sD" stroke-dasharray="1.5 1.5" x="249" y="21" width="16" height="12"/>${seg("?", 254, 23, 8, "sR", 1)}
+        ${seg("NOTHING THERE: A GHOST.", 270, 23, 5.4, "sR", .9)}`;
+      g += seg("CLICK EACH REFERENCE TO LOOK FOR IT.", 400, 4, 5.4, "sW", .9) + seg("FIND THE TWO GHOSTS:", 400, 15, 5.4, "sR", .9);
+      for (let i = 0; i < 2; i++) { const on = i < n, x = 400 + i * 22;
+        g += on ? `<rect class="fR" x="${x}" y="26" width="18" height="16"/>${seg("?", x + 6, 29, 10, "s0", 1.3)}` : `<rect class="hl sD" x="${x}" y="26" width="18" height="16"/>${seg("?", x + 6, 29, 10, "sD", 1)}`; }
+      g += seg(n === 2 ? "TWO GHOSTS. CASE MADE." : `${n} OF 2`, 450, 31, 5.4, n === 2 ? "sR" : "sM", .9);
       return g;
     }
     function tryPair(s, c) {
@@ -301,8 +312,8 @@ export function metamer(el, { score = () => {} } = {}) {
           later(3200, () => { S.say = LINES.done; }); later(7000, () => { S.say = LINES.done2; });
         }
       } else {
-        S.wrong++; S.refMiss++; S.flash = r.src; sfx("bad");
-        S.say = S.refMiss >= 4 ? LINES.refShow : S.refMiss >= 2 ? ["NELL", `${LINES.real(r.src)[1]} ${LINES.refHint[1]}`] : LINES.real(r.src);
+        // a real one: found, its card lights up and wears the reference number. Checking costs nothing.
+        S.flash = r.src; sfx(S.checked[i] ? "select" : "good"); S.say = S.checked[i] ? LINES.again(r.src) : LINES.real(r.src); S.checked[i] = true;
         later(1400, () => { S.flash = -1; });
       }
       draw();
@@ -312,7 +323,7 @@ export function metamer(el, { score = () => {} } = {}) {
       const b = t.closest("button[data-b]");
       if (b && !b.disabled) {
         if (b.dataset.b === "off") { finish(); return; }
-        if (b.dataset.b === "refs") { S.stage = 2; sfx("paper"); S.sel = null; S.say = LINES.refs; draw(); }
+        if (b.dataset.b === "refs") { S.stage = 2; sfx("paper"); S.sel = null; S.say = LINES.refs; later(6500, () => { if (S.say === LINES.refs) S.say = LINES.refs2; }); draw(); }
         return;
       }
       const s = t.closest("[data-s]"); if (s) { pick("s", +s.dataset.s); return; }

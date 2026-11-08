@@ -203,7 +203,7 @@ export const WALKTHROUGH = {
         hs: ["library.backissues", "hall.stairs", "lab.door"], nudge: ["NELL|Gus's printout taught me what a stitched paper looks like. Every sentence is somebody else's.", "GUS (TEXT)|take my printout to the library. lay his sentences against the back issues", "NELL|The library's back issues. Compare them with Gus's printout."] },
       { t: "Match sentence, then card (the figures match too): 1 Quorum 1979, 2 Sinecure 1988, 3 Hindex & Sinecure 1996, 4 Laud & Sinecure 1987.", flag: "clueMetamer",
         hs: ["library.backissues", "hall.stairs"], nudge: ["NELL|One sentence at a time. Each was lifted from an older paper. Find the donor.", "NELL|Quorum. Sinecure. Hindex. The same few labs keep turning up. And the old figures draw the same pictures as his.", "NELL|In order: Quorum 1979, Sinecure 1988, Hindex and Sinecure 1996, Laud and Sinecure 1987."] },
-      { t: "CHECK THE REFERENCES. Click reference 3 (Quorum 1979B) and reference 6 (Valu & Mick 2025, J. Endless Res.). Then DONE.", flag: "clueMetamer",
+      { t: "CHECK THE REFERENCES. Click each reference to look for it on the shelf (checking a real one costs nothing). The ghosts are reference 3 (Quorum 1979B) and reference 6 (Valu & Mick 2025, J. Endless Res.). Then DONE.", flag: "clueMetamer",
         hs: ["library.backissues", "hall.stairs"], nudge: ["NELL|Now his references. Two of them don't hold up.", "NELL|A paper that was never written. And a journal called Endless.", "NELL|Reference 3, Quorum 1979B. Reference 6, the Journal of Endless Research."] },
     ] },
     { name: "LEAD: THE MISSING HOURS (MAIN OFFICE 1F)", steps: [
