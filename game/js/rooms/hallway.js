@@ -1,8 +1,10 @@
 // FIRST-FLOOR HALLWAY, FECHNER HALL — the Rising Stars wall, the Friday 2 PM collision, the Impact Lab door.
-import { seg, chip, chipW, perspective, shell, sideDoor, hit, wallPatch } from "../gfx.js";
+import { seg, chip, chipW, perspective, shell, sideDoor, hit, wallPatch, star4, arcs } from "../gfx.js";
 import { smallFigure, AUD } from "../figures.js";
 import { prestonStanding, danaStanding } from "../cast/act3b.js";
 import { impactStanding, codyStanding } from "../cast/act4.js";
+import { rexStanding } from "../cast/act3b.js";
+import { hoodStanding } from "../cast/act5a.js";
 
 const pp = perspective(320, 140, 0.6);
 const { P, poly, FY, kAtY } = pp;
@@ -114,12 +116,51 @@ function act3Sorts(G) {
         Cody (no clipboard) by the tube station once Nell has Impact's card, until he goes. No bin, no Preston. ---- */
 function act4Sorts(G) {
   const out = [], f = G.flags;
+  if (f.ch) chaseSorts(f.ch, out);
   if (G.mode === "night") return out;
   if (!f.impactDead && (!f.impactMet || !f.clueHours || !f.clueMetamer)) { const x = 284, y = 252, q = kAtY(y) * AUD;
     out.push({ depth: y, svg: `<g data-hs="prof">${impactStanding(x, y, kAtY(y))}${hit((x - 70 * q).toFixed(1), (y - 172 * q).toFixed(1), (114 * q).toFixed(1), (172 * q + 2).toFixed(1))}</g>` }); }
   if (f.clueCard && !f.codyLeft) { const x = 474, y = 252, fg = fig("", x, y, 32, 176);
     out.push({ depth: y, svg: `<g data-hs="cody">${codyStanding(x, y, kAtY(y))}${fg.hit}</g>` }); }
   return out;
+}
+/* ---- Act IV, the chase (act4.js chase() moves it, G.flags.ch): Preston coming down the hall with his earbuds lit; Rex out of
+        the COFFEE door; a hood behind him with a steel dewar; a stepped plume of liquid nitrogen; Rex on the floor, frosted;
+        the ceiling vents hissing and the fog filling the hall in four poses. ---- */
+const wisp = (x, y, w) => `M${x.toFixed(1)},${y.toFixed(1)} c${w / 6},-3 ${w / 3},3 ${w / 2},0 s${w / 3},-3 ${w / 2},0`;
+const VENTS = [180, 300, 460];
+function chaseSorts(ch, out) {
+  if (ch.pre) { const [x, y] = ch.pre; out.push({ depth: y, svg: `<g class="pt blank">${prestonStanding(x, y, kAtY(y))}</g>` }); }
+  if (ch.rex) { const [x, y, down] = ch.rex, k = kAtY(y), q = k * AUD;
+    out.push({ depth: y, svg: down
+      ? `<g transform="translate(${x},${y}) rotate(-84)">${rexStanding(0, 0, k)}</g>${star4(x - 20 * q, y - 12 * q, 5 * q, "sW")}${star4(x - 70 * q, y - 18 * q, 4 * q, "sW")}${star4(x - 120 * q, y - 8 * q, 6 * q, "sW")}`
+      : rexStanding(x, y, k) }); }
+  if (ch.hood) { const [x, y, up] = ch.hood, k = kAtY(y), q = k * AUD;
+    // the dewar: a steel flask held up beside the hood, its nozzle pointing left (at Rex)
+    const dw = `<g transform="translate(${x},${y}) scale(${q.toFixed(3)}) translate(-160,-187)">
+      <path class="sV" d="M180,92 L${up ? "190,64" : "192,118"}"/>
+      <g transform="translate(${up ? "0,-32" : "0,22"})"><rect class="k sW" x="184" y="56" width="20" height="40" rx="3"/><path class="hl sW" d="M188,62 L188,90 M184,64 L204,64"/>
+      <path class="sW" d="M190,56 L190,50 L176,46"/><circle class="hl sW" cx="174" cy="45.6" r="1.6"/></g></g>`;
+    out.push({ depth: y, svg: hoodStanding(x, y, k, true) + dw }); }
+  if (ch.plume && ch.hood && ch.rex) {
+    // the plume, stepped: puffs from the nozzle toward Rex's head, growing; the last pose is a cloud on him
+    const [hx, hy] = ch.hood, hq = kAtY(hy) * AUD, nx = hx + (174 - 160) * hq, ny = hy + (45.6 - 32 - 187) * hq;
+    const [rx, ry] = ch.rex, rq = kAtY(ry) * AUD, tx = rx, ty = ry - 140 * rq, n = ch.plume;
+    let p = "";
+    for (let i = 1; i <= Math.min(n, 4) * 2; i++) { const u = i / 8, x = nx + (tx - nx) * u, y = ny + (ty - ny) * u + Math.sin(i * 1.7) * 3, r = (3 + i * 2.2) * rq;
+      p += `<circle class="hl sW" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"/>`; }
+    if (n >= 4) for (let i = 0; i < 7; i++) p += `<circle class="hl sW" cx="${(tx + Math.cos(i * .9) * 26 * rq).toFixed(1)}" cy="${(ty + 30 * rq + Math.sin(i * 1.3) * 34 * rq).toFixed(1)}" r="${(14 * rq).toFixed(1)}"/>`;
+    out.push({ depth: ry + 1, svg: p });
+  }
+  if (ch.fog) {
+    // the vents hiss, the fog comes down in four poses: wisps under the vents, a falling sheet, a bank on the floor, the hall
+    let s = "";
+    for (const X of VENTS) { const [vx, vy] = P(X, 0, .72); s += `<rect class="k sW" x="${(vx - 9).toFixed(1)}" y="${vy.toFixed(1)}" width="18" height="4"/><path class="hl sW" d="M${vx - 7},${vy + 2} L${vx + 7},${vy + 2}"/>`;
+      s += arcs(vx - 12, vy + 6, -1, "sW", 2, .5) + arcs(vx + 12, vy + 6, 1, "sW", 2, .5);
+      for (let i = 0; i < ch.fog * 3; i++) s += `<path class="hl sW" opacity=".7" d="${wisp(vx - 22 + (i * 17) % 40, vy + 10 + i * 9, 26 + (i % 3) * 8)}"/>`; }
+    if (ch.fog >= 3) for (let i = 0; i < (ch.fog - 2) * 22; i++) s += `<path class="hl sW" opacity=".6" d="${wisp((i * 61) % 660 - 20, 296 - (i % 6) * 9 - (ch.fog - 3) * 16, 40 + (i % 4) * 14)}"/>`;
+    out.push({ depth: 999, svg: s });
+  }
 }
 const STAIRS12 = { use: "OPEN", down: "GO DOWN", up: "GO UP" };
 const STAIRS3 = { use: "OPEN", down: "B1 MRI", server: "B1 SERVERS", up: "2F INTEGRITY", meeting: "3F MEETING", emeritus: "4F EMERITUS" };

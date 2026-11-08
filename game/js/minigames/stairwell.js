@@ -5,7 +5,7 @@
 // stairwell(el, { die, score, chip }) → Promise<{ escaped, threshold }>. If Preston catches Nell, await die(text) (the game's
 // death screen; resolves on REVISE & RESUBMIT), then she runs on from the same landing with her staircase data intact.
 //
-// The descent runs through five zones (2F offices → 1F atrium → B1 MRI → B2 steam tunnels → B3 the 1960s annex), each with
+// The descent runs through five zones (1F hall → LL atrium → B1 MRI → B2 steam tunnels → B3 the 1960s annex), each with
 // its own wall, signage, door frames and stair geometry. Every few trials a short EVENT interrupts the run (a hand on the rail,
 // a robe in a doorway, a jammed fire door, a dropped notebook, a fog surge, a voice from a vent, a flicker, a chained door,
 // a breather). Events never touch the staircase: no level change, nothing logged as a trial. The fog surge is a REMINDER
@@ -42,8 +42,8 @@ const backPt = (g, j) => { const b = g.back, bsx = (b.x1 - b.x2) / b.n, bsy = (g
 
 /* ---------------- the five zones ---------------- */
 const ZONES = [
-  { fl: "2F", name: "FACULTY OFFICES", short: "OFFICES", f: "fA", s: "sA", geos: ["flight", "long"] },
-  { fl: "1F", name: "ATRIUM SIDE", short: "ATRIUM", f: "fB", s: "sB", geos: ["window", "flight"] },
+  { fl: "1F", name: "HALLWAY", short: "HALL", f: "fA", s: "sA", geos: ["flight", "long"] },
+  { fl: "LL", name: "ATRIUM, LOWER LEVEL", short: "ATRIUM", f: "fB", s: "sB", geos: ["window", "flight"] },
   { fl: "B1", name: "MRI SUITE", short: "MRI SUITE", f: "fR", s: "sR", geos: ["switch", "flight"] },
   { fl: "B2", name: "STEAM TUNNELS", short: "TUNNELS", f: "fW", s: "sW", geos: ["long", "switch"] },
   { fl: "B3", name: "PSYCHOPHYSICS ANNEX", short: "ANNEX 1961", f: "fV", s: "sV", geos: ["switch", "long", "flight"] },
@@ -131,13 +131,8 @@ export function stairwell(el, opts = {}) {
   injectStyle("mg-stairwell", CSS);
   el.innerHTML = `<div class="fogmini"><svg class="t" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg>
     <div class="fogquip"></div>
-    <div class="fogintro show"><svg class="t" viewBox="0 0 640 360">${segC("THE FOG", 320, 40, 44, "sW", 2.2) + chip(chipText, 320 - (segW(chipText, 6.5) + 6.5 * .9) / 2, 104, 6.5, "fV")}</svg>
-      <div class="lines">
-        <p class="r">Preston is one flight behind you. The NRT has filled the stairwell with fog. Five floors down to B3.</p>
-        <p class="a">On every landing, one door is marked with a faint circle inside a circle. That's the way down. The other goes back up.</p>
-        <p class="g">Pick it: ← / → or click. Can't see it? Guess: a guess is data. Hesitate and he gains on you. When something else happens, do what the bottom left of the screen says.</p>
-        <p class="m">Screen bright, room dim. A minute or two. Click to run.</p>
-      </div></div></div>`;
+    <div class="fogintro show"><svg class="t" viewBox="0 0 640 360">${segC("THE FOG", 320, 110, 44, "sW", 2.2) + chip(chipText, 320 - (segW(chipText, 6.5) + 6.5 * .9) / 2, 174, 6.5, "fV") + segC("ALL THE WAY DOWN. HE'S ONE FLIGHT BEHIND.", 320, 196, 6, "sR", 1) + segC("SCREEN BRIGHT, ROOM DIM", 320, 300, 4.4, "sD", .8)}</svg>
+    </div></div>`;
   el.classList.add("show");
   const svg = el.querySelector(".fogmini > svg"), quipEl = el.querySelector(".fogquip"), introEl = el.querySelector(".fogintro");
   const ST = makeST();
@@ -153,7 +148,8 @@ export function stairwell(el, opts = {}) {
       zone: 0, zoneLandings: 0, geoI: 0, geo: GEOS.flight, names: ["PROF. IMPACT", "PROF. QUORUM"], tick: 0, card: null,
       // events
       ev: null, onEv: null, evCancel: null, evAt: 2 + Math.floor(Math.random() * 2), lastGapN: 0, lastEv: null, bag: [], evQueue: [],
-      events: [], surge: false, surgeDone: null, dark: false, gapFx: null, notes: null };
+      events: [], surge: false, surgeDone: null, dark: false, gapFx: null, notes: null, teach: 1 };
+    let teachT = null;
 
     /* ---------------- scenery: zones, walls, stairs ---------------- */
     function stairPath(g) {
@@ -235,7 +231,7 @@ export function stairwell(el, opts = {}) {
         // wall clock, a sign, the fire extinguisher
         s += `<circle class="k sW" cx="436" cy="36" r="15"/><path class="sW" d="M436,36 L436,26 M436,36 L443,40"/>`;
         for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6; s += `<path class="hl sM" d="M${436 + Math.cos(a) * 12},${36 + Math.sin(a) * 12} L${436 + Math.cos(a) * 14},${36 + Math.sin(a) * 14}"/>`; }
-        s += seg("QUIET PLEASE", 470, 24, 6, "sM", 1) + seg("FACULTY THINKING", 470, 36, 4, "sD", .8) + seg("OFFICE HOURS: BY APPT", 470, 46, 4, "sD", .8);
+        s += seg("JOB TALK", 470, 24, 6, "sM", 1) + seg("FRI 2PM  RM 101", 470, 36, 4, "sD", .8) + seg("PIZZA AFTER (MAYBE)", 470, 46, 4, "sD", .8);
         s += seg("FIRE", 598, 160, 5, "sR", 1);
         s += `<path class="sM" d="M602,178 L622,178"/><path class="k sR" d="M603,186 C603,180 619,180 619,186 L619,236 L603,236 Z"/>
           <path class="sW" d="M607,182 L607,176 L615,176 L615,182 M615,177 L625,182 L626,200"/><path class="hl sR" d="M606,200 L616,200 M606,204 L616,204"/>
@@ -294,8 +290,8 @@ export function stairwell(el, opts = {}) {
           <circle class="fR" cx="${x + 19}" cy="${y + 7}" r="1.3"/><circle class="fG" cx="${x + 57}" cy="${y + 6}" r="1.3"/><circle class="fA" cx="${x + 57}" cy="${y + 32}" r="1.3"/>`;
       }
       if (z === 1) {   // the building directory
-        let s = `<rect class="k sW" x="${x}" y="${y}" width="70" height="52"/>` + seg("DIRECTORY", x + 5, y + 5, 4, "sB", .8);
-        ["4F IRIS (EMER.)", "3F IMPACT", "2F FACULTY", "1F ATRIUM", "B1 MRI", "B2 TUNNELS", "B3 ---"].forEach((t, i) => s += seg(t, x + 5, y + 13 + i * 5.4, 3, i === 6 ? "sR" : "sM", .55));
+        let s = `<rect class="k sW" x="${x}" y="${y}" width="70" height="58"/>` + seg("DIRECTORY", x + 5, y + 5, 4, "sB", .8);
+        ["4F IRIS (EMER.)", "3F FACULTY", "2F LIBRARY", "1F HALL", "LL ATRIUM", "B1 MRI", "B2 TUNNELS", "B3 ---"].forEach((t, i) => s += seg(t, x + 5, y + 13 + i * 5.4, 3, i === 7 ? "sR" : "sM", .55));
         return s;
       }
       if (z === 2) {   // the magnet warning, with a horseshoe
@@ -436,7 +432,7 @@ export function stairwell(el, opts = {}) {
       return s;
     }
     const clock = () => { const t = S.t0 ? Math.floor((Date.now() - S.t0) / 1000) : 0; return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`; };
-    const curC = () => S.surge ? C_SURGE : ST.c;
+    const curC = () => S.surge ? C_SURGE : S.teach === 1 ? Math.max(ST.c, 0.45) : ST.c;
     function draw() {
       if (S.closed) return;
       const st = stimulus(curC());
@@ -451,6 +447,8 @@ export function stairwell(el, opts = {}) {
       s += evUnder(st);
       s += prestonSVG(st) + nellSVG();
       s += evOver(st);
+      if (S.teach === 1 && S.phase === "choose") { const x = STAND[S.target], y = DOOR_TOP - 34 + (Math.floor(S.tick / 3) % 2) * 4;
+        s += `<path class="sA" d="M${x},${y} L${x},${y + 18} M${x - 7},${y + 11} L${x},${y + 18} L${x + 7},${y + 11}"/>` + chip("DOWN", x - 12, y - 14, 6, "fA"); }
       if (S.pop) s += segC(S.pop.t, S.pop.x, S.pop.y, 9, S.pop.cls, 1.4);
       if (S.gap <= 2 && S.gap > 0 && (S.phase === "choose" || S.phase === "event")) {   // the warning before a catch
         const w = S.gap === 1 ? "HE'S RIGHT BEHIND YOU" : "HE'S CLOSE", sub = S.phase === "choose" ? "PICK A DOOR. ANY DOOR." : "";
@@ -542,6 +540,10 @@ export function stairwell(el, opts = {}) {
       S.phase = "walk"; await descend();
       if (S.closed) return;
       S.phase = "choose"; S.arrived = Date.now();
+      // the first two landings teach, in play: the mark and an arrow, then the mark alone
+      if (S.teach === 1) { quip("MORRIS", "TWO DOORS, PAL. THE ONE WITH THE CIRCLE INSIDE A CIRCLE GOES DOWN.", "K");
+        teachT = setTimeout(() => { if (S.teach === 1 && S.phase === "choose") quip("NELL", "THE OTHER ONE GOES BACK UP. TO HIM. ← → OR CLICK IT.", "G"); }, 2600); }
+      else if (S.teach === 2) quip("MORRIS", "NO ARROW NOW, PAL. EVERY TIME YOU'RE RIGHT, THEY PUMP IN MORE FOG.", "K");
       if (ST.c < 0.02 && !S.surge) once("cantsee", () => quip("MORRIS", "I CAN'T SEE ANYTHING, PAL.", "K"));
     }
     async function choose(side) {
@@ -549,7 +551,8 @@ export function stairwell(el, opts = {}) {
       S.phase = "resolve";
       const correct = side === S.target, st = stimulus(curC()), rt = Date.now() - S.arrived;
       // the reminder landing (fog surge) is logged on its own and never moves the staircase
-      if (S.surge) ST.reminders.push({ c: C_SURGE, actual: st.actual, side, target: S.target, correct, rt, landing: S.landing });
+      const teaching = S.teach === 1; clearTimeout(teachT);
+      if (S.surge || teaching) ST.reminders.push({ c: C_SURGE, actual: st.actual, side, target: S.target, correct, rt, landing: S.landing });
       else ST.trials.push({ c: ST.c, actual: st.actual, side, target: S.target, correct, rt, landing: S.landing });
       await jumpTo(STAND[side], FLOOR, 70); S.dash = null;
       S.open = { side, correct }; S.nell.pose = 0;
@@ -575,7 +578,8 @@ export function stairwell(el, opts = {}) {
       }
       S.missRun = correct ? 0 : S.missRun + 1;
       draw(); await tick(correct ? 260 : 420);
-      const move = ST.update(correct);
+      const move = teaching ? 0 : ST.update(correct);
+      if (S.teach) S.teach++; if (S.teach > 2) S.teach = 0;
       if (move === -1) sfx("fogHiss");
       S.landing += correct ? 1 : -1;
       if (!correct && S.missRun === 2) quip("MORRIS", "CAN'T SEE IT? JUST GUESS, PAL. EVERY MISS MAKES THE NEXT ONE CLEARER.", "K");
@@ -599,7 +603,7 @@ export function stairwell(el, opts = {}) {
       S.phase = "card"; S.card = { pose: 0 }; sfx("fogZone", { z: S.zone }); draw(); await tick(260);
       S.card.pose = 1; draw(); await tick(ms);
       S.card = null;
-      const lines = [null, ["NELL", "ATRIUM. PEOPLE. NOBODY LOOKS UP FROM THEIR PHONES.", "G"], ["MORRIS", "MRI FLOOR. TAKE YOUR KEYS OUT, PAL. I'M SERIOUS.", "K"],
+      const lines = [null, ["NELL", "ATRIUM, LOWER LEVEL. PEOPLE. NOBODY LOOKS UP FROM THEIR PHONES.", "G"], ["MORRIS", "MRI FLOOR. TAKE YOUR KEYS OUT, PAL. I'M SERIOUS.", "K"],
         ["NELL", "STEAM TUNNELS. THE FOG'S EVEN DAMPER DOWN HERE.", "G"], ["NELL", "1961. NOBODY'S PAINTED THIS SINCE THE SCHISM.", "G"]][S.zone];
       if (lines) quip(...lines);
     }
@@ -1077,14 +1081,15 @@ export function stairwell(el, opts = {}) {
       if (window.SFX && window.SFX.unlock) window.SFX.unlock();
       prestonSteps();
       await zoneCard(); if (S.closed) return;
-      quip("NELL", "SECOND FLOOR. FACULTY OFFICES. NOBODY'S IN THEM ANYWAY.", "G");
+      quip("NELL", "FIRST FLOOR. DOWN. DOWN IS AWAY FROM HIM.", "G");
       trial();
     }
     introEl.addEventListener("click", begin);
+    setTimeout(begin, 1900);   // the title card runs straight on into the first landing (a click skips it)
 
     function close(escaped) {
       if (S.closed) return; S.closed = true;
-      clearInterval(iv1); clearInterval(iv2); clearTimeout(quipT); clearTimeout(stepT);
+      clearInterval(iv1); clearInterval(iv2); clearTimeout(quipT); clearTimeout(stepT); clearTimeout(teachT);
       if (S.evCancel) S.evCancel();
       svg.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey); introEl.removeEventListener("click", begin);
       if (window.STAIR && window.STAIR.S === S) delete window.STAIR;

@@ -7,6 +7,7 @@ import { metamer } from "../minigames/metamer.js";
 import { hours } from "../minigames/hours.js";
 import { retainer } from "../minigames/retainer.js";
 import { stairwell } from "../minigames/stairwell.js";
+import { lift } from "../minigames/lift.js";
 import { echo } from "../minigames/echo.js";
 import { darkbooth } from "../minigames/darkbooth.js";
 import { openConsole } from "../console/open.js";
@@ -135,6 +136,8 @@ export const CONVOS = {
 
   irisThursday: { L: "nell", R: "irisNamed", lines: [
     ["R", "Shut the door. Sit. You're shaking. That's the fog; it's a cheap glycol. They bought it for a holiday party in 1983."],
+    ["L", "There was a cage at the bottom of the stairs. It brought me straight up here."],
+    ["R", "My magnet lift. I had it put in in 1968, to bring the coils down. After the Schism I had them fit a ratchet: up only. Nothing comes down it to them, and nothing of theirs comes up. It doesn't listen, either. It's too old to hear."],
     ["L", "He chased me. Preston. He didn't even look like himself."],
     ["R", "He wasn't himself. That's the point of the earbuds. Stay here tonight. I don't sleep anyway."],
     ["L", "Gus is going to the basement. He always does."],
@@ -434,16 +437,32 @@ async function doRetainer(api) {
   api.flag("clueRetainer", true); api.score("clueRetainer", 3); api.refresh(); return null;
 }
 async function chase(api) {
-  const G = api.G; G.flags.chased = true;
-  await api.say("The hallway. At the far end, by the Rising Stars wall: Preston.\n\nHe isn't networking. He isn't smiling. His earbuds are lit, and he is walking toward you at exactly the speed of someone who has been told to.");
-  await api.say("PRESTON|The authors should consider withdrawing the manuscript.");
-  await api.say("The kitchen door bangs open.\n\nREX|Preston, buddy! Have you met my coffee?\n\nBehind Preston, a hooded figure raises a steel dewar. A white plume. Rex goes down in a cloud of liquid nitrogen.");
-  api.sfx("hiss"); await api.say("REX (FROM THE FLOOR, FROSTED)|I'm fine. Nine years of postdoc. I'm already frozen inside. RUN, NELL.\n\nVents in the ceiling begin to hiss. Fog. Thick, sweet, cheap. You run for the stairwell.");
+  const G = api.G, F = G.flags; F.chased = true;
+  // shown, not told: the hall draws F.ch (rooms/hallway.js chaseSorts); every move is a stepped pose
+  const step = async (ms) => { api.refresh(); await api.wait(ms); };
+  await api.walk(214, 270);
+  F.ch = { pre: [330, 244] }; api.sfx("sting"); await step(300);
+  for (const p of [[318, 247], [306, 250], [294, 253]]) { F.ch.pre = p; await step(260); }
+  await api.say("PRESTON (EARBUDS LIT)|The authors should consider withdrawing the manuscript.");
+  // the COFFEE door bangs open
+  api.sfx("clunk"); F.ch.rex = [574, 282]; await step(220); F.ch.rex = [548, 276]; await step(220);
+  await api.say("REX|Preston, buddy! Have you met my coffee?");
+  // a hood behind him, a steel dewar, a white plume
+  F.ch.hood = [590, 286, false]; await step(380); F.ch.hood = [590, 286, true]; api.sfx("cloth"); await step(420);
+  api.sfx("hiss"); for (let n = 1; n <= 4; n++) { F.ch.plume = n; await step(150); }
+  F.ch.rex = [530, 280, true]; api.sfx("thud"); await step(500); F.ch.plume = 0; await step(200);
+  await api.say("REX (FROM THE FLOOR, FROSTED)|I'm fine. Nine years of postdoc. I'm already frozen inside. RUN, NELL.");
+  // the vents hiss; fog comes down the hall while Preston keeps coming and Nell runs for the stairs
+  api.sfx("hiss"); for (let n = 1; n <= 2; n++) { F.ch.fog = n; await step(320); }
+  const run = (async () => { for (const p of [[278, 256], [262, 259], [246, 262]]) { F.ch.pre = p; if (F.ch.fog < 4) F.ch.fog++; await step(300); } })();
+  await Promise.all([run, api.walk(104, 254)]);
+  F.ch = null; api.refresh();
   let r = null;
   do r = await api.mini(stairwell, { score: api.score, die: dieKeep(api) }, "glmwrap"); while (!r || !r.escaped);
   G.flags.escaped = true; api.score("escaped", 3);
+  // shown, not told: the fog runs out at B3, at Iris's old magnet lift, and it only goes up (minigames/lift.js)
+  await api.mini(lift, {}, "glmwrap");
   api.goRoom("iris@fromStairs");
-  await api.say("You come out of the fog at the top of the building, at the end of the hall, past the broken light. A door opens before you knock.");
   return "c:irisThursday";
 }
 async function rehearse(api) {
