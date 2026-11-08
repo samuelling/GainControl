@@ -124,7 +124,7 @@ function small3(G) {
 // Act IV: Nell's desk chair, pulled out to the right of her desk. Friday morning: Gus has left the Table's robe draped over it
 const CH = [306, 268];
 function chair4(G) {
-  if (G.act !== 4) return "";
+  if (G.act !== 4 && !(G.act === 5 && G.mode === "morning")) return "";
   const [x, y] = CH, k = kAtY(y), q = k * AUD, robe = G.mode === "morning" && !G.flags.gotRobe;
   return robe ? `<g data-hs="robe">${nellChair(x, y, k, true)}${hit(x - 52 * q, y - 100 * q, 104 * q, 100 * q + 2)}</g>` : nellChair(x, y, k);
 }

@@ -3,7 +3,7 @@
 // then Nell states the rule and Gus states the controls. PREDICT: runs of eight motions (three repeats), slower, with
 // the nod late in each motion; whisper NOW before they nod. Pass: all but one repeat, at most one wrong call. Every
 // mistake is explained; the hint ladder (2 mistakes: "TWO AGO" underlined in the notes; 4: Gus elbows you on each
-// repeat; 3 failed runs: Gus waves it through, without nodCrack). Then Quorum slumps, and the meeting carries on
+// repeat; 2 failed runs: Gus waves it through, without nodCrack). Then Quorum slumps, and the meeting carries on
 // (ADJOURN? any time). Drawn as a bar over the room; the room's faculty heads are posed through onPose(0 | 1).
 // Resolves { hits, misses, fa, cr, dprime, tries }.
 const M = {
@@ -146,7 +146,7 @@ export function nod(el, { onPose = () => {}, onQuorum = () => {}, score = () => 
           score("nodCrack", 3); score("nodCalls", Math.min(6, 2 * T.hits));   // three repeats a round now; each call counts double, so the max stays 6
           sfx("chime"); coach = ["GUS", `${T.hits} of ${targets}. They're not listening. They're answering.`]; draw();
           later(quorum, 2800);
-        } else if (++fails >= 3) {
+        } else if (++fails >= 2) {
           // nobody gets stuck in a faculty meeting forever (except the faculty)
           sfx("cancel"); coach = ["GUS", "Close enough. You've seen it: same motion as two ago, six nods. Every time. Nobody's that agreeable awake."]; draw();
           later(quorum, 3400);
@@ -159,11 +159,8 @@ export function nod(el, { onPose = () => {}, onQuorum = () => {}, score = () => 
     }
     function quorum() {
       onQuorum(); sfx("dread"); reader = "ETHEL"; coach = ["NELL", "Gus. Quorum isn't moving."]; cur = null; draw();
-      later(() => { coach = ["GUS", "Nobody's moved to adjourn. So she's reading the next motion."]; draw();
-        const prev = log.slice(-2).map(l => l.k), seq = planSeq(prev, { t: [2, 4], lure: [] }).slice(0, 5);
-        later(() => run(seq, "encore", log.length + 1, null, () => {
-          phase = "done"; cur = null; coach = ["NARRATOR", "The meeting continues for forty minutes. The faculty never miss a nod."]; draw();
-        }), 2600); }, 2600);
+      later(() => { coach = ["GUS", "Nobody's moved to adjourn. So Ethel reads the next motion. And they nod."]; draw();
+        later(() => { phase = "done"; cur = null; coach = ["NARRATOR", "The meeting continues for forty minutes. The faculty never miss a nod."]; draw(); }, 2600); }, 2600);
     }
     function finish() {
       timers.forEach(clearTimeout); onPose(0);

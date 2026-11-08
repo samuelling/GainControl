@@ -6,7 +6,7 @@ import { irisSeated } from "../cast/act3a.js";
 import { visitorChair, irisStapleGun } from "../cast/act4b.js";
 
 // Act IV, Friday morning: a second chair set opposite the desk (for the rehearsal), and the staple gun in Iris's hand
-const friday = (G) => G.act === 4 && G.mode === "morning";
+const friday = (G) => G.act >= 4 && G.mode === "morning";   // Friday morning: the end of Act IV, now the start of Act V
 
 // cramped: a near back wall
 const pp = perspective(320, 130, 0.56);

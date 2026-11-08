@@ -238,7 +238,7 @@ function hud() { musicScene();
   if (!inv.length && G.char === "morris") s += seg("CHEEKS FULL OF PEPPERONI", 164, 324, 3.8, "sM", .8);
   inv.forEach((id, i) => { const { x, y, sc } = invPos(i, inv.length), w = 26 * sc, h = 30 * sc;
     s += `<g data-item="${id}" style="cursor:pointer">${G.using === id ? `<rect class="hl sA" x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}"/>` : ""}<g transform="translate(${x},${y}) scale(${sc}) translate(${-x},${-y})">${ITEMS[id].g(x, y)}</g><rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" fill="transparent"/></g>`; });
-  const day = DAYNAMES[G.mode === "morning" ? G.act + 1 : G.act];
+  const day = DAYNAMES[G.mode === "morning" && G.act < 5 ? G.act + 1 : G.act];   // a morning is the next act's day, except Act V, which opens on one
   s += seg("DAY", 290, 300, 4.2, night ? "sG" : "sB", .8) + seg(day, 290, 308, 20, night ? "sG" : "sB", 1.4);
   s += seg("TIME", 336, 300, 4.2, "sW", .8) + seg(G.clock, 336, 308, 20, "sW", 1.4);
   s += seg("H-INDEX", 410, 300, 4.2, "sA", .8) + seg(String(G.score).padStart(2, "0"), 410, 308, 20, "sA", 1.4) + seg("/" + (ACT().MAXSCORE || 50), 432, 322, 7, "sM", 1);
@@ -753,8 +753,9 @@ async function start() {
   if (h === "#act3night") { await startAct(3, { fresh: true, skipCard: true }); await A3.debugNight(api); return; }
   if (h === "#act4") { await startAct(4, { fresh: true, skipCard: true }); return; }
   if (h === "#act4night") { await startAct(4, { fresh: true, skipCard: true }); await A4.debugNight(api); return; }
-  if (h === "#act4morning") { await startAct(4, { fresh: true, skipCard: true }); await A4.debugMorning(api); return; }
+  if (h === "#act4morning" || h === "#act5morning") { await startAct(5, { fresh: true, skipCard: true }); return; }   // Friday morning opens Act V now
   if (h === "#act5") { await startAct(5, { fresh: true, skipCard: true }); return; }
+  if (h === "#act5defense") { await startAct(5, { fresh: true, skipCard: true }); await A5.debugDefense(api); return; }
   if (h === "#act5night") { await startAct(5, { fresh: true, skipCard: true }); await A5.debugNight(api); return; }
   loadRoom("seminar", "start");
   const unlocked = +(localStorage.getItem("gaincontrol.act") || 1);

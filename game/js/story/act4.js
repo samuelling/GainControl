@@ -1,5 +1,5 @@
 // ACT IV — Thursday: REBUTTAL. Impact in the −80, Reviewer 2 and the retainer, Cody in the maze, the chase through the fog;
-// Gus's last night at the coat check; Friday dawn; Iris and THE REHEARSAL. Design: docs/ACT4.md.
+// Gus's last night at the coat check (the act ends on his last text; Friday morning and THE REHEARSAL open Act V). Design: docs/ACT4.md.
 import { seg, segC, chip, chipW } from "../gfx.js";
 import { ITEMS, VIV, dendro } from "./act1.js";
 import "./act3.js";
@@ -499,29 +499,26 @@ async function nightfall(api) {
   api.G.inv.gus = ["badge", "phone", "drink"];
   await api.say("Gus Ian, 1:12 AM. Nell texted him eleven times. He read them all. Then he came down here anyway.\n\nThe bricked door has a gap in it tonight. And beside it, where there was nothing yesterday: a coat check.");
 }
-async function dawn(api) {
-  await api.say("Gus goes down to the 3T for his 2:30 scan. He texts Nell one more time from the control room: 'robe's on your chair. check the tube. scanning now. it's fine. it's always fine at 2am.'\n\nIt's the last text.");
-  await api.card("FRIDAY", "06:40", "MRI CONTROL  B1", "fR", 3200);
-  api.G.bodies = 5; api.sfx("scanner");
-  api.shift({ mode: "morning", char: "nell", room: "mri", entry: "morning", min: 400, cast: ["nell"] });
-  await api.say("Gus Ian was found at 6:15 by the morning tech.\n\nHe is in the 3T. The scan is still running.");
-}
-export const MAXSCORE = 94;
+export const MAXSCORE = 80;
 export const TITLE = ["ACT IV", "REBUTTAL"];
-export const END = { title: "END OF ACT IV", chip: "REBUTTAL", bodies: "BODIES 05.", next: "NEXT: FRIDAY.  ACT V  DECISION",
-  epilogue: "Friday. 2 PM: Nell Null, thesis defense. 3 PM: Preston Valu, job talk. Midnight: an induction.\n\nShe's going to all three.",
+// Act IV ends on Gus's last text; Friday morning (Gus found, the robe, the map, the rehearsal) opens Act V
+export const END = { title: "END OF ACT IV", chip: "REBUTTAL", bodies: "BODIES 04.", next: "NEXT: FRIDAY.  ACT V  DECISION",
+  epilogue: "Gus goes down to the 3T for his 2:30 scan. He texts Nell one more time from the control room: 'robe's on your chair. check the tube. scanning now. it's fine. it's always fine at 2am.'\n\nIt's the last text.",
   thanks: "THANKS FOR PLAYING ACTS I TO IV" };
 
 export async function check(api) {
   const { G } = api, f = G.flags;
   if (G.mode === "day") {
-    if (f.impactMet && all(api, LEADS) && !f.fourOClock) { f.fourOClock = true; G.min = 16 * 60; api.refresh();
-      return "Four o'clock.\n\nNELL|Impact. Third floor."; }
+    if (f.impactMet && all(api, LEADS) && !f.fourOClock) { f.fourOClock = true; f.impactMissing = true; G.min = 16 * 60; api.refresh();
+      return "Four o'clock. Nell's phone buzzes: the main office.\n\nPENNY (PHONE)|Hon, if you're looking for Prof. Impact, he went down to B1 to check on a sample. Twenty minutes ago. The −80 room. He said to tell you he'd be right back.\n\nNELL|B1. The big freezers."; }
+    // Morris doesn't wait to be switched to: he runs the vents straight back to Nell
+    // (one beat first, so he can still look around the facility: the action that found Cody arms it, the next one goes)
+    if (f.codyDead && !f.morrisPast && G.char === "morris") { if (!f.codyBeat) f.codyBeat = true; else { const b = G.busy; G.busy = false; api.switchTo("nell"); G.busy = b; } }
     if (f.codyDead && !f.morrisPast && G.char === "nell") { G.chars.morris = { room: G.room, x: G.actor.x + 30, y: G.actor.y + 6, dir: -1 }; api.refresh(); return "c:morrisPast"; }
     if (f.morrisPast && !f.chased && !f.escaped && G.room === "hall" && G.char === "nell") return chase(api);
     if (f.irisThursday && !f.nightDone) { f.nightDone = true; await nightfall(api); return null; }
   }
-  if (G.mode === "night" && f.robeLeft && f.mapSent && !f.dawnDone) { f.dawnDone = true; await dawn(api); return null; }
+  if (G.mode === "night" && f.robeLeft && f.mapSent && !f.dawnDone) { f.dawnDone = true; api.endAct(); return null; }
   if (G.mode === "morning" && G.room === "mri" && !f.smallGus) return "c:smallGus";
   return null;
 }
@@ -543,9 +540,4 @@ export async function debugNight(api) {
   Object.assign(api.G.flags, { impactMet: true, clueMetamer: true, clueHours: true, fourOClock: true, impactDead: true, impactOpen: true, clueReviewer2: true, clueRetainer: true,
     clueCard: true, codyLeft: true, codyDead: true, morrisPast: true, chased: true, escaped: true, irisThursday: true, nightDone: true });
   api.G.bodies = 4; await nightfall(api);
-}
-export async function debugMorning(api) {
-  Object.assign(api.G.flags, { impactMet: true, clueMetamer: true, clueHours: true, fourOClock: true, impactDead: true, impactOpen: true, clueReviewer2: true, clueRetainer: true,
-    clueCard: true, codyLeft: true, codyDead: true, morrisPast: true, chased: true, escaped: true, irisThursday: true, nightDone: true, robeLeft: true, mapSent: true, reelLeft: true, dawnDone: true });
-  await dawn(api);
 }

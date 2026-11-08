@@ -32,12 +32,10 @@ wrap("notebook", (api) => {
     + [t("proofGrim", "Table 1: brain scans predict behaviour at .94, nearly perfect. Gus says that's impossible. (Click Gus: TABLE 1.)"), t("proofOverlay", "Figure 3: the two participants look… familiar. (Your monitor.)"),
       t("proofLogs", "Who used the GPU cluster? Rex knows. Rex wants coffee. (Kitchen.)" + (f.proofLogs ? ""
         : f.rexLogin ? " You have his login. The terminal's in the server room, B1. (Stairwell.)"
-        : f.descaled ? " The machine says READY. A mug, a coffee, Rex."
-        : api.has("can") ? " The machine says DESCALE. Gus's can is pH 2.4. That's basically descaler."
-        : f.rexAsked ? " The machine has said DESCALE since 2012. Something acidic would fix that. Gus keeps an emergency can on his desk." : "")),
+        : f.rexAsked ? " The machine has said DESCALE since 2012. Rex has pressed it every morning. Nobody else has tried." : "")),
       t("proofGLM", "Replicate it. Need Preston's stimulus log, which is in the Impact Lab. " + (f.proofGLM ? "" : api.has("log") ? "Morris dragged it to your drawer. Your monitor: THE REPLICATION."
         : "Nell can't get in." + (f.morrisHint3 ? " Morris can. (Click his name, then a vent.)" : "")))].join("\n")
-    + (proofs(api) === 4 && !f.meetingOpen ? "\n\nAll four. Take it to Ethel Bord, Research Integrity, 2F." : "")
+    + (proofs(api) === 4 && !f.meetingOpen ? "\n\nAll four. Ethel Bord, Research Integrity, needs to see this." : "")
     + (f.meetingOpen && !f.quorumDead ? "\n\nFaculty meeting, 3F. New Business." : "");
 });
 wrap("recorder", (api) => "Your voice memo recorder. Memo 1, PRESTON: \"I ran every subject myself.\" Memo 2, PENNY: \"Nobody ordered a coil.\""
@@ -140,15 +138,15 @@ export const CONVOS = {
     ["R", "Oh, I know. I watch the job queue the way other people watch birds. I could tell you things."],
     ["R", "For a coffee. A real one. From that."],
     ["L", "That machine says DESCALE."],
-    ["R", "It has said DESCALE since 2012. I've watched three chairs and two coups. It'll say DESCALE at my funeral."],
-    ["L", "So descale it."],
-    ["R", "With what? Descaler needs a purchase order. Anything acidic would do. Vinegar. Lemon juice. Nobody in this department owns a lemon."],
+    ["R", "It has said DESCALE since 2012. I've watched three chairs and two coups. I press the button every morning. It'll say DESCALE at my funeral."],
+    ["L", "Have you let anyone else press it?"],
+    ["R", "…It's my button, Nell."],
   ], after: (api) => api.flag("rexAsked", true) },
 
   rexCoffee: { L: "nell", R: "rex", score: ["rexCoffee", 2], lines: [
     ["R", "Is that… is that from the machine?"],
-    ["L", "Descaled. With an energy drink."],
-    ["R", "pH 2.4. Of course. Nine years. Nine years and the answer was in a grad student's backpack."],
+    ["L", "I pressed it."],
+    ["R", "Nine years. Nine years, and all it wanted was somebody it hadn't already rejected."],
     ["R", "Here. My login. Look up PVALU. Look at what runs Fridays at midnight."],
     ["R", "The terminal's on a cart in the GPU server room. B1, down the stairwell. It's thirty-one degrees down there. Don't take anything you love."],
     ["R", "And Nell? There's a secret society in this building. Under forty. I applied at thirty-nine and eleven months."],
@@ -192,7 +190,7 @@ export const CONVOS = {
   ethelNew: { L: "nell", R: "ethel", score: ["ethelFile", 2], lines: [
     ["L", "Table 1 matches better than his own measurements can. His two participants are one brain, flipped. Four thousand hours of AI upscaling. And rerun, his six layers are one."],
     ["R", "…"],
-    ["R", "That's a binder. That's a whole binder."],
+    ["R", "Gus emailed me 'BINDER EMERGENCY.' I came down. I see now. That's a binder. That's a whole binder."],
     ["R", "Misconduct in this department is raised at the faculty meeting, under New Business. Today. Three o'clock. Third floor."],
     ["L", "I'm a grad student."],
     ["R", "Then you're the student representative. As of now. I'm taking the minutes. Sit near the door."],
@@ -201,7 +199,7 @@ export const CONVOS = {
     ["R", "Forty minutes. Nobody moved to adjourn. I read the agenda twice."],
     ["L", "Ethel, they were nodding at a dead man."],
     ["R", "They've been nodding at him for thirty years. I just never had the minutes to prove it."],
-    ["R", "Go to the fourth floor. The office at the end of the hall, past the broken light. There's a woman there who has been saying this since 1977."],
+    ["R", "Come with me. Fourth floor. There's a woman up there who has been saying this since 1977."],
   ], after: (api) => { api.flag("irisOpen", true); } },
 
   irisMeet: { L: "nell", R: "iris", lines: [
@@ -307,7 +305,8 @@ async function meeting(api) {
   api.flag("nodDone", true);
   await api.say(`NELL|My d′, my score for catching the repeats without crying wolf, was ${r.dprime.toFixed(1)}. Theirs was higher. They weren't even listening.\n\nGUS|They weren't conscious, Nell.`);
   await api.convo("ethelAfter");
-  return null;
+  api.goRoom("iris@fromStairs");
+  return "Ethel walks you to the stairwell and up one more flight, to the office at the end of the hall, past the broken light. Then she goes back down to type the minutes.";
 }
 
 // count a failed attempt at a puzzle (stored in a flag); after a couple, the surrounding lines start giving real hints
@@ -333,10 +332,8 @@ export const HS = {
       morris: { look: "Scribbling, inside." }, night: { look: "Dark. Even grant panic sleeps." } },
     booth: { label: "dark booth", day: { look: "The dark booth.", use: boothNap("You sit in the dark booth, just to think for a minute.\n\nYou wake up a ninth-year postdoc. Rex brings you a coffee. He seems pleased."), go: openConsole },
       morris: { look: "MORRIS|No." }, night: { look: "The dark booth. Gus doesn't need it to be dark. Gus is dark.", go: openConsole } },
-    gusdesk: { label: "Gus's desk", day: { look: (api) => api.has("can") || api.flag("descaled") ? "Gus's desk. Four empty cans of NULL HYPOTHESIS, and a pale ring where the full one stood. The varnish never came back."
-        : "Gus's desk. Four empty cans of NULL HYPOTHESIS and one full one, his emergency can. Under each can, a pale ring where the varnish used to be.\n\nThe small print: CITRIC ACID. PHOSPHORIC ACID. pH 2.4.",
-        use: (api) => { if (api.has("can") || api.flag("descaled")) return "GUS|That's my last one. Don't make it weird."; api.give("can"); api.flag("gotDrink", true); api.refresh(); api.score("can", 1);
-          return "You take Gus's emergency can.\n\nGUS|That's my emergency can.\n\nNELL|This is an emergency.\n\nGUS|…pH 2.4. Don't drink it. Nobody should drink it. I drink it."; } },
+    gusdesk: { label: "Gus's desk", day: { look: () => "Gus's desk. Four empty cans of NULL HYPOTHESIS and one full one, his emergency can. Under each can, a pale ring where the varnish used to be.\n\nThe small print: CITRIC ACID. PHOSPHORIC ACID. pH 2.4.",
+        use: "GUS|That's my emergency can. Don't make it weird." },
       morris: { look: "Morris sniffs the cans. His whiskers curl." }, night: { look: "His own desk. He hasn't sat at it since Monday." } },
     viv: VIV,
     gus: { label: "Gus", day: { look: () => `Gus Ian. Awake since Monday. Same cardigan. On his laptop, behind the Big Finding, a second window: DENDROBOARD, the dart-frog forum. Thread: ${dendro()}\n\nHe alt-tabs to the paper the moment he sees you. Too late.`,
@@ -418,19 +415,16 @@ export const HS = {
   kitchen: {
     rex: { label: "Dr. Rex Jected", day: { look: "Dr. Rex Jected, ninth-year postdoc, leaning on the counter with an empty mug, staring at the espresso machine like it's a grant he didn't get.",
         talk: (api) => api.has("coffee") ? "c:rexCoffee" : api.flag("rexLogin") ? "REX|There's a society, Nell. Under forty. Nobody believes me." : !api.flag("rexAsked") ? "c:rexFirst"
-          : api.flag("descaled") ? "REX|It says READY. I've never seen it say READY. Mug tree. Go. Before it changes its mind."
-          : api.has("can") ? "REX|Is that one of Gus's? NULL HYPOTHESIS? I've watched that stuff take the varnish off a desk.\n\nREX|Don't hand it to me. I'm not the one with fourteen years of limescale."
-          : "REX|Coffee. From the machine. Then we talk.\n\nREX|It wants acid. I've tried sarcasm. Not acidic enough." },
+          : "REX|Coffee. From the machine. Then we talk.\n\nREX|I've pressed it every morning since 2012. It knows my thumb. It hates my thumb." },
       morris: { look: "REX|Don't. Don't even, rat." } },
-    espresso: { label: "espresso machine", day: { look: (api) => api.flag("descaled") ? "The espresso machine. READY. A green light nobody in this building has ever seen." : "The espresso machine. A blinking chip: DESCALE. Rex says it's said that since 2012.\n\nA sticker on the side: DESCALE WITH ANY MILD ACID. Under it, in Sharpie: WE HAVE NO ACID. —R",
-        use: (api) => api.flag("descaled") ? (api.has("mug") ? brew(api) : "It's ready. You need a mug. There's a mug tree.")
-          : "DESCALE. It won't do anything else. It's been waiting for someone to listen. The sticker on the side says any mild acid." + (api.has("can") ? "\n\nYou're carrying something with a pH of 2.4. Just saying." : "") },
+    espresso: { label: "espresso machine", day: { look: (api) => api.flag("descaled") ? "The espresso machine. READY. A green light nobody in this building has ever seen." : "The espresso machine. A blinking chip: DESCALE. Rex says it's said that since 2012.\n\nThe button is worn concave in the shape of one thumb. Rex's.",
+        use: (api) => api.flag("descaled") ? "It's made one espresso this decade. Don't push it." : !api.flag("rexAsked") ? "REX|Don't touch that. That's my button." : brew(api) },
       morris: { look: "MORRIS|There's fourteen years of limescale in there, pal. I can hear it." }, night: { look: "The espresso machine, READY in the dark." } },
     mugs: { label: "mug tree", day: { look: "The mug tree. WORLD'S OKAYEST PI. I ♥ P < .05. A mug shaped like a brain that nobody uses.",
-        use: (api) => { if (api.has("mug") || api.has("coffee") || api.flag("rexLogin")) return "One mug at a time. Kitchen rules."; api.give("mug"); api.flag("gotMug", true); api.refresh(); return "You take WORLD'S OKAYEST PI."; } },
+        use: "Rex already has a mug. He's been holding it since 2012." },
       morris: { look: "Morris can't reach." } },
     fridge: { label: "fridge", day: { look: (api) => "The fridge. A note: DO NOT DRINK — SAMPLE. On a carton of oat milk."
-        + (api.flag("rexAsked") && !api.flag("descaled") ? "\n\nNo lemons. No vinegar. Rex was right: nobody in this department owns a lemon. Unless you count whatever Gus drinks." : ""), use: (api) => !api.flag("fridgeWarned")
+, use: (api) => !api.flag("fridgeWarned")
         ? (api.flag("fridgeWarned", true), "You open the fridge. A carton of oat milk, with a note taped to it: DO NOT DRINK — SAMPLE.\n\nIt looks like oat milk. It smells like oat milk. You close the fridge before you can find out what else it is.")
         : api.die("You drink the oat milk. It wasn't oat milk.\n\nYou are now part of somebody's control group. Your data will be excluded.") },
       morris: { look: "MORRIS|I've been in there. Don't." } },
@@ -516,19 +510,19 @@ export const HS = {
 function gusHint(api) {
   const f = api.G.flags;
   // a thread Nell has already started comes first, so a player who went to the kitchen (or got the log) early isn't told "Table 1 first"
-  if (!f.proofLogs && f.rexAsked && !f.descaled && !api.has("can")) return "GUS|The machine wants acid? My drink's pH 2.4. It took the varnish off my desk. Emergency can's right there. This is an emergency.";
-  if (!f.proofLogs && (api.has("can") || (f.descaled && !f.rexLogin))) return "GUS|Rex. Kitchen. Coffee. Go.";
+  if (!f.proofLogs && f.rexAsked && !f.rexLogin) return "GUS|Rex has pressed that button every morning for nine years. Has anyone else? You press it.";
   if (!f.proofLogs && f.rexLogin) return "GUS|You have Rex's login. Server room, B1.";
   if (!f.proofGLM && api.has("log")) return "GUS|You have the log. Your monitor.";
   if (!f.proofGrim) return "GUS|Table 1 first. Click me, TABLE 1. Bring your skepticism. Leave your calculator.";
   if (!f.proofOverlay) return "GUS|Figure 3. Your monitor. Make the two participants agree.";
-  if (!f.proofLogs) return f.rexLogin ? "GUS|You have Rex's login. Server room, B1." : (f.descaled || api.has("can") ? "GUS|Rex. Kitchen. Coffee. Go." : f.rexAsked ? "GUS|The machine wants acid? My drink's pH 2.4. It took the varnish off my desk. Emergency can's right there. This is an emergency." : "GUS|Rex. Kitchen. Coffee. He'll talk for a coffee.");
+  if (!f.proofLogs) return f.rexLogin ? "GUS|You have Rex's login. Server room, B1." : (f.rexAsked ? "GUS|Rex has pressed that button every morning for nine years. Has anyone else? You press it." : "GUS|Rex. Kitchen. Coffee. He'll talk for a coffee.");
   if (!f.proofGLM) return api.has("log") ? "GUS|You have the log. Your monitor." : "GUS|The log's in 116. Your drawer has a rat. I'm just saying.";
-  return "GUS|That's four. Ethel. Second floor.";
+  return "GUS|That's four. Ethel needs to see this.";
 }
-function brew(api) {
-  api.take("mug"); api.give("coffee"); api.score("brewed", 1);
-  return "You put WORLD'S OKAYEST PI under the spout and press the button.\n\nThe machine thinks about it. Then, for the first time since 2012, it makes an espresso.\n\nREX|…Oh.\n\nREX|Oh, that's beautiful.";
+async function brew(api) {
+  api.flag("descaled", true); api.give("coffee"); api.score("brewed", 1); api.sfx("espresso"); api.refresh();
+  await api.say("You press the button. Firmly, like someone it has never met.\n\nThe machine gurgles. It fizzes. It makes a sound like a dial-up modem having a breakthrough. Fourteen years of limescale let go at once. The DESCALE light goes out.\n\nThen it makes an espresso, into the mug Rex has been holding under the spout since 2012.\n\nREX|…Oh.\n\nREX|Oh, that's beautiful.");
+  return "c:rexCoffee";
 }
 async function logs(api) {
   if (api.flag("proofLogs")) { await api.readout(JOBS(), "PVALU. 4,012 GPU-hours of super-resolution on one subject. And every Friday at midnight: ltm_generate.py, reading from /mnt/B3/archive."); return null; }
@@ -539,22 +533,11 @@ async function logs(api) {
 }
 
 export const WITH = {
-  "kitchen.espresso": {
-    can: (api) => { api.take("can"); api.flag("descaled", true); api.score("descaled", 2); api.refresh();
-      api.sfx("espresso"); return "You pour Gus's NULL HYPOTHESIS into the water tank.\n\nThe machine gurgles. It fizzes. It makes a sound like a dial-up modem having a breakthrough. Fourteen years of limescale let go at once.\n\nThe DESCALE light goes out. A green one comes on: READY.\n\nREX|…I've been here nine years."; },
-    mug: (api) => { if (api.flag("descaled")) return brew(api);
-      if (!api.flag("limeWarned")) { api.flag("limeWarned", true); return "REX|Don't. It's been on DESCALE since 2012. Whatever comes out of there is load-bearing."; }
-      return api.die("You brew anyway. The machine coughs out one tablespoon of something gray, with a texture.\n\nYou drink it. You have consumed fourteen years of limescale. You are now load-bearing.\n\nREX: I said don't."); },
-    drink: "Gus's drink is in his hand. Nell needs the one on his desk.",
-  },
-  "kitchen.rex": { coffee: "c:rexCoffee", mug: (api) => api.flag("descaled") ? "REX|An empty mug. Next to a machine that says READY. Nell. Put one under the other." : "REX|An empty mug. Wow. You get me.",
-    can: "REX|I don't drink that. I've seen what it does to Gus. And to Gus's desk.\n\nREX|…Wait. What's the pH on that? Don't give it to me. Give it to the machine." },
-  "kitchen.sink": { can: "You're not wasting pH 2.4 on a sink. The sink isn't the one that's been blinking DESCALE since 2012." },
-  "kitchen.fridge": { can: "The fridge is not the problem. The fridge is a different problem." },
+  "kitchen.rex": { coffee: "c:rexCoffee" },
   "server.terminal": { login: (api) => logs(api) },
   "lab.monitor": { log: doGLM, printout: "You hold the FOG NEURO printout up to Figure 3. The same confident voice. The same perfect blob." },
   "lab.gus": { printout: "GUS|I read it at 2 AM. It made sense at 2 AM. That's the scariest part.", log: "GUS|Your monitor. Let's replicate it.",
-    can: (api) => api.flag("rexAsked") ? "GUS|Rex's machine? Pour it in the water tank. pH 2.4 eats limescale. Then never tell me what it does to people." : "GUS|You took my emergency can. I'm choosing to believe there's an emergency." },
+  },
   "hall.preston": { recorder: (api) => api.flag("prestonTalked") ? "You already have it on tape." : "You hold up the recorder. Preston leans in, delighted. PRESTON: Is this for a podcast?" },
   "hall.small": { printout: "SMALL|A printout. N of one." },
   "ethics.ethel": { printout: "ETHEL|A printout of a paper by a computer. I'll need the other four things." },
@@ -603,7 +586,7 @@ async function nightfall(api) {
   api.shift({ mode: "night", char: "gus", room: "server", entry: "night", min: 111, cast: ["gus"] });
   await api.say("Gus Ian, 1:51 AM. The puddle under the equipment-room door has grown since last night. It's running the wrong way. Downhill, but toward somewhere that shouldn't be there.");
 }
-export const MAXSCORE = 60;
+export const MAXSCORE = 57;
 export const TITLE = ["ACT III", "MAJOR REVISIONS"];
 export const END = { title: "END OF ACT III", chip: "MAJOR REVISIONS", bodies: "BODIES 02.  PLUS ONE CHAIR.", next: "NEXT: THURSDAY.  ACT IV  REBUTTAL",
   epilogue: "Nell isn't chasing a cheater anymore.\n\nShe's being hunted.\n\nDET. SGT. SMALL (TO NOBODY, IN HIS CAR): Two more bodies. Still underpowered.\n\nTo be continued.",
@@ -616,13 +599,18 @@ export async function check(api) {
       return "The tunnels. Pipes in every direction, sweating. The leak runs along the floor and under a doorway in the left wall.\n\nThe doorway has been bricked up. Through the bricks: voices. Many voices. Together.\n\nGUS|If I put my ear to that, I'm going to hear something I can't un-hear. …I'm going to put my ear to that."; }
     return null;
   }
-  if (G.room === "hall" && G.char === "nell" && proofs(api) >= 2 && !f.danaGone) {
+  if (G.char === "nell" && proofs(api) >= 2 && !f.danaGone && (G.room === "hall" || proofs(api) === 4)) {
+    if (G.room !== "hall") api.goRoom("hall@fromLab");
     f.danaGone = true; G.bodies = 2; api.refresh(); api.sfx("sting");
     await api.say("The hallway is full of people who aren't doing anything. Det. Sgt. Small is standing by the recycling bin.\n\nA pair of sneakers is sticking out of it. One has a bike clip.");
     return f.danaClosed ? null : "c:smallDana";
   }
-  if (proofs(api) === 4 && !f.proofsDone) { f.proofsDone = true;
-    return "NELL|Correlations above the ceiling. One brain, two names. Four thousand GPU-hours. And when you actually run it: no layers.\n\nNELL|That's not a sloppy paper. That's a fake one.\n\nGUS|Ethel. Second floor. Before anyone else ends up in a bin."; }
+  if (proofs(api) === 4 && !f.proofsDone && f.danaGone && G.char === "nell") { f.proofsDone = true;
+    await api.say("NELL|Correlations above the ceiling. One brain, two names. Four thousand GPU-hours. And when you actually run it: no layers.\n\nNELL|That's not a sloppy paper. That's a fake one.\n\nGUS|Ethel. Before anyone else ends up in a bin. …I already emailed her.\n\nEthel Bord is coming down the hall at a binder-carrying trot.");
+    if (!f.meetingOpen) await api.convo("ethelNew");
+    // three o'clock, straight upstairs: no stairwell errand
+    G.min = 15 * 60; f.meeting = true; api.goRoom("conference@fromStairs"); api.refresh();
+    return "Three o'clock. The faculty meeting. Prof. Quorum presides. Six senior faculty, three to a side. Ethel takes the minutes.\n\nGus slips in behind you in a borrowed tie and sits down. The student representative's chair, by the door, is empty."; }
   if (G.room === "conference" && !f.meeting) { f.meeting = true; api.refresh();
     return "The faculty meeting. Prof. Quorum presides. Six senior faculty, three to a side. Ethel takes the minutes.\n\nGus slips in behind you in a borrowed tie and sits down. The student representative's chair, by the door, is empty."; }
   if (f.irisDone && !f.dayDone) { f.dayDone = true; await nightfall(api); return null; }

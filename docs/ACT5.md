@@ -2,6 +2,8 @@
 
 *Story logic: `game/js/story/act5.js`. New rooms: `defense.js`, `antechamber.js`, `chamber.js`, `plant.js`, `tubehub.js`. Minigames: `defense.js` (minigame, `js/minigames/`), `echo.js` (mode `induction`), `breakers.js`, `reels.js`, `crossref.js`. Iris becomes playable.*
 
+**Opening (moved from Act IV):** Friday 06:40, MRI Control: Gus is found in the 3T. The robe on Nell's chair, the map in the tube, and THE REHEARSAL with Iris (one drill). Then two o'clock: the defense. Test hashes: `#act5` (morning), `#act5defense`, `#act5night`.
+
 **Question:** Can they be stopped?
 Day and night merge. Part 1 is Laura Bow's courtroom; Part 2 is Gabriel Knight's lair, played Day-of-the-Tentacle style with three characters.
 

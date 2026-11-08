@@ -5,7 +5,7 @@
 // Silence is correct otherwise. Nobody ever calls it a dual 2-back.
 //
 //   echo(el, { mode: "rehearsal" | "induction", pace, seed, score, die, onSeat, onTurn, blip, morris })
-//     rehearsal → { passed: true, dprime, hits, misses, fa, cr, restarts }  (Iris's office: two drills of phrases, can't fail)
+//     rehearsal → { passed: true, dprime, hits, misses, fa, cr, restarts }  (Iris's office: one drill of phrases, can't fail)
 //     induction → { passed: true, dprime, advanced, hits, misses, fa, cr, tries }  (B3: hoods turn; three = death)
 //     either    → { passed: false, quit: true } if the player leaves with Esc, Esc.
 //
@@ -69,7 +69,7 @@ const R = {
   ],
   goC: L("IRIS", "Grant panel. Begin."),
   passC: [
-    L("IRIS", "There. Their founders published that the Echo makes you smarter. 1979. Nobody has ever managed it again."),
+    L("IRIS", "Their founders published that the Echo makes you smarter. 1979. Nobody has ever managed it again."),
     L("NELL", "Does it? Make you smarter?"),
     L("IRIS", "It makes you better at the Echo. And it makes them agree. Neither one is smart."),
     L("IRIS", "One more thing. If the man at the head of the table suspects someone, he 'advances the Echo.' Three back. Nobody likes that."),
@@ -543,7 +543,7 @@ const pad = (v) => String(v).padStart(2, "0");
 /* ---------------- the shape of each run ---------------- */
 // Rehearsal drills: legs (each a fresh Echo), the phrase set and tempo per turn, Iris's cue lines, the scene between
 const DRILLS = {
-  A: { name: ["DRILL 1", "THE PHRASES"], streams: { phrase: true, seat: false }, base: 1.25, catches: ["kettle", "phone"], between: ["sherry"],
+  A: { name: ["THE DRILL", "THE PHRASES"], streams: { phrase: true, seat: false }, base: 1.25, catches: ["kettle", "phone"], between: ["sherry"],
     legs: [{ len: 7, set: "PEER", tempo: [1, 1, .9, .8, .72, .68, .68, 1.45], cue: { 3: "fast", 7: "slow" } },
       { len: 6, set: "GRANT", tempo: [1.45, 1.45, 1, .9, .78, .7, .7], cue: { 0: "slow", 4: "fast" } }] },
   B: { name: ["DRILL 2", "THE CHAIRS"], streams: { phrase: false, seat: true }, base: .9, catches: ["canister", "misfire"], between: ["kettle"],
@@ -884,13 +884,11 @@ export function echo(el, opts = {}) {
       Object.assign(S, { stage: "A", chair: 2, streams: { phrase: false, seat: false } }); draw();
       await talk(R.introA);
       await lesson("phrase");
-      await interlude([card("THE REHEARSAL", "DRILL 1", "THE PHRASES")]);
+      await interlude([card("THE REHEARSAL", "THE DRILL", "THE PHRASES")]);
       await drill("A");
-      score("echoPhrases", 2); S.len = 0; await talk(R.passA);
-      S.stage = "C"; S.chair = 2; S.set = null; await talk(R.introC);
-      await interlude([card("THE REHEARSAL", "DRILL 2", "THE TOASTS")]);
-      await drill("C");
-      score("echoBoth", 2); S.len = 0; S.set = null; await walkTo(2); await talk(R.passC);
+      // one drill is enough (the toasts drill, C, stays defined but unused): straight on to what Iris knows
+      score("echoPhrases", 2); score("echoBoth", 2); S.len = 0; await talk(R.passA);
+      S.set = null; await walkTo(2); await talk(R.passC);
       await lesson("three");
       const t = addT(addT(tally(), kept.phrase), kept.seat);
       return { passed: true, dprime: +dprime(t.hits, t.misses, t.fa, t.cr).toFixed(2), ...t, restarts };

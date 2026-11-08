@@ -12,7 +12,7 @@ const wallBox = (side, x0, x1, y0, y1) => { const k = (x) => Math.abs(x - pp.vpx
   return wallPatch(pp, side, Math.min(ka, kb), Math.max(ka, kb), Y(y0), Y(y1)); };
 const wallLine = (side, x0, x1, y, cls) => { const b = wallBox(side, x0, x1, y, y); return `<path class="${cls}" d="M${pp.pt(b.tl)} L${pp.pt(b.tr)}"/>`; };
 // Friday morning (Act IV): no thermos, no tape. Gus is in the bore, and Det. Small has his hat in his hand
-const friday = (G) => G.act === 4 && G.mode === "morning";
+const friday = (G) => G.act >= 4 && G.mode === "morning";   // Friday morning (Act V opens on it)
 let cur = null;   // the last state drawn (stand points that differ by act read it)
 
 function back(G) {

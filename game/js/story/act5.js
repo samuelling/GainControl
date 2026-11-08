@@ -2,7 +2,7 @@
 // Design: docs/ACT5.md.
 import { seg, segC, chip, chipW } from "../gfx.js";
 import { ITEMS } from "./act1.js";
-import "./act4.js";
+import * as A4 from "./act4.js";
 import { defense } from "../minigames/defense.js";
 import { echo } from "../minigames/echo.js";
 import { breakers } from "../minigames/breakers.js";
@@ -24,6 +24,8 @@ ITEMS.robe.wear = (api) => { api.sfx("cloth"); api.flag("robeOn", true); api.tak
 const wrap = (id, fn) => { const old = ITEMS[id].look; ITEMS[id].look = (api) => api.G.act === 5 ? fn(api) : (typeof old === "function" ? old(api) : old); };
 wrap("notebook", (api) => {
   const f = api.G.flags, t = (k, s) => `- ${f[k] ? "(done) " : ""}${s}`;
+  if (api.G.mode === "morning") return "Your lab notebook. Gus's last text is taped inside the cover: 'robe's on your chair. check the tube. scanning now. it's fine.'\n\n"
+    + [t("gotRobe", "The robe on your chair. (Lab.)"), t("gotMap", "The tube station. (Hallway.)"), t("rehearsed", "Then Iris, 4F. The induction is tonight.")].join("\n");
   if (api.G.mode === "day") return "Your lab notebook. Today's page says DEFENSE, 2 PM, and nothing else. Everything else is on the slides.";
   return "Your lab notebook, by phone light. Tonight:\n\n" + [t("passOK", "NELL: get past the doorkeeper (the robe, the phrase, Iris's card)."), t("echoPassed", "NELL: take a seat at the Round Table. Answer the Echo."),
     t("magnetCharged", "IRIS: cold-start the 1968 magnet (the power plant)."),
@@ -337,12 +339,13 @@ async function nightfall(api) {
   await api.say("They go down together, Gus's map in Nell's hand. At the bricked door the tunnel splits three ways, the way Iris said it would.\n\nIRIS|I take the old service corridor to the plant. You take the front door, dear. Here: my card. I fixed the year. And when the doorkeeper starts a sentence, finish it the way every review in the world ends. Never with a career.\n\nMORRIS|And I take the pipes. Obviously.\n\nIRIS|Rat. Every tube ends in the hub, and so does the Archive: send it up to Ethel. Then the riser. Gus's 3T sits right over their Table, on four posts that have stood in fifty years of leak. Loosen the bolts. When I wake the ring, it will do the rest.\n\nMORRIS|You want me to take the bolts out from under six tonnes of magnet. …Lady, I think I love you.\n\nThe antechamber is warm, and smells of incense and toner.");
   await api.say("Three of you now. Click a name, or press Tab, to switch.\n\nNELL: the front door, the doorkeeper, the Echo.  IRIS: the power plant, the magnet.  MORRIS: the tube hub, the Archive, then up the riser to the 3T.");
 }
-export const MAXSCORE = 90;
+export const MAXSCORE = 98;
 export const TITLE = ["ACT V", "DECISION"];
 export const END = { title: "THE END", chip: "DECISION", bodies: "", next: "", epilogue: "", thanks: "THANKS FOR PLAYING GAIN CONTROL" };
 
 export async function check(api) {
   const { G } = api, f = G.flags;
+  if (G.mode === "morning") return G.room === "mri" && !f.smallGus ? "c:smallGus" : null;
   if (G.mode === "night" && f.echoPassed && f.magnetCharged && f.supportsOut && G.char === "iris" && !f.climax && !f.irisReady) { f.irisReady = true;
     return "IRIS|The girl's seated, and the ring's charged. Up the service stair."; }
   return null;
@@ -354,12 +357,41 @@ export function onSwitch(api, c) {
 }
 export async function start(api, { fresh, skipCard } = {}) {
   const G = api.G;
-  G.flags = { morrisJoined: true };
+  // Friday morning: Gus is found, the robe and the map he left, Iris's rehearsal. Then two o'clock: the defense.
+  G.flags = { morrisJoined: true, reelLeft: true };
   if (fresh) { G.score = 0; G.scored.clear(); }
-  G.inv = { nell: ["notebook", "recorder", "robe", "map", "reel"], gus: [], morris: [], iris: [] };
-  G.cast = ["nell"]; G.chars = {}; G.bodies = 5;
-  api.shift({ mode: "day", char: "nell", room: "defense", entry: "start", min: 14 * 60 });
-  if (!skipCard) await api.card("FRIDAY", "ACT V  DECISION", "SEMINAR 101  14:00", "fG", 2800);
+  G.inv = { nell: ["notebook", "recorder"], gus: [], morris: [], iris: [] };
+  G.cast = ["nell"]; G.chars = {}; G.bodies = 5; api.sfx("scanner");
+  api.shift({ mode: "morning", char: "nell", room: "mri", entry: "morning", min: 400, cast: ["nell"] });
+  if (!skipCard) await api.card("FRIDAY", "ACT V  DECISION", "MRI CONTROL  B1  06:40", "fR", 2800);
+  await api.say("Gus Ian was found at 6:15 by the morning tech.\n\nHe is in the 3T. The scan is still running.");
+}
+async function rehearseV(api) {
+  await api.convo("irisPlan");
+  let r; do r = await api.mini(echo, { mode: "rehearsal", score: api.score, blip: api.blip, die: dieKeep(api) }); while (!r || !r.passed);
+  api.flag("rehearsed", true); api.score("rehearsed", 3);
+  await api.say("IRIS|Good. Good enough. In 1974 I was worse, and I walked out of there.\n\nIRIS|Tonight I'm going down with you. Not through the front. Somebody has to turn on the magnet.\n\nNELL|The magnet?\n\nIRIS|I commissioned it, dear. In 1968. It's been waiting.\n\nIRIS|Now go and defend your thesis. Two o'clock. I'll be in the back row.");
+  await defenseStart(api);
+  return null;
+}
+async function defenseStart(api, { skipCard } = {}) {
+  const G = api.G;
+  for (const it of ["robe", "map", "reel"]) if (!api.has(it)) G.inv.nell.push(it);   // #act5defense arrives with them
+  api.shift({ mode: "day", char: "nell", room: "defense", entry: "start", min: 14 * 60, cast: ["nell"] });
+  if (!skipCard) await api.card("FRIDAY", "THE DEFENSE", "SEMINAR 101  14:00", "fG", 2800);
   await api.say("Friday. Two o'clock. Seminar 101.\n\nNell Null's thesis defense. The committee is seated. Preston Valu is in the front row, waiting for his job talk at three. Iris is in the back row.\n\nThe lectern is waiting.");
 }
-export async function debugNight(api) { api.G.flags.defenseDone = true; await nightfall(api); }
+export async function debugNight(api) { for (const it of ["robe", "map", "reel"]) if (!api.has(it)) api.G.inv.nell.push(it); api.G.flags.defenseDone = true; await nightfall(api); }
+export async function debugDefense(api) { Object.assign(api.G.flags, { smallGus: true, gotRobe: true, gotMap: true, rehearsed: true }); await defenseStart(api, { skipCard: true }); }
+
+/* ---------------- Friday morning: borrowed from Act IV, where it used to live ---------------- */
+Object.assign(CONVOS, { smallGus: A4.CONVOS.smallGus, irisPlan: A4.CONVOS.irisPlan });
+for (const [room, spots] of Object.entries(A4.HS)) for (const [id, h] of Object.entries(spots)) {
+  if (!h || !h.morning) continue;
+  const mine = ((HS[room] ||= {})[id] ||= { label: h.label });
+  if (!mine.label) mine.label = h.label;
+  mine.morning = h.morning;
+}
+HS.iris.iris.morning = { ...A4.HS.iris.iris.morning,
+  talk: (api) => api.flag("rehearsed") ? "IRIS|Two o'clock, dear. Go." : (api.flag("gotRobe") && api.flag("gotMap")) ? rehearseV(api)
+    : "IRIS|Not yet, dear. Gus left you two things, and he told you where: your chair, and the tube. Go and get them." };
