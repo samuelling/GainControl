@@ -341,11 +341,11 @@ function office(S) {
 // the foreground: Nell's desk, seen over her shoulder. Her forearm lies on it, cuff toward us; Iris's staple gun lies on
 // it beside her hand. Every miss, the gun hops over and staples the cuff to the desk (four and you start again).
 const CUFF = [[76, 229], [78, 233], [80, 237], [82, 241]];   // where each staple lands, along the cuff's edge
-function stapleGun(x, y, tilt = 0) {   // an Arrow-style staple gun in profile, nose left: a flat-bottomed body, the
-  // squeeze lever hinged at the nose and rising toward the back (you press the back end down), the staple slot under the nose
-  return `<g transform="rotate(${tilt} ${x + 24} ${y})"><path class="k sR" d="M${x},${y} L${x + 50},${y} L${x + 50},${y - 7} L${x + 44},${y - 10} L${x},${y - 10} Z"/>
-    <path class="k sR" d="M${x + 6},${y - 10} L${x + 52},${y - 22} L${x + 54},${y - 18} L${x + 14},${y - 10}"/><circle class="k sR" cx="${x + 7}" cy="${y - 11}" r="2"/>
-    <path class="hl sR" d="M${x + 1},${y - 2} L${x + 9},${y - 2}"/></g>`;
+function stapleGun(x, y, tilt = 0) {   // Iris's stapler in profile, nose left: a thin base plate below, the big head on top,
+  // hinged at the back, its nose a little open over the base (that's where the staple comes out)
+  return `<g transform="rotate(${tilt} ${x + 24} ${y})"><path class="k sR" d="M${x - 2},${y} L${x + 52},${y} L${x + 52},${y - 3} L${x - 2},${y - 3} Z"/>
+    <path class="k sR" d="M${x},${y - 6} L${x + 4},${y - 15} L${x + 46},${y - 15} L${x + 52},${y - 9} L${x + 50},${y - 4} L${x + 8},${y - 6} Z"/>
+    <circle class="k sR" cx="${x + 47}" cy="${y - 5}" r="2"/><path class="hl sR" d="M${x + 6},${y - 12} L${x + 42},${y - 12}"/></g>`;
 }
 const staple = (x, y, cls = "sW") => `<path class="${cls}" d="M${x - 4},${y + 3} L${x - 4},${y} L${x + 4},${y} L${x + 4},${y + 3}"/>`;
 function sleeve(S) {
