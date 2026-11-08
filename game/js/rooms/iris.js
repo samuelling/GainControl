@@ -1,11 +1,11 @@
 // EMERITUS OFFICE 4F — the forgotten office at the end of the hall. Towers of journals from 1961 on, a window,
-// Iris Candor behind her desk, the 1968 photo of the ring magnet, the framed 1977 letter, the staple gun, the kettle and the sherry.
-import { seg, segC, chip, perspective, shell, sideDoor, hit, arcs } from "../gfx.js";
+// Iris Candor behind her desk, the 1968 photo of the ring magnet, the framed 1977 letter, the stapler, the kettle and the sherry.
+import { seg, segC, chip, perspective, shell, sideDoor, hit, arcs, stapler } from "../gfx.js";
 import { AUD } from "../figures.js";
 import { irisSeated } from "../cast/act3a.js";
 import { visitorChair, irisStapleGun } from "../cast/act4b.js";
 
-// Act IV, Friday morning: a second chair set opposite the desk (for the rehearsal), and the staple gun in Iris's hand
+// Act IV, Friday morning: a second chair set opposite the desk (for the rehearsal), and the stapler in Iris's hand
 const friday = (G) => G.act >= 4 && G.mode === "morning";   // Friday morning: the end of Act IV, now the start of Act V
 
 // cramped: a near back wall
@@ -73,7 +73,7 @@ function back(G) {
   return s;
 }
 
-// Iris at her desk (center), the manual and the staple gun on it
+// Iris at her desk (center), the manual and the stapler on it
 function desk(G) {
   const k = .74, y = floorY(k), x0 = P(214, 0, k)[0], x1 = P(426, 0, k)[0], top = y - 24, cx = (x0 + x1) / 2;
   let s = `<g data-hs="iris">${irisSeated(cx + 4, floorY(.68) - 8, .68)}${hit(cx - 18, top - 66, 44, 58)}</g>`;
@@ -86,12 +86,10 @@ function desk(G) {
     <path class="hl sB" d="M${x0 + 16},${top - 7} L${x0 + 40},${top - 7} M${x0 + 16},${top - 9.5} L${x0 + 40},${top - 9.5}"/>
     <path class="sA" d="M${x0 + 21},${top - 12} L${x0 + 21},${top - 16} M${x0 + 27},${top - 12} L${x0 + 28},${top - 15} M${x0 + 35},${top - 12} L${x0 + 34},${top - 17}"/>
     ${hit(x0 + 10, top - 20, 36, 18)}</g>`;
-  // the staple gun, loaded: on the desk, or (Friday morning) in Iris's hand
+  // the stapler, loaded: on the desk, or (Friday morning) in Iris's hand
   if (friday(G)) return s + `<g data-hs="stapler">${irisStapleGun(cx + 4, floorY(.68) - 8, .68)}${hit(cx - 2, top - 26, 32, 20)}</g>`;
   const sx = x1 - 40;
-  s += `<g data-hs="stapler"><path class="k sR" d="M${sx},${top - 4} L${sx + 16},${top - 4} L${sx + 16},${top - 7} L${sx + 13},${top - 7} L${sx + 12},${top - 10} L${sx + 2},${top - 10} L${sx},${top - 7} Z"/>
-    <path class="sR" d="M${sx + 3},${top - 10} L${sx + 9},${top - 14} L${sx + 12},${top - 10}"/><circle class="fR" cx="${sx + 14.5}" cy="${top - 5.5}" r=".8"/>
-    ${hit(sx - 6, top - 18, 28, 16)}</g>`;
+  s += `<g data-hs="stapler">${stapler(sx, top - 4, 18)}${hit(sx - 6, top - 18, 28, 16)}</g>`;
   return s;
 }
 

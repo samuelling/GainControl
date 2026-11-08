@@ -28,7 +28,7 @@ This file is the contract between art, minigames and story. The ids, flags and s
 7. **The chase.** Nell walks into the hallway and Preston is at the far end, flat-voiced, walking toward her. Rex steps out of the kitchen ("Preston, buddy, have you met my coffee?") and takes a face full of liquid nitrogen from the robed figure behind Preston. Rex survives: "Nine years of postdoc. I'm already frozen inside." The NRT's fog machines flood the corridor. Nell runs down the stairwell: **THE FOG** (`stairwell.js`). If caught: death, Revise & Resubmit restarts the stairwell. If she escapes: she comes out at the top of the building, at Iris's door (`escaped`).
 8. **Night (Gus):** card THURSDAY NIGHT · NIGHT SHIFT GUS · STEAM TUNNELS · 01:12. The coat check is now beside the bricked door: a rack of robes (including the one with the pin from Gus's Act I photo), a reel labeled PANEL SCORES 1983, and a hand-drawn tunnel map with **B3** circled. Take the robe, the reel and the map. A canister rattles down: catch it at the hatch. INDUCTION. FRIDAY. 00:00. B3. BRING THE QUARRY. Then Gus goes up to the lab, leaves the robe on Nell's chair, and sends the map up the pneumatic tube in the hall with a note: *"Tomorrow. Bring the rat. —G."* Then he goes to run his 2 AM scan.
 9. **Card:** FRIDAY · 06:40 · MRI CONTROL B1 (mode `morning`). Gus in the 3T. The scan is still running. Pinpoint pupils; NRT earbuds where the scanner headphones should be. Det. Small takes off his hat and says nothing. (bodies 5.) No joke.
-10. **Iris (4F, morning; now the opening of Act V).** Nell tells her the plan: walk in, save Preston, take the Archive. Iris reaches for the staple gun, then puts it down. **THE REHEARSAL** (`echo.js`, mode `rehearsal`): one drill (SECONDED on 2-back phrases): peer review, then the grant panel. Then the defense.
+10. **Iris (4F, morning; now the opening of Act V).** Nell tells her the plan: walk in, save Preston, take the Archive. Iris reaches for the stapler, then puts it down. **THE REHEARSAL** (`echo.js`, mode `rehearsal`): one drill (SECONDED on 2-back phrases): peer review, then the grant panel. Then the defense.
 
 ## Deaths (Act IV)
 - In the −80 room, close the walk-in door behind you: *"You have been archived at −80 °C. Your samples will be fine."*
@@ -59,7 +59,7 @@ This file is the contract between art, minigames and story. The ids, flags and s
 
 **mri** (edit, Act IV morning, `G.act === 4 && G.mode === "morning"`): no thermos, no police tape on the window; through the window, Gus lying on the scanner bed half in the bore, NRT earbuds lit; Det. Small standing in the control room, hat in hand (hotspot `small`); hotspot `gus` on the figure in the bore.
 
-**iris** (edit, Act IV `morning`): same office, a second chair set opposite Iris's desk (for the rehearsal), the staple gun in Iris's hand.
+**iris** (edit, Act IV `morning`): same office, a second chair set opposite Iris's desk (for the rehearsal), the stapler in Iris's hand.
 
 ### Cast and portraits
 - **Prof. Maximilian Impact:** silver hair swept back, tan, airline neck pillow (ROBE), lanyard of keynote badges, rolling carry-on. Standing figure (hall), frozen variant (freezer, frost glyphs). Portrait `impact` "PROF. IMPACT".

@@ -3,7 +3,7 @@
 // the screen reading NULL RESULTS, A DEFENSE. In the audience (chair backs): Preston in the front row, waiting for
 // his job talk in the same room, next slot (earbuds dark; they flare: #preston blank-only); Iris in the back row,
 // where she has sat since 1961. After G.flags.defenseDone, Preston's seat is empty.
-import { seg, segC, chip, perspective, shell, hit, arcs, onQuad } from "../gfx.js";
+import { seg, segC, chip, perspective, shell, hit, arcs, onQuad, stapler } from "../gfx.js";
 import { chairBack, ethelAtDesk, AUD } from "../figures.js";
 import { adlineSeated, smallSeated } from "../cast/act5a.js";
 
@@ -126,7 +126,7 @@ function lectern() {
 }
 
 /* ---- the audience: chair backs. Preston (front row) from behind: BRASS hair, SIGNAL suit, earbuds.
-        Iris (back row): INK bun, ROBE cardigan, the SIGNAL staple gun resting on her shoulder. ---- */
+        Iris (back row): INK bun, ROBE cardigan, the SIGNAL stapler resting on her shoulder. ---- */
 const atQ = (x, y, k, inner, drop = 0) => { const q = k * AUD; return `<g transform="translate(${fx(x - 160 * q)},${fx(y - 187 * q)}) scale(${q.toFixed(3)})"><g transform="translate(0,${drop})">${inner}</g></g>`; };
 function prestonBack(x, y, k) {
   return atQ(x, y, k, `
@@ -149,12 +149,10 @@ function irisBack(x, y, k) {
     <path class="hl sW" d="M146,42 C149,54 150,66 152,76 M160,36 L160,79 M174,42 C171,54 170,66 168,76"/>
     <circle class="k sW" cx="160" cy="28" r="8"/><path class="hl sW" d="M154,26 C157,23 163,23 166,26 M155,31 C158,33 162,33 165,31"/>`, 34);
 }
-// the staple gun, saving the seat beside her: resting on top of that chair's back
+// the stapler, saving the seat beside her: resting on top of that chair's back
 function stapleGun(x, y, k) {
-  const q = k * AUD, t = y - 68 * q, w = 34 * q, h = 6 * q;
-  return `<path class="k sR mech" d="M${fx(x - w / 2)},${fx(t)} L${fx(x + w / 2)},${fx(t)} L${fx(x + w / 2)},${fx(t - h)} L${fx(x - w / 2)},${fx(t - h)} Z"/>
-    <path class="k sR" d="M${fx(x - w / 2 + 2 * q)},${fx(t - h)} L${fx(x - w / 2 + 6 * q)},${fx(t - h - 9 * q)} L${fx(x + w / 2 - 3 * q)},${fx(t - h - 6 * q)} L${fx(x + w / 2 - 3 * q)},${fx(t - h)}"/>
-    <path class="hl sR" d="M${fx(x + w / 2 - 5 * q)},${fx(t - 1)} L${fx(x + w / 2 - 1 * q)},${fx(t - 1)} M${fx(x - w / 2 + 6 * q)},${fx(t - h - 3 * q)} L${fx(x + w / 2 - 6 * q)},${fx(t - h - 2 * q)}"/>`;
+  const q = k * AUD, t = y - 68 * q, w = 34 * q;
+  return `<g class="mech">${stapler(x - w / 2, t, w)}</g>`;
 }
 function row(ri, G) {
   const k = ROWS[ri], y = floorY(k), X = (Xf) => P(Xf, FY, k)[0];

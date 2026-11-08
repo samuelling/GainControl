@@ -1,6 +1,6 @@
 // ACT V — Friday: DECISION. The Defense (Laura Bow), then the Induction in B3 (Nell, Iris and Morris), the magnet, the endings.
 // Design: docs/ACT5.md.
-import { seg, segC, chip, chipW } from "../gfx.js";
+import { seg, segC, chip, chipW, stapler } from "../gfx.js";
 import { ITEMS } from "./act1.js";
 import * as A4 from "./act4.js";
 import { defense } from "../minigames/defense.js";
@@ -15,8 +15,8 @@ import { aftermath } from "./aftermath.js";
 Object.assign(ITEMS, {
   idcard: { name: "Iris's old member card", look: "NEUROSCIENTIFIC ROUND TABLE. MEMBER: I. CANDOR. BORN 1938. Someone has scratched out the 3 with a staple and written 1987. Iris's handwriting has always been very convincing.",
     g: (x, y) => `<rect class="sW" x="${x - 9}" y="${y - 6}" width="18" height="12"/><circle class="hl sR" cx="${x - 4}" cy="${y}" r="3"/><path class="hl sW" d="M${x},${y - 2} L${x + 6},${y - 2} M${x},${y + 2} L${x + 5},${y + 2}"/>` },
-  stapler: { name: "staple gun", look: "Iris's staple gun. Loaded since 1974.",
-    g: (x, y) => `<path class="sR" d="M${x - 9},${y - 4} L${x + 8},${y - 4} L${x + 8},${y} L${x - 9},${y} Z M${x - 5},${y} L${x - 7},${y + 9} M${x + 2},${y} L${x + 4},${y + 6}"/>` },
+  stapler: { name: "stapler", look: "Iris's stapler. Loaded since 1974.",
+    g: (x, y) => stapler(x - 11, y + 5, 22) },
 });
 ITEMS.robe.verbs = (api) => api.G.act === 5 && api.G.char === "nell" && !api.flag("robeOn") ? [["wear", "PUT ON"]] : [];
 ITEMS.robe.wear = (api) => { api.sfx("cloth"); api.flag("robeOn", true); api.take("robe"); api.score("robeOn", 1); api.refresh();
@@ -242,7 +242,7 @@ export const HS = {
     screen: { label: "screen", day: look("NULL RESULTS: A DEFENSE. N. NULL. And in small type at the bottom of the title slide: FOR GUS.") },
     preston: { label: "Preston Valu", day: { look: (api) => api.flag("defenseDone") ? "His seat is empty." : "Preston, front row, in a beautiful suit, waiting for his job talk at three. He smiles at you. It's almost the old smile.",
       talk: "PRESTON|Break a leg, Nell! I mean that. I think I mean that." } },
-    iris: { label: "Iris", day: { look: "Iris, back row, where she's sat since 1961. She's brought the manual and the staple gun.", talk: "IRIS|Don't look at me, dear. Look at them." } },
+    iris: { label: "Iris", day: { look: "Iris, back row, where she's sat since 1961. She's brought the manual and the stapler.", talk: "IRIS|Don't look at me, dear. Look at them." } },
     door: { label: "door", day: { look: "The hallway.", go: "Not now. You have a defense." } },
   },
   antechamber: {

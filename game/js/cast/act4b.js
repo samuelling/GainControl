@@ -1,9 +1,9 @@
 // ACT IV cast, part B: the figures for the Act IV states of the lab, the steam tunnels, MRI control and Iris's office.
 // Gus on the scanner bed (seen through the control-room window), Det. Sgt. Small with his hat in his hand,
 // Nell's desk chair with the robe draped over it, a robe hanging on a coat-check hook, Iris's visitor chair
-// and her hand on the staple gun. Sheet-coordinate drawings use the figures.js frame (feet at about (160,187));
+// and her hand on the stapler. Sheet-coordinate drawings use the figures.js frame (feet at about (160,187));
 // the window and coat-check pieces are drawn natively, in room pixels, because they are too small to scale.
-import { seg, arcs } from "../gfx.js";
+import { seg, arcs, stapler } from "../gfx.js";
 import { AUD, smallHead } from "../figures.js";
 
 const shoe = (x, y) => `<path class="k sW" d="M${x},${y} L${x + 18},${y} C${x + 22},${y} ${x + 22},${y + 5} ${x + 18},${y + 5} L${x},${y + 5} Z"/>`;
@@ -111,7 +111,7 @@ export function robeOnHook(x, y, L, lit = false, tag = true) {
 
 /* ======================================================================
  *  IRIS'S OFFICE (Act IV morning): the visitor chair set opposite her desk, seen from behind,
- *  and Iris's hand closed on the staple gun (an overlay for irisSeated(x, y, k), drawn after the desk).
+ *  and Iris's hand closed on the stapler (an overlay for irisSeated(x, y, k), drawn after the desk).
  * ====================================================================== */
 export function visitorChair(x, y, k) {
   return at(x, y, k, `
@@ -121,11 +121,10 @@ export function visitorChair(x, y, k) {
     <path class="k sW" d="M126,96 C140,92 180,92 194,96 L194,108 C180,105 140,105 126,108 Z"/><path class="k sW" d="M131,120 L189,120 L189,126 L131,126 Z"/>
     <path class="hl sW" d="M150,106 L150,120 M170,106 L170,120"/>`);
 }
-// the staple gun in Iris's right hand (our right), lifted off the blotter and held across her chest
+// the stapler in Iris's right hand (our right), lifted off the blotter and held across her chest
 export function irisStapleGun(x, y, k) {
   return at(x, y, k, `
     <path class="sV" d="M194,126 L189,114"/>
-    <path class="k sR" d="M154,112 L192,112 L192,105 L187,105 L185,98 L162,98 L156,105 Z"/>
-    <path class="sR" d="M164,98 L177,89 L185,98"/><path class="hl sR" d="M158,109 L187,109"/><circle class="fR" cx="155" cy="110" r="1.5"/>
-    <circle class="k sK" cx="188" cy="111" r="4.6"/>`, { drop: 34 });
+    ${stapler(154, 112, 38)}
+    <circle class="k sK" cx="186" cy="104" r="4.6"/>`, { drop: 34 });
 }

@@ -47,7 +47,7 @@ That's the first time anyone sees the Table's control over the faculty, and it s
 When Nell tells Iris the plan, Iris recognizes the nodding at once.
 > IRIS: "The Echo. We did it in 1962 with sherry. You answer the phrase that comes back around after one other. Miss two and they look at you. Miss three and you're quarry."
 
-**Practice with stakes but no death:** Iris runs the Echo herself, in peer-review boilerplate this time ("THE AUTHORS SHOULD CONSIDER…", "THE SAMPLE SIZE IS SMALL…", "THE AUTHORS SHOULD CONSIDER…"). Nell answers **"SECONDED."** at the right moments. Each miss or false alarm earns a click of Iris's staple gun near Nell's sleeve. Three clicks and Iris starts over: *"Again. In 1974 I did this hungover."*
+**Practice with stakes but no death:** Iris runs the Echo herself, in peer-review boilerplate this time ("THE AUTHORS SHOULD CONSIDER…", "THE SAMPLE SIZE IS SMALL…", "THE AUTHORS SHOULD CONSIDER…"). Nell answers **"SECONDED."** at the right moments. Each miss or false alarm earns a click of Iris's stapler near Nell's sleeve. Three clicks and Iris starts over: *"Again. In 1974 I did this hungover."*
 
 **Iris also warns about the hard part:**
 > IRIS: "At an induction, the Board watches *who* speaks, too. If the same seat speaks as two turns ago, you knock the table. Phrase and seat, both at once. And if the Corresponding Author suspects someone, he 'advances the Echo.' Three back. Nobody likes that."

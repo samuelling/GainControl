@@ -50,6 +50,15 @@ export const chipW = (txt, h) => segW(txt, h) + h * .9;
 export const arcs = (x, y, dir, cls, n = 3, s = 1) => { let o = ""; for (let i = 0; i < n; i++) { const r = (5 + i * 4) * s, xx = x + dir * i * 4 * s;
   o += `<path class="${cls}" d="M${xx},${y - r} C${xx + dir * r * .6},${y - r * .4} ${xx + dir * r * .6},${y + r * .4} ${xx},${y + r}"/>`; } return o; };
 export const star4 = (x, y, r, cls) => `<path class="${cls}" d="M${x},${y - r}C${x + 1},${y - 1} ${x + 1},${y - 1} ${x + r},${y}C${x + 1},${y + 1} ${x + 1},${y + 1} ${x},${y + r}C${x - 1},${y + 1} ${x - 1},${y + 1} ${x - r},${y}C${x - 1},${y - 1} ${x - 1},${y - 1} ${x},${y - r}Z"/>`;
+// Iris's stapler in profile, the one drawing used everywhere: a thin base plate below, the big head on top, hinged at
+// the back, the nose a little open over the base. (x, y) is the bottom of the base at the nose; w its length; dir 1 puts
+// the nose on the left, -1 on the right. Coordinates are scaled, not the strokes, so lines keep their weight.
+export function stapler(x, y, w, { dir = 1, cls = "sR" } = {}) {
+  const s = w / 54, P = (px, py) => `${(x + dir * px * s).toFixed(1)},${(y + py * s).toFixed(1)}`;
+  return `<path class="k ${cls}" d="M${P(-2, 0)} L${P(52, 0)} L${P(52, -3)} L${P(-2, -3)} Z"/>
+    <path class="k ${cls}" d="M${P(0, -6)} L${P(4, -15)} L${P(46, -15)} L${P(52, -9)} L${P(50, -4)} L${P(8, -6)} Z"/>
+    <circle class="k ${cls}" cx="${(x + dir * 47 * s).toFixed(1)}" cy="${(y - 5 * s).toFixed(1)}" r="${Math.max(1, 2 * s).toFixed(1)}"/>` + (w >= 24 ? `<path class="hl ${cls}" d="M${P(6, -12)} L${P(42, -12)}"/>` : "");
+}
 export const hit = (x, y, w, h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="transparent"/>`;
 
 // glyphs for the chooser

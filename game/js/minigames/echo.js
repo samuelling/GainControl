@@ -18,7 +18,7 @@
 // trials: answering one is a false alarm on that stream; staying silent is a correct rejection. Interludes aren't
 // scored and skip with Enter, Space or a click. opts.morris (opt-in): Morris's ear twitches in a vent above the
 // table on some matches, and he may sneeze in the third reading.
-import { seg, segC, segW, chip, chipW, arcs, star4, perspective, shell } from "../gfx.js";
+import { seg, segC, segW, chip, chipW, arcs, star4, perspective, shell, stapler } from "../gfx.js";
 import { AUD, morrisPeek } from "../figures.js";
 import { irisSeated } from "../cast/act3a.js";
 import { irisFigure } from "../cast/act5b.js";
@@ -47,7 +47,7 @@ const R = {
     L("IRIS", "The Echo. Your lot call it a 2-back: Kirchner's memory test, 1958. We stole it in 1962 and added sherry."),
     L("IRIS", "Miss two and they look at you. Miss three and you're quarry."),
     L("IRIS", "I'll be the Board. When the same words come back from two turns ago, you say SECONDED. Press S. Otherwise you sit there and look tenured."),
-    L("NELL", "And the staple gun?"),
+    L("NELL", "And the stapler?"),
     L("IRIS", "Motivation."),
   ],
   goA: L("IRIS", "Peer review. From the top."),
@@ -87,7 +87,7 @@ const R = {
     L("IRIS", "1974. I walked out halfway through the third reading. Nobody stopped me. They were all still counting.")],
   // catch events: things that make a noise and are not a motion
   evt: { kettle: "(THE KETTLE WHISTLES.)", phone: "(THE TELEPHONE RINGS.)", sneeze: "(SOMETHING IN THE FILING CABINET SNEEZES.)",
-    canister: "(A CANISTER RATTLES IN THE WALL.)", misfire: "(THE STAPLE GUN GOES OFF BY ITSELF.)",
+    canister: "(A CANISTER RATTLES IN THE WALL.)", misfire: "(THE STAPLER GOES OFF BY ITSELF.)",
     gavel: "(THE GAVEL. TOK. TOK.)", flicker: "(THE LATE MEMBER'S LAMP FLICKERS.)", sneezeI: "(A SNEEZE, SOMEWHERE IN THE CEILING.)" },
   catchFA: { kettle: L("IRIS", "That was the kettle, dear. The kettle is not on the Board."), phone: L("IRIS", "That's the telephone. Nobody seconds the telephone."),
     sneeze: L("IRIS", "That was a rat. In my filing cabinet. We'll discuss it later. Don't second it."), canister: L("IRIS", "The wall doesn't get a vote."),
@@ -254,7 +254,7 @@ const OP = perspective(320, 92, .55, VH);
 const oFloor = (k) => OP.P(0, VH, k)[1];
 const CHAIRS = [["WINDOW", 120, .62], ["KETTLE", 468, .64], ["DESK", 236, .8], ["GUEST", 504, .86]]
   .map(([name, X, k]) => ({ name, X, k, x: OP.P(X, 0, k)[0], y: oFloor(k), q: k * AUD }));
-// Iris on her feet: the walking figure (Act V's), without the staple gun (it lives on the desk in this scene)
+// Iris on her feet: the walking figure (Act V's), without the stapler (it lives on the desk in this scene)
 const IRIS_FIG = irisFigure().replace(/<path class="k sR"[^>]*\/>|<path class="sR"[^>]*\/>|<circle class="fR"[^>]*\/>/g, "");
 function irisStanding({ X, k, pose, flip }) {
   const x = OP.P(X, 0, k)[0], y = oFloor(k), q = k * AUD;
@@ -338,14 +338,11 @@ function office(S) {
   if (!walked) s += irisStanding(S.walk);
   return s + sleeve(S);
 }
-// the foreground: Nell's desk, seen over her shoulder. Her forearm lies on it, cuff toward us; Iris's staple gun lies on
+// the foreground: Nell's desk, seen over her shoulder. Her forearm lies on it, cuff toward us; Iris's stapler lies on
 // it beside her hand. Every miss, the gun hops over and staples the cuff to the desk (four and you start again).
 const CUFF = [[76, 229], [78, 233], [80, 237], [82, 241]];   // where each staple lands, along the cuff's edge
-function stapleGun(x, y, tilt = 0) {   // Iris's stapler in profile, nose left: a thin base plate below, the big head on top,
-  // hinged at the back, its nose a little open over the base (that's where the staple comes out)
-  return `<g transform="rotate(${tilt} ${x + 24} ${y})"><path class="k sR" d="M${x - 2},${y} L${x + 52},${y} L${x + 52},${y - 3} L${x - 2},${y - 3} Z"/>
-    <path class="k sR" d="M${x},${y - 6} L${x + 4},${y - 15} L${x + 46},${y - 15} L${x + 52},${y - 9} L${x + 50},${y - 4} L${x + 8},${y - 6} Z"/>
-    <circle class="k sR" cx="${x + 47}" cy="${y - 5}" r="2"/><path class="hl sR" d="M${x + 6},${y - 12} L${x + 42},${y - 12}"/></g>`;
+function stapleGun(x, y, tilt = 0) {   // Iris's stapler (gfx.js stapler: thin base, big head on top), tipped by tilt
+  return `<g transform="rotate(${tilt} ${x + 24} ${y})">${stapler(x, y, 54)}</g>`;
 }
 const staple = (x, y, cls = "sW") => `<path class="${cls}" d="M${x - 4},${y + 3} L${x - 4},${y} L${x + 4},${y} L${x + 4},${y + 3}"/>`;
 function sleeve(S) {
@@ -361,7 +358,7 @@ function sleeve(S) {
   // the meter, top left like the TURN readout: tiny label above, four staples, what four means
   s += seg("STAPLES IN YOUR SLEEVE", 14, 8, 4.2, "sM", .6) + seg("4 AND YOU START AGAIN", 14, 30, 3.6, "sD", .6);
   for (let i = 0; i < 4; i++) s += `<path class="${i < S.staples ? "sR" : "hl sD"}" d="M${16 + i * 13},${26} L${16 + i * 13},${17} L${25 + i * 13},${17} L${25 + i * 13},${26}"/>`;
-  // the staple gun: at rest beside her hand (pose 0); on a miss it hops onto the cuff and fires (pose 1);
+  // the stapler: at rest beside her hand (pose 0); on a miss it hops onto the cuff and fires (pose 1);
   // on a misfire it jumps where it lies and a staple flies off into the room
   const mf = S.fx && S.fx.kind === "misfire" ? S.fx.pose : 0;
   if (S.click) {

@@ -86,7 +86,7 @@ const frog = (line) => ({ n: 6, ms: 300, hold: 2400, sfx: (i) => i === 2 && wind
     if (mist) s += arcs(316, 122, -1, "sB", 2, .8) + arcs(324, 122, 1, "sB", 2, .8);
     return s + segC(line, 320, 40, 8, "sW", 1.1);
   } });
-// Iris sets the staple gun down, for good
+// Iris sets the stapler down, for good
 const retire = (line, chipTxt) => ({ n: 4, ms: 300, hold: 2600, sfx: (i) => i === 3 && window.SFX && window.SFX.play("clunk"),
   draw: (i) => {
     const y = [150, 190, 226, 246][i], rot = [-30, -16, -6, 0][i];

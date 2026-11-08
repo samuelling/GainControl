@@ -205,7 +205,7 @@ export const CONVOS = {
   irisMeet: { L: "nell", R: "iris", lines: [
     ["R", "You took the stairs. Good. The elevator listens."],
     ["L", "You're the woman from journal club. Back row. 'And who reviewed it?'"],
-    ["R", "Since 1961. Nobody ever answers. Sit down. Not that chair, that's for the staple gun."],
+    ["R", "Since 1961. Nobody ever answers. Sit down. Not that chair, that's for the stapler."],
     ["R", "Iris Candor. Professor Emerita. I helped build the magnet under this building, and then I helped some people leave the table that was sitting around it."],
   ], after: (api) => { api.flag("irisNamed", true); } },
   irisTruth: { L: "nell", R: "irisNamed", score: ["irisTruth", 3], lines: [
@@ -490,7 +490,7 @@ export const HS = {
   },
 
   iris: {
-    iris: { label: (api) => api.flag("irisNamed") ? "Prof. Iris Candor" : "the old woman", day: { look: (api) => api.flag("irisNamed") ? "Iris Candor, 88. Her staple gun is never more than a foot from her hand." : "The old woman from journal club. Back row, since 1961.",
+    iris: { label: (api) => api.flag("irisNamed") ? "Prof. Iris Candor" : "the old woman", day: { look: (api) => api.flag("irisNamed") ? "Iris Candor, 88. Her stapler is never more than a foot from her hand." : "The old woman from journal club. Back row, since 1961.",
         talk: async (api) => { if (api.flag("irisDone")) return "IRIS|Go home, dear. Lock your door.";
           if (!api.flag("irisNamed")) await api.convo("irisMeet");   // straight on into the truth: no second TALK needed
           return "c:irisTruth"; } } },
@@ -499,7 +499,7 @@ export const HS = {
     photo: { label: "photograph", day: { look: "1968. A young woman in safety goggles next to a ring magnet as big as a room, grinning like she's just won an argument.", score: { look: ["photo68", 1] } } },
     letter: { label: "framed letter", day: { look: (api) => "A framed letter, 1977, from a journal's correspondence section. About secret societies in science, in very careful language. Signed: I. Candor. Nobody answered it."
       + (api.flag("irisDone") ? "\n\nTucked behind the frame, yellowed: a cream-colored invitation. Reply with your date of birth." : "") } },
-    stapler: { label: "staple gun", day: { look: "A staple gun. Loaded.", use: "IRIS|Don't." } },
+    stapler: { label: "stapler", day: { look: "A stapler. Loaded.", use: "IRIS|Don't." } },
     ap1977: { label: "one issue, sticking out", day: { look: (api) => realRecord(api, "ap1977") }, morris: { look: (api) => realRecord(api, "ap1977") } },
     rocker: { label: "something small on the sill", day: { look: (api) => realRecord(api, "rocker") }, morris: { look: (api) => realRecord(api, "rocker") } },
     kettle: { label: "kettle and sherry", day: { look: "An electric kettle, and a sherry bottle labeled 1962." } },

@@ -1,6 +1,7 @@
 // ACT V cast, part B: Iris Candor walking (playable in Part 2) and the hooded doorkeeper of B3.
 // Same sheet coordinates as figures.js: feet at about (160,187), centered on x 160, facing right.
 import { AUD } from "../figures.js";
+import { stapler } from "../gfx.js";
 
 // a small low-heeled shoe (Iris), toe to the right
 const pump = (x, y) => `<path class="k sW" d="M${x},${y} L${x + 13},${y} C${x + 17},${y} ${x + 17},${y + 4.5} ${x + 13},${y + 4.5} L${x},${y + 4.5} Z"/>`;
@@ -20,7 +21,7 @@ const irisHead = `<g class="hd">
   <path class="sK" d="M153,75 C157,77 163,77 167,74"/></g>`;
 
 /* ---- Prof. Iris Candor, 88, walking: a slight stoop (shoulders rounded, head bowed forward), cardigan ROBE over a
- *  DIM skirt, short steps, and the SIGNAL staple gun held out in her right hand like a sidearm. ---- */
+ *  DIM skirt, short steps, and the SIGNAL stapler held out in her right hand like a sidearm. ---- */
 export function irisFigure() {
   // the upper body sits lower and leans forward: shoulders ~12 units below Nell's, head pitched 12 degrees
   const up = (inner) => `<g transform="translate(5,13)">${inner}</g>`;
@@ -30,11 +31,10 @@ export function irisFigure() {
     <path class="hl sV" d="M131,96 C136,90 144,88 150,89 M137,112 C140,120 140,130 137,138 M184,108 C181,118 182,128 185,136"/>
     ${[150, 155, 160, 165, 170].map((x, i) => `<circle class="sW" cx="${x}" cy="${96 - Math.abs(i - 2) * 1.2}" r="1.5"/>`).join("")}
     <path class="hl sV" d="M129,138 L159,138 M161,138 L191,138"/>`;
-  // the right arm, held out with the staple gun (the same in every pose)
+  // the right arm, held out with the stapler (the same in every pose)
   const gunArm = `
     <path class="sV" d="M187,98 L192,120 L201,124"/>
-    <path class="k sR" d="M199,129 L225,129 L225,123 L222,123 L221,120 L203,120 L199,123 Z"/>
-    <path class="sR" d="M202,120 L212,113 L218,120"/><circle class="fR" cx="222.5" cy="126" r=".9"/><circle class="k sK" cx="206" cy="122" r="3"/>`;
+    ${stapler(226, 129, 26, { dir: -1 })}<circle class="k sK" cx="204" cy="122" r="3"/>`;
   const skirt = `<path class="k sM" d="M135,150 L132,166 L189,166 L186,150 Z"/><path class="hl sM" d="M150,152 L148,165 M172,152 L174,165"/>`;
   const stand = `<g class="ap0">
     <path class="sK" d="M152,166 L152,182 M170,166 L170,182"/>${pump(148, 182)}${pump(166, 182)}

@@ -69,11 +69,11 @@ Ethel's office, the reels transcribed. Membership rolls in one column, fifty yea
 ## Build spec
 
 ### Engine
-- Iris becomes a playable character in Act V: `FIGURE.iris` (walking figure, slow, with the staple gun) and `CHIP.iris = ["IRIS", "fV"]`.
+- Iris becomes a playable character in Act V: `FIGURE.iris` (walking figure, slow, with the stapler) and `CHIP.iris = ["IRIS", "fV"]`.
 - In Act V, `G.mode` is `"day"` for Part 1 and `"night"` for Part 2.
 
 ### Rooms
-**defense** (new) "SEMINAR 101 · DEFENSE". It reuses the look of Room 101 (one-point, rows of chair backs): a committee table front-left facing the room, with Adline, Ethel, Small and an empty chair with a QUORUM placard; Nell's lectern front-right; a projector screen on the back wall reading NULL RESULTS, A DEFENSE; Preston in the front row (earbuds, `#preston` blank parts); Iris in the back row (head and staple gun only). Hotspots: `committee`, `adline`, `ethel`, `small`, `quorumchair`, `lectern` (USE: BEGIN THE DEFENSE), `screen`, `preston`, `iris`, `door`. Entry `start`. After `G.flags.defenseDone`, Preston's seat is empty.
+**defense** (new) "SEMINAR 101 · DEFENSE". It reuses the look of Room 101 (one-point, rows of chair backs): a committee table front-left facing the room, with Adline, Ethel, Small and an empty chair with a QUORUM placard; Nell's lectern front-right; a projector screen on the back wall reading NULL RESULTS, A DEFENSE; Preston in the front row (earbuds, `#preston` blank parts); Iris in the back row (head and stapler only). Hotspots: `committee`, `adline`, `ethel`, `small`, `quorumchair`, `lectern` (USE: BEGIN THE DEFENSE), `screen`, `preston`, `iris`, `door`. Entry `start`. After `G.flags.defenseDone`, Preston's seat is empty.
 
 **antechamber** (new) "B3 · ANTECHAMBER". Night. A low vaulted room (one-point), a rack of robes (left), a wall of member portraits with plaques AGE 39 (back), the inner door with the insignia (back right), a hooded doorkeeper beside it, a lectern with a guest book, and the tunnel doorway (left, the way in). Hotspots: `rack`, `portraits`, `book`, `doorkeeper`, `inner` (the inner door; go to the chamber), `tunnel` (go back). Entries `fromTunnels`, `fromChamber`.
 
@@ -86,7 +86,7 @@ Ethel's office, the reels transcribed. Membership rolls in one column, fifty yea
 **tubehub** (new) "B3 · TUBE HUB". A vaulted ceiling of brass tubes converging on a central dial (a big brass destination dial), canisters in a rack, an arch through to the Archive shelves of reels, the LTM drive rack (lights blinking) beside the arch. Hotspots: `dial`, `canisters`, `archive`, `ltm`, `pipe` (the pipe Morris came from), `arch`, `riser` (a vertical pipe going up, toward the 3T; labelled UP: 3T). Entries `fromPipes`, `fromRiser`.
 
 ### Cast and portraits
-- **Iris walking figure** (the playable one): 88, slow, cardigan ROBE, hair INK bun, glasses BRASS, staple gun SIGNAL in hand. Same frame and poses as the other walkers (`ap0/ap1/ap2`).
+- **Iris walking figure** (the playable one): 88, slow, cardigan ROBE, hair INK bun, glasses BRASS, stapler SIGNAL in hand. Same frame and poses as the other walkers (`ap0/ap1/ap2`).
 - **Quorum unhooded standing** at the head of the table, gold medals in BRASS, and his robe.
 - **Hooded member seated** (for the twelve seats; simple) and **the doorkeeper** (standing hood).
 - **Preston hooded** with lit earbuds.

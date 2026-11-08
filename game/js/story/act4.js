@@ -158,7 +158,7 @@ export const CONVOS = {
     ["L", "I'm going to the induction. Tonight. In his robe. I'm going to get Preston out of those earbuds, and I'm going to take the Archive."],
     ["R", "They'll make you do the Echo. In front of the whole Board. They'll watch your seat and your mouth at the same time."],
     ["L", "Then teach me."],
-    ["N", "Iris reaches into her desk drawer for the staple gun. She looks at it for a long time. Then she puts it on the desk, between them."],
+    ["N", "Iris reaches into her desk drawer for the stapler. She looks at it for a long time. Then she puts it on the desk, between them."],
     ["R", "Sit in that chair. We'll start with the phrases. Every time you miss, you'll hear this."],
     ["N", "Click."],
   ] },
@@ -345,10 +345,10 @@ export const HS = {
   },
 
   iris: {
-    iris: { label: "Prof. Iris Candor", day: { look: "Iris.", talk: "c:irisThursday" }, morning: { look: "Iris, at her desk, the staple gun in her hand. She's been waiting for you.", talk: (api) => api.flag("rehearsed") ? "IRIS|Go home. Sleep. Come back at two." : (api.flag("gotRobe") && api.flag("gotMap")) ? rehearse(api) : "IRIS|Not yet, dear. Gus left you two things, and he told you where: your chair, and the tube. Go and get them." } },
+    iris: { label: "Prof. Iris Candor", day: { look: "Iris.", talk: "c:irisThursday" }, morning: { look: "Iris, at her desk, the stapler in her hand. She's been waiting for you.", talk: (api) => api.flag("rehearsed") ? "IRIS|Go home. Sleep. Come back at two." : (api.flag("gotRobe") && api.flag("gotMap")) ? rehearse(api) : "IRIS|Not yet, dear. Gus left you two things, and he told you where: your chair, and the tube. Go and get them." } },
     stacks: { label: "journals", day: look("1961 to now."), morning: look("1961 to now.") }, manual: { label: "magnet manual", day: look("SUPERCONDUCTING RING, 1968."), morning: look("Iris has put the manual by the door. 'I'll need that tonight,' she says, without looking up.") },
     photo: { label: "photograph", day: look("1968."), morning: look("1968.") }, letter: { label: "framed letter", day: look("1977."), morning: look("1977.") },
-    stapler: { label: "staple gun", day: look("Loaded."), morning: look("In her hand.") }, kettle: { label: "kettle", day: look("Sherry, 1962."), morning: look("She's made tea. You don't drink it. She doesn't notice.") },
+    stapler: { label: "stapler", day: look("Loaded."), morning: look("In her hand.") }, kettle: { label: "kettle", day: look("Sherry, 1962."), morning: look("She's made tea. You don't drink it. She doesn't notice.") },
     chair: { label: "chair", morning: look("The chair opposite her desk. For you.") },
     door: { label: "door to the stairs", day: { look: "The stairwell.", go: "hall@fromStairs" }, morning: { look: "The stairwell.", go: "hall@fromStairs" } },
   },
