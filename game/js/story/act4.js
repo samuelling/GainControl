@@ -183,8 +183,9 @@ async function codyFound(api) {
 
 async function stairs(api) {
   const f = api.G.flags, o = [["library", "2F  LIBRARY"], ["impactoffice", "3F  PROF. IMPACT"], ["freezer", "B1  −80 ROOM"], ["maze", "B1  ANIMAL FACILITY"]];
-  if (f.escaped || api.G.mode === "morning") o.push(["iris", "4F  EMERITUS OFFICE"]);
-  if (api.G.mode === "morning") o.unshift(["mri", "B1  MRI SUITE"]);
+  if (f.escaped) o.push(["iris", "4F  EMERITUS OFFICE"]);
+  // Friday morning (Act V now) only has the MRI suite and Iris: the other floors have no morning exits, so don't offer them
+  if (api.G.mode === "morning") o.splice(0, o.length, ["mri", "B1  MRI SUITE"], ["iris", "4F  EMERITUS OFFICE"]);
   const d = await api.chooseFrom("THE STAIRWELL. WHERE TO?", o);
   if (!d) return null;
   if (d === "impactoffice") return impactDoor(api);
