@@ -456,8 +456,27 @@ function fxStep(fx, s, i, ch, root, t) {
   }
 }
 const bar16 = (s) => Math.floor(s / 16);
+// THE END THEME (the credits): Act I's sparse opening (the pluck alone, dry, 8 bars), a bar of riser (a snare roll that
+// thickens, kicks on the beat, a noise sweep, the tempo pushing up), then the finale at full climax.
+const END_INTRO = 128;
+function endThemeStep(s, t) {
+  const E = P.end, k = s - buildStart;
+  if (E.phase === "intro" && k >= END_INTRO - 16 && k < END_INTRO) {
+    const j = k - (END_INTRO - 16), v = .03 + .1 * j / 16;
+    if (j === 0) P.target = 128;                                            // accelerando through the roll
+    if (j < 8 ? j % 2 === 0 : true) noiseHit(t, 1500 + j * 90, 1.4, v, .07, B.drum);
+    if (j % 4 === 0) kick(t, .25 + .2 * j / 16);
+    if (j % 2 === 1) noiseHit(t, 600 + j * 450, 3, .012 + .03 * j / 16, .12, B.drum, "bandpass");   // the sweep, rising
+  }
+  if (E.phase === "intro" && k === END_INTRO) {
+    E.phase = "finale";
+    music.scene({ act: 5, mode: "night", room: "chamber", flags: { climax: true }, _end: true });
+    P.tempo = P.target; kick(t, .7); noiseHit(t, 4000, .6, .1, .6, B.drum, "highpass");   // the downbeat, with a crash
+  }
+}
 function scheduleStep(s, t) {
   const i = s % 16;
+  if (P.end) endThemeStep(s, t);
   if (i === 0 && pend) { if (!(S && S.build && pend.build)) buildStart = s; S = pend; pend = null; P.arr = S.arr; }     // a new band comes in on the barline (a build carries on across title → day 1)
   if (P.arr === "finale") return finaleStep(s, t);
   const bar = bar16(s) % 8, slot = Math.floor(s / 128) % FORM.length, sec = FORM[slot], d = P.dread, spb = 60 / P.tempo / 4;
@@ -512,6 +531,11 @@ function tick() {
   const spb = 60 / P.tempo / 4;
   if (nextT < C.currentTime + .01) { const miss = Math.ceil((C.currentTime + .02 - nextT) / spb); step += miss; nextT += miss * spb; }
   while (nextT < C.currentTime + .25) {
+    if (P.end && P.end.phase === "wait" && step % 16 === 0) {
+      step = Math.ceil(step / (128 * FORM.length)) * 128 * FORM.length;      // the top of the form: section A
+      S = band({ act: 1, mode: "day", room: "", arr: "day" }); pend = null; P.arr = "day"; buildStart = step; P.end.phase = "intro";
+      P.climax = false; P.dread = 0; P.throb = 0; P.target = P.tempo = S.tempo; mix();
+    }
     scheduleStep(step, nextT); nextT += 60 / P.tempo / 4; step++;
     P.tempo += (P.target - P.tempo) * (P.arr === "finale" ? .08 : .035);   // glide, never lurch (about two bars)
   }
@@ -558,7 +582,10 @@ export const music = {
   renderOffline, trace,
   start() { if (!init() || P.on) return; P.on = true; if (pend) { S = pend; pend = null; P.arr = S.arr; } buildStart = step; P.tempo = P.target; nextT = C.currentTime + .1; timer = setInterval(tick, 25); mix(); },
   // where we are → band, dread, tempo, throb. The same scene twice changes nothing; a new band waits for the barline.
-  scene({ act = 1, mode = "day", room = "", flags = {}, title = false } = {}) {
+  // the credits: the sparse opening, then propelled into the finale's climax (see endThemeStep)
+  endTheme() { P.end = { phase: "wait" }; if (!P.on) { P.dread = 0; S = band({ act: 1, mode: "day", room: "", arr: "day" }); P.arr = "day"; P.target = P.tempo = S.tempo; } },
+  scene({ act = 1, mode = "day", room = "", flags = {}, title = false, _end = false } = {}) {
+    if (!_end) P.end = null;
     let d = { 1: 0, 2: .12, 3: .3, 4: .48, 5: .62 }[act] || 0, arr = mode === "day" ? "day" : mode === "morning" ? "morning" : "night";
     if (title) { d = .32; arr = "day"; }
     if (mode === "night") d += .18;
