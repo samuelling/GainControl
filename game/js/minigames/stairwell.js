@@ -486,7 +486,7 @@ export function stairwell(el, opts = {}) {
     }
 
     /* ---------------- quips ---------------- */
-    let quipT;
+    let quipT, mazeT;
     function quip(who, text, col) {
       quipEl.innerHTML = `<span class="qwho" style="background:var(--${col})">${who}</span> <span style="color:var(--${col})">${text}</span>`;
       if (window.SFX) for (let i = 0; i < 4; i++) setTimeout(() => window.SFX && !S.closed && window.SFX.voice(who.replace(" (ABOVE)", "").replace("THE ROBE", "HOOD"), true), i * 85);
@@ -545,6 +545,14 @@ export function stairwell(el, opts = {}) {
         teachT = setTimeout(() => { if (S.teach === 1 && S.phase === "choose") quip("NELL", "THE OTHER ONE GOES BACK UP. TO HIM. ← → OR CLICK IT.", "G"); }, 2600); }
       else if (S.teach === 2) quip("MORRIS", "NO ARROW NOW, PAL. EVERY TIME YOU'RE RIGHT, THEY PUMP IN MORE FOG.", "K");
       if (ST.c < 0.02 && !S.surge) once("cantsee", () => quip("MORRIS", "I CAN'T SEE ANYTHING, PAL.", "K"));
+      // below grade the stairwells stop agreeing with each other: Nell notices, once per level (the zone's second landing)
+      const MAZE = [null, null,
+        [["NELL", "WHY DOES THIS FLIGHT GO SIDEWAYS? WHO BUILT THIS? WHAT THE F—", "G"], ["MORRIS", "LANGUAGE. THERE'S A RAT PRESENT.", "K"]],
+        [["NELL", "THREE STAIRWELLS STITCHED TOGETHER. NOTHING DOWN HERE LINES UP.", "G"], ["MORRIS", "EVERY RENOVATION SINCE 1961, PAL. NOBODY TORE THE OLD ONES OUT.", "K"]],
+        [["NELL", "I'VE BEEN ON THIS LANDING. HAVE I BEEN ON THIS LANDING?", "G"], ["MORRIS", "IT'S A STAIRCASE PROCEDURE, PAL. IT'S SUPPOSED TO GO BACK AND FORTH.", "K"]]][S.zone];
+      if (MAZE && S.zoneLandings === 2 && !S.surge) once("maze" + S.zone, () => {
+        quip(...MAZE[0]); clearTimeout(mazeT); mazeT = setTimeout(() => { if (!S.closed) quip(...MAZE[1]); }, 2600);
+      });
     }
     async function choose(side) {
       if (S.phase !== "choose") return;
@@ -1089,7 +1097,7 @@ export function stairwell(el, opts = {}) {
 
     function close(escaped) {
       if (S.closed) return; S.closed = true;
-      clearInterval(iv1); clearInterval(iv2); clearTimeout(quipT); clearTimeout(stepT); clearTimeout(teachT);
+      clearInterval(iv1); clearInterval(iv2); clearTimeout(quipT); clearTimeout(stepT); clearTimeout(teachT); clearTimeout(mazeT);
       if (S.evCancel) S.evCancel();
       svg.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey); introEl.removeEventListener("click", begin);
       if (window.STAIR && window.STAIR.S === S) delete window.STAIR;
