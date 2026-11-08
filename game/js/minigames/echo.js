@@ -336,31 +336,41 @@ function office(S) {
   if (!walked) s += irisStanding(S.walk);
   return s + sleeve(S);
 }
-// the foreground: Nell's arm on the desk, four staples' worth of sleeve, and Iris's staple gun
+// the foreground: Nell's desk, seen over her shoulder. Her forearm lies on it, cuff toward us; Iris's staple gun lies on
+// it beside her hand. Every miss, the gun hops over and staples the cuff to the desk (four and you start again).
+const CUFF = [[76, 229], [78, 233], [80, 237], [82, 241]];   // where each staple lands, along the cuff's edge
+function stapleGun(x, y, tilt = 0) {   // an Arrow-style staple gun in profile, nose left: body, squeeze lever, hinge, slot
+  return `<g transform="rotate(${tilt} ${x + 24} ${y})"><path class="k sR" d="M${x},${y} L${x + 50},${y} L${x + 50},${y - 9} L${x + 6},${y - 9} L${x},${y - 5} Z"/>
+    <path class="k sR" d="M${x + 46},${y - 9} L${x + 10},${y - 17} L${x + 8},${y - 13} L${x + 40},${y - 9}"/><circle class="k sR" cx="${x + 46}" cy="${y - 9}" r="2"/>
+    <path class="hl sR" d="M${x + 2},${y - 2} L${x + 8},${y - 2}"/></g>`;
+}
+const staple = (x, y, cls = "sW") => `<path class="${cls}" d="M${x - 4},${y + 3} L${x - 4},${y} L${x + 4},${y} L${x + 4},${y + 3}"/>`;
 function sleeve(S) {
-  let s = `<path class="k sM mech" d="M-2,214 L190,214 L190,252 L-2,252 Z"/><path class="hl sM" d="M-2,219 L190,219"/>
-    <path class="k sG" d="M-4,252 L4,226 L44,214 L58,238 L46,252 Z"/><path class="hl sG" d="M40,216 L54,240"/>
-    <path class="sK" d="M52,222 L104,208 M57,236 L106,219"/><path class="k sK" d="M103,207 C111,203 120,206 120,212 C120,218 113,220 106,219"/>
-    <path class="sK" d="M110,206 L112,203 M115,206 L117,203"/>`;
-  for (let i = 0; i < 4; i++) {
-    const x = 14 + i * 11, y = 238 - i * 4;
-    if (i < S.staples) s += `<path class="sW" d="M${x},${y + 4} L${x},${y} L${x + 7},${y - 2} L${x + 7},${y + 2}"/>`;
-  }
-  // the meter: tiny label above, four staples
-  s += seg("STAPLES", 134, 224, 4, "sM", .6);
-  for (let i = 0; i < 4; i++) s += `<path class="${i < S.staples ? "sR" : "hl sD"}" d="M${136 + i * 12},${241} L${136 + i * 12},${234} L${144 + i * 12},${234} L${144 + i * 12},${241}"/>`;
-  // the staple gun: resting (pose 0), fired at the sleeve (pose 1), or misfiring on its own (a staple flies off)
-  const gun = (x, y) => `<path class="k sR" d="M${x},${y} L${x + 44},${y} L${x + 46},${y + 8} L${x + 4},${y + 8} Z"/>
-    <path class="k sR" d="M${x + 12},${y + 8} L${x + 8},${y + 24} L${x + 19},${y + 24} L${x + 24},${y + 8}"/><path class="hl sR" d="M${x + 4},${y + 4} L${x + 40},${y + 4}"/>`;
+  // the desk top: a slab whose back edge we see, running off the bottom of the frame
+  let s = `<path class="k sM mech" d="M-2,206 L214,206 L238,252 L-2,252 Z"/><path class="hl sM" d="M-2,210 L216,210"/>`;
+  // the forearm: green cuff at the bottom-left, a pink forearm lying flat, an open hand resting on the desk
+  s += `<path class="k sG" d="M-4,252 L-4,228 L36,222 L50,232 L76,226 L84,240 L70,252 Z"/><path class="hl sG" d="M36,222 L50,252 M50,232 L58,252"/>
+    <path class="sK" d="M74,227 L118,216 M82,239 L122,227"/>
+    <path class="k sK" d="M118,215 C126,211 136,211 142,214 L142,226 C136,229 128,229 122,227 Z"/>
+    <path class="hl sK" d="M142,216 L149,215 M142,219 L151,219 M142,222 L150,223 M141,225 L147,227 M126,213 L131,208"/>`;
+  // the staples already in the cuff
+  for (let i = 0; i < 4; i++) if (i < S.staples) s += staple(...CUFF[i], "sW");
+  // the meter, top left like the TURN readout: tiny label above, four staples, what four means
+  s += seg("STAPLES IN YOUR SLEEVE", 14, 8, 4.2, "sM", .6) + seg("4 AND YOU START AGAIN", 14, 30, 3.6, "sD", .6);
+  for (let i = 0; i < 4; i++) s += `<path class="${i < S.staples ? "sR" : "hl sD"}" d="M${16 + i * 13},${26} L${16 + i * 13},${17} L${25 + i * 13},${17} L${25 + i * 13},${26}"/>`;
+  // the staple gun: at rest beside her hand (pose 0); on a miss it hops onto the cuff and fires (pose 1);
+  // on a misfire it jumps where it lies and a staple flies off into the room
   const mf = S.fx && S.fx.kind === "misfire" ? S.fx.pose : 0;
-  if (S.click) s += gun(22, 192) + star4(28, 222, 7, "sA") + arcs(60, 214, 1, "hl sR", 3, .8) + arcs(10, 214, -1, "hl sR", 3, .8) + seg("CLICK", 56, 172, 12, "sR", 1.4);
-  else if (mf) {
-    const jy = mf === 1 ? -7 : mf === 2 ? -3 : 0, st = [[58, 142], [84, 120], [108, 104], [124, 98]][Math.min(mf, 3)];
-    s += gun(30, 150 + jy) + `<path class="sW" d="M${st[0]},${st[1] + 4} L${st[0]},${st[1]} L${st[0] + 7},${st[1] - 2} L${st[0] + 7},${st[1] + 2}"/>`;
-    if (mf <= 2) s += star4(76, 152 + jy, 6, "sA") + `<path class="hl sW" d="M${st[0] - 6},${st[1] + 6} L${st[0] - 16},${st[1] + 12} M${st[0] - 4},${st[1] + 10} L${st[0] - 12},${st[1] + 17}"/>` + seg("THUNK", 8, 120, 9, "sR", 1.1);
-    s += arcs(80, 158 + jy, 1, "hl sR", 2, .6) + arcs(26, 158 + jy, -1, "hl sR", 2, .6);
-  }
-  else s += gun(30, 150);
+  if (S.click) {
+    const [cx, cy] = CUFF[Math.max(0, Math.min(3, S.staples - 1))];
+    s += stapleGun(cx - 4, cy - 2, -12) + star4(cx, cy + 1, 7, "sA") + arcs(cx + 52, cy - 14, 1, "hl sR", 3, .8) + arcs(cx - 10, cy - 14, -1, "hl sR", 3, .8)
+      + `<path class="hl sR" d="M${160},${226} L${132},${222} M${158},${232} L${134},${230}"/>` + seg("CLICK", cx + 30, cy - 46, 12, "sR", 1.4);
+  } else if (mf) {
+    const jy = mf === 1 ? -8 : mf === 2 ? -3 : 0, st = [[150, 190], [176, 162], [204, 140], [222, 130]][Math.min(mf, 3)];
+    s += stapleGun(158, 230 + jy) + staple(st[0], st[1]);
+    if (mf <= 2) s += star4(156, 226 + jy, 6, "sA") + `<path class="hl sW" d="M${st[0] - 8},${st[1] + 7} L${st[0] - 18},${st[1] + 13} M${st[0] - 6},${st[1] + 11} L${st[0] - 14},${st[1] + 18}"/>` + seg("THUNK", 150, 112, 9, "sR", 1.1);
+    s += arcs(214, 222 + jy, 1, "hl sR", 2, .6) + arcs(152, 222 + jy, -1, "hl sR", 2, .6);
+  } else s += stapleGun(158, 230);
   return s;
 }
 const TEMPO = (m) => m <= .74 ? "PRESTO" : m <= .9 ? "ALLEGRO" : m <= 1.2 ? "MODERATO" : "LARGO";
@@ -619,6 +629,7 @@ export function echo(el, opts = {}) {
       hum: 0, humPulse: 0, gutter: 0, candles: ["lit", "lit", "lit", "lit"], burn: 0 };
     let T = { phrase: tally(), seat: tally() }, cur = null, alive = true, rnd = Math.random, lineN = 0;
     const timers = [], CANCEL = {};
+    window.ECHO = { S, draw: () => draw() };   // for scripted tests
     const later = (f, ms) => timers.push(setTimeout(() => alive && f(), ms));
     // pausable, cancellable sleep; `until` (optional) ends it early (an interlude being skipped)
     const wait = (ms, until) => new Promise((res, rej) => {
