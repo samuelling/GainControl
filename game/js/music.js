@@ -470,7 +470,7 @@ function endThemeStep(s, t) {
   }
   if (E.phase === "intro" && k === END_INTRO) {
     E.phase = "finale";
-    music.scene({ act: 5, mode: "night", room: "chamber", flags: { climax: true }, _end: true });
+    P.mixAt = t; music.scene({ act: 5, mode: "night", room: "chamber", flags: { climax: true }, _end: true }); P.mixAt = 0;
     P.tempo = P.target; kick(t, .7); noiseHit(t, 4000, .6, .1, .6, B.drum, "highpass");   // the downbeat, with a crash
   }
 }
@@ -550,7 +550,7 @@ function gains() {
 }
 function mix() {
   if (!C) return;
-  const now = C.currentTime, G = gains();
+  const now = Math.max(C.currentTime, P.mixAt || 0), G = gains();
   for (const k in G) B[k].gain.setTargetAtTime(G[k], now, (pend || S || {}).arr === "finale" ? .5 : 1.2);
 }
 // render a scene offline (for previews and tests): returns the AudioBuffer. from: the step to start at (16 a bar, 128 a section)
@@ -561,9 +561,11 @@ async function renderOffline(scene, secs = 30, rate = 22050, from = 0) {
   const realAudio = sfx.audio; sfx.audio = () => ({ ctx: O, master, noise: nb });
   if (O.audioWorklet) { try { await TONEWHEEL.init(O); ORG.set(O, "ready"); } catch (e) {} }
   C = null; B = {}; init(); S = null; pend = null; P.on = false; music.scene(scene);
+  if (scene.endTheme) { S = band({ act: 1, mode: "day", room: "", arr: "day" }); P.arr = "day"; P.dread = 0; P.climax = false; P.throb = 0; P.target = P.tempo = S.tempo; P.end = { phase: "intro" }; }
   for (const k in B) if (B[k] && B[k].gain) B[k].gain.cancelScheduledValues(0);
   { const G = gains(); for (const k in G) B[k].gain.value = G[k]; }
-  const bs = buildStart; buildStart = from; step = from; nextT = .05; while (nextT < secs) { scheduleStep(step, nextT); nextT += 60 / P.tempo / 4; step++; }
+  const bs = buildStart; buildStart = from; step = from; nextT = .05;
+  while (nextT < secs) { scheduleStep(step, nextT); nextT += 60 / P.tempo / 4; step++; P.tempo += (P.target - P.tempo) * (P.arr === "finale" ? .08 : .035); }
   const buf = await O.startRendering();
   sfx.audio = realAudio; ({ C, bus, B, delay, step, nextT, S, pend, cur } = saved); Object.assign(P, saved.P); buildStart = bs;
   return buf;
