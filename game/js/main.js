@@ -260,13 +260,21 @@ function blip(fs = [880, 1320]) { sfx.blip(fs); }
 function addScore(key, n) { if (!key || G.scored.has(key)) return; G.scored.add(key); G.score += n; hud(); sfx.play("score"); confetti(svg); }
 const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br>");
 
+// a box that closes on pointerdown must also eat the click that follows it, or the room acts on that click (walks Nell
+// there, opens a hotspot's verbs) the moment the game stops being busy
+function swallowNextClick() {
+  const eat = (e) => { e.stopPropagation(); e.preventDefault(); off(); };
+  const off = () => { frame.removeEventListener("click", eat, true); clearTimeout(tm); };
+  const tm = setTimeout(off, 600);
+  frame.addEventListener("click", eat, true);
+}
 function typeInto(el, html, speed, onTick) {
   return new Promise(resolve => {
     let i = 0, done = false; const tokens = html.match(/<[^>]+>|&[a-z]+;|[\s\S]/g) || [];
     el.innerHTML = "";
     const timer = setInterval(() => { if (i >= tokens.length) { finish(); return; } el.innerHTML += tokens[i++]; onTick && onTick(true); }, speed);
     function finish() { clearInterval(timer); el.innerHTML = html; done = true; onTick && onTick(false); }
-    function click(e) { e.stopPropagation(); e.preventDefault(); if (!done) { finish(); return; } frame.removeEventListener("pointerdown", click, true); resolve(); }
+    function click(e) { e.stopPropagation(); e.preventDefault(); if (!done) { finish(); return; } frame.removeEventListener("pointerdown", click, true); swallowNextClick(); resolve(); }
     frame.addEventListener("pointerdown", click, true);
   });
 }
