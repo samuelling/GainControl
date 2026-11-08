@@ -1,3 +1,5 @@
+// THE METAMER (Act IV, the library), on the library's microfiche terminal: NOW (his paper, blue ribbons) against THEN
+// (the back issues, amber index cards), under a banner that says what a metamer is and lights one box per sentence.
 // THE METAMER (Act IV, the library). Six sentences of the Big Finding against the back issues. Each sentence is an older
 // paper's claim in newer words: match by meaning, not by text. When all six are matched, the source labs light up (the
 // same three feeder labs). Then CHECK THE REFERENCES: two of the eight citations aren't on any shelf.
@@ -107,7 +109,7 @@ const CSS = `
 .metamer .card .au { color: var(--B); overflow: hidden; text-overflow: ellipsis; }
 .metamer .card .lab { margin-left: auto; color: var(--M); font-size: .9cqw; padding: 0 .3cqw; letter-spacing: .05em; }
 .metamer .card .lab.lit { color: #000; font-weight: 600; }
-.metamer .card .q { flex: 1 1 auto; font-size: 1.06cqw; line-height: 1.1; margin-top: .1cqw; }
+.metamer .card .q { flex: 1 1 auto; font-size: .96cqw; line-height: 1.06; margin-top: .1cqw; }
 .metamer .card .j { flex: none; font-size: .8cqw; line-height: 1.1; color: var(--M); letter-spacing: .05em; }
 .metamer .card.ok .q { color: var(--G); }
 .metamer .card.dim { opacity: .35; }
@@ -118,7 +120,43 @@ const CSS = `
 .metamer .ref.fake { border-color: var(--R); color: var(--R); cursor: default; }
 .metamer .ref.fake .num { background: var(--R); }
 .metamer .ref .flag { margin-left: auto; flex: none; font-size: .95cqw; font-weight: 600; color: #000; background: var(--R); padding: 0 .3cqw; }
+/* the library's terminal: a line-art monitor round the screen (the bezel is an SVG behind it), faint scanlines on the glass */
+#panel .mmbezel { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#panel .screen.metamer { left: 4.2%; right: 4.2%; top: 3.9%; bottom: 12.2%; border: 0; border-radius: .6cqw; padding: 0 1.2cqw; }
+.metamer .sent { font-size: 1.24cqw !important; line-height: 1.1 !important; }
+#panel .metamer .coachline { min-height: 3.4cqw; }
+.metamer .ref { border-left: .45cqw solid var(--B) !important; } .metamer .ref .num { background: var(--B); } .metamer .ref.fake { border-left-color: var(--R) !important; } .metamer .ref.fake .num { background: var(--R); }
+#panel .mmscan { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: .32; }
+.metamer svg.hd { height: 4.6cqw !important; margin-top: .4cqw !important; }
+/* two bins: NOW (Preston's paper, cool, a solid ribbon down each sentence) and THEN (the back issues: amber index cards) */
+.metamer .bin { display: inline-block; color: #000; font-weight: 700; padding: 0 .45cqw; margin-right: .5cqw; letter-spacing: .08em; }
+.metamer .bin.now { background: var(--B); } .metamer .bin.then { background: var(--A); }
+.metamer .colhd.now { color: var(--B); } .metamer .colhd.then { color: var(--A); }
+.metamer .sent { border-left: .45cqw solid var(--B) !important; }
+.metamer .sent .num { background: var(--B); }
+.metamer .sent .orig { display: inline-block; margin-left: .4cqw; color: #000; background: var(--A); font-size: .9cqw; font-weight: 600; padding: 0 .3cqw; white-space: nowrap; vertical-align: .1cqw; }
+.metamer .card { border-style: dashed !important; border-color: var(--A) !important; position: relative; padding-left: 1.3cqw !important; }
+.metamer .card::before { content: ""; position: absolute; left: .35cqw; top: .45cqw; width: .55cqw; height: .55cqw; border: .08cqw solid var(--A); border-radius: 50%; }
+.metamer .card .q, .metamer .card .au { color: var(--A); }
+.metamer .card .j { color: var(--A); opacity: .7; }
+.metamer .sent.sel, .metamer .card.sel { border-color: var(--W) !important; color: var(--W); outline: .14cqw solid var(--W); }
+.metamer .card.sel .q { color: var(--W); }
+.metamer .card.ok, .metamer .sent.ok { border-color: var(--G) !important; border-style: solid !important; }
+.metamer .card.ok .q, .metamer .card.ok .au { color: var(--G); } .metamer .card.ok::before { border-color: var(--G); }
+.metamer .card.dim { opacity: .3; }
 `;
+// the monitor: bezel, a brand plate, a lit power LED, two knobs, a neck and a foot (viewBox = the whole frame)
+const BEZEL = `<svg class="t mmbezel" viewBox="0 0 640 360" preserveAspectRatio="none">
+  <rect class="k sW" x="14" y="5" width="612" height="329" rx="10"/>
+  <rect class="sM" x="27" y="14" width="586" height="302" rx="5"/>
+  <path class="hl sD" d="M20,11 L33,20 M620,11 L607,20 M20,328 L33,310 M620,328 L607,310"/>
+  ${seg("FECHNER LIBRARY · MICROFICHE TERMINAL · 2F", 248, 321, 4.2, "sM", .7)}
+  <circle class="hl sM" cx="44" cy="324" r="3.6"/><path class="hl sM" d="M44,324 L46,321"/><circle class="hl sM" cx="58" cy="324" r="3.6"/><path class="hl sM" d="M58,324 L55,321"/>
+  <circle class="fG" cx="598" cy="324" r="2.2"/>${seg("PWR", 578, 321.5, 3.4, "sM", .6)}
+  <path class="sW" d="M300,334 L296,349 M340,334 L344,349"/><path class="k sW" d="M250,355 C250,347 390,347 390,355 Z"/>
+</svg>`;
+// faint scanlines on the glass (a hairline every three units)
+const SCAN = `<svg class="t mmscan" viewBox="0 0 586 302" preserveAspectRatio="none">${[...Array(100)].map((_, i) => `<path class="hl sD" d="M0,${i * 3 + 1} L586,${i * 3 + 1}"/>`).join("")}</svg>`;
 function injectStyle(id, css) { if (document.getElementById(id)) return; const s = document.createElement("style"); s.id = id; s.textContent = css; document.head.appendChild(s); }
 
 const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
@@ -146,27 +184,48 @@ export function metamer(el, { score = () => {} } = {}) {
         <div class="q">${x.q}</div><div class="j">${x.j}</div></div>`;
     }
     function left() {
-      if (S.stage === 1) return `<div class="colhd">THE BIG FINDING  ·  VALU ET AL.  ·  NURTURE NEUROSCIENCE</div>` + SENTS.map((t, i) => {
-        const ok = cardOf(i) !== null, sel = S.sel && S.sel.side === "s" && S.sel.i === i;
-        return `<div class="sent ${ok ? "ok" : ""} ${sel ? "sel" : ""}" data-s="${i}"><span class="num">${i + 1}</span><span>${t}</span></div>`;
+      if (S.stage === 1) return `<div class="colhd now"><span class="bin now">NOW</span>PRESTON'S PAPER  ·  VALU ET AL. 2025</div>` + SENTS.map((t, i) => {
+        const ok = cardOf(i) !== null, sel = S.sel && S.sel.side === "s" && S.sel.i === i, src = ok ? SRC[cardOf(i)] : null;
+        return `<div class="sent ${ok ? "ok" : ""} ${sel ? "sel" : ""}" data-s="${i}"><span class="num">${i + 1}</span><span>${t}${src ? `<span class="orig">= ${src.au.replace(/, [A-Z]\./g, "").replace(/\.$/, "")} ${src.yr}</span>` : ""}</span></div>`;
       }).join("");
-      return `<div class="colhd">REFERENCES  ·  CLICK THE ONES THAT DON'T EXIST</div>` + REFS.map((r, i) =>
+      return `<div class="colhd now"><span class="bin now">NOW</span>HIS REFERENCES  ·  CLICK THE ONES THAT DON'T EXIST</div>` + REFS.map((r, i) =>
         `<div class="ref ${S.flagged[i] ? "fake" : ""}" data-r="${i}"${S.refMiss >= 4 && r.src === null && !S.flagged[i] ? ` style="border-color:var(--A);color:var(--A)"` : ""}><span class="num">${i + 1}</span><span>${r.t}</span>${S.flagged[i] ? `<span class="flag">NOT ON ANY SHELF</span>` : ""}</div>`).join("");
     }
     function draw() {
       const nFake = Object.keys(S.flagged).length;
       const status = S.stage === 1 ? `${S.matched.filter(v => v !== null).length} / 6 MATCHED` : `${nFake} / 2 FOUND`;
-      const hd = S.stage === 1
-        ? seg("THE METAMER", 16, 10, 18, "sW", 1.6) + seg("CLICK A SENTENCE, THEN THE BACK ISSUE THAT MAKES THE SAME CLAIM", 196, 17, 5, "sM", .8)
-        : seg("REFERENCES", 16, 10, 18, "sW", 1.6) + seg("EVERY REAL CITATION SHOULD BE ON THE SHELF", 182, 17, 5, "sM", .8);
-      el.innerHTML = `<div class="screen metamer ${S.stage === 2 ? "stage2" : ""}">
-        <svg class="t hd" viewBox="0 0 640 40">${hd}</svg>
+      const hd = S.stage === 1 ? goal() : goalRefs(nFake);
+      el.innerHTML = `${BEZEL}<div class="screen metamer ${S.stage === 2 ? "stage2" : ""}">${SCAN}
+        <svg class="t hd" viewBox="0 0 640 46">${hd}</svg>
         <div class="mbody"><div class="col">${left()}</div>
-          <div class="col"><div class="colhd">THE BACK ISSUES  ·  LIBRARY 2F</div><div class="pool">${SRC.map((_, c) => card(c)).join("")}</div></div></div>
+          <div class="col"><div class="colhd then"><span class="bin then">THEN</span>THE BACK ISSUES  ·  1979–2004  ·  ON THE SHELF</div><div class="pool">${SRC.map((_, c) => card(c)).join("")}</div></div></div>
         <div class="coachline">${coach()}</div>
         <div class="bar"><span class="status">${status}</span>
           ${S.stage === 1 && allMatched() ? `<button data-b="refs">CHECK THE REFERENCES</button>` : ""}
           <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
+    }
+    // the goal, drawn: a metamer is two colours that match but are mixed from different light; his sentences are the
+    // same trick done with words. Six lights to put on, one per sentence unmasked.
+    function goal() {
+      const n = S.matched.filter(v => v !== null).length;
+      const spec = (x, peaks) => `<path class="hl sM" d="M${x},38 L${x + 26},38"/><path class="hl sW" d="M${x},38 ${peaks.map(([c, h]) => `C${x + c - 4},38 ${x + c - 2},${38 - h} ${x + c},${38 - h} C${x + c + 2},${38 - h} ${x + c + 4},38 ${x + c + 6},38`).join(" ")}"/>`;
+      let g = seg("SPOT THE METAMER", 2, 6, 15, "sW", 1.5);
+      // two identical swatches, two different spectra
+      g += `<rect class="fV" x="186" y="4" width="20" height="14"/><rect class="fV" x="212" y="4" width="20" height="14"/>${spec(183, [[10, 12]])}${spec(209, [[4, 8], [16, 9]])}
+        ${seg("SAME COLOUR, DIFFERENT LIGHT.", 242, 6, 6, "sV", .9)}${seg("SAME CLAIM, DIFFERENT WORDS.", 242, 18, 6, "sW", .9)}${seg("(WORDS ARE CHEAPER THAN LIGHT.)", 242, 30, 5, "sM", .8)}`;
+      g += seg("OLD PAPER, NEW SUIT. UNMASK ALL SIX:", 410, 4, 6, "sA", .9);
+      for (let i = 0; i < 6; i++) { const on = cardOf(i) !== null, x = 410 + i * 22;
+        g += on ? `<rect class="fG" x="${x}" y="16" width="18" height="16"/>${seg(String(i + 1), x + 6, 19, 10, "s0", 1.3)}` : `<rect class="hl sD" x="${x}" y="16" width="18" height="16"/>${seg(String(i + 1), x + 6, 19, 10, "sD", 1)}`; }
+      g += seg(n === 6 ? "ALL SIX. HE WROTE NONE OF IT." : `${n} OF 6`, 546, 22, 6, n === 6 ? "sG" : "sM", .9);
+      return g;
+    }
+    function goalRefs(n) {
+      let g = seg("CITATIONS FROM NOWHERE", 2, 6, 15, "sW", 1.5);
+      g += seg("HE CITES EIGHT SOURCES. EVERY REAL ONE IS ON THE SHELF.", 260, 4, 6, "sW", .9) + seg("TWO ARE NOT. FIND THE GHOSTS:", 260, 16, 6, "sR", .9);
+      for (let i = 0; i < 2; i++) { const on = i < n, x = 260 + i * 22;
+        g += on ? `<rect class="fR" x="${x}" y="28" width="18" height="16"/>${seg("?", x + 6, 31, 10, "s0", 1.3)}` : `<rect class="hl sD" x="${x}" y="28" width="18" height="16"/>${seg("?", x + 6, 31, 10, "sD", 1)}`; }
+      g += seg(n === 2 ? "TWO GHOSTS. CASE MADE." : `${n} OF 2`, 312, 33, 6, n === 2 ? "sR" : "sM", .9);
+      return g;
     }
     function tryPair(s, c) {
       S.sel = null;
