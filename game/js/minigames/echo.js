@@ -72,7 +72,8 @@ const R = {
     L("IRIS", "Their founders published that the Echo makes you smarter. 1979. Nobody has ever managed it again."),
     L("NELL", "Does it? Make you smarter?"),
     L("IRIS", "It makes you better at the Echo. And it makes them agree. Neither one is smart."),
-    L("IRIS", "One more thing. If the man at the head of the table suspects someone, he 'advances the Echo.' Three back. Nobody likes that."),
+    L("IRIS", "One more thing. Near the end, when the floor is open, the man at the head of the table 'advances the Echo' for any new member. He always does. Three back. Nobody likes that."),
+    L("IRIS", "He'll do it sooner if you slip three times running. So don't."),
     L("IRIS", "Wear the hood low. Answer late rather than wrong. And don't look at me if you see me."),
   ],
   // tempo: Iris hurries, then slows down to taunt
@@ -105,6 +106,7 @@ const R = {
     L("NARRATOR", "Two of them are looking at you now."), L("NARRATOR", "A third hood turns. Slowly."), L("NARRATOR", "Three hoods.")],
   relax: L("NARRATOR", "A hood turns back to the table. Someone coughs."),
   advance: L("QUORUM", "Let us advance the Echo."),
+  advanceQuiet: L("QUORUM", "The new member has been very quiet. The floor is open. Let us advance the Echo."),
   advNell: L("NELL", "Three back. Juggle three. One lands, the oldest drops."),
   still: L("QUORUM", "The Echo remains advanced."),
   retreat: L("QUORUM", "The Echo returns to its customary depth."),
@@ -973,7 +975,7 @@ export function echo(el, opts = {}) {
         // after every turn or catch: suspicion relaxes after three clean answers; three errors in a row advance the Echo
         const after = async (c, t, isTurn) => {
           if (c.err) { streak++; clean = 0; } else { streak = 0; if (++clean >= 3 && S.susp > 0) { clean = 0; relax(); say(R.relax); } }
-          if (isTurn && deep > 0 && --deep === 0 && t < LEN - 1) { S.n = 2; say(R.retreat); draw(); await wait(1600); }
+          if (isTurn && deep > 0 && --deep === 0 && t < LEN - 1 && S.reading < READINGS.length - 1) { S.n = 2; say(R.retreat); draw(); await wait(1600); }
           if (streak >= 3 && t < LEN - 2) {
             streak = 0; deep = 6;
             if (S.n === 3) { say(R.still); sfx("echoAdvance"); await wait(1400); }
@@ -984,6 +986,8 @@ export function echo(el, opts = {}) {
           const rd = READINGS[r];
           await interlude(interludeBeats(r, tries));
           Object.assign(S, { reading: r, cam: rd.cam, hum: r, len: LEN }); draw(); await wait(r ? 500 : 900);
+          // the third reading is always three back: Quorum tests the quiet new member (what Iris warned about, and drilled)
+          if (r === READINGS.length - 1) { S.n = 3; deep = 0; advanced = true; draw(); say(R.advanceQuiet); blip([110, 90]); sfx("echoAdvance"); await wait(2600); say(R.advNell); await wait(1800); }
           const sP = [], sS = [], fresh = seatOrder(rd.pattern);
           const catches = placeCatches(rd.len, rd.catches.map(k => k === "gavel" && r === 2 && opts.morris ? "sneezeI" : k), rnd);
           for (let i = 0; i < rd.len; i++, g++) {
