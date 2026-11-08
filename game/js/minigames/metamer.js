@@ -1,61 +1,98 @@
 // THE METAMER (Act IV, the library), on the library's microfiche terminal: NOW (his paper, blue ribbons) against THEN
 // (the back issues, amber index cards), under a banner that says what a metamer is and lights one box per sentence.
-// THE METAMER (Act IV, the library). Six sentences of the Big Finding against the back issues. Each sentence is an older
+// THE METAMER (Act IV, the library). Four sentences of the Big Finding against six back issues (two decoys). Each sentence is an older
 // paper's claim in newer words: match by meaning, not by text. When all six are matched, the source labs light up (the
 // same three feeder labs). Then CHECK THE REFERENCES: two of the eight citations aren't on any shelf.
-// Every wrong pair says what each side claims. Hint ladder per sentence: 2 misses, Nell points at the idea to look for;
+// Every wrong pair says what each side claims. Each sentence and each card carries a small figure of its gist (NOW crisp, THEN hand-drawn): a sentence and its
+// original draw the same shape. Hint ladder per sentence: 2 misses, Nell points at the idea to look for;
 // 4, Morris lights the card. References: 2 wrong, how to check; 4, the two fakes are marked in brass.
 // Everything here is fictional: papers, people, journals, labs. Resolves { done, wrong }.
 import { seg } from "../gfx.js";
 
-// the Big Finding: Valu et al., Nurture Neuroscience
+// the Big Finding: Valu et al., Nurture Neuroscience (four sentences, each lifted from one back issue)
 export const SENTS = [
   "Attention is known to reach V1, the cortex's first stop for vision, yet how deep into its layers it arrives has never been resolved.",
-  "Using a 7T scanner, we measured V1's blood-flow signal at six depths, from the brain's surface down to the white matter beneath.",
-  "Attention boosted responses most in the top layer and the deep layers, where feedback from higher brain areas arrives.",
-  "Layer 4, the input layer where signals from the eyes come in (via the thalamus), barely changed with attention.",
-  "This U-shaped pattern, highest at both ends and lowest in the middle, is the signature of top-down gain control.",
+  "Feedback from higher brain areas arrives in the top layer and the deep layers, not in layer 4, where the eyes' input comes in.",
+  "Responses were highest at both ends and lowest in the middle: this U-shaped profile is the signature of top-down gain control.",
   "These findings overturn decades of bottom-up thinking and call for sustained investment in layer research.",
 ];
 // the shelf: s = the Big Finding sentence it was lifted into (−1: a decoy). lab: a feeder lab key, or null.
+// fig: the old figure on the card (see FIG_OLD); every sentence has a new one (FIG_NEW). Same gist, different century.
 export const LABS = { hindex: ["THE HINDEX LAB", "A"], sinecure: ["SINECURE GROUP", "V"], quorum: ["QUORUM LAB", "R"] };
 export const SRC = [
-  { s: 2, yr: "1988", au: "SINECURE, A.", lab: "sinecure", j: "CORTEX & CONTEXT 7, 201-219",
-    q: "Fibres returning from the higher areas end in the outermost lamina and in the lowest ones. It is there, and only there, that the animal's intent was felt." },
-  { s: -1, yr: "1985", au: "STEADY, K.", lab: null, labName: "THE STEADY LAB", j: "J. COMP. CORTEX 14, 88-97",
-    q: "Readings at every depth rose and fell together, as one blurred measurement must. We could not tell one lamina from another.",
-    no: "Steady says the depths can't be told apart. Preston's sentence says they can. That's the opposite claim." },
-  { s: 4, yr: "1996", au: "HINDEX, M. & SINECURE, A.", lab: "hindex", j: "TRENDS IN TRENDS 1, 1-4",
-    q: "Two peaks of modulation flanking a quiet middle: the fingerprint of an instruction from above, a turning of the volume rather than of the picture." },
-  { s: 0, yr: "1979", au: "QUORUM, R.", lab: "quorum", j: "ANN. REV. ATTN. 3, 1-19",
+  { s: 1, yr: "1988", au: "SINECURE, A.", lab: "sinecure", j: "CORTEX & CONTEXT 7, 201-219", fig: "fibres",
+    q: "Fibres returning from the higher areas end in the outermost lamina and in the lowest ones, and pass the middle by." },
+  { s: -1, yr: "1993", au: "FAIRWEATHER, J.", lab: null, labName: "FAIRWEATHER LAB", j: "VIS. NEUROPHYS. 24, 12-30", fig: "hump",
+    q: "Attention lifted the middle lamina most, where the input arrives, and the outer laminae least.",
+    no: "Fairweather has attention peaking in the middle, the input layer. Look at the figure: a hump, not a U. Opposite claim." },
+  { s: 2, yr: "1996", au: "HINDEX, M. & SINECURE, A.", lab: "hindex", j: "TRENDS IN TRENDS 1, 1-4", fig: "peaks",
+    q: "Two peaks of modulation flanking a quiet middle: the fingerprint of an instruction from above." },
+  { s: 0, yr: "1979", au: "QUORUM, R.", lab: "quorum", j: "ANN. REV. ATTN. 3, 1-19", fig: "query",
     q: "That the will to select reaches the striate cortex is granted. At what depth of that sheet it alights, no one has yet said." },
-  { s: -1, yr: "1993", au: "FAIRWEATHER, J.", lab: null, labName: "FAIRWEATHER LAB", j: "VIS. NEUROPHYS. 24, 12-30",
-    q: "Attention sharpened responses in the input lamina itself, contrary to every feedback account of the striate cortex.",
-    no: "Fairweather has attention working in the input layer. The Big Finding says the input layer doesn't budge. Opposite." },
-  { s: 5, yr: "1987", au: "LAUD, T. & SINECURE, A.", lab: "sinecure", j: "GRANT OFFICE Q. 9, 5",
-    q: "Our results unseat the received, bottom-up view of the cortex, and require, at a minimum, a further decade of support." },
-  { s: -1, yr: "2004", au: "DRAINER, L.", lab: null, labName: "THE DRAINER LAB", j: "J. COMP. CORTEX 33, 140-152",
+  { s: -1, yr: "2004", au: "DRAINER, L.", lab: null, labName: "THE DRAINER LAB", j: "J. COMP. CORTEX 33, 140-152", fig: "veins",
     q: "Large veins on the surface carry the blood signal upward, so any depth profile measured from blood flow leans toward the surface.",
-    no: "Drainer's about veins smearing the signal toward the surface. That's the warning label, not the claim." },
-  { s: 1, yr: "1983", au: "LAUD, T. & HINDEX, M.", lab: "hindex", j: "J. COMP. CORTEX 12, 40-58",
-    q: "The electrode was lowered by stages through the striate cortex, a reading taken at each, from the surface membrane to the white fibres beneath." },
-  { s: -1, yr: "1999", au: "PLAIN, O.", lab: null, labName: "OPEN BENCH GROUP", j: "CORTEX & CONTEXT 18, 77-81",
-    q: "Attention lifts the whole striate response. We find no depth at which it lifts more. We report it anyway, in full.",
-    no: "That one's a null. Preston's paper doesn't do nulls.", nw: "MORRIS", nx: "That one's you in a past life, pal." },
-  { s: 3, yr: "1991", au: "TENURE, B. & QUORUM, R.", lab: "quorum", j: "VIS. NEUROPHYS. 22, 310-327",
-    q: "The geniculate-recipient lamina was indifferent to the task. It relays what arrives and asks no questions." },
+    no: "Drainer's about veins smearing the signal toward the surface. See the slope? That's the warning label, not the claim." },
+  { s: 3, yr: "1987", au: "LAUD, T. & SINECURE, A.", lab: "sinecure", j: "GRANT OFFICE Q. 9, 5", fig: "support",
+    q: "Our results unseat the received, bottom-up view of the cortex, and require, at a minimum, a further decade of support." },
 ];
 // the reference list. src: the shelf card it points to, or null (it doesn't exist).
 export const REFS = [
   { t: "QUORUM, R. (1979A). THE STRIATE QUESTION. ANN. REV. ATTN. 3, 1-19.", src: 3 },
-  { t: "LAUD, T. & HINDEX, M. (1983). LAMINAR STAGES. J. COMP. CORTEX 12, 40-58.", src: 7 },
   { t: "SINECURE, A. (1988). WHERE THE FEEDBACK ENDS. CORTEX & CONTEXT 7, 201-219.", src: 0 },
   { t: "QUORUM, R. (1979B). ON THE DESCENDING INSTRUCTION. ANN. REV. ATTN. 3, 20-31.", src: null, id: "1979b" },
-  { t: "TENURE, B. & QUORUM, R. (1991). AN INDIFFERENT LAMINA. VIS. NEUROPHYS. 22, 310-327.", src: 9 },
   { t: "HINDEX, M. & SINECURE, A. (1996). TWIN PEAKS. TRENDS IN TRENDS 1, 1-4.", src: 2 },
   { t: "LAUD, T. & SINECURE, A. (1987). A FURTHER DECADE. GRANT OFFICE Q. 9, 5.", src: 5 },
   { t: "VALU, P. & MICK, P. (2025). LAMINAR GAIN WITHOUT END. J. ENDLESS RES. 1, 1-∞.", src: null, id: "endless" },
 ];
+
+/* ---- the figures: the gist of each, drawn twice. NOW (2025): crisp, blue, filled data points, error bars, sans labels.
+   THEN (the back issues): amber hairline, dashed curves, hatching under them, roman numerals, FIG. N. Same shape, different
+   century: a sentence and its original draw the same picture, which is the point. ---- */
+const F = (n) => +n.toFixed(1);
+const hatch = (pts, base, c = "sA") => { let h = ""; for (let x = pts[0][0] + 2; x < pts[pts.length - 1][0]; x += 2.4) { let y = base;
+    for (let k = 1; k < pts.length; k++) if (x <= pts[k][0]) { const [x0, y0] = pts[k - 1], [x1, y1] = pts[k]; y = y0 + (y1 - y0) * (x - x0) / (x1 - x0); break; }
+    h += `M${F(x)},${base} L${F(x + 1.6)},${F(Math.max(y, base - (base - y)))} `; } return `<path class="hl ${c}" opacity=".55" d="${h}"/>`; };
+const curve = (pts) => "M" + pts.map(([x, y]) => `${F(x)},${F(y)}`).join(" L");
+const oldAxes = (cap) => `<path class="hl sA" d="M8,34 L60,34 M8,34 L8,4 M58,32 L60,34 L58,36 M6,6 L8,4 L10,6"/>${seg(cap, 40, 1, 3.2, "sA", .5)}`;
+const newAxes = (xl, yl) => `<path class="hl sM" d="M8,34 L60,34 M8,34 L8,4"/>${[16, 24, 32, 40, 48, 56].map(x => `<path class="hl sM" d="M${x},34 L${x},35.6"/>`).join("")}
+  ${seg(xl, 22, 36.4, 2.6, "sM", .45)}${yl ? `<g transform="translate(3.4,30) rotate(-90)">${seg(yl, 0, 0, 2.6, "sM", .45)}</g>` : ""}`;
+const U = [[14, 8], [22, 20], [30, 27], [38, 26], [46, 18], [54, 9]], HUMP = [[14, 28], [22, 20], [30, 9], [38, 10], [46, 21], [54, 29]], SLOPE = [[14, 7], [22, 13], [30, 18], [38, 22], [46, 26], [54, 29]];
+const dots = (pts, c = "fB") => pts.map(([x, y]) => `<path class="hl sB" d="M${x},${y - 3} L${x},${y + 3} M${x - 1},${y - 3} L${x + 1},${y - 3} M${x - 1},${y + 3} L${x + 1},${y + 3}"/><circle class="${c}" cx="${x}" cy="${y}" r="1.5"/>`).join("");
+const layers = (cls, x0 = 10, x1 = 46) => [6, 11, 16, 21, 26, 31].map(y => `<path class="hl ${cls}" d="M${x0},${y} L${x1},${y}"/>`).join("");
+const wavy = (y, x0 = 10, x1 = 46) => { let d = `M${x0},${y}`; for (let x = x0; x < x1; x += 6) d += ` Q${x + 1.5},${y - 1.2} ${x + 3},${y} Q${x + 4.5},${y + 1.2} ${x + 6},${y}`; return `<path class="hl sA" d="${d}"/>`; };
+const ROMAN = ["I", "II", "III", "IV", "V", "VI"];
+export const FIG_NEW = [
+  // where does attention land? a column of six layers, attention coming down, a question mark at depth
+  () => `${layers("sM")}${[1, 6].map((n, k) => seg(String(n), 3.5, k ? 29 : 4, 3, "sM", .5)).join("")}
+    <path class="sG" d="M28,0 L28,8 M25.5,5.5 L28,8.5 L30.5,5.5"/>${seg("ATTN", 31, 0, 3, "sG", .5)}${seg("?", 50, 9, 18, "sG", 1.2)}<path class="hl sG" stroke-dasharray="1.5 1.5" d="M28,10 L28,30"/>`,
+  // feedback from above ends in layer 1 and layers 5–6; the input comes up from below into layer 4
+  () => `${layers("sM")}<rect class="hl sV" x="48" y="0" width="13" height="7"/>${seg("V2", 51.5, 1.6, 3.4, "sV", .5)}
+    <path class="sV" d="M50,7 C44,10 36,6 30,6"/><circle class="fV" cx="30" cy="6" r="1.6"/><path class="sV" d="M54,7 C56,22 44,28 34,28"/><circle class="fV" cx="34" cy="28" r="1.6"/>
+    <path class="hl sB" d="M20,40 L20,19"/><circle class="fB" cx="20" cy="18.5" r="1.4"/>${seg("4", 3.5, 16.5, 3, "sM", .5)}${seg("IN", 22, 34, 3, "sB", .5)}`,
+  // the U: effect of attention by depth, highest at the surface and the deep end
+  () => `${newAxes("SURFACE → DEEP", "ATTN")}<path class="sB" d="${curve(U)}"/>${dots(U)}`,
+  // overturn, then fund: a bar chart of money, the last bar off the top
+  () => `${newAxes("YEAR →", "$")}${[[14, 28], [24, 22], [34, 15], [44, 8]].map(([x, y]) => `<rect class="hl sB" x="${x}" y="${y}" width="7" height="${34 - y}"/>`).join("")}
+    <path class="sG" d="M54,34 L54,2 M51.5,4.5 L54,1.5 L56.5,4.5"/>${seg("MORE", 46, 26, 3, "sG", .5)}`,
+];
+export const FIG_OLD = {
+  // the striate cortex in section, laminae I–VI wavy, a hand-lettered query
+  query: () => `${[6, 11, 16, 21, 26, 31].map(y => wavy(y)).join("")}${[0, 5].map(k => seg(ROMAN[k], 1, [3.5, 28.5][k / 5], 3, "sA", .5)).join("")}
+    ${seg("?", 50, 8, 16, "sA", .9)}${seg("FIG. 1", 47, 34, 3.2, "sA", .5)}`,
+  // camera lucida: fibres coming down from above, branching in lamina I and V–VI, passing IV by
+  fibres: () => `${[6, 16, 21, 31].map(y => wavy(y)).join("")}${seg("I", 1, 3.5, 3, "sA", .5)}${seg("IV", 0, 18.5, 3, "sA", .5)}${seg("VI", 0, 28.5, 3, "sA", .5)}
+    ${[18, 28, 38].map(x => `<path class="hl sA" d="M${x},0 C${x + 2},10 ${x - 2},20 ${x + 1},31 M${x},6 L${x - 4},8 M${x},6 L${x + 4},9 M${x + 1},28 L${x - 4},31 M${x + 1},28 L${x + 4},32"/>`).join("")}
+    ${seg("FIG. 4", 47, 33, 3.2, "sA", .5)}`,
+  // two peaks flanking a quiet middle, dashed, hatched beneath
+  peaks: () => `${oldAxes("FIG. 2")}<path class="hl sA" stroke-dasharray="2 1.4" d="${curve(U)}"/>${hatch(U, 34)}${seg("A", 12, 2, 3, "sA", .5)}${seg("B", 53, 2, 3, "sA", .5)}`,
+  // the decoy: one hump, in the middle
+  hump: () => `${oldAxes("FIG. 3")}<path class="hl sA" stroke-dasharray="2 1.4" d="${curve(HUMP)}"/>${hatch(HUMP, 34)}`,
+  // the decoy: the veins, and a profile that leans to the surface
+  veins: () => `${oldAxes("FIG. 5")}<path class="hl sA" stroke-dasharray="2 1.4" d="${curve(SLOPE)}"/>${hatch(SLOPE, 34)}
+    <path class="hl sR" d="M12,3 C16,5 18,1 22,3 C26,5 28,1 32,3"/>${seg("VEINS", 34, 1, 3, "sR", .5)}`,
+  // a further decade of support: a line that leaves the top of the page
+  support: () => `${oldAxes("FIG. 9")}<path class="hl sA" stroke-dasharray="2 1.4" d="M10,30 L20,27 L30,22 L40,14 L50,6 L56,0"/>${seg("SUPPORT", 12, 6, 3, "sA", .5)}${seg("$", 44, 22, 7, "sA", .7)}`,
+};
 const LINES = {
   // a metamer, in colour vision: two lights that look identical but are mixed from different wavelengths
   intro: ["NELL", "A metamer: two colours that look identical but are mixed from different lights. His paper's one. Every sentence is an older paper's claim in new words."],
@@ -69,27 +106,25 @@ const LINES = {
   mismatch: (c, s) => ["NELL", `That card is about ${GIST[SRC[c].s]}. Sentence ${s + 1} is about ${GIST[s]}. Different claims.`],
   // the ladder: two misses on a sentence, a pointer; four, the card itself
   hint: [
-    ["NELL", "Sentence 1: attention gets to V1, but nobody knows at what depth. Look for an old card that grants the first part and says nobody's answered the second."],
-    ["NELL", "Sentence 2 is the method: a reading at depth after depth, surface to white matter. Look for somebody lowering an electrode in stages."],
-    ["NELL", "Sentence 3: feedback ends in the top layer and the deep ones. Look for fibres from the higher areas ending in the outermost and lowest laminae."],
-    ["NELL", "Sentence 4: the input layer barely moves. 'Geniculate' is the thalamus, so the geniculate-recipient lamina is layer 4. Find the one that's 'indifferent.'"],
-    ["NELL", "Sentence 5: a U, high at both ends with a quiet middle, called a signature. Look for 'two peaks' and a 'fingerprint.'"],
-    ["NELL", "Sentence 6: overturn the old view, then ask for money. Look for the card that wants another decade of support."],
+    ["NELL", "Sentence 1: attention gets to V1, but nobody knows at what depth. His figure's a question mark at depth. Find the old one asking the same thing."],
+    ["NELL", "Sentence 2: feedback ends in the top layer and the deep ones, and skips the middle. Look for fibres from above branching in lamina I and in V and VI."],
+    ["NELL", "Sentence 3: a U, high at both ends, a quiet middle, called a signature. Find the old figure that makes a U. Not the hump: that's the opposite."],
+    ["NELL", "Sentence 4: overturn the old view, then ask for money. His figure's a bar chart of funding. Find the old graph of 'support' going off the top of the page."],
   ],
   show: (c) => ["MORRIS", `This one, pal. ${SRC[c].au} ${SRC[c].yr}. It's lit up. Click it.`],
   refHint: ["NELL", "Check each one against the shelf: authors, year, journal, pages. Two have no card at all."],
   refShow: ["MORRIS", "The two I've marked, pal. Look at the years and the journal. Nobody's shelving those."],
-  labs: ["NELL", "Six sentences, six back issues, three labs. The Hindex Lab, the Sinecure Group, the Quorum Lab. Every single one."],
+  labs: ["NELL", "Four sentences, four back issues, three labs. The Hindex Lab, the Sinecure Group, the Quorum Lab. Every single one."],
   labs2: ["MORRIS", "The feeder labs. Same names on every Rising Stars wall, pal."],
-  refs: ["NELL", "Now his references: the papers he says he got it from. Eight. Every real one should be on this shelf."],
+  refs: ["NELL", "Now his references: the papers he says he got it from. Six. Every real one should be on this shelf."],
   real: (c) => ["NELL", `No, that one's real. It's right there on the shelf: ${SRC[c].au} ${SRC[c].yr}.`],
   "1979b": ["NELL", "Quorum, 1979b. There's only one Quorum paper from 1979 on this shelf. There is no b. Pages 20 to 31 are somebody's obituary."],
   endless: ["NELL", "Journal of Endless Research. Volume one, pages one to infinity. That's not a journal, that's a mission statement."],
   done: ["NELL", "It's a collage of the Table's own work. And its real author list is a partial membership roll."],
   done2: ["MORRIS", "So the paper's a family reunion. Who brought the potato salad?"],
 };
-const GIST = ["an open question: where in the cortex attention arrives", "the method: measuring at depth after depth", "feedback ending in the top and deep layers",
-  "the input layer barely moving", "a U-shaped 'signature' of top-down gain", "overturning the old view, and asking for more money"];
+const GIST = ["an open question: where in the cortex attention arrives", "where feedback ends: the top and deep layers, not the middle",
+  "a U-shaped 'signature' of top-down gain", "overturning the old view, and asking for more money"];
 const COL = { NELL: "G", MORRIS: "K", GUS: "B", PENNY: "B", NARRATOR: "W" };
 const CSS = `
 .metamer .mbody { flex: 1 1 0; min-height: 0; display: grid; grid-template-columns: 33% 1fr; gap: 1.4cqw; padding: .7cqw 0; }
@@ -126,6 +161,12 @@ const CSS = `
 .metamer .sent { font-size: 1.24cqw !important; line-height: 1.1 !important; }
 #panel .metamer .coachline { min-height: 3.4cqw; }
 .metamer .ref { border-left: .45cqw solid var(--B) !important; } .metamer .ref .num { background: var(--B); } .metamer .ref.fake { border-left-color: var(--R) !important; } .metamer .ref.fake .num { background: var(--R); }
+.metamer .sent { align-items: center !important; } .metamer .sent .stx { flex: 1 1 auto; }
+.metamer svg.mfig { position: relative; inset: auto; flex: none; width: 8cqw; height: 5cqw; }
+.metamer .card .cb { flex: 1 1 auto; display: flex; gap: .6cqw; align-items: flex-start; min-height: 0; }
+.metamer .card svg.mfig.old { width: 8.4cqw; height: 5.25cqw; margin-top: .2cqw; }
+.metamer .card .cb .q { flex: 1 1 0; }
+.metamer .pool { grid-template-rows: repeat(3, 1fr); }
 #panel .mmscan { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: .32; }
 .metamer svg.hd { height: 4.6cqw !important; margin-top: .4cqw !important; }
 /* two bins: NOW (Preston's paper, cool, a solid ribbon down each sentence) and THEN (the back issues: amber index cards) */
@@ -181,19 +222,19 @@ export function metamer(el, { score = () => {} } = {}) {
       const labHtml = lit && x.lab ? `<span class="lab lit" style="background:var(--${lab[1]})">${lab[0]}</span>` : `<span class="lab">${lab[0]}</span>`;
       return `<div class="${cls}" data-c="${c}"><div class="meta">${s >= 0 ? `<span class="num">${s + 1}</span>` : ""}
         <svg class="t yr" viewBox="0 0 28 10">${seg(x.yr, 1, 2, 6.4, s >= 0 ? "sG" : "sA", 1)}</svg><span class="au">${x.au}</span>${labHtml}</div>
-        <div class="q">${x.q}</div><div class="j">${x.j}</div></div>`;
+        <div class="cb"><svg class="t mfig old" viewBox="0 0 64 40">${FIG_OLD[x.fig]()}</svg><div class="q">${x.q}</div></div><div class="j">${x.j}</div></div>`;
     }
     function left() {
       if (S.stage === 1) return `<div class="colhd now"><span class="bin now">NOW</span>PRESTON'S PAPER  ·  VALU ET AL. 2025</div>` + SENTS.map((t, i) => {
         const ok = cardOf(i) !== null, sel = S.sel && S.sel.side === "s" && S.sel.i === i, src = ok ? SRC[cardOf(i)] : null;
-        return `<div class="sent ${ok ? "ok" : ""} ${sel ? "sel" : ""}" data-s="${i}"><span class="num">${i + 1}</span><span>${t}${src ? `<span class="orig">= ${src.au.replace(/, [A-Z]\./g, "").replace(/\.$/, "")} ${src.yr}</span>` : ""}</span></div>`;
+        return `<div class="sent ${ok ? "ok" : ""} ${sel ? "sel" : ""}" data-s="${i}"><span class="num">${i + 1}</span><span class="stx">${t}${src ? `<span class="orig">= ${src.au.replace(/, [A-Z]\./g, "").replace(/\.$/, "")} ${src.yr}</span>` : ""}</span><svg class="t mfig" viewBox="0 0 64 40">${FIG_NEW[i]()}</svg></div>`;
       }).join("");
       return `<div class="colhd now"><span class="bin now">NOW</span>HIS REFERENCES  ·  CLICK THE ONES THAT DON'T EXIST</div>` + REFS.map((r, i) =>
         `<div class="ref ${S.flagged[i] ? "fake" : ""}" data-r="${i}"${S.refMiss >= 4 && r.src === null && !S.flagged[i] ? ` style="border-color:var(--A);color:var(--A)"` : ""}><span class="num">${i + 1}</span><span>${r.t}</span>${S.flagged[i] ? `<span class="flag">NOT ON ANY SHELF</span>` : ""}</div>`).join("");
     }
     function draw() {
       const nFake = Object.keys(S.flagged).length;
-      const status = S.stage === 1 ? `${S.matched.filter(v => v !== null).length} / 6 MATCHED` : `${nFake} / 2 FOUND`;
+      const status = S.stage === 1 ? `${S.matched.filter(v => v !== null).length} / ${SENTS.length} MATCHED` : `${nFake} / 2 FOUND`;
       const hd = S.stage === 1 ? goal() : goalRefs(nFake);
       el.innerHTML = `${BEZEL}<div class="screen metamer ${S.stage === 2 ? "stage2" : ""}">${SCAN}
         <svg class="t hd" viewBox="0 0 640 46">${hd}</svg>
@@ -213,15 +254,15 @@ export function metamer(el, { score = () => {} } = {}) {
       // two identical swatches, two different spectra
       g += `<rect class="fV" x="186" y="4" width="20" height="14"/><rect class="fV" x="212" y="4" width="20" height="14"/>${spec(183, [[10, 12]])}${spec(209, [[4, 8], [16, 9]])}
         ${seg("SAME COLOUR, DIFFERENT LIGHT.", 242, 6, 6, "sV", .9)}${seg("SAME CLAIM, DIFFERENT WORDS.", 242, 18, 6, "sW", .9)}${seg("(WORDS ARE CHEAPER THAN LIGHT.)", 242, 30, 5, "sM", .8)}`;
-      g += seg("OLD PAPER, NEW SUIT. UNMASK ALL SIX:", 410, 4, 6, "sA", .9);
-      for (let i = 0; i < 6; i++) { const on = cardOf(i) !== null, x = 410 + i * 22;
+      g += seg("OLD PAPER, NEW SUIT. UNMASK ALL FOUR:", 410, 4, 6, "sA", .9);
+      for (let i = 0; i < SENTS.length; i++) { const on = cardOf(i) !== null, x = 410 + i * 22;
         g += on ? `<rect class="fG" x="${x}" y="16" width="18" height="16"/>${seg(String(i + 1), x + 6, 19, 10, "s0", 1.3)}` : `<rect class="hl sD" x="${x}" y="16" width="18" height="16"/>${seg(String(i + 1), x + 6, 19, 10, "sD", 1)}`; }
-      g += seg(n === 6 ? "ALL SIX. HE WROTE NONE OF IT." : `${n} OF 6`, 546, 22, 6, n === 6 ? "sG" : "sM", .9);
+      g += seg(n === SENTS.length ? "ALL FOUR. HE WROTE NONE OF IT." : `${n} OF ${SENTS.length}`, 502, 22, 6, n === SENTS.length ? "sG" : "sM", .9);
       return g;
     }
     function goalRefs(n) {
       let g = seg("CITATIONS FROM NOWHERE", 2, 6, 15, "sW", 1.5);
-      g += seg("HE CITES EIGHT SOURCES. EVERY REAL ONE IS ON THE SHELF.", 260, 4, 6, "sW", .9) + seg("TWO ARE NOT. FIND THE GHOSTS:", 260, 16, 6, "sR", .9);
+      g += seg("HE CITES SIX SOURCES. EVERY REAL ONE IS ON THE SHELF.", 260, 4, 6, "sW", .9) + seg("TWO ARE NOT. FIND THE GHOSTS:", 260, 16, 6, "sR", .9);
       for (let i = 0; i < 2; i++) { const on = i < n, x = 260 + i * 22;
         g += on ? `<rect class="fR" x="${x}" y="28" width="18" height="16"/>${seg("?", x + 6, 31, 10, "s0", 1.3)}` : `<rect class="hl sD" x="${x}" y="28" width="18" height="16"/>${seg("?", x + 6, 31, 10, "sD", 1)}`; }
       g += seg(n === 2 ? "TWO GHOSTS. CASE MADE." : `${n} OF 2`, 312, 33, 6, n === 2 ? "sR" : "sM", .9);
