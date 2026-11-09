@@ -116,6 +116,8 @@ const ABORT = new Error("abort");
 const sfx = (n, o) => window.SFX && window.SFX.play(n, o);
 const KEYNAME = { " ": "SPACE", ArrowUp: "UP", ArrowDown: "DOWN", ArrowLeft: "LEFT", ArrowRight: "RIGHT", Enter: "ENTER" };
 
+// in the game, the first time the console opens (per visit to the page): a notice that it's an extra, not a clue
+let noticed = false;
 export function perceptionConsole(el, { score = () => {}, standalone = false } = {}) {
   css();
   return new Promise(resolve => {
@@ -134,7 +136,7 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
     // shelf and selection survive a run, so MENU comes back to where you were
     let shelf = null, sel = null, ptr = "mouse";
     const greet = standalone ? "A library of perception experiments. Pick a shelf, then a tile: one tap says what it is and where it comes from, a second tap runs it."
-      : "The booth's computer. Somebody left it logged in as PS327. Pick a shelf, then an experiment.";
+      : "The booth's computer. Somebody left it logged in as PS327. An extra, not a clue: pick a shelf, then an experiment.";
     const byId = (id) => MODULES.find(x => x.id === id);
     const shelfMods = () => MODULES.filter(m => m.group === shelf);
     // the console line: the module's one-liner, and its citation(s) underneath
@@ -160,6 +162,19 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
     }
     function pick(id) { if (sel === id) return launch(id); sel = id; sfx("key"); paint(true); }
     function launch(id) { const m = byId(id); if (!m) return; sel = id; sfx("select"); start(m); }
+    // THE NOTICE: an aside from the game, before the library
+    let noticeUp = false;
+    function notice() {
+      noticeUp = true; mode("AN EXTRA"); status.textContent = ""; backB.textContent = "CLOSE";
+      body.innerHTML = `<div class="notice" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:1.1cqw;padding:0 4cqw;font-family:'Saira Condensed',sans-serif;text-transform:uppercase;letter-spacing:.02em">
+        <div style="font-size:3.4cqw;font-weight:600;color:var(--A);line-height:1">An extra, not a clue</div>
+        <div style="font-size:1.9cqw;line-height:1.25;color:var(--W)">Nothing on this computer is part of the mystery. No puzzle needs it, and nobody in the story will ask about it.</div>
+        <div style="font-size:1.9cqw;line-height:1.25;color:var(--W)">It's a working library of ${MODULES.length} real perception experiments, each with the paper it comes from, including the lab exercises from a real perception course. The results are yours, measured on your own screen.</div>
+        <div style="font-size:1.6cqw;line-height:1.25;color:var(--M)">Close it (Esc) and you're back on the case, right where you left it.</div></div>`;
+      say("A note from the game, before the library."); refE.textContent = "";
+      btns.innerHTML = `<button data-b="notice">GO ON</button><span class="kb">ENTER</span>`;
+    }
+    function noticeOff() { if (!noticeUp) return; noticeUp = false; noticed = true; sfx("select"); menu(); }
     function toShelf(g) { if (g === shelf) return; shelf = g; sel = null; sfx("key"); menu(); }
     function menuKey(e) {
       const k = e.key, mods = shelfMods(), groups = groupsOf(MODULES), gi = groups.indexOf(shelf), i = mods.findIndex(m => m.id === sel);
@@ -268,6 +283,7 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
     function stopRun() { if (run) run.stop = true; if (pending) pending(); btns.onclick = null; lastRes = null; }
     const onClick = (e) => {
       const t = e.target.closest ? e.target : null; if (!t) return;
+      if (noticeUp) { if (t.closest("[data-b=notice]")) noticeOff(); else if (t.closest("[data-b=back]")) finish(); return; }
       const sh = t.closest("[data-grp]"); if (sh && !run) { toShelf(sh.dataset.grp); return; }
       // a mouse click runs (pointing already showed what it is); a tap selects first, and a second tap runs
       const m = t.closest("[data-mod]"); if (m && !run) { if (ptr === "mouse") launch(m.dataset.mod); else pick(m.dataset.mod); return; }
@@ -276,6 +292,7 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
       if (b) { if (run) { stopRun(); sfx("cancel"); menu(); } else if (standalone) about(); else finish(); }
     };
     const onKey = (e) => { if (e.key === "Escape") { e.stopPropagation(); if (run) { stopRun(); menu(); } else if (!standalone) finish(); return; }
+      if (noticeUp) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); noticeOff(); } return; }
       if (!run && !leaving && !e.metaKey && !e.ctrlKey && !e.altKey && menuKey(e)) { e.preventDefault(); e.stopPropagation(); } };
     const onPtr = (e) => { ptr = e.pointerType || "mouse"; };
     function about() { sel = null; paint(); say("Classic perception experiments, each the simplest faithful version that runs on any screen, plus ports of the PS 327 Perception lab MATLAB code. Point at a tile for its source. Sizes in degrees and contrasts are nominal: the results worth comparing are the differences between conditions.");
@@ -291,7 +308,7 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
       for (const [fn, ms] of steps) setTimeout(fn, ms);
     }
     el.addEventListener("click", onClick); el.addEventListener("pointerdown", onPtr, true); window.addEventListener("keydown", onKey, true);
-    menu();
+    if (!standalone && !noticed) notice(); else menu();
     // ENTRY: the monitor rushes up out of the room (the case in four stepped sizes, speed dashes on the middle two),
     // then the tube warms up: a dot, a line, a band, the picture. Poses, not tweens.
     const wrapE = el.querySelector(".crtwrap"), scr = el.querySelector(".screen.pc"), dash = el.querySelector(".zoomdash");
