@@ -60,7 +60,7 @@ function table(map, lit) {
 }
 const ACTS = [["1", "I", "SUBMISSION"], ["2", "II", "UNDER REVIEW"], ["3", "III", "MAJOR REVISIONS"], ["4", "IV", "REBUTTAL"], ["5", "V", "DECISION"]];
 const MENU0 = 64, MENU_DY = 8;
-function screen({ unlocked = 1, title = "GAIN CONTROL", titleCls = "w", menuWord = null, lit = 0, full = true, showTable = false, sound = null } = {}) {
+function screen({ unlocked = 1, allActs = false, title = "GAIN CONTROL", titleCls = "w", menuWord = null, lit = 0, full = true, showTable = false, sound = null } = {}) {
   const map = new Map(); if (showTable) table(map, lit);
   // browsers keep a page silent until it's clicked: say so, top right, until the music is running
   if (sound && !sound()) text(map, "CLICK FOR SOUND", NC - 6 - textW("CLICK FOR SOUND"), 6, "m");
@@ -69,12 +69,16 @@ function screen({ unlocked = 1, title = "GAIN CONTROL", titleCls = "w", menuWord
   for (let r = 19; r < 40; r++) for (let c = tc - 3; c < tc + textW(title, BIG, 2) + 3; c++) map.delete(`${c},${r}`);
   text(map, title, tc, 22, titleCls, BIG, 2);
   text(map, "SELECT AN ACT", center("SELECT AN ACT"), MENU0 - 8, "m");
-  const rows = ACTS.map(([id, n, name], i) => {
+  // an act opens once you've reached it (progress in localStorage), so you can come back and carry on; the rest are dim
+  // and can't be picked (the ALLACTS code opens them all)
+  const open = (id) => allActs || id === "1" || unlocked >= +id;
+  const rows = ACTS.flatMap(([id, n, name], i) => {
     const r = MENU0 + i * MENU_DY, label = `ACT ${n.padEnd(3, " ")} ${menuWord ? menuWord[i % menuWord.length] : name}`, c = 56;
-    const m = new Map(); text(m, label, c, r, menuWord ? "r" : (unlocked >= +id || id === "1" ? "w" : "m"));
-    return { id, r, c, m, w: textW(label) };
+    if (!menuWord && !open(id)) { text(map, label, c, r, "d"); return []; }
+    const m = new Map(); text(m, label, c, r, menuWord ? "r" : "w");
+    return [{ id, r, c, m, w: textW(label) }];
   });
-  if (unlocked < 2) text(map, "START WITH ACT I, OR JUMP AHEAD", 6, NR - 9, "m");   // first visit only
+  if (!allActs && unlocked < 5) text(map, unlocked < 2 ? "START WITH ACT I" : "PICK UP WHERE YOU LEFT OFF", 6, NR - 9, "m");
   // the build number, lower right corner, so a player can say which version they're on
   const ver = `V${VERSION}`; text(map, ver, NC - 6 - textW(ver), NR - 9, "m");
   const fullRow = full ? (() => { const m = new Map(); text(m, "FULLSCREEN", NC - 6 - textW("FULLSCREEN"), NR - 17, "m"); return m; })() : null;

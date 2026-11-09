@@ -31,6 +31,8 @@ export const CODES = [
   { id: "disco", words: ["DISCO", "LILAC"], label: "DISCO", on: "THE HUE WHEEL TURNS. NOBODY CAN STOP IT.", off: "THE PARTY'S OVER." },
   { id: "significant", words: ["SIGNIFICANT", "PHACK", "PHACKING"], label: "CONFETTI ON EVERY POINT", on: "EVERY POINT YOU SCORE IS NOW P < .05. CONFETTI.", off: "BACK TO NULL RESULTS." },
   { id: "helium", words: ["HELIUM", "CHIPMUNK"], label: "HELIUM VOICES", on: "SOMEONE OPENED THE HELIUM FOR THE MRI. EVERYONE SOUNDS LIKE IT.", off: "VOICES DROP BACK DOWN." },
+  // the one code that isn't cosmetic: every act open on the title screen (for testing, and for anyone who asks)
+  { id: "allacts", words: ["ALLACTS", "CHAPTERS", "SKIPAHEAD"], label: "EVERY ACT OPEN", on: "EVERY ACT IS OPEN ON THE TITLE SCREEN. NO PEER REVIEW.", off: "BACK TO ONE ACT AT A TIME." },
   { id: "timewarp", words: ["TIMEWARP", "HOLIDAY"], kind: "once", label: "NEXT HOLIDAY", on: "" },
   { id: "realtime", words: ["REALTIME", "TODAY"], kind: "once", label: "BACK TO TODAY", on: "THE DECORATIONS FOLLOW THE CALENDAR AGAIN." },
   { id: "nocheats", words: ["NOCHEATS", "RESET", "CLEAR"], kind: "once", label: "ALL CODES OFF", on: "ALL CODES OFF. THE BUILDING IS ITSELF AGAIN." },

@@ -24,7 +24,7 @@ import { installGuide } from "./guide.js";
 import { installNudge } from "./nudge.js";
 import { music } from "./music.js";
 import { decor, current as holidaysNow } from "./holidays.js";
-import { opt, onChange as onOptions, activeCheats } from "./options.js";
+import { opt, onChange as onOptions, activeCheats, cheatOn } from "./options.js";
 import { installMenu } from "./menu.js";
 import { remark } from "./remarks.js";
 import { fxLayer, confetti, installWhimsy } from "./whimsy.js";
@@ -834,7 +834,7 @@ async function start() {
     await showCard(`<circle class="fW" cx="320" cy="180" r="1.6"/><g id="cts">${centered("CLICK TO START", 204, 8, "sW", 1.1)}</g>`, { auto: 0 });
     clearInterval(blink);
   }
-  const tOpts = { unlocked, full: !FULL.standalone(), sound: () => sfx.running && music.state.on };
+  const tOpts = { unlocked, allActs: cheatOn("allacts"), full: !FULL.standalone(), sound: () => sfx.running && music.state.on };
   const titleP = showCard(titleArt(tOpts), { buttons: true, crt: true });
   const stopGlitch = titleGlitch(card, { sfx: () => { sfx.play("blank"); music.glitch(); }, ...tOpts });
   const choice = await titleP; stopGlitch();
