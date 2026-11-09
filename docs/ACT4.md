@@ -13,7 +13,7 @@ This file is the contract between art, minigames and story. The ids, flags and s
 
 ## Flow
 
-1. **Card:** THURSDAY · ACT IV REBUTTAL · ADLINE LAB 114 · 09:15. Nell and Morris in the lab, Gus at his desk.
+1. **Card:** THURSDAY · ACT IV REBUTTAL · ADLINE LAB 111 · 09:15. Nell and Morris in the lab, Gus at his desk.
 2. **Impact** is in the hallway with a neck pillow and a rolling bag, rattled, on the phone. TALK: he'll meet Nell "at four, my office, third floor. Come alone. Don't bring the rat." (flag `impactMet`.)
 3. **Three leads, any order:**
    - **The library (2F, via the stairs):** THE METAMER. Nell lays the Big Finding's sentences against the back issues, the way Gus's FOG NEURO printout taught her. Each sentence is lifted from an older paper, and every source author comes from the same three feeder labs. Two references don't exist (Quorum 1979b; *J. Endless Res.*). (`clueMetamer`.) Also on the reading table, the Valu vs. Mick feud: same LTM seed on both papers (LOOK, `clueFeud`, +2). And the **faculty directory**, which gives Impact's h-index: **112** (`sawHindex`).

@@ -4,6 +4,7 @@
 // and with the lab's own timing. List an id here once both files exist; the console then shows its export buttons.
 export const SCRIPT_KINDS = { psychopy: "PsychoPy", ptb: "Psychtoolbox" };
 export const SCRIPTED = new Set([
+  "hv", "ml", "search", "adelson", "mae",                                   // PS 327 LABS
 ]);
 export const hasScript = (id, kind) => SCRIPTED.has(id) && kind in SCRIPT_KINDS;
 export const scriptFile = (id, kind) => kind === "ptb" ? `gc_${id}.m` : `gc_${id}.py`;

@@ -512,7 +512,7 @@ const MORNING = {
           return "Inside the canister: a hand-drawn map of the steam tunnels, B3 circled twice. On the back, in Gus's handwriting:\n\n'Tomorrow. Bring the rat. —G.'"; } } },
     stairs: { label: "stairwell", morning: { look: "The stairwell.", go: stairsMorning } },
     office: { label: "main office", morning: { look: "The main office.", go: "Penny isn't in yet. Penny is always in." } },
-    lab: { label: "Adline Lab 114", morning: { look: "Your lab.", go: "lab@fromHall" } },
+    lab: { label: "Adline Lab 111", morning: { look: "Your lab.", go: "lab@fromHall" } },
     kitchen: { label: "coffee kitchen", morning: { look: "The kitchen. Rex is in there. Rex is always in there.", go: "kitchen@fromHall" } },
     vent: { label: "vent", morning: { look: "A vent." } },
   },

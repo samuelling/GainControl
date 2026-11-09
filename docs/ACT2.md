@@ -11,7 +11,7 @@ This file is both the design and the contract between the art (rooms, figures, p
 
 ## Flow
 
-1. **Card:** TUESDAY · ACT II UNDER REVIEW · ADLINE LAB 114 · 09:04. Nell starts in the lab. Her Act I inventory carries over (recorder with Preston's memo, notebook, thermos).
+1. **Card:** TUESDAY · ACT II UNDER REVIEW · ADLINE LAB 111 · 09:04. Nell starts in the lab. Her Act I inventory carries over (recorder with Preston's memo, notebook, thermos).
 2. **Morris joins.** Talking to the drawer: *"Pal. You need someone who fits through walls."* From now on the HUD shows two character chips, **NELL** and **MORRIS**; click the other chip to switch (Day of the Tentacle). Each keeps their own room and position.
 3. **Four clues, any order** (below). Each clue is a notebook line and points.
 4. When all four are in: Nell sums it up, then card **TUESDAY NIGHT · NIGHT SHIFT GUS · HALLWAY 1F 01:58**.

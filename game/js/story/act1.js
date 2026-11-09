@@ -181,7 +181,7 @@ export const HS = {
     exitH: { label: "exit sign", day: { look: "EXIT.", use: "It's a sign." }, night: { look: "EXIT. Still red. Still humming.", use: "Gus taps it. It hums back." } },
     office: { label: "main office", day: { look: "The main office. A yellowed sign: BACK IN 5 MIN. It has said that since 1997.", use: "You knock. Somewhere inside, a form is being filled out about your knock." },
       night: { look: "The main office. Dark.", use: "Locked. Nobody's badge opens the main office. Not even, it's rumored, the staff's." } },
-    lab: { label: "Adline Lab 114", day: { look: "Adline Lab, Room 114. Your lab. Your desk. Your null results.", go: "lab@fromHall" }, night: { look: "The Adline Lab. A monitor glows inside.", go: "lab@fromHall" } },
+    lab: { label: "Adline Lab 111", day: { look: "Adline Lab, Room 111. Your lab. Your desk. Your null results.", go: "lab@fromHall" }, night: { look: "The Adline Lab. A monitor glows inside.", go: "lab@fromHall" } },
   },
 
   lab: {

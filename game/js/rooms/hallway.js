@@ -72,9 +72,9 @@ function back(G) {
   s += `<g data-hs="exitH">${chip("EXIT", 78, 72, 6, "fX", "exitChip")}${hit(76, 70, 28, 14)}</g>`;
   s += `<g data-hs="office">${of.svg}${chip("MAIN OFFICE", of.a[0] - 2, of.a[1] - 14, 4.4, "fW")}
         ${wallBox(0, of.a[0] + 2, of.a[0] + 2 + chipW("BACK IN 5 MIN", 3.8), of.a[1] + 34, of.a[1] + 40.5).put(`<g transform="rotate(-4 14 3)">${chip("BACK IN 5 MIN", 0, 0, 3.8, "fA")}</g>`)}${hit(...of.box)}</g>`;
-  // right wall: Adline Lab 114
+  // right wall: Adline Lab 111
   const lab = sideDoor(pp, 640, .64, .8, 108);
-  s += `<g data-hs="lab">${lab.svg}${chip("114 ADLINE", lab.a[0] - 4, lab.a[1] - 14, 4.4, "fG")}${hit(...lab.box)}</g>`;
+  s += `<g data-hs="lab">${lab.svg}${chip("111 ADLINE", lab.a[0] - 4, lab.a[1] - 14, 4.4, "fG")}${hit(...lab.box)}</g>`;
   s += coffeeDoor(G);   // the coffee kitchen, every act (Rex steps out of it in Act IV's chase)
   return s;
 }

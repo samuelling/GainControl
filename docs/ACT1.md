@@ -7,8 +7,8 @@ The first playable slice. It teaches walking, the chooser, inventory and USE ON,
 | Room | Exits | What's here (day) | What's here (night) |
 |---|---|---|---|
 | **Seminar Room 101** | door → Hallway | Preston at the lectern, the old woman (Iris), Quorum, nodding faculty, the 7T slide, pizza, pneumatic tube, Morris in the ceiling | the forgotten robe (with a lit pin), a screen ghost, canisters rattling |
-| **Hallway** | 101 · Adline Lab 114 · (stairs, locked) · (main office, closed) · (Impact Lab 116, locked) | Rising Stars wall (Preston's photo is the biggest), bulletin board (the Friday 2 PM collision), water fountain, tube station, Penny's yellowed BACK IN 5 MIN sign | lights off, a strip of light and a hum under the Impact Lab door, Preston's photo smiling wider |
-| **Adline Lab 114** | door → Hallway | Nell's desk (monitor, drawer), whiteboard of null results, Prof. Adline's door ("after the 15th"), the dark-adapted psychophysics booth, Brett waiting for office hours | empty desks, a monitor glow, Morris asleep in the drawer |
+| **Hallway** | 101 · Adline Lab 111 · (stairs, locked) · (main office, closed) · (Impact Lab 116, locked) | Rising Stars wall (Preston's photo is the biggest), bulletin board (the Friday 2 PM collision), water fountain, tube station, Penny's yellowed BACK IN 5 MIN sign | lights off, a strip of light and a hum under the Impact Lab door, Preston's photo smiling wider |
+| **Adline Lab 111** | door → Hallway | Nell's desk (monitor, drawer), whiteboard of null results, Prof. Adline's door ("after the 15th"), the dark-adapted psychophysics booth, Brett waiting for office hours | empty desks, a monitor glow, Morris asleep in the drawer |
 
 ## Day goals (Nell)
 

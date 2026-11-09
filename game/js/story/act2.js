@@ -208,7 +208,7 @@ export const CONVOS = {
 };
 
 /* ---------------- Morris and the vents ---------------- */
-const VENTS = [["lab", "ADLINE LAB 114"], ["hall", "HALLWAY 1F"], ["mri", "MRI CONTROL B1"], ["office", "MAIN OFFICE 1F"], ["kitchen", "COFFEE KITCHEN 1F"]];
+const VENTS = [["lab", "ADLINE LAB 111"], ["hall", "HALLWAY 1F"], ["mri", "MRI CONTROL B1"], ["office", "MAIN OFFICE 1F"], ["kitchen", "COFFEE KITCHEN 1F"]];
 const ARRIVE = {
   mri: "MORRIS|Pal. This room is pulling on my head. Like a magnet. Because it is one.",
   office: "PENNY|RAT! RAT! …Oh. It's just a rat. For a second I thought it was the Provost.",
@@ -321,7 +321,7 @@ export const HS = {
     exitH: { label: "exit sign", day: { look: "EXIT." }, night: { look: "EXIT. Red. Humming." } },
     office: { label: "main office", day: { look: "The main office. BACK IN 5 MIN. Someone is plainly in there.", go: "office@fromHall" },
       morris: { look: "The main office. Morris uses the vent. Doors are for people with hands." }, night: { look: "Dark. Locked.", go: "Locked." } },
-    lab: { label: "Adline Lab 114", day: { look: "Your lab.", go: "lab@fromHall" }, morris: { look: "Home.", go: "lab@fromHall" }, night: { look: "The Adline Lab.", go: "lab@fromHall" } },
+    lab: { label: "Adline Lab 111", day: { look: "Your lab.", go: "lab@fromHall" }, morris: { look: "Home.", go: "lab@fromHall" }, night: { look: "The Adline Lab.", go: "lab@fromHall" } },
     vent: ventHS,
   },
 
@@ -547,7 +547,7 @@ export async function start(api, { fresh, skipCard } = {}) {
   if (!G.inv.nell.includes("thermos")) G.inv.nell.push("thermos");
   G.flags.morrisInDrawer = true; G.cast = ["nell"]; G.chars = {}; G.bodies = 0;
   api.shift({ mode: "day", char: "nell", room: "lab", entry: "start", min: 9 * 60 + 4 });
-  if (!skipCard) await api.card("TUESDAY", "ACT II  UNDER REVIEW", "ADLINE LAB 114  09:04", "fA", 2800);
+  if (!skipCard) await api.card("TUESDAY", "ACT II  UNDER REVIEW", "ADLINE LAB 111  09:04", "fA", 2800);
   await api.say("Tuesday. Nell has a recording of Preston lying, a thermos, and a theory: he never ran the study at all.\n\nIf that's true, the building will know. Scanners keep calendars. Offices keep purchase orders. Ethics keeps binders. Somebody kept a sign-in sheet.\n\nAnd Morris is in the drawer, looking at her.");
 }
 export async function debugNight(api) {

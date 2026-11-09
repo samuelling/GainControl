@@ -11,7 +11,7 @@ This file is both the design and the contract between the art (rooms, figures, p
 
 ## Flow
 
-1. **Card:** WEDNESDAY · ACT III MAJOR REVISIONS · ADLINE LAB 114 · 10:12. Nell and Morris in the lab; Gus at his desk, awake since Monday. Det. Sgt. Small is waiting by the door for a "quick chat" (convo `smallLab`: the thermos, sample sizes, "don't leave the building").
+1. **Card:** WEDNESDAY · ACT III MAJOR REVISIONS · ADLINE LAB 111 · 10:12. Nell and Morris in the lab; Gus at his desk, awake since Monday. Det. Sgt. Small is waiting by the door for a "quick chat" (convo `smallLab`: the thermos, sample sizes, "don't leave the building").
 2. **Four proofs, any order.** Each is a notebook line, points, and a beat with Gus.
 3. **Dana.** After the second proof, the next time Nell walks into the hallway Dana is gone and her sneakers are sticking out of the recycling bin labeled EXCLUDED. Small: "Two bodies. Still underpowered."
 4. **The faculty meeting.** With all four proofs, Ethel comes to Nell (Gus emailed her) and says misconduct can only be raised under New Business at today's faculty meeting; the scene cuts straight to 3F at three o'clock, and afterwards Ethel walks Nell up to Iris (no stairwell errands). Inside: **THE NOD** (a 2-back the faculty answer by nodding). Then Quorum slumps mid-motion and the meeting carries on for forty minutes.

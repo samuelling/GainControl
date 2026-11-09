@@ -206,7 +206,7 @@ export const CONVOS = {
 };
 
 /* ---------------- vents (Morris) ---------------- */
-const VENTS = [["lab", "ADLINE LAB 114"], ["hall", "HALLWAY 1F"], ["office", "MAIN OFFICE 1F"], ["kitchen", "COFFEE KITCHEN 1F"], ["impact", "IMPACT LAB 116"]];
+const VENTS = [["lab", "ADLINE LAB 111"], ["hall", "HALLWAY 1F"], ["office", "MAIN OFFICE 1F"], ["kitchen", "COFFEE KITCHEN 1F"], ["impact", "IMPACT LAB 116"]];
 const ARRIVE = {
   kitchen: "REX|A rat. Great. Even the rats in this building have tenure.",
   impact: "MORRIS|Pal, this place smells like incense and money. And my head itches like crazy.",
@@ -356,7 +356,7 @@ export const HS = {
     stairs: { label: "stairwell", day: { look: "The stairwell. B1, 2F, 3F, 4F.", go: stairs }, morris: { look: "Morris does vents." },
       night: { look: "The stairwell. The server room is down.", go: stairs } },
     office: { label: "main office", day: { look: "The main office. BACK IN 5 MIN.", go: "office@fromHall" }, morris: { look: "Vent." }, night: { look: "Dark.", go: "Locked." } },
-    lab: { label: "Adline Lab 114", day: { look: "Your lab.", go: "lab@fromHall" }, morris: { look: "Home.", go: "lab@fromHall" }, night: { look: "The Adline Lab.", go: "lab@fromHall" } },
+    lab: { label: "Adline Lab 111", day: { look: "Your lab.", go: "lab@fromHall" }, morris: { look: "Home.", go: "lab@fromHall" }, night: { look: "The Adline Lab.", go: "lab@fromHall" } },
     kitchen: { label: "coffee kitchen", day: { look: "The coffee kitchen. Someone in there is sighing at an appliance.", go: "kitchen@fromHall" }, morris: { look: "Food smells. Vent.", go: "kitchen@fromHall" },
       night: { look: "The kitchen. Dark.", go: "kitchen@fromHall" } },
     dana: { label: "Dana Outlier", day: { look: "Dana Outlier, Preston's labmate. One strand of hair stands straight up, defying every model. She's watching 116 like it owes her a thesis.", talk: "c:dana" },
@@ -657,7 +657,7 @@ export async function start(api, { fresh, skipCard } = {}) {
   G.inv = { nell: ["recorder", "notebook", "printout"], gus: ["badge", "phone", "drink"], morris: [] };
   G.cast = ["nell", "morris"]; G.chars = { morris: { room: "lab", x: 222, y: 284, dir: 1 } }; G.bodies = 1;
   api.shift({ mode: "day", char: "nell", room: "lab", entry: "start", min: 10 * 60 + 12 });
-  if (!skipCard) await api.card("WEDNESDAY", "ACT III  MAJOR REVISIONS", "ADLINE LAB 114  10:12", "fV", 2800);
+  if (!skipCard) await api.card("WEDNESDAY", "ACT III  MAJOR REVISIONS", "ADLINE LAB 111  10:12", "fV", 2800);
   await api.say("Wednesday. Tess is dead, Nell's thermos did it, and a detective is waiting by her door.\n\nGus hasn't gone home. He's at his desk with the Big Finding open. Table 1 says brain scans predict people's scores at .94, where 1.00 is perfect. Gus has the expression of a man watching a horse do long division.");
   await api.convo("smallLab");
 }

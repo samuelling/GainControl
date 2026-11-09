@@ -146,7 +146,7 @@ export const CONVOS = {
 };
 
 /* ---------------- shared helpers ---------------- */
-const VENTS = [["lab", "ADLINE LAB 114"], ["hall", "HALLWAY 1F"], ["office", "MAIN OFFICE 1F"], ["kitchen", "COFFEE KITCHEN 1F"], ["maze", "ANIMAL FACILITY B1"]];
+const VENTS = [["lab", "ADLINE LAB 111"], ["hall", "HALLWAY 1F"], ["office", "MAIN OFFICE 1F"], ["kitchen", "COFFEE KITCHEN 1F"], ["maze", "ANIMAL FACILITY B1"]];
 async function vent(api) {
   const d = await api.chooseFrom("MORRIS TAKES THE VENTS. WHERE TO?", VENTS.filter(([id]) => id !== api.G.room));
   if (!d) return null;
@@ -238,7 +238,7 @@ export const HS = {
       + (api.has("map") ? " Room in it for something rolled up. The address card says: ANY ROOM. Up goes to people. Down goes to them." : "") } },
     stairs: { label: "stairwell", day: { look: "The stairwell.", go: stairs }, morris: look("Vents."), night: { look: "The stairwell.", go: "Gus has a scan at 2:30. And a feeling about the tunnels." } },
     office: { label: "main office", day: { look: "The main office.", go: "office@fromHall" }, morris: look("Vent."), night: { look: "Dark.", go: "Locked." } },
-    lab: { label: "Adline Lab 114", day: { look: "Your lab.", go: "lab@fromHall" }, morris: { look: "Home.", go: "lab@fromHall" }, night: { look: "The lab.", go: "lab@fromHall" } },
+    lab: { label: "Adline Lab 111", day: { look: "Your lab.", go: "lab@fromHall" }, morris: { look: "Home.", go: "lab@fromHall" }, night: { look: "The lab.", go: "lab@fromHall" } },
     kitchen: { label: "coffee kitchen", day: { look: "The kitchen.", go: "kitchen@fromHall" }, morris: { look: "Food.", go: "kitchen@fromHall" }, night: { look: "Dark.", go: "kitchen@fromHall" } },
     prof: { label: "Prof. Impact", day: { look: "Prof. Maximilian Impact, back from wherever he always is. Neck pillow, rolling bag, a phone he's not talking into. He looks every one of his forty-one years.",
         talk: (api) => api.flag("impactMet") ? "IMPACT|Four o'clock. My office. Please." : "c:impactHall" },
@@ -501,7 +501,7 @@ export async function start(api, { fresh, skipCard } = {}) {
   G.inv = { nell: ["recorder", "notebook", "printout"], gus: ["badge", "phone", "drink"], morris: [] };
   G.cast = ["nell", "morris"]; G.chars = { morris: { room: "lab", x: 222, y: 284, dir: 1 } }; G.bodies = 2;
   api.shift({ mode: "day", char: "nell", room: "lab", entry: "start", min: 9 * 60 + 15 });
-  if (!skipCard) await api.card("THURSDAY", "ACT IV  REBUTTAL", "ADLINE LAB 114  09:15", "fR", 2800);
+  if (!skipCard) await api.card("THURSDAY", "ACT IV  REBUTTAL", "ADLINE LAB 111  09:15", "fR", 2800);
   await api.say("Thursday. Nell knows the paper is fake, and she knows there's a Table. What she doesn't know is who's turning the dial.\n\nGus is at his desk, re-running her replication for the fourth time. Through the lab door: a rolling suitcase, and a man saying 'no, I can't talk, I'm back' into a phone.");
 }
 export async function debugNight(api) {

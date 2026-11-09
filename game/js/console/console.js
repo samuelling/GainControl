@@ -137,7 +137,7 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
     let run = null, pending = null, lastRes = null, done = 0;
     el.classList.add("show");
     el.innerHTML = `<div class="crtwrap z0">${crtCase()}<div class="screen pc off p0">
-      <svg class="t hd" viewBox="0 0 640 40">${seg("PERCEPTION CONSOLE", 16, 9, 16, "sW", 1.5)}${seg("BOOTH 114  ADLINE LAB", 236, 12, 5, "sM", .8)}<g id="pcmode"></g></svg>
+      <svg class="t hd" viewBox="0 0 640 40">${seg("PERCEPTION CONSOLE", 16, 9, 16, "sW", 1.5)}${seg("BOOTH 111  ADLINE LAB", 236, 12, 5, "sM", .8)}<g id="pcmode"></g></svg>
       <div class="pcbody"></div>
       <div class="coachline"><span class="who" style="background:var(--G)">CONSOLE</span> <span class="txt" style="color:var(--G)"></span><div class="ref"></div></div>
       <div class="bar"><span class="status"></span><span class="btns" style="display:flex;gap:.6cqw;flex-wrap:wrap;align-items:center"></span><button data-b="back" class="off">${standalone ? "MENU" : "CLOSE"}</button></div></div></div><svg class="zoomdash t" viewBox="0 0 640 360">${zoomDashes()}</svg>`;
@@ -226,14 +226,14 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
       for (const id of ids) { const t = await fetchScript(id, kind).catch(() => null); if (t) files.push({ name: scriptFile(id, kind), data: t }); }
       const readme = await fetchScript("README", "readme").catch(() => null); if (readme) files.unshift({ name: "README.md", data: readme });
       saveFile(`perception-console-${kind}_${stamp()}.zip`, zip(files), "application/zip"); sfx("select");
-      say(`${ids.length} ${SCRIPT_KINDS[kind]} script${ids.length === 1 ? "" : "s"}, zipped.`);
+      say(`${ids.length} ${SCRIPT_KINDS[kind]} script${ids.length === 1 ? "" : "s"}, zipped, with a README. Starter code, written in part with Claude: dot your i's and cross your coding t's.`);
     }
     // one module's script
     async function exportScript(m, kind) {
       const t = await fetchScript(m.id, kind).catch(() => null);
       if (!t) { say("That script isn't in this copy of the console."); return; }
       saveFile(scriptFile(m.id, kind), t, "text/plain"); sfx("select");
-      say(`${m.title} for ${SCRIPT_KINDS[kind]}: ${scriptFile(m.id, kind)}. Set your screen's width and viewing distance at the top, and sizes come out in real degrees.`);
+      say(`${m.title} for ${SCRIPT_KINDS[kind]}: ${scriptFile(m.id, kind)}. Starter code, written in part with Claude: set your screen at the top, and check timing, sizes and the data file before you collect real data.`);
     }
     const exportBtns = (m) => Object.keys(SCRIPT_KINDS).filter(k => hasScript(m.id, k)).map(k => `<button data-x="${k}" class="k">${SCRIPT_KINDS[k].toUpperCase()}</button>`).join("");
     let curMod = null;
@@ -337,7 +337,7 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
         if (document.fonts) document.fonts.load("500 30px 'Saira Condensed'").then(() => { if (run === R && !R.begun) drawInstructions(g, m); }).catch(() => {});
         const go = ctx.key([" ", "go", "Enter"], { buttons: [["go", "BEGIN"]] });
         if (exportBtns(m)) { btns.insertAdjacentHTML("beforeend", `<span class="kb" style="margin-left:1.2cqw">EXPORT</span>${exportBtns(m)}`);
-          refE.textContent = "Or take it to the lab: the same experiment as a PsychoPy or Psychtoolbox script, in real degrees once you set your screen's size and distance."; }
+          refE.textContent = "Or take it to the lab: the same experiment as a PsychoPy or Psychtoolbox script. Starter code, written in part with Claude: check it before you collect real data."; }
         await go; refE.textContent = "";
         R.begun = true;
         await m.run(ctx);

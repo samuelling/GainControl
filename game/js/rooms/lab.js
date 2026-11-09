@@ -1,4 +1,4 @@
-// ADLINE LAB 114 — Nell's desk and drawer, the null-results whiteboard, Prof. Adline's door, the dark booth, Brett.
+// ADLINE LAB 111 — Nell's desk and drawer, the null-results whiteboard, Prof. Adline's door, the dark booth, Brett.
 import { seg, chip, perspective, shell, sideDoor, hit, arcs } from "../gfx.js";
 import { brettFigure, morrisPeek, smallFigure, AUD } from "../figures.js";
 import { gusSeated } from "../cast/act3a.js";
@@ -135,7 +135,7 @@ function brett(G) {
 }
 
 export default {
-  id: "lab", name: "ADLINE LAB 114", pp,
+  id: "lab", name: "ADLINE LAB 111", pp,
   floor: { yMin: 206, yMax: 287, margin: 16 },
   entries: { fromHall: [112, 272, 1], start: [262, 272, 1] },
   draw(G) {
