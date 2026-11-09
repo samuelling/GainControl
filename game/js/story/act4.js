@@ -34,8 +34,8 @@ wrap("notebook", (api) => {
     t("clueMetamer", "Library, 2F: the back issues. Where did his sentences come from?"), t("clueHours", "Penny's receipts: where does everyone go on Fridays?"),
     t("clueDark", "Morris says Preston's ears light up. Gus wants a measurement. (Talk to Gus.)"),
     t("fourOClock", "Four o'clock: Impact's office, 3F.") + four,
-    t("clueCard", "What did Impact want to tell Ethel? (His desk drawer.)"), t("clueReviewer2", "Who wrote Reviewer 2?"), t("clueLasagna", "His Figure 2. Six perfect layers, and a sulcus with very straight walls.")];
-  if (f.clueCard) L.push(t("codyLeft", "Cody's in the hallway, about to do something brave. Talk to him."));
+    t("clueReviewer2", "Who wrote Reviewer 2? (His laptop is open.)"), t("clueLasagna", "His Figure 2. Six perfect layers, and a sulcus with very straight walls."), t("clueCard", "What did Impact want to tell Ethel? (His desk drawer.)")];
+  if (all(api, OFFICE)) L.push(t("codyLeft", "Cody's in the hallway, about to do something brave. Talk to him."));
   if (f.codyLeft) L.push(t("codyDead", "Cody took the back stairs, past the animal facility. You'd need booties. Morris wouldn't. (Click his name; the vents.)"));
   if (f.morrisPast) L.push(t("chased", "Tell Small. Now. (Hallway.)"));
   return "Your lab notebook. Thursday.\n\n" + L.join("\n");
@@ -364,10 +364,11 @@ function gusHint(api) {
   if (!f.clueDark) return "GUS|He's in the booth. Twenty minutes in the dark, Nell. Then look beside him, not at him.";
   if (!f.impactDead) return f.impactMissing ? "GUS|Penny said B1. The −80 room. Go." : "GUS|It's four. Impact's office, third floor.";
   if (!f.impactOpen) return "GUS|His office password's his h-index. His academic high score. Of course it is. The directory's in the library.";
+  if (!f.clueReviewer2) return "GUS|His laptop's in his office? Read it. Men like Impact keep everything, especially the things they didn't write.";
+  if (!f.clueLasagna) return "GUS|That framed Figure 2 in his office. Lay your own scan over it. Something about those layers.";
   if (!f.clueCard) return "GUS|What's in his office? Men like Impact keep the thing that matters in the top drawer.";
   if (!f.codyLeft) return "GUS|Cody's in the hallway, rehearsing something under his breath. That's never good. Go talk to him.";
   if (!f.codyDead) return "GUS|Cody's taking the back stairs past the animal facility. Nobody goes down there, Nell. Except rats. Send the rat.";
-  if (!all(api, OFFICE)) return "GUS|What else is in his office?";
   return "GUS|Go home tonight, Nell. I've got a scan. I'll be fine. I'm always fine at 2 AM.";
 }
 async function doDark(api) {
@@ -471,6 +472,10 @@ export const END = { title: "END OF ACT IV", chip: "REBUTTAL", bodies: "BODIES 0
 export async function check(api) {
   const { G } = api, f = G.flags;
   if (G.mode === "day") {
+    if (G.room === "impactoffice" && G.char === "nell" && !f.officeSeen) { f.officeSeen = true;
+      return "Prof. Impact's office. Too big, and everything in it framed.\n\nNELL|Three things in here aren't decoration. His laptop, left open. That framed figure on the wall. And a drawer that isn't quite shut."; }
+    if (all(api, OFFICE) && !f.officeDone) { f.officeDone = true; api.refresh();
+      return "NELL|Reviewer 2 was Preston. Figure 2 is my lunch. And Impact was going to tell Ethel everything.\n\nNELL|Somebody else in this building is about to be brave. I can hear him from here: Cody, in the hallway, rehearsing."; }
     if (f.impactMet && all(api, LEADS) && !f.fourOClock) { f.fourOClock = true; f.impactMissing = true; G.min = 16 * 60; api.refresh();
       return "Four o'clock. Nell's phone buzzes: the main office.\n\nPENNY (PHONE)|Hon, if you're looking for Prof. Impact, he went down to B1 to check on a sample. Twenty minutes ago. The −80 room. He said to tell you he'd be right back.\n\nNELL|B1. The big freezers."; }
     // Morris doesn't wait to be switched to: he runs the vents straight back to Nell
@@ -499,6 +504,6 @@ export async function start(api, { fresh, skipCard } = {}) {
 }
 export async function debugNight(api) {
   Object.assign(api.G.flags, { impactMet: true, clueMetamer: true, clueHours: true, fourOClock: true, impactDead: true, impactOpen: true, clueReviewer2: true, clueLasagna: true,
-    clueCard: true, codyLeft: true, codyDead: true, morrisPast: true, chased: true, escaped: true, irisThursday: true, nightDone: true });
+    clueCard: true, officeSeen: true, officeDone: true, codyLeft: true, codyDead: true, morrisPast: true, chased: true, escaped: true, irisThursday: true, nightDone: true });
   api.G.bodies = 4; await nightfall(api);
 }

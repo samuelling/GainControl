@@ -121,7 +121,8 @@ function act4Sorts(G) {
   if (G.mode === "night") return out;
   if (!f.impactDead && (!f.impactMet || !f.clueHours || !f.clueMetamer)) { const x = 284, y = 252, q = kAtY(y) * AUD;
     out.push({ depth: y, svg: `<g data-hs="prof">${impactStanding(x, y, kAtY(y))}${hit((x - 70 * q).toFixed(1), (y - 172 * q).toFixed(1), (114 * q).toFixed(1), (172 * q + 2).toFixed(1))}</g>` }); }
-  if (f.clueCard && !f.codyLeft) { const x = 474, y = 252, fg = fig("", x, y, 32, 176);
+  if (f.officeDone && !f.codyLeft) {   // Cody waits in the hallway once Impact's office has given up all three clues
+    const x = 474, y = 252, fg = fig("", x, y, 32, 176);
     out.push({ depth: y, svg: `<g data-hs="cody">${codyStanding(x, y, kAtY(y))}${fg.hit}</g>` }); }
   return out;
 }

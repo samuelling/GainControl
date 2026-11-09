@@ -5,7 +5,7 @@
 **Pacing (Nov 2026):** Friday morning (Gus found, the robe, the map, THE REHEARSAL) now opens Act V; Act IV ends on Gus's last text. Four o'clock is a phone call from Penny (straight to the −80), and Morris runs back to Nell on his own after finding Cody.
 
 **Question:** Who's pulling Preston's strings?
-**Day (Nell + Morris; Gus awake at his desk):** Impact flies in and agrees to talk at 4. He's found frozen in the −80. His office gives up Reviewer 2 and the lasagna. Cody is killed in the water maze, and Morris saw who did it. Preston comes after Nell through the fog. **Night (Gus):** the coat check, the map, the date. **Friday dawn:** Gus in the 3T. **Then:** Nell tells Iris the plan, and THE REHEARSAL.
+**Day (Nell + Morris; Gus awake at his desk):** Impact flies in and agrees to talk at 4. He's found frozen in the −80. His office gives up three clues, all required (Nell names them on the way in): Reviewer 2 on his laptop, the lasagna in his framed Figure 2, and his expired NRT card in the drawer. With all three, Cody appears in the hallway. Cody is killed in the water maze, and Morris saw who did it. Preston comes after Nell through the fog. **Night (Gus):** the coat check, the map, the date. **Friday dawn:** Gus in the 3T. **Then:** Nell tells Iris the plan, and THE REHEARSAL.
 
 This file is the contract between art, minigames and story. The ids, flags and stand points are the interface.
 
