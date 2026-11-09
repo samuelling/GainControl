@@ -120,7 +120,7 @@ const lostFound = (line, chipTxt) => ({ n: 6, ms: 260, hold: 2800, sfx: (i) => i
 
 export async function aftermath(api, which) {
   if (which === "accepted") return montage(api, [
-    paper("SECRET SOCIETY RAN NEURO", "DEPT FOR FIFTY YEARS", "THE NEUROSCIENTIFIC ROUND TABLE · DISSOLVED"),
+    paper("SECRET SOCIETY RAN THE", "FIELD FOR FIFTY YEARS", "THE NEUROSCIENTIFIC ROUND TABLE · DISSOLVED"),
     mugshot("QUORUM", "AGE 39", "ARRESTED · CHARGE SHEET AMENDED"),
     lostFound("NOBODY CAME BACK FOR THE ROBES.", "THE FRIDAY DINNER IS CANCELLED"),
     counter("PRESTON VALU", "PAPERS RETRACTED", 31, "THE NOTICES ARE THE FIRST THING HE'S WRITTEN HIMSELF IN YEARS"),
