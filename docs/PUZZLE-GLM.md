@@ -10,9 +10,9 @@
 
 - **Preston's claim** (the slide from Act I): top-down attention boosts the BOLD response **most in V1's feedback layers**, the outermost (1, 2/3) and innermost (5/6), and least in layer 4, the feedforward input layer that carries the stimulus drive: a U-shaped depth profile. The hypothesis is reasonable (feedback terminates outside layer 4); what is fake is his data, which could never resolve it at 3T. It's a "textbook" double-bump depth profile with tiny error bars, at "7T."
 - **What the data really show** (revised Nov 2026): a clean visual response, and a **real attention effect**: ATTEND is about 30% above IGNORE across the whole time series, as the field has known since the late 1990s. What the data cannot show is *where in depth* it lives: at 3T one voxel spans the whole cortex, so the effect is the same number in all six "layers". The null is a **laminar** null. And at 3T there are no layers to look at in the first place.
-- **The knife twist:** the null is Nell's. The deposited "sub-01" is Nell's pilot scan. Her honest paper reported this null; Reviewer 2 rejected it for being null, then Preston upscaled the same data into a positive laminar result. Nell doesn't realize sub-01 is herself until the retainer reveal in Act IV, so this puzzle *plants* that reveal:
+- **The knife twist:** the null is Nell's. The deposited "sub-01" is Nell's pilot scan. Her honest paper reported this null; Reviewer 2 rejected it for being null, then Preston upscaled the same data into a positive laminar result. Nell doesn't realize sub-01 is herself until the lasagna reveal in Act IV, so this puzzle *plants* that reveal:
   > **Act III, after the fit:** GUS: "It's not a small effect. It's no effect." / MORRIS: "So the fancy layers?" / NELL: "Painted on."
-  > **Act IV, at the retainer:** "His sub-01 had my null. Because his sub-01 is me."
+  > **Act IV, at the lasagna:** "His sub-01 had my null. Because his sub-01 is me."
 - **The methods section doesn't match the log.** The paper (written by the LTM; see STORY.md, secret step 12) describes "a jittered event-related design, 24 participants, 7T." The log shows 16 s blocks, one subject, no 7T. The text was generated to sound like an NRT paper; nobody checked it against what was actually run.
 - **Theme:** publication bias as the motive. A true null was a dead end for Nell and a raw material for Preston. The game's hero is named Null for a reason.
 
@@ -105,7 +105,7 @@ Playable as a test scene: `game/glm.html` (module `game/js/minigames/glm.js`, wh
 ## Gates
 
 - **Needs:** the stimulus log (Morris, Impact Lab), the data (archive research), Gus at the desk (Act III day, after the Act II alliance).
-- **Unlocks:** the "Painted on" line, a new Notebook entry ("sub-01 has a null. Like mine."), and a +1 nudge toward the GPU logs ("so where did the layers come from?"). In Act IV the retainer overlay pays it off.
+- **Unlocks:** the "Painted on" line, a new Notebook entry ("sub-01 has a null. Like mine."), and a +1 nudge toward the GPU logs ("so where did the layers come from?"). In Act IV the lasagna overlay pays it off.
 - **Total:** about 20 h-index points if all three tells are found.
 
 **Update (Nov 2026):** the standalone test page is gone. WRITE IT UP ends the minigame; the result appears as Nell's write-up, a clue close-up (`WRITEUP` in `game/js/story/act3.js`), instead of a scorecard.

@@ -62,7 +62,7 @@ export const CONVOS = {
 };
 
 /* ---------------- minigame wrappers ---------------- */
-const EVIDENCE = ["calendar", "po", "irb", "clipboard", "grim", "overlay", "logs", "glm", "retainer", "reviewer2", "invite", "hours", "metamer", "card", "feud", "dark", "recorder"];
+const EVIDENCE = ["calendar", "po", "irb", "clipboard", "grim", "overlay", "logs", "glm", "lasagna", "reviewer2", "invite", "hours", "metamer", "card", "feud", "dark", "recorder"];
 async function doDefense(api) {
   if (api.flag("defenseDone")) return "It's done. Whatever it was.";
   await api.convo("committee");

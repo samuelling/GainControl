@@ -1,11 +1,11 @@
-// ACT IV — Thursday: REBUTTAL. Impact in the −80, Reviewer 2 and the retainer, Cody in the maze, the chase through the fog;
+// ACT IV — Thursday: REBUTTAL. Impact in the −80, Reviewer 2 and the lasagna, Cody in the maze, the chase through the fog;
 // Gus's last night at the coat check (the act ends on his last text; Friday morning and THE REHEARSAL open Act V). Design: docs/ACT4.md.
 import { seg, segC, chip, chipW } from "../gfx.js";
 import { ITEMS, VIV, dendro } from "./act1.js";
 import "./act3.js";
 import { metamer } from "../minigames/metamer.js";
 import { hours } from "../minigames/hours.js";
-import { retainer } from "../minigames/retainer.js";
+import { lasagna } from "../minigames/lasagna.js";
 import { stairwell } from "../minigames/stairwell.js";
 import { lift } from "../minigames/lift.js";
 import { darkbooth } from "../minigames/darkbooth.js";
@@ -23,7 +23,7 @@ Object.assign(ITEMS, {
     g: (x, y) => `<rect class="sW" x="${x - 9}" y="${y - 8}" width="18" height="16"/><path class="hl sW" d="M${x - 6},${y + 4} L${x - 2},${y - 2} L${x + 3},${y + 2} L${x + 6},${y - 4}"/><circle class="hl sR" cx="${x + 5}" cy="${y - 3}" r="2.6"/>` },
 });
 const wrap = (id, fn) => { const old = ITEMS[id].look; ITEMS[id].look = (api) => api.G.act === 4 ? fn(api) : (typeof old === "function" ? old(api) : old); };
-const LEADS = ["clueMetamer", "clueHours", "clueDark"], OFFICE = ["clueReviewer2", "clueRetainer", "clueCard"];
+const LEADS = ["clueMetamer", "clueHours", "clueDark"], OFFICE = ["clueReviewer2", "clueLasagna", "clueCard"];
 const all = (api, ks) => ks.every(k => api.flag(k));
 wrap("notebook", (api) => {
   const f = api.G.flags, t = (k, s) => `- ${f[k] ? "(done) " : ""}${s}`;
@@ -33,7 +33,7 @@ wrap("notebook", (api) => {
     t("clueMetamer", "Library, 2F: the back issues. Where did his sentences come from?"), t("clueHours", "Penny's receipts: where does everyone go on Fridays?"),
     t("clueDark", "Morris says Preston's ears light up. Gus wants a measurement. (Talk to Gus.)"),
     t("fourOClock", "Four o'clock: Impact's office, 3F.") + four,
-    t("clueCard", "What did Impact want to tell Ethel? (His desk drawer.)"), t("clueReviewer2", "Who wrote Reviewer 2?"), t("clueRetainer", "His Figure 2. Something about the dropout, the blank hole metal leaves in a scan.")];
+    t("clueCard", "What did Impact want to tell Ethel? (His desk drawer.)"), t("clueReviewer2", "Who wrote Reviewer 2?"), t("clueLasagna", "His Figure 2. Six perfect layers, and a sulcus with very straight walls.")];
   if (f.clueCard) L.push(t("codyLeft", "Cody's in the hallway, about to do something brave. Talk to him."));
   if (f.codyLeft) L.push(t("codyDead", "Cody took the back stairs, past the animal facility. You'd need booties. Morris wouldn't. (Click his name; the vents.)"));
   if (f.morrisPast) L.push(t("chased", "Tell Small. Now. (Hallway.)"));
@@ -127,7 +127,7 @@ export const CONVOS = {
     ["R", "That's why I can talk. That's why my head itches. They tried it on me first."],
     ["L", "You were never a lab pet. You were a pilot."],
     ["R", "So were you, pal."],
-    ["L", "…Subject one. I scanned myself first. Retainer and all."],
+    ["L", "…Subject one. I scanned myself first. Then my lunch."],
     ["R", "Takes one to know one."],
   ], after: (api) => api.flag("morrisPast", true) },
 
@@ -304,7 +304,7 @@ export const HS = {
     desk: { label: "Impact's laptop", day: { look: "Impact's laptop, open. A folder: REVIEWS I DIDN'T WRITE.", use: async (api) => {
       await api.readout(REVIEW(), "Reviewer 2's report on your paper. Last spring. 'Nueron.' 'Utilize.' 'Thier.' Saved from P. VALU's laptop into Impact's folder.\n\nThe LTM, his paper-writing machine, never misspells anything. A person wrote this. Preston wrote this.");
       if (!api.flag("clueReviewer2")) { api.flag("clueReviewer2", true); api.score("clueReviewer2", 3); } return "NELL|The one thing he wrote himself was my rejection."; } } },
-    figure: { label: "framed Figure 2", day: { look: "A framed print of the Big Finding's Figure 2 on the wall, signed by Preston: 'To the boss! Synergy!'", use: doRetainer } },
+    figure: { label: "framed Figure 2", day: { look: "A framed print of the Big Finding's Figure 2 on the wall, signed by Preston: 'To the boss! Synergy!' Six flawless layers of cortex, and a sulcus with suspiciously straight walls.", use: doLasagna } },
     drawer: { label: "desk drawer", day: { look: "The top drawer, not quite shut. The only thing in this office that isn't framed. Men like Impact keep the thing that matters closest to hand.", use: async (api) => {
       await api.readout(CARD(), "A membership card. NEUROSCIENTIFIC ROUND TABLE. M. IMPACT. AGE: 41. EXPIRED.");
       if (!api.flag("clueCard")) { api.flag("clueCard", true); api.score("clueCard", 3); api.refresh(); }
@@ -392,12 +392,12 @@ async function doHours(api) {
   api.flag("clueHours", true); api.score("clueHours", 3); api.take("receipts");
   return "PENNY|Friday, eleven to three. Every week. For as long as I've had the calendars.\n\nNELL|And the same three labs on every CV.";
 }
-async function doRetainer(api) {
-  if (api.flag("clueRetainer")) return "Your mouth. Six layers inside it.";
-  const r = await api.mini(retainer, { score: api.score });
-  if (!r || !r.done) return missed(api, "retainerFails") < 2 ? "The dropout is right there. Line them up."
-    : "The dropout is right there. Slide your scan left and down until your retainer's shadow sits on his, shrink it a little, then mark every layer he painted inside it.";
-  api.flag("clueRetainer", true); api.score("clueRetainer", 3); api.refresh(); return null;
+async function doLasagna(api) {
+  if (api.flag("clueLasagna")) return "Your lunch. Six layers of it.";
+  const r = await api.mini(lasagna, { score: api.score });
+  if (!r || !r.done) return missed(api, "lasagnaFails") < 2 ? "The edges are right there. Line them up."
+    : "The edges are right there. Slide his figure left and down until his sulcus sits on the slice you cut, shrink it a little, then mark every layer.";
+  api.flag("clueLasagna", true); api.score("clueLasagna", 3); api.refresh(); return null;
 }
 async function chase(api) {
   const G = api.G, F = G.flags; F.chased = true;
@@ -432,7 +432,7 @@ async function chase(api) {
 export const WITH = {
   "library.backissues": { printout: doMetamer },
   "office.penny": { receipts: doHours },
-  "impactoffice.figure": { notebook: doRetainer },
+  "impactoffice.figure": { notebook: doLasagna },
   "lab.monitor": { map: (api) => api.G.mode === "night" ? "GUS|Not on her desk. Anyone walks past her desk. Things in tubes, nobody checks. Not if they're going up." : null,
     robe: (api) => { if (api.G.mode !== "night") return null; api.take("robe"); api.flag("robeLeft", true); if (api.has("reel")) { api.take("reel"); api.flag("reelLeft", true); } api.score("robeLeft", 2);
     return "Gus drapes the robe over Nell's chair, pin facing out, so she'll see it first thing." + (api.flag("reelLeft") ? " He tucks the reel into the hood." : "") + "\n\nGUS|You'll need it more than me."; } },
@@ -492,7 +492,7 @@ export async function start(api, { fresh, skipCard } = {}) {
   await api.say("Thursday. Nell knows the paper is fake, and she knows there's a Table. What she doesn't know is who's turning the dial.\n\nGus is at his desk, re-running her replication for the fourth time. Through the lab door: a rolling suitcase, and a man saying 'no, I can't talk, I'm back' into a phone.");
 }
 export async function debugNight(api) {
-  Object.assign(api.G.flags, { impactMet: true, clueMetamer: true, clueHours: true, fourOClock: true, impactDead: true, impactOpen: true, clueReviewer2: true, clueRetainer: true,
+  Object.assign(api.G.flags, { impactMet: true, clueMetamer: true, clueHours: true, fourOClock: true, impactDead: true, impactOpen: true, clueReviewer2: true, clueLasagna: true,
     clueCard: true, codyLeft: true, codyDead: true, morrisPast: true, chased: true, escaped: true, irisThursday: true, nightDone: true });
   api.G.bodies = 4; await nightfall(api);
 }

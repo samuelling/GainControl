@@ -228,7 +228,7 @@ export const WALKTHROUGH = {
       { t: "Click the desk drawer and choose OPEN: Impact's expired membership card. This brings Cody to the hallway.", flag: "clueCard",
         hs: ["impactoffice.drawer", "hall.stairs"], nudge: ["NELL|He was going to tell me something at four. What did he want Ethel to know?", "GUS (TEXT)|men like impact keep the thing that matters in the top drawer", "NELL|Impact's desk drawer. Open it."] },
       { t: "OPTIONAL (story clue; the act advances without it): click Impact's laptop and choose READ THE REVIEW.", flag: "clueReviewer2" },
-      { t: "OPTIONAL (story clue): framed Figure 2, OVERLAY YOUR SCAN. Press ← 3 times, ↓ 2 times, SCALE − 4 times (it snaps into line); click all six painted layers. DONE.", flag: "clueRetainer" },
+      { t: "OPTIONAL (story clue): framed Figure 2, OVERLAY YOUR SCAN. Press ← 3 times, ↓ 2 times, SCALE − 4 times (it snaps into line); click all six layers. DONE.", flag: "clueLasagna" },
     ] },
     { name: "CODY, AND THE FOG", steps: [
       { t: "In the hallway, TALK to Cody (by the tube station).", flag: "codyLeft",
@@ -284,7 +284,7 @@ export const WALKTHROUGH = {
       { t: "Q2, ARE THE DATA REAL? → TABLE 1 CEILING and FIGURE 3B = 3D. (Save GPU LOGS and THE REPLICATION.)", flag: "defenseDone",
         hs: ["defense.lectern"], nudge: ["NELL|Are the data real? Wednesday was all about that.", "NELL|Gus's ceiling, and the two participants who turned out to be one brain.", "NELL|The Table 1 ceiling, and Figure 3b equals 3d. Save the logs and the replication."] },
       { t: "Q3, WHOSE DATA ARE THEY? → THE RETAINER. Q4, WHO WROTE THE REVIEW? → REVIEWER 2 REPORT.", flag: "defenseDone",
-        hs: ["defense.lectern"], nudge: ["NELL|Whose data? My mouth, six layers inside it. Who wrote the review? Someone who can't spell nueron.", "NELL|Impact's office had both. A framed figure, and a folder of reviews he didn't write.", "NELL|The retainer for whose data. The Reviewer 2 report for who wrote it."] },
+        hs: ["defense.lectern"], nudge: ["NELL|Whose data? My lunch, six layers of it. Who wrote the review? Someone who can't spell nueron.", "NELL|Impact's office had both. A framed figure, and a folder of reviews he didn't write.", "NELL|The lasagna for whose data. The Reviewer 2 report for who wrote it."] },
       { t: "Q5, WHY? → two of THE INVITATION, THE MISSING HOURS, THE METAMER, IMPACT'S NRT CARD, THE DARK BOOTH. Nell names Preston. DONE.", flag: "defenseDone",
         hs: ["defense.lectern"], nudge: ["NELL|Why? Because there's a table. And I can prove it exists.", "NELL|A cream invitation. Friday receipts. A stitched paper. An expired card. Lights in his ears.", "NELL|Any two: the invitation, the missing hours, the metamer, Impact's card, the dark booth."] },
     ] },

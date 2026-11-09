@@ -16,10 +16,10 @@ Nell Null is a fifth-year grad student whose dissertation keeps coming up null. 
 
 ## The secret (what really happened)
 
-1. Last spring Nell submitted her pilot paper (3T data, a top-down attention task: a strong visual response and an honest **null** for attention in V1). Nell scanned herself as pilot subject #1, retainer and all.
+1. Last spring Nell submitted her pilot paper (3T data, a top-down attention task: a strong visual response and an honest **null** for attention in V1). Nell scanned herself as pilot subject #1, and ended the session with a phantom: her lunch, a six-layer lasagna, as a known answer for the layer scan (run 9).
 2. The journal sent it to famous Prof. Maximilian Impact for review. Impact, as usual, handed it to his student Preston to ghost-review.
 3. Preston, writing as **Reviewer 2**, rejected it for being null ("the authors should simply collect more data"). Then he downloaded Nell's shared dataset.
-4. He ran it through an AI super-resolution model on the department GPU cluster to upscale 3T into "7T laminar" data. The model hallucinated beautiful cortical layers everywhere, **including inside Nell's retainer artifact**.
+4. He ran it through an AI super-resolution model on the department GPU cluster to upscale 3T into "7T laminar" data. The model, trained only on brains, turned everything with stripes into cortex, and Preston's showcase Figure 2 is **run 9: Nell's lasagna**, relabelled laminae I–VI (the cheese is the pial surface, the ricotta a vein, the missing slice a sulcus).
 5. He published it with fake participants, a backdated IRB protocol and imaginary scanner sessions. The job offers rolled in.
 6. Now anyone who could connect the dots has to go. Preston kills the way he publishes: efficiently, and while framing someone else.
 
@@ -234,7 +234,7 @@ One or two per act, each a victim the **Table** needed silenced, not just someon
 - **The dark booth:** the proof that Preston is being driven. The Gain Controller's earbuds leak trace photons, too few to see except with fully dark-adapted rods. Gus lures Preston into the Adline Lab's booth as a "pilot subject" (middle authorship), and after twenty minutes in perfect dark Nell, looking beside him rather than at him, sees the emission: a coil, the Table's insignia, and a gain dial pinned at maximum.
 - **Impact's office** (password: his h-index):
   - **Reviewer 2's report** on Nell's paper, in Preston's unmistakable style ("nueron," "utilize").
-  - **The retainer.** Nell's own retainer artifact in Preston's figure, with six hallucinated cortical layers inside it. *"That's not his data. That's my mouth."* And the null from the replication clicks: *"His sub-01 had my null. Because his sub-01 is me."*
+  - **The lasagna.** Nell lays run 9 of her pilot session over Preston's Figure 2 and it registers, noodle on noodle: six layers, none of them cortex. *"That's not cortex. That's my lunch."* And the null from the replication clicks: *"His sub-01 had my null. Because his sub-01 is me."*
   - **Impact's NRT card** (expired, age 41) and a draft letter to Ethel Bord: *"I can no longer stay silent about the Table."*
 - **Cody Credit** decides to tell Det. Small about the clipboard and is found floating in the water maze, "unable to locate the hidden platform." Morris saw it from the vent: Preston with glowing earbuds, and a robed figure behind him holding a remote.
 - **The chase:** Preston comes after Nell through the basement (cold room, LN2 station, animal facility), and the NRT floods the corridors with fog from its induction machines (**THE FOG**, a contrast-threshold puzzle; see [PUZZLE-FOG.md](PUZZLE-FOG.md)). Doors and markers fade corridor by corridor, the NRT has re-signed some doors with decoys, and the last stretch is a real staircase procedure down a real stairwell: on every landing Nell picks the left or right door (2AFC), and the fog adapts to her answers. Rex is "killed" in the LN2 room and survives; nine years of postdoc have made him impervious. Morris's itch is unbearable. Preston isn't chasing Nell alone. At B3 the fog runs out at Iris's old **magnet lift** (1968, fitted with an up-only ratchet after the Schism; unlike the passenger elevator, it doesn't listen), and it carries Nell straight up to the 4th floor, past the broken light, to Iris's door.
@@ -320,7 +320,7 @@ Nell is still a TA. Undergrads from her stats section show up at random with que
 ### 5. Investigation tools (the Gabriel Knight engine)
 - **Days, not rooms.** As in *Sins of the Fathers*, each day opens with a title card ("MONDAY — JOURNAL CLUB"). A day ends only when you've done its key things, and the clock moves the cast around the building.
 - **Voice memo recorder:** Gabriel's tape recorder. Record what people say and play it back to someone else for a reaction. Play Preston's "I ran every subject myself" to Cody; play Penny's "nobody ordered a coil" to Prof. Impact. Recording Morris gets you nothing but squeaks.
-- **Lab notebook:** Gabriel's sketchbook. Trace figure panels, signatures and artifact shapes, then compare them over other images. This is how the duplicated panel and the retainer reveal work.
+- **Lab notebook:** Gabriel's sketchbook. Trace figure panels, signatures and artifact shapes, then compare them over other images. This is how the duplicated panel and the lasagna reveal work.
 - **The coordinate cipher:** the voodoo code. The killer's threatening notes are strings of MNI brain coordinates. Look each one up in the atlas on Nell's computer, and the region names' initials spell out the message. Nell learns the code a few symbols at a time, and in Act V she writes her *own* note in it to lure Preston into the trap.
 - **Disguises:** the cat-hair mustache tradition. Nell gets into the faculty-only lounge as Prof. Impact, using a keynote lanyard, an airport neck pillow, and Morris on her head as the hair.
 - **Archive research:** Nell can read old papers, Preston's CV and the department newsletter archive to look up what she needs (who had scanner access in which years, what "laminar" actually requires). These are real reading puzzles, the way Gabriel researched at the bookstore and library.
@@ -336,8 +336,8 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 | MRI magnet strength (3T vs. 7T) | "Tesla is how strong the magnet is. Stronger magnet, finer detail. Our building only has the weaker one." | Act I methods slide |
 | Magnet safety | "The magnet is always on. Metal flies into it." | Murder weapon; death screens |
 | Cortical layers | "The brain's surface is a stack of thin layers, like a cake. Seeing them needs a very strong magnet." | Why the 7T claim matters |
-| Signal dropout | "Metal in your mouth makes a hole in the scan, like a thumb over a camera lens." | The retainer reveal |
-| AI hallucination | "Ask an AI to sharpen a blurry photo and it invents detail that was never there." | Layers inside the retainer hole |
+| Phantoms | "Scanners get tested on objects with a known answer: a bottle of gel, a fruit, a lasagna. Glass doesn't show up at all." | The lasagna reveal |
+| AI hallucination | "Ask an AI to sharpen a blurry photo and it invents detail that was never there." | A lasagna sharpened into cortex |
 | The noise ceiling | "Two wobbly rulers can only agree as well as each one agrees with itself." Reliability caps any correlation at √(rel₁ × rel₂); picking voxels because they correlate, then reporting that correlation, breaks the cap with pure noise (the 2009 "puzzlingly high correlations" critique). | Table 1, THE CEILING |
 | Image duplication | "Two experiments shouldn't produce the identical picture." | Notebook overlay |
 | Brain coordinates | "Every spot in the brain has an address, like latitude and longitude." | Cipher notes |
@@ -388,7 +388,7 @@ Every science puzzle uses a real concept, explained so a non-scientist can solve
 | 8 | GPU logs | Server room | Rex's password costs coffee; fix the espresso machine (multi-step). Find both jobs: `superres_laminar.py` and the Friday-midnight `ltm_generate.py`, whose corpus path (`/mnt/B3/archive`) is the first written proof that B3 exists |
 | 9 | Murder weapon | Kitchen / Gus | Gus saw who took the NELL thermos from the MRI control room during his 2 AM scan, but he's been stuck for a week on his motion-correction script and can't think about anything else. Fix it with him first |
 | 10 | Reviewer 2 identity | Impact's office | Password = h-index (findable in his bio); match the writing quirks |
-| 11 | The retainer | Nell's own pilot scan vs. the paper's figure | Overlay your scan on his: identical dropout, hallucinated layers |
+| 11 | The lasagna | Nell's own pilot session vs. the paper's figure | Overlay your run 9 on his Figure 2: it registers; his six layers are noodles |
 | 12 | Witness | Morris | Get Morris's testimony admitted (a cartoon-logic puzzle in Act V) |
 | 13 | Threat notes | Sticky notes, all week | Coordinate cipher. Decode each note in the brain atlas. In Act V, write your own note to lure Preston |
 | 14 | Preston's lie on tape | Voice memo | Record "I ran every subject myself" in Act I; play it to Cody in Act II to get the clipboard |

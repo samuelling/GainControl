@@ -17,7 +17,7 @@ Day and night merge. Part 1 is Laura Bow's courtroom; Part 2 is Gabriel Knight's
 3. **THE DEFENSE** (`defense.js`): the committee asks five questions. For each, Nell presents evidence cards from her week, in an order that convinces. Wrong or weak cards cost credibility (a meter); the right ones raise it.
    1. "Was the study run?" (calendar, purchase orders, IRB, clipboard)
    2. "Are the data real?" (the noise ceiling, Figure 3, GPU logs, the replication)
-   3. "Whose data are they?" (the retainer)
+   3. "Whose data are they?" (the lasagna)
    4. "Who wrote the review?" (Reviewer 2's typos)
    5. "Why would anyone do this?" (the invitation, the missing hours, the metamer, Impact's card)
 

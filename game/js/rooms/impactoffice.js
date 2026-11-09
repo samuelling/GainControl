@@ -1,4 +1,4 @@
-// PROF. IMPACT 3F — a corner office, too big. A framed print of the Big Finding's Figure 2 (THE RETAINER), a frame of keynote
+// PROF. IMPACT 3F — a corner office, too big. A framed print of the Big Finding's Figure 2 (THE LASAGNA), a frame of keynote
 // lanyards, a filing cabinet, a corner window with a plane crossing it, an executive desk with a laptop open on
 // Reviewer 2's report and a drawer (the NRT card, the draft letter), and a first-class airline seat. Act IV.
 import { seg, segC, chip, perspective, shell, sideDoor, hit, arcs } from "../gfx.js";
@@ -11,7 +11,7 @@ const f1 = (a) => a.map(v => v.toFixed(1)).join(",");
 const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
 
 // Figure 2, as printed: a close-up of folded cortex (pial surface, six layer lines following the fold, the white-matter
-// boundary) with a depth probe, and the dropout where the layers are too neat to be real
+// boundary) with a depth probe, and a sulcus with walls too straight to be real
 function figure2(x, y, w, h) {
   // gyri are broad crowns, sulci narrow and deep; the layers thin at the crowns' flanks and bunch in the fundus
   const fold = (t) => { const pts = []; for (let i = 0; i <= 48; i++) { const u = i / 48;
@@ -22,11 +22,10 @@ function figure2(x, y, w, h) {
   s += `<path class="sK" d="${fold(0)}"/>`;
   for (let i = 1; i <= 5; i++) s += `<path class="hl sR" d="${fold(i / 6)}"/>`;
   s += `<path class="sW" d="${fold(1)}"/>`;
-  // the dropout (black, the retainer's shadow) with six too-tidy layers painted inside it
-  const dx = x + w * .62, dy = y + h * .44;
-  s += `<ellipse class="k sM" cx="${dx}" cy="${dy}" rx="${w * .1}" ry="${h * .16}"/>
-    ${[0, 1, 2, 3, 4, 5].map(i => `<path class="hl sG" d="M${dx - w * .08},${dy - h * .1 + i * h * .04} L${dx + w * .08},${dy - h * .1 + i * h * .04}"/>`).join("")}
-    <path class="sB" d="M${x + w * .3},${y + 10} L${x + w * .34},${y + h - 14}"/><circle class="fB" cx="${x + w * .34}" cy="${y + h - 14}" r="1.2"/>`;
+  // the "sulcus": a gap with dead-straight walls, where somebody cut a slice (Figure 2 is a lasagna; see minigames/lasagna.js)
+  const gx = x + w * .6, gw = w * .11;
+  s += `<rect class="k" style="stroke:none" x="${gx}" y="${y + 6}" width="${gw}" height="${h - 20}"/><path class="sM" d="M${gx},${y + 6} L${gx},${y + h - 14} M${gx + gw},${y + 6} L${gx + gw},${y + h - 14}"/>`
+        + `<path class="sB" d="M${x + w * .3},${y + 10} L${x + w * .34},${y + h - 14}"/><circle class="fB" cx="${x + w * .34}" cy="${y + h - 14}" r="1.2"/>`;
   s += chip("FIG. 2", x + 4, y + h - 10, 3.4, "fW") + seg("VALU ET AL.", x + w - 34, y + h - 9, 3, "sM", .5);
   return s;
 }

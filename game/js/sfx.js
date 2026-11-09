@@ -117,7 +117,7 @@ const S = {
   cite: () => { tone(2600, .025, { type: "square", g: .016 }); },
   // the missing hours: calendar toggles
   toggle: (o = {}) => { noise(.012, { f: 2200, q: 4, g: .08 }); tone(o.on ? 720 : 480, .04, { type: "square", g: .03, at: .008 }); },
-  // the retainer: scale steps and the layer clicks (each one higher)
+  // the lasagna: scale steps and the layer clicks (each one higher)
   scale: (o = {}) => { tone(o.up ? 640 : 760, .07, { type: "triangle", g: .045, glide: o.up ? 880 : 520 }); },
   layer: (o = {}) => { tone(560 + (o.n || 1) * 130, .05, { type: "square", g: .035 }); noise(.01, { f: 5000, q: 4, g: .05 }); },
   // the defense: a card on the table, credibility, the committee
