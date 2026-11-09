@@ -86,6 +86,7 @@ export function mountMegazine(root) {
 // address). The masthead keeps megaZINE's own look, the one place outside the console where the line rules give way.
 // Click anywhere but the masthead to finish; the masthead itself opens megazine.org.
 import { segC } from "./gfx.js";
+import { LED } from "./title.js";
 export function megazineEnd(el, { hint = "CLICK TO FINISH" } = {}) {
   return new Promise((resolve) => {
     el.innerHTML = `<div class="mzend"><svg class="t mzpart" viewBox="0 0 200 14">${segC("PART OF", 100, 3, 7, "sA", 1)}</svg>${MEGAZINE_HTML}<div class="mzhint">${hint}</div></div>`;
@@ -102,20 +103,29 @@ export function megazineEnd(el, { hint = "CLICK TO FINISH" } = {}) {
 // GAIN CONTROL's credits: the masthead as part of the roll. An overlay over the credits card (above it), centred on a
 // y in the card's 640 × 360 units, moved by the roll and parked at the middle. at(y) places it; onSkip(fn) is called by a
 // click during the roll; done() shows the hint and resolves on a click (anywhere but the masthead) / Enter / Space.
-export function megazineRoll(host, hint = "CLICK TO FINISH") {
+// out = [label, url]: after a bad ending, an LED band at the bottom once the roll is done: your punishment, as somebody
+// else's game (click it to go).
+export function megazineRoll(host, hint = "CLICK TO FINISH", out = null) {
   const ov = document.createElement("div"); ov.className = "mzroll";
   ov.innerHTML = `<div class="mzend"><svg class="t mzpart" viewBox="0 0 200 14">${segC("PART OF", 100, 3, 7, "sA", 1)}</svg>${MEGAZINE_HTML}</div><div class="mzhint">${hint}</div>`;
+  if (out) {
+    LED.css();
+    const m = new Map(), t1 = "THIS IS YOUR PUNISHMENT FOR BEING PATHETIC:", t2 = `${out[0]}  >`;
+    LED.text(m, t1, LED.center(t1), 88, "x");
+    ov.insertAdjacentHTML("beforeend", `<svg class="t ledpanel mzout" viewBox="0 0 640 360">${LED.strip(m, [LED.row("out", t2, LED.center(t2), 97, "w")], 85, 105)}</svg>`);
+  }
   host.appendChild(ov);
   const box = ov.querySelector(".mzend"), stop = mountMegazine(box), hintE = ov.querySelector(".mzhint");
   let skipFn = null, finish = null;
   const down = (e) => { if (e.target.closest && e.target.closest(".mz")) return; e.preventDefault();
+    if (out && finish && e.target.closest && e.target.closest('[data-btn="out"]')) { window.SFX && window.SFX.play("select"); location.href = out[1]; return; }
     if (finish) finish(); else if (skipFn) { const f = skipFn; skipFn = null; f(); } };
   const key = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); if (finish) finish(); else if (skipFn) { const f = skipFn; skipFn = null; f(); } } };
   ov.addEventListener("pointerdown", down); window.addEventListener("keydown", key, true);
   return {
     at: (y) => { box.style.top = (y / 360 * 100).toFixed(2) + "%"; },
     onSkip: (fn) => { skipFn = fn; },
-    done: () => new Promise((resolve) => { setTimeout(() => { hintE.style.visibility = "visible";
+    done: () => new Promise((resolve) => { setTimeout(() => { hintE.style.visibility = "visible"; const o = ov.querySelector(".mzout"); if (o) { o.style.visibility = "visible"; window.SFX && window.SFX.play("tick"); }
       finish = () => { ov.removeEventListener("pointerdown", down); window.removeEventListener("keydown", key, true); stop(); ov.remove(); resolve(); }; }, 900); }),
   };
 }

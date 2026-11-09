@@ -146,7 +146,7 @@ const CAST = [
   ["small", "DET. SGT. SMALL", "THE SMALL EFFECT"], ["impact", "PROF. IMPACT", "THE IMPACT FACTOR"], ["adline", "PROF. ADLINE", "THE DEADLINE"],
   ["rex", "DR. REX JECTED", "REJECTED"], ["dana", "DANA OUTLIER", "THE OUTLIER"], ["quorum", "PROF. QUORUM", "THE CORRESPONDING AUTHOR"],
 ];
-export async function credits(api, { score = 0 } = {}) {
+export async function credits(api, { score = 0, out = null } = {}) {
   let y = 380, s = "";
   const line = (t, h, cls, gap = 10, sw) => { s += segC(t, 320, y, h, cls, sw || Math.max(.8, h / 9)); y += h * 1.6 + gap; };
   const pair = (role, who) => { s += seg(role, 320 - 14 - segW(role, 6), y, 6, "sM", .9) + seg(who, 334, y, 6, "sW", .9); y += 18; };
@@ -202,7 +202,7 @@ export async function credits(api, { score = 0 } = {}) {
   const id = "roll" + Math.floor(Math.random() * 1e6), STEP = 3, MS = 74;   // 3 px every 74 ms: about 40 px a second
   const stepsC = Math.ceil(H / STEP), stepsM = Math.ceil((MZ - 180) / STEP), steps = Math.max(stepsC, stepsM);
   api.bigCard(`<g id="${id}">${s}</g>`, { auto: 0, hold: 1e9, mark: false });   // stays up: the page reloads after
-  const mz = megazineRoll(document.getElementById("card").parentElement, "CLICK TO RETURN TO THE TITLE");
+  const mz = megazineRoll(document.getElementById("card").parentElement, "CLICK TO RETURN TO THE TITLE", out);
   let i = 0, skip = false;
   const place = () => { const g = document.getElementById(id); if (g) g.setAttribute("transform", `translate(0 ${-Math.min(i, stepsC) * STEP})`); mz.at(Math.max(180, MZ - i * STEP)); };
   place();

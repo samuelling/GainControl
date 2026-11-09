@@ -226,8 +226,8 @@ async function ending(api, which, { shown = false } = {}) {
   if (which === "inducted" || which === "deskreject") { if (!shown) { await api.say(END.epilogue); END.epilogue = ""; } await verdict(api, which); }
   api.endAct(); return null;
 }
-// the verdict on the LED panel, in giant red dots, and a door out of the game: the career it sentences you to, as somebody
-// else's game. INDUCTED → ChairQuest (a lifetime in the chair); DESK REJECT → Advisor Quest. Or just roll the credits.
+// the verdict on the LED panel, in giant red dots. And at the end of the credits, a door out of the game: the career it
+// sentences you to, as somebody else's game. INDUCTED → ChairQuest (a lifetime in the chair); DESK REJECT → Advisor Quest.
 const VERDICTS = {
   inducted: { word: "SELLOUT.", sc: 4, nudge: 6, seed: 39, out: ["LIVE IT OUT IN CHAIRQUEST", "https://www.crumplab.com/ChairQuest/"] },
   deskreject: { word: "DESK REJECT", sc: 3, nudge: 0, seed: 41, out: ["LIVE IT OUT IN ADVISOR QUEST", "https://crumplabsandbox.github.io/advisor-quest/"] },
@@ -242,14 +242,9 @@ async function verdict(api, which) {
   const scr = api.crt(); scr.set(at(0)); await api.wait(700);
   for (const k of [.08, .2, .4, .65, .85, 1]) { scr.set(at(k)); api.sfx("tick"); await api.wait(100); }
   for (const k of [0, 1, 0, 1]) { scr.set(at(k)); await api.wait(k ? 160 : 70); }
-  await api.wait(1400);
-  // two ways on, in small dots: number keys or a click
-  const o1 = `1  ${V.out[0]}`, o2 = "2  ROLL THE CREDITS", c = Math.round((LED.NC - LED.textW(o1)) / 2);
-  scr.set(at(1, [LED.row("out", o1, c, 84, "w"), LED.row("credits", o2, c, 94, "w")])); api.sfx("select");
-  const pick = await scr.choose(["out", "credits"]);
-  await scr.close();
-  if (pick === "out") { api.sfx("select"); await api.wait(300); location.href = V.out[1]; await new Promise(() => {}); }   // leave the game for the other one
-  await api.wait(500);
+  await scr.click(1200, 4200);
+  await scr.close(); await api.wait(500);
+  END.out = V.out;   // the credits end on the way out: your punishment, as somebody else's game
 }
 
 // count a failed attempt at a puzzle (stored in a flag); after a couple, the surrounding lines start giving real hints

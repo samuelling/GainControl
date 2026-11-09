@@ -560,7 +560,7 @@ async function endAct() {
     ${centered(E.next, 252, 6, "sM", 1)}`, { hold: 1200, auto: 0 });
   if (ACTS[G.act + 1]) { await blackout(false); await startAct(G.act + 1); return; }
   await coda(api);                                         // the real record, after the last act
-  await credits(api, { score: G.score });                  // the credits roll, and close on the megaZINE masthead
+  await credits(api, { score: G.score, out: E.out });      // the credits roll, and close on the megaZINE masthead (and, after a bad ending, your punishment)
   location.hash = ""; location.reload();
 }
 

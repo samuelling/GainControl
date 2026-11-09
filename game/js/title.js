@@ -102,9 +102,9 @@ function render(S, { shift = null, ghost = false, noise = 0, scan = -1 } = {}) {
   return s;
 }
 export const LED_CSS = `
-#card .lw { fill: var(--W); } #card .la { fill: var(--A); } #card .lx { fill: var(--X); } #card .lm { fill: var(--M); } #card .ld { fill: var(--N); } #card .lr { fill: var(--R); } #card .lg { fill: var(--G); }
-#card .ledbtn { cursor: pointer; } #card .ledbtn .cur { display: none; }
-#card .ledbtn:hover .lw, #card .ledbtn:hover .lm { fill: var(--G); } #card .ledbtn:hover .cur { display: inline; }
+:is(#card, .ledpanel) .lw { fill: var(--W); } :is(#card, .ledpanel) .la { fill: var(--A); } :is(#card, .ledpanel) .lx { fill: var(--X); } :is(#card, .ledpanel) .lm { fill: var(--M); } :is(#card, .ledpanel) .ld { fill: var(--N); } :is(#card, .ledpanel) .lr { fill: var(--R); } :is(#card, .ledpanel) .lg { fill: var(--G); }
+:is(#card, .ledpanel) .ledbtn { cursor: pointer; } :is(#card, .ledpanel) .ledbtn .cur { display: none; }
+:is(#card, .ledpanel) .ledbtn:hover .lw, :is(#card, .ledpanel) .ledbtn:hover .lm { fill: var(--G); } :is(#card, .ledpanel) .ledbtn:hover .cur { display: inline; }
 `;
 function css() { if (document.getElementById("css-led")) return; const s = document.createElement("style"); s.id = "css-led"; s.textContent = LED_CSS; document.head.appendChild(s); }
 
@@ -112,7 +112,10 @@ function css() { if (document.getElementById("css-led")) return; const s = docum
 export const LED = { NC, NR, BIG, SMALL, text, textW, center, css: () => css(), render: (map) => render({ map, rows: [], fullRow: null }),
   // a menu row: its own dot map, drawn as a button (data-btn = id; hover lights it green with the > cursor)
   row: (id, str, c, r, cls = "w") => { const m = new Map(); text(m, str, c, r, cls); return { id, r, c, m, w: textW(str) }; },
-  renderRows: (map, rows) => render({ map, rows, fullRow: null }) };
+  renderRows: (map, rows) => render({ map, rows, fullRow: null }),
+  // a band of the panel only (rows r0..r1): the unlit grid and the lit dots clipped to it, on black
+  strip: (map, rows, r0, r1) => `<rect x="0" y="${r0 * P}" width="640" height="${(r1 - r0) * P}" fill="#000"/><clipPath id="ledstrip"><rect x="0" y="${r0 * P}" width="640" height="${(r1 - r0) * P}"/></clipPath>`
+    + `<g clip-path="url(#ledstrip)">${render({ map, rows, fullRow: null })}</g>` };
 export function titleArt(opts = {}) { css(); return `<g id="ttl">${render(screen(opts))}</g>`; }
 
 // run the glitches while the title card is up; returns stop()
