@@ -249,7 +249,7 @@ export const WALKTHROUGH = {
         nudge: ["NELL|He caught me. He doesn't get to keep me. Every landing I've passed is still passed.", "NELL|Down. Again. All the way to B3. He's only ever one flight behind.", "NELL|Keep going down. The fog has to run out somewhere."] },
     ] },
     { name: "THURSDAY NIGHT  (GUS)", steps: [
-      { t: "In the steam tunnels, click the coat check and choose PUT ONE ON: the robe with the lit pin.", flag: "gotRobe4",
+      { t: "In the steam tunnels, click the coat check and choose TAKE THE ROBE: the one with the lit pin.", flag: "gotRobe4",
         hs: ["tunnels.rack"], nudge: ["GUS|A coat check. In a steam tunnel. That's either a cult or a very committed gala.", "GUS|Nell will need to get in tomorrow. Nobody gets in without the outfit.", "GUS|The robe with the lit pin, at the coat check. That one."] },
       { t: "Click the map and choose TAKE.", flag: "gotMap4",
         hs: ["tunnels.map"], nudge: ["GUS|She'll need to find her way down here too. Without me.", "GUS|Somebody pinned directions to the coat rack. Cults are surprisingly organized.", "GUS|Take the map off the rack."] },

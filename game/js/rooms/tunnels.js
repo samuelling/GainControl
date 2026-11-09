@@ -190,7 +190,7 @@ export default {
     rack: [246, 246], reel: [290, 246], map: [200, 248] },
   labels: {
     night: { bricked: { use: "KNOCK", talk: "LISTEN" }, hatch: { use: "OPEN" }, back: { go: "BACK", use: "BACK" }, valve: { use: "TURN" }, pipes: { use: "TOUCH" }, tube: { use: "LISTEN" },
-      rack: { use: "PUT ONE ON" }, reel: { use: "TAKE" }, map: { use: "TAKE" } },
+      rack: { use: "TAKE THE ROBE" }, reel: { use: "TAKE" }, map: { use: "TAKE" } },
     day: { bricked: { use: "KNOCK", talk: "LISTEN" }, hatch: { use: "OPEN" }, back: { go: "BACK", use: "BACK" }, valve: { use: "TURN" }, pipes: { use: "TOUCH" }, tube: { use: "LISTEN" } },
     morris: { bricked: { use: "SNIFF" }, back: { go: "SCURRY BACK" }, pipes: { use: "LICK" } },
   },
