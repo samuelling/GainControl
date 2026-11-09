@@ -3,6 +3,7 @@
 // or a function(api) that does things and may return either of those.
 import { seg } from "../gfx.js";
 import { openConsole } from "../console/open.js";
+import { realHS } from "./realrecord.js";
 
 /* ---------------- inventory ---------------- */
 export const ITEMS = {
@@ -111,6 +112,25 @@ const tubeNight = { look: "The canisters are rattling. Going down. Past the base
   score: { use: ["tubeN", 1] } };
 
 export const HS = {
+  // the coffee kitchen, Monday: Rex and the machine, already in their standoff (it pays off on Wednesday)
+  kitchen: {
+    rex: { label: "Dr. Rex Jected", day: { look: "Dr. Rex Jected, ninth-year postdoc, leaning on the counter with an empty mug, staring at the espresso machine like it's a grant he didn't get.",
+        talk: "REX|It's said DESCALE since 2012. I press the button every morning. Every morning it says DESCALE.\n\nREX|Most reliable result in this building. Somebody should publish it." } },
+    espresso: { label: "espresso machine", day: { look: "The espresso machine. A blinking chip: DESCALE. A sticker on the side: DESCALE WITH ANY MILD ACID. Under it, in Sharpie: WE HAVE NO ACID. —R",
+        use: "REX|That's my button, Nell." },
+      night: { look: "DESCALE, blinking in the dark. Even at 2 AM it has standards.", use: "Gus presses it, out of solidarity with Rex. DESCALE." } },
+    mugs: { label: "mug tree", day: { look: "The mug tree. WORLD'S OKAYEST PI. I ♥ P < .05. A mug shaped like a brain that nobody uses.", use: "You don't need a mug. You need a thesis." },
+      night: { look: "The mug tree. The brain mug watches Gus. Nobody uses the brain mug." } },
+    fridge: { label: "fridge", day: { look: "The fridge. A note: DO NOT DRINK — SAMPLE. On a carton of oat milk.",
+        use: "You open the fridge. Oat milk, with a note: DO NOT DRINK — SAMPLE. Somebody's leftover lasagna, labelled N.N. in your handwriting. You close the fridge." },
+      night: { look: "The fridge hums. The note on the oat milk is still there: DO NOT DRINK — SAMPLE.", use: "Gus opens the fridge, considers the oat milk, considers his life, and closes the fridge." } },
+    board: { label: "corkboard", day: { look: "WHO TOOK MY OAT SYNERGY. CLEAN YOUR MUG (THIS MEANS YOU, P.V.). And a typed card: WHO KEEPS BOOKING THE OLD B-LEVEL ROOM ON FRIDAYS? Nobody's answered." },
+      night: { look: "In the dark, one card on the corkboard is easier to read than the rest: WHO KEEPS BOOKING THE OLD B-LEVEL ROOM ON FRIDAYS?" } },
+    invite2018: realHS("invite2018", "a folded card"),
+    sink: { label: "sink", day: { look: "The sink. A geological record of mugs." }, night: { look: "The sink drips. Gus counts four drips and stops, on principle." } },
+    door: { label: "door to hallway", day: { look: "The hallway.", go: "hall@fromKitchen" }, night: { look: "The hallway.", go: "hall@fromKitchen" } },
+  },
+
   seminar: {
     screen: { label: "projector screen",
       day: { look: "Preston's slide: a close-up of cortex, six layers, each one perfectly resolved. Error bars so small they'd embarrass a ruler. The methods say 7T: a scanner magnet more than twice as strong as ours.\n\nThe building has a 3T.", use: "You cannot use a slide. You can only envy it.", score: { look: ["screen", 1] } },
@@ -154,6 +174,8 @@ export const HS = {
     tube: { label: "tube station", day: tubeDay, night: tubeNight },
     stairs: { label: "stairwell", day: { look: "The stairwell. Upstairs is the second floor, and the second floor is Act II.", use: "Locked. Facilities says it's \"temporarily permanent.\"" },
       night: { look: "The stairwell.", use: "Gus is not taking the stairs at 2 AM. The stairs are where horror movies start." } },
+    kitchen: { label: "coffee kitchen", day: { look: "The coffee kitchen. Someone in there is sighing at an appliance.", go: "kitchen@fromHall" },
+      night: { look: "The coffee kitchen. Dark. A green-and-red blink inside: the espresso machine, still asking.", go: "kitchen@fromHall" } },
     exitH: { label: "exit sign", day: { look: "EXIT.", use: "It's a sign." }, night: { look: "EXIT. Still red. Still humming.", use: "Gus taps it. It hums back." } },
     office: { label: "main office", day: { look: "The main office. A yellowed sign: BACK IN 5 MIN. It has said that since 1997.", use: "You knock. Somewhere inside, a form is being filled out about your knock." },
       night: { look: "The main office. Dark.", use: "Locked. Nobody's badge opens the main office. Not even, it's rumored, the staff's." } },

@@ -436,8 +436,20 @@ const MORNING = {
     stairs: { label: "stairwell", morning: { look: "The stairwell.", go: stairsMorning } },
     office: { label: "main office", morning: { look: "The main office.", go: "Penny isn't in yet. Penny is always in." } },
     lab: { label: "Adline Lab 114", morning: { look: "Your lab.", go: "lab@fromHall" } },
-    kitchen: { label: "coffee kitchen", morning: look("The kitchen. Rex is in there. Rex is always in there.") },
+    kitchen: { label: "coffee kitchen", morning: { look: "The kitchen. Rex is in there. Rex is always in there.", go: "kitchen@fromHall" } },
     vent: { label: "vent", morning: { look: "A vent." } },
+  },
+  // the coffee kitchen, Friday morning: Rex has heard
+  kitchen: {
+    rex: { label: "Dr. Rex Jected", morning: { look: "Rex, with two espressos. He's heard about Gus. He hasn't touched the second one.",
+        talk: "REX|He used to come in here at 2 AM, just to press the button. Said it was the only thing in the building that never changed its result.\n\nREX|Then you fixed it. He was annoyed for a whole day." } },
+    espresso: { label: "espresso machine", morning: look("READY. It doesn't know what day it is.") },
+    mugs: { label: "mug tree", morning: look("One hook empty. Rex is holding Gus's mug. It says NULL & VOID.") },
+    fridge: { label: "fridge", morning: look("DO NOT DRINK — SAMPLE. Some things in this building outlive everybody.") },
+    board: { label: "corkboard", morning: look("WHO KEEPS BOOKING THE OLD B-LEVEL ROOM ON FRIDAYS? Under it, in Rex's writing: I KNOW. Under that, in Gus's: ME TOO.") },
+    invite2018: realHS("invite2018", "a folded card"),
+    sink: { label: "sink", morning: look("Clean. Rex cleans when he's sad.") },
+    door: { label: "door to hallway", morning: { look: "The hallway.", go: "hall@fromKitchen" } },
   },
   iris: {
     iris: { label: "Prof. Iris Candor", morning: { look: "Iris, at her desk, the stapler in her hand. She's been waiting for you.",

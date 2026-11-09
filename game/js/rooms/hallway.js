@@ -74,12 +74,12 @@ function back(G) {
   // right wall: Adline Lab 114
   const lab = sideDoor(pp, 640, .64, .8, 108);
   s += `<g data-hs="lab">${lab.svg}${chip("114 ADLINE", lab.a[0] - 4, lab.a[1] - 14, 4.4, "fG")}${hit(...lab.box)}</g>`;
-  if (G.act === 3 || G.act === 4) s += act3Back(G);   // the COFFEE door stays in Act IV (Rex steps out of it in the chase)
+  s += coffeeDoor(G);   // the coffee kitchen, every act (Rex steps out of it in Act IV's chase)
   return s;
 }
 
-/* ---- Act III: the COFFEE door, Preston by the Rising Stars wall, Dana by the Impact Lab door, the EXCLUDED bin, Det. Small ---- */
-function act3Back(G) {
+/* ---- the COFFEE door, on the right wall near the front ---- */
+function coffeeDoor(G) {
   const kd = sideDoor(pp, 640, .86, .98, 108);
   return `<g data-hs="kitchen">${kd.svg}${chip("COFFEE", kd.a[0] - 30, kd.a[1] - 14, 4.4, "fA")}
     <path class="k sA" d="M${kd.a[0] - 4},${kd.a[1] - 13} L${kd.a[0] + 4},${kd.a[1] - 13} L${kd.a[0] + 3.4},${kd.a[1] - 5} L${kd.a[0] - 3.4},${kd.a[1] - 5} Z"/>

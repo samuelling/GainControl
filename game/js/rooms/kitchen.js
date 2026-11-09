@@ -65,7 +65,7 @@ function back(G) {
 
 // the espresso machine, on the counter: gauge in the red, DESCALE blinking, drips; descaled: READY lit, a curl of steam
 function espresso(G) {
-  const x = 300, b = CT - 2, t = b - 50, ok = !!G.flags.descaled;
+  const x = 300, b = CT - 2, t = b - 50, ok = !!G.flags.descaled || (G.act || 1) >= 4;   // fixed on Wednesday, and it stays fixed
   let s = `<g data-hs="espresso">
     ${[0, 1, 2, 3, 4, 5].map(i => `<path class="hl sM mech" d="M${x + 4 + i * 7},${t - 5} L${x + 4 + i * 7},${t}"/>`).join("")}<path class="hl sM mech" d="M${x + 2},${t - 5} L${x + 44},${t - 5}"/>
     <rect class="k sW mech" x="${x}" y="${t}" width="46" height="${b - t}"/><path class="sW mech" d="M${x},${t + 8} L${x + 46},${t + 8}"/>

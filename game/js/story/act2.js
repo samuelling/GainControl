@@ -3,6 +3,7 @@ import { seg, segC } from "../gfx.js";
 import * as FIG from "../figures.js";
 import { ITEMS, VIV, dendro, boothNap } from "./act1.js";
 import { openConsole } from "../console/open.js";
+import { realHS } from "./realrecord.js";
 
 /* ---------------- new items, and act-aware versions of old ones ---------------- */
 Object.assign(ITEMS, {
@@ -206,10 +207,11 @@ export const CONVOS = {
 };
 
 /* ---------------- Morris and the vents ---------------- */
-const VENTS = [["lab", "ADLINE LAB 114"], ["hall", "HALLWAY 1F"], ["mri", "MRI CONTROL B1"], ["office", "MAIN OFFICE 1F"]];
+const VENTS = [["lab", "ADLINE LAB 114"], ["hall", "HALLWAY 1F"], ["mri", "MRI CONTROL B1"], ["office", "MAIN OFFICE 1F"], ["kitchen", "COFFEE KITCHEN 1F"]];
 const ARRIVE = {
   mri: "MORRIS|Pal. This room is pulling on my head. Like a magnet. Because it is one.",
   office: "PENNY|RAT! RAT! …Oh. It's just a rat. For a second I thought it was the Provost.",
+  kitchen: "REX|A rat. Great. Even the rats in this building have tenure.",
 };
 async function vent(api) {
   const d = await api.chooseFrom("MORRIS TAKES THE VENTS. WHERE TO?", VENTS.filter(([id]) => id !== api.G.room));
@@ -223,6 +225,27 @@ const ventHS = { label: "vent", morris: { look: "A vent. Morris's highway. It sm
 
 /* ---------------- hotspots ---------------- */
 export const HS = {
+  // the coffee kitchen, Tuesday
+  kitchen: {
+    rex: { label: "Dr. Rex Jected", day: { look: "Rex, at the counter, with the empty mug. Same spot as yesterday. Possibly the same breath.",
+        talk: "REX|A physicist died in the magnet room and they still haven't fixed this machine. That tells you everything about priorities.\n\nREX|DESCALE. Day 5,000-something." },
+      morning: { look: "Rex, already here. Nobody has ever arrived before Rex.", talk: "REX|Morning. It says DESCALE. I'll let you know if that changes." },
+      morris: { look: "REX|Don't. Don't even, rat." } },
+    espresso: { label: "espresso machine", day: { look: "DESCALE. A sticker on the side: DESCALE WITH ANY MILD ACID. Under it, in Sharpie: WE HAVE NO ACID. —R", use: "REX|That's my button." },
+      morning: { look: "DESCALE, blinking, on schedule." }, night: { look: "DESCALE, in the dark. Gus respects its consistency." },
+      morris: { look: "MORRIS|There's fourteen years of limescale in there, pal. I can hear it." } },
+    mugs: { label: "mug tree", day: { look: "The mug tree. WORLD'S OKAYEST PI. I ♥ P < .05. The brain mug, unused." }, morris: { look: "Morris can't reach." } },
+    fridge: { label: "fridge", day: { look: "The fridge. DO NOT DRINK — SAMPLE, on the oat milk. Your lasagna, N.N., untouched since Monday. Murder is bad for lunch." },
+      morris: { look: "MORRIS|I've been in there. Don't." }, night: { look: "The fridge hums." } },
+    board: { label: "corkboard", day: { look: "WHO TOOK MY OAT SYNERGY. CLEAN YOUR MUG (THIS MEANS YOU, P.V.). And a typed card: WHO KEEPS BOOKING THE OLD B-LEVEL ROOM ON FRIDAYS? Nobody's answered." },
+      morning: { look: "WHO KEEPS BOOKING THE OLD B-LEVEL ROOM ON FRIDAYS? Still nobody's answered." }, morris: { look: "Too high." } },
+    invite2018: realHS("invite2018", "a folded card"),
+    sink: { label: "sink", day: { look: "The sink. A geological record of mugs." }, morris: { look: "Morris drinks from the drip. Morris is fine." } },
+    door: { label: "door to hallway", day: { look: "The hallway.", go: "hall@fromKitchen" }, morris: { look: "Door.", go: "hall@fromKitchen" },
+      night: { look: "The hallway.", go: "hall@fromKitchen" }, morning: { look: "The hallway.", go: "hall@fromKitchen" } },
+    vent: ventHS,
+  },
+
   lab: {
     door: { label: "door to hallway", day: { look: "The hallway.", go: "hall@fromLab" }, morris: { look: "A door. Morris prefers vents.", go: "hall@fromLab" },
       night: { look: "The hallway.", go: "hall@fromLab" } },
@@ -290,6 +313,9 @@ export const HS = {
           await api.say("He runs to the control room, resets the gradients in four minutes flat, and comes back. The stairwell is empty. Whatever went down went further down than the basement goes.");
           api.score("followed", 1); await morning(api); return null; },
           up: "Nothing good is upstairs at 2 AM." } } },
+    kitchen: { label: "coffee kitchen", day: { look: "The coffee kitchen. Rex is in there. Rex is always in there.", go: "kitchen@fromHall" },
+      morris: { look: "Food smells.", go: "kitchen@fromHall" }, night: { look: "The coffee kitchen. Dark.", go: "kitchen@fromHall" },
+      morning: { look: "The coffee kitchen.", go: "kitchen@fromHall" } },
     exitH: { label: "exit sign", day: { look: "EXIT." }, night: { look: "EXIT. Red. Humming." } },
     office: { label: "main office", day: { look: "The main office. BACK IN 5 MIN. Someone is plainly in there.", go: "office@fromHall" },
       morris: { look: "The main office. Morris uses the vent. Doors are for people with hands." }, night: { look: "Dark. Locked.", go: "Locked." } },
