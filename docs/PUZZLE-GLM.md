@@ -107,3 +107,5 @@ Playable as a test scene: `game/glm.html` (module `game/js/minigames/glm.js`, wh
 - **Needs:** the stimulus log (Morris, Impact Lab), the data (archive research), Gus at the desk (Act III day, after the Act II alliance).
 - **Unlocks:** the "Painted on" line, a new Notebook entry ("sub-01 has a null. Like mine."), and a +1 nudge toward the GPU logs ("so where did the layers come from?"). In Act IV the retainer overlay pays it off.
 - **Total:** about 20 h-index points if all three tells are found.
+
+**Update (Nov 2026):** the standalone test page is gone. WRITE IT UP ends the minigame; the result appears as Nell's write-up, a clue close-up (`WRITEUP` in `game/js/story/act3.js`), instead of a scorecard.

@@ -4,6 +4,7 @@
 // Resolves { generated, sources, feud, printed, paper } when Gus logs off.
 import { seg, segC, segW, chip } from "../gfx.js";
 import { CLASSICS } from "../data/classics.js";
+import { exitLabel, exitKey } from "./exit.js";
 
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 const SMALL = new Set(["a", "an", "and", "the", "of", "in", "on", "for", "to", "as", "at", "by", "or", "vs", "et", "al."]);
@@ -117,7 +118,7 @@ export function fogNeuro(el, { canPrint = true } = {}) {
         <button data-b="gen">GENERATE</button><button data-b="feud" ${cur ? "" : "disabled"}>FEUD</button>
         <button data-b="src" ${cur ? "" : "disabled"}>${showSources ? "HIDE SOURCES" : "SOURCES"}</button>
         <button data-b="print" ${cur && canPrint && !out.printed ? "" : "disabled"}>PRINT</button>
-        <span class="status">${status}</span><button data-b="off" class="off">LOG OFF</button></div>
+        <span class="status">${status}</span><button data-b="off" class="off">${exitLabel(out.printed, "LOG OFF")}</button></div>
         <div class="foot">LTM v0.9 · FOG NEURO · SEED 0412 · BYLINE: P. VALU</div></div>`;
       el.innerHTML = h;
     }
@@ -129,7 +130,7 @@ export function fogNeuro(el, { canPrint = true } = {}) {
       if (b === "print" && cur && !out.printed && !status.startsWith("PRINTING")) { status = "PRINTING ((( )))"; draw(); sfx("printer"); setTimeout(() => { out.printed = true; out.paper = cur; status = "PRINTED."; sfx("paper"); draw(); }, 900); return; }
       if (b === "off") {
         // one nudge, never a lock: leaving without the printout costs a second click, not a replay
-        if (canPrint && !out.printed && cur && !leaving) { leaving = true; status = "GUS HESITATES. ONE PRINTOUT, FOR EVIDENCE? (LOG OFF AGAIN TO LEAVE.)"; sfx("select"); draw(); return; }
+        if (canPrint && !out.printed && cur && !leaving) { leaving = true; status = "GUS HESITATES. ONE PRINTOUT, FOR EVIDENCE? (LOG OFF AGAIN, OR ESC, TO LEAVE.)"; sfx("select"); draw(); return; }
         finish(); return; }
       draw();
     }
@@ -137,7 +138,7 @@ export function fogNeuro(el, { canPrint = true } = {}) {
       c.forEach((x, i) => x.textContent = "CITED BY " + ((i ? rival : cur).cites + cites)); }
       if (splash > 0) { splash--; const hd = el.querySelector("svg.hd"); if (hd) hd.innerHTML = head(); } }, 600);
     const onClick = (e) => { const b = e.target.closest && e.target.closest("button[data-b]"); if (b && !b.disabled) act(b.dataset.b); };
-    const onKey = (e) => { if (e.key === "Escape") act("off"); };
+    const onKey = (e) => { if (e.key === "Escape" || (e.key === "Enter" && out.printed)) { e.preventDefault(); act("off"); } };
     function finish() { clearInterval(tick); el.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey); el.classList.remove("show"); el.innerHTML = ""; resolve(out); }
     el.classList.add("show"); draw();
     el.addEventListener("click", onClick); window.addEventListener("keydown", onKey);

@@ -8,6 +8,7 @@
 // column; a second wrong try on the same receipt files it for you. CVs: 2 wrong clicks, Penny says how to read them;
 // 4, the shared labs are marked in brass.
 import { seg, segC, chip } from "../gfx.js";
+import { exitLabel, exitKey } from "./exit.js";
 
 const DAYS = ["MON 26", "TUE 27", "WED 28", "THU 29", "FRI 30", "SAT 31", "SUN 1"];
 // calendars: blocks [day, start hour, hours, label key]. Together they leave exactly FRI 23 – SAT 03 free.
@@ -186,7 +187,7 @@ export function hours(el, { score = () => {} } = {}) {
         <div class="coachline">${coach()}</div>
         <div class="bar">${S.stage === "cal" ? `<span class="callbl">CALENDARS</span>` : ""}${toggles}<span class="status">${status}</span>
           ${S.stage === "cal" && S.night ? `<button data-b="cv">COMPARE CVS</button>` : ""}
-          <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
+          <button data-b="off" class="off">${exitLabel(S.done)}</button></div></div>`;
     }
     // the case file: the question, and the three steps that answer it (each lights when it's done; the next is brass)
     function banner() {
@@ -257,7 +258,7 @@ export function hours(el, { score = () => {} } = {}) {
       if (r) { const i = +r.dataset.r; if (S.placed[i]) return; S.sel = S.sel === i ? -1 : i; sfx(S.sel >= 0 ? "select" : "cancel"); if (S.sel >= 0) S.say = LINES.pick; draw(); return; }
       const l = t.closest("[data-lab]"); if (l) { labClick(l.dataset.lab); draw(); }
     };
-    const onKey = (e) => { if (e.key === "Escape") finish(); };
+    const onKey = (e) => { exitKey(e, S.done, finish); };
     // the free block blinks between two poses while all three calendars are on
     const blink = setInterval(() => { S.pose ^= 1; const r = el.querySelector(".hours"); if (r) r.classList.toggle("p1", !!S.pose); }, 600);
     function finish() {

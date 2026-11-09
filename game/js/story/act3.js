@@ -283,13 +283,39 @@ async function doOverlay(api) {
     : "Not yet.\n\nGUS (OVER YOUR SHOULDER)|Mirror it first. Then a quarter turn. Fraud is lazy, Nell. It never does more than two things to a picture.";
   api.flag("proofOverlay", true); api.score("proofOverlay", 2); return null;
 }
+// THE REPLICATION, written up: a page from Nell's notebook. Big thin numbers with tiny labels (as every readout), his
+// six-layer profile struck through beside the one flat voxel a 3T can actually see.
+export const WRITEUP = (r) => {
+  const f = (r && r.fit) || { beta: [.6, .3, .1], t: 8, p: .0001 }, sure = f.p < .001 ? "VERY" : f.p < .01 ? "FAIRLY" : f.p < .05 ? "BARELY" : "NOT";
+  const tells = r && r.tells ? Object.values(r.tells).filter(Boolean).length : 3;
+  let s = `<g transform="rotate(-2 320 180)"><rect class="k sW" x="150" y="36" width="340" height="250"/><path class="hl sD" d="M150,58 L490,58 M176,36 L176,286"/>`;
+  s += chip("THE REPLICATION", 186, 42, 6, "fA") + seg("N. NULL   WEDNESDAY   ONE VOXEL, HIS OWN DATA", 300, 45, 4, "sM", .7);
+  s += seg("ATTENTION EFFECT IN V1", 186, 76, 4.4, "sM", .8) + seg("REAL", 186, 86, 34, "sG", 2.2);
+  s += seg(`ATTEND ${f.beta[0].toFixed(2)}   IGNORE ${f.beta[1].toFixed(2)}   HOW SURE: ${sure} (T = ${f.t.toFixed(1)})`, 186, 128, 5, "sA", 1);
+  s += seg("LAYERS A 3T CAN SEE", 186, 150, 4.4, "sM", .8) + seg("ZERO", 186, 160, 24, "sR", 1.8);
+  s += seg("TELLS IN HIS FIGURE", 186, 196, 4.4, "sM", .8) + seg(`${tells}/3`, 186, 206, 24, "sG", 1.8);
+  // his figure 3: a tidy six-layer profile, struck through; hers: one voxel, one bar
+  const hx = 330, hy = 160;
+  s += seg("HIS: SIX LAYERS", hx, hy - 12, 4, "sM", .7) + `<path class="hl sD" d="M${hx},${hy} L${hx},${hy + 66} L${hx + 60},${hy + 66}"/>`;
+  s += `<path class="sB" d="M${hx + 4},${hy + 58} L${hx + 14},${hy + 40} L${hx + 24},${hy + 50} L${hx + 34},${hy + 22} L${hx + 44},${hy + 34} L${hx + 54},${hy + 10}"/>`;
+  s += `<path class="sR" d="M${hx - 4},${hy + 70} L${hx + 62},${hy - 4} M${hx - 4},${hy - 4} L${hx + 62},${hy + 70}"/>`;
+  const vx = 410;
+  s += seg("YOURS: ONE VOXEL", vx, hy - 12, 4, "sM", .7) + `<path class="hl sD" d="M${vx},${hy} L${vx},${hy + 66} L${vx + 60},${hy + 66}"/>`;
+  s += `<rect class="k sG" x="${vx + 12}" y="${hy + 66 - 44}" width="14" height="44"/><rect class="k sD" x="${vx + 34}" y="${hy + 66 - 22}" width="14" height="22"/>`;
+  s += seg("ATTEND", vx + 8, hy + 70, 3.4, "sG", .5) + seg("IGNORE", vx + 30, hy + 70, 3.4, "sM", .5);
+  s += seg("CONCLUSION: ATTENTION, YES. LAYERS, NO. PAINTED ON.", 186, 262, 5, "sW", .9) + `</g>`;
+  return s;
+};
 async function doGLM(api) {
   if (api.flag("proofGLM")) return "ATTEND > IGNORE, by the same amount in every layer. One voxel. You don't need to run it again. You'll run it again tonight anyway.";
   if (!api.has("log")) return "GUS|We need his timing. The stimulus log. It's in 116.";
   await api.say("Gus rolls his chair over. He has the raw data. You have Preston's log. Time to replicate the Big Finding: run his own data his own way, and see if it says what he says.");
-  await api.mini(glm, { score: api.score, die: dieKeep(api) }, "glmwrap");
+  const r = await api.mini(glm, { score: api.score, die: dieKeep(api) }, "glmwrap");
+  if (r && r.left) return "GUS|We'll pick it up when you're ready. The data aren't going anywhere. Unlike everyone else in this building.";
   api.flag("proofGLM", true); api.score("proofGLM", 2); api.take("log");
-  return "GUS|Attention's real. His layers aren't. One voxel can't tell you which floor of the building the party's on.\n\nNELL|So the fancy layers?\n\nGUS|Painted on.";
+  // the result, as a page Nell writes up: a clue close-up like every other piece of evidence
+  await api.readout(WRITEUP(r), "GUS|Attention's real. His layers aren't. One voxel can't tell you which floor of the building the party's on.\n\nNELL|So the fancy layers?\n\nGUS|Painted on.");
+  return null;
 }
 async function monitor(api) {
   const o = [["fig", "FIGURE 3: TWO PARTICIPANTS"]];

@@ -13,6 +13,7 @@
 //      Gus describes it; after four he traces it in green and lights the right button.
 // Resolves { done, wrong }.
 import { seg, segW, chip } from "../gfx.js";
+import { exitLabel, exitKey } from "./exit.js";
 
 const CX = 320, CY = 118;                       // Preston's head, in the dark (never drawn)
 const FOVEA = 40;                               // rod-free zone around the gaze, in viewBox units
@@ -141,7 +142,7 @@ export function darkbooth(el, { score = () => {} } = {}) {
         <div class="coachline"><span class="who" style="background:var(--${c})">${S.say[0]}</span> <span style="color:var(--${c})">${S.say[1]}</span></div>
         <div class="bar"><span class="status">${S.phase === "look" ? (S.done ? "3 / 3 NAMED" : `${S.trial} / 3 NAMED  ·  KEEP THE POINTER BESIDE HIM, THEN CLICK THE SHAPE YOU SEE`) : S.phase === "adapt" ? (thresh(S.min) < EMIT ? "DARK-ADAPTED  ·  DIM ENOUGH TO SEE HIS EARBUDS" : "WAITING  ·  JUST WAIT, IT TAKES A FEW SECONDS") : `${S.leaks.size} / 3 SEALED  ·  CLICK EACH LIGHT LEAK`}</span>
           ${S.phase === "adapt" && !S.done ? `<button data-b="phone" class="red">CHECK PHONE</button>` : ""}
-          <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
+          <button data-b="off" class="off">${exitLabel(S.done)}</button></div></div>`;
     }
     function drawField() { const f = el.querySelector("#darkfield"); if (f) f.innerHTML = svgBody(); else draw(); }
     function startAdapt() {
@@ -190,7 +191,7 @@ export function darkbooth(el, { score = () => {} } = {}) {
       const r = f.getBoundingClientRect(), vb = 640 / r.width; S.gaze = [(e.clientX - r.left) * vb, (e.clientY - r.top) * (250 / r.height)];
       // staring dead-on at his head for a while gets a nudge
       if (Math.hypot(S.gaze[0] - CX, S.gaze[1] - CY) < 22) { S.stareT++; if (S.stareT === 40 && !S.done) { S.say = LINES.stare; draw(); } } else S.stareT = 0; };
-    const onKey = (e) => { if (e.key === "Escape") finish(); };
+    const onKey = (e) => { exitKey(e, S.done, finish); };
     function finish() { clearInterval(tick); clearTimeout(timer); el.removeEventListener("click", onClick); el.removeEventListener("pointermove", onMove); window.removeEventListener("keydown", onKey);
       el.classList.remove("show"); el.innerHTML = ""; resolve({ done: S.done, wrong: S.wrong }); }
     el.classList.add("show"); draw();

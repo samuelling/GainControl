@@ -4,6 +4,7 @@
 // Feedback after each move says whether 3d is still mirrored or only turned; after 5 moves a hint, after 9 the next move is lit.
 // Keys: R rotates, H and V flip. Resolves { matched, moves }.
 import { seg, segC } from "../gfx.js";
+import { exitLabel, exitKey } from "./exit.js";
 
 // the panel: a fold of cortex (pial surface, three layer lines, white-matter boundary), a blob and some noise
 const PANEL = `<path class="sK" d="M8,70 C20,30 40,20 50,40 C58,56 66,30 80,22 C88,18 94,30 92,48"/>
@@ -68,7 +69,7 @@ export function overlay(el, { score = () => {} } = {}) {
         <div class="bar">
           ${["rot", "h", "v"].map(b => `<button data-b="${b}" ${m ? "disabled" : ""}${b === lit ? ` style="background:var(--A)"` : ""}>${{ rot: "ROTATE 90°", h: "FLIP ↔", v: "FLIP ↕" }[b]}</button>`).join("")}
           <span class="status">${m ? "MATCHED" : "TURN AND FLIP 3D UNTIL IT LIES ON 3B · KEYS R H V"}</span>
-          <button data-b="off" class="off">${S.matched ? "DONE" : "CLOSE"}</button></div></div>`;
+          <button data-b="off" class="off">${exitLabel(S.matched)}</button></div></div>`;
     }
     function act(b) {
       if (b === "off") { finish(); return; }
@@ -79,7 +80,7 @@ export function overlay(el, { score = () => {} } = {}) {
       draw();
     }
     const onClick = (e) => { const b = e.target.closest && e.target.closest("button[data-b]"); if (b && !b.disabled) act(b.dataset.b); };
-    const onKey = (e) => { if (e.key === "Escape") finish(); else { const b = { r: "rot", h: "h", v: "v" }[e.key.toLowerCase()]; if (b && !same()) act(b); } };
+    const onKey = (e) => { if (exitKey(e, S.matched, finish)) return; else { const b = { r: "rot", h: "h", v: "v" }[e.key.toLowerCase()]; if (b && !same()) act(b); } };
     function finish() { closed = true; clearTimeout(after); el.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey); el.classList.remove("show"); el.innerHTML = ""; resolve({ matched: S.matched, moves: S.moves }); }
     el.classList.add("show"); draw();
     el.addEventListener("click", onClick); window.addEventListener("keydown", onKey);

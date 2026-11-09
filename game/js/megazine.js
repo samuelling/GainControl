@@ -93,7 +93,8 @@ export function megazineEnd(el, { hint = "CLICK TO FINISH" } = {}) {
     const parts = [".mzpart", ".mzqr", ".mzlogo", ".mztag", ".mzurl", ".mzhint"].map((q) => root.querySelector(q));
     parts.forEach((p) => p && (p.style.visibility = "hidden"));
     parts.forEach((p, i) => setTimeout(() => { if (p) p.style.visibility = "visible"; window.SFX && i < 3 && window.SFX.play("select"); }, 500 + i * 450));
-    const done = (e) => { if (e.target.closest && e.target.closest(".mz")) return; root.removeEventListener("pointerdown", done); stop(); resolve(); };
-    setTimeout(() => root.addEventListener("pointerdown", done), 1200);
+    const key = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); done(e); } };
+    const done = (e) => { if (e.target && e.target.closest && e.target.closest(".mz")) return; root.removeEventListener("pointerdown", done); window.removeEventListener("keydown", key); stop(); resolve(); };
+    setTimeout(() => { root.addEventListener("pointerdown", done); window.addEventListener("keydown", key); }, 1200);
   });
 }

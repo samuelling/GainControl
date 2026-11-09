@@ -4,6 +4,7 @@
 // rolls along the corpus callosum, the rosters along the cortex). Every name here is fictional.
 // crossref(el, { score(key, n) }) → Promise<{ done }>
 import { seg, segC, segW, chip } from "../gfx.js";
+import { exitLabel, exitKey } from "./exit.js";
 
 /* ---------------- the records ---------------- */
 function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -154,7 +155,7 @@ export function crossref(el, { score = () => {} } = {}) {
         <svg class="t xrsvg" viewBox="0 0 640 276">${body}</svg>
         <div class="coachline"></div>
         <div class="bar"><span class="status">${S.revealed ? "ONE NETWORK. FIFTY YEARS." : `${goal(n)}   ·   MATCHES ${mt}`}</span>
-          <button data-b="off" class="off">${S.revealed ? "DONE" : "CLOSE"}</button></div></div>`;
+          <button data-b="off" class="off">${exitLabel(S.revealed)}</button></div></div>`;
       renderCoach();
     }
     function renderCoach() {
@@ -197,7 +198,7 @@ export function crossref(el, { score = () => {} } = {}) {
       const b = e.target.closest && e.target.closest("button[data-b]"); if (b) { finish(); return; }
       const m = e.target.closest && e.target.closest("[data-m]"); if (m) trace(+m.dataset.m);
     };
-    const onKey = (e) => { if (e.key === "Escape") finish(); };
+    const onKey = (e) => { exitKey(e, S.revealed, finish); };
     function finish() {
       timers.forEach(clearTimeout); clearTimeout(qT);
       el.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey);

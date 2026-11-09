@@ -2,7 +2,7 @@
 // The mark's contrast is rendered for real on the player's screen (sRGB, with bit-stealing
 // for sub-step luminance), so the threshold at the end is the player's own, uncalibrated.
 // Exception to the palette rule: the stimulus and the fog are computed grays, not palette classes.
-// stairwell(el, { die, score, chip }) → Promise<{ escaped, threshold }>. If Preston catches Nell, await die(text) (the game's
+// stairwell(el, { die, score, chip }) → Promise<{ escaped, threshold, rank, trials, caught }> (shown afterwards by lift.js). If Preston catches Nell, await die(text) (the game's
 // death screen; resolves on REVISE & RESUBMIT), then she runs on from the same landing with her staircase data intact.
 //
 // The descent runs through five zones (1F hall → LL atrium → B1 MRI → B2 steam tunnels → B3 the 1960s annex), each with
@@ -107,11 +107,11 @@ const CSS = `
 .fogmini .fogactor[data-pose="0"] .ap1, .fogmini .fogactor[data-pose="0"] .ap2,
 .fogmini .fogactor[data-pose="1"] .ap0, .fogmini .fogactor[data-pose="1"] .ap2,
 .fogmini .fogactor[data-pose="2"] .ap0, .fogmini .fogactor[data-pose="2"] .ap1 { display: none; }
-.fogmini .fogquip { position: absolute; left: 3%; top: 3%; max-width: 70%; font-size: 2.1cqw; line-height: 1.15; text-transform: uppercase;
-  background: #000; padding: .5cqw .9cqw; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 5; }
+.fogmini .fogquip { position: absolute; left: 50%; top: 4%; transform: translateX(-50%); max-width: 66%; font-size: 2.05cqw; line-height: 1.2; text-transform: uppercase;
+  background: #000; border: .16cqw solid var(--W); padding: .7cqw 1.2cqw .8cqw; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 5; }
 .fogmini .fogquip.show { opacity: 1; }
 .fogmini .fogquip .qwho { display: inline-block; color: #000; font-weight: 600; letter-spacing: .06em; padding: 0 .5cqw; line-height: 1.35;
-  font-size: 1.3cqw; margin: 0 .4cqw 0 0; vertical-align: .2cqw; }
+  font-size: 1.3cqw; margin: 0 .6cqw 0 0; vertical-align: .2cqw; }
 .fogmini .fogintro { position: absolute; inset: 0; background: #000; z-index: 8; display: none; cursor: pointer; }
 .fogmini .fogintro.show { display: block; }
 .fogmini .fogintro .lines { position: absolute; left: 12%; right: 12%; top: 40%; font-size: 2.2cqw; line-height: 1.25; text-transform: uppercase; color: var(--W); }
@@ -127,7 +127,6 @@ const STEP_ROOM = ["lab", "hall", "server", "tunnels", "chamber"];
 
 export function stairwell(el, opts = {}) {
   const { score = () => {}, chip: chipText = "ACT IV   STAIRWELL B" } = opts;
-  const ownDie = typeof opts.die !== "function";
   injectStyle("mg-stairwell", CSS);
   el.innerHTML = `<div class="fogmini"><svg class="t" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg>
     <div class="fogquip"></div>
@@ -137,9 +136,7 @@ export function stairwell(el, opts = {}) {
   const svg = el.querySelector(".fogmini > svg"), quipEl = el.querySelector(".fogquip"), introEl = el.querySelector(".fogintro");
   const ST = makeST();
   // without a die() from the game, the old caught card stands in for the death screen
-  let pendingRevise = null;
-  const die = ownDie ? () => new Promise(r => { pendingRevise = r; }) : opts.die;
-  const reviseNow = () => { if (ownDie && pendingRevise) { const r = pendingRevise; pendingRevise = null; r(); } };
+  const die = typeof opts.die === "function" ? opts.die : async () => {};
   return new Promise(resolve => {
     /* ---------------- state ---------------- */
     const S = { landing: 0, target: "L", phase: "intro", nell: { x: 60, y: UP_Y, dir: 1, pose: 0, s: NELL_S }, open: null, dash: null,
@@ -456,8 +453,7 @@ export function stairwell(el, opts = {}) {
         if (sub && S.tick % 2) s += segC(sub, 160, 274, 4.6, "sR", .9);
       }
       s += hud(st);
-      if (S.phase === "caught" && ownDie) s += caughtCard();
-      if (S.phase === "end") s += results();
+      // (the end has no screen of its own: the lift cutscene shows the result)
       svg.innerHTML = s;
     }
     // entering a zone: the floor number, big, over the same fog gray (so the eye stays adapted)
@@ -992,14 +988,6 @@ export function stairwell(el, opts = {}) {
       if (S.closed) return;
       revise();
     }
-    function caughtCard() {
-      return `<rect x="0" y="0" width="640" height="290" fill="#000" opacity=".92"/>
-        ${segC("CAUGHT", 320, 60, 40, "sR", 2)}
-        ${segC("PRESTON: LET'S GRAB COFFEE. ACTUALLY, LET'S GRAB SYNERGY.", 320, 128, 7, "sW", 1.1)}
-        ${segC("-100", 320, 150, 9, "sA", 1.3)}
-        <g data-revise="1" style="cursor:pointer"><rect class="fW" x="230" y="196" width="180" height="28"/>${segC("REVISE & RESUBMIT", 320, 205, 8, "s0", 1.3)}</g>
-        ${segC("OR PRESS SPACE", 320, 236, 4.6, "sM", .8)}`;
-    }
     function revise() {
       if (S.phase !== "caught" || S.closed) return;
       S.gap = 6; S.missRun = 0; S.surge = false; S.surgeDone = null; S.ev = null; S.onEv = null; S.nell.duck = false;
@@ -1014,41 +1002,11 @@ export function stairwell(el, opts = {}) {
       if (t < 0.06) return ["LOST IN THE FOG", "fA"];
       return ["FOG NEURO MATERIAL", "fR"];
     }
-    function results() {
-      const T = ST.trials, thr = ST.threshold, n = T.length, [rk, rf] = rank(thr);
-      const px = (i) => 300 + (i / Math.max(1, n)) * 310, py = (c) => 120 + (Math.log10(0.4) - Math.log10(c)) / 2.4 * 150;
-      let s = `<rect x="0" y="0" width="640" height="290" fill="#000"/>`;
-      s += chip("B3 ANTECHAMBER", 20, 14, 6, "fV");
-      s += seg("THE FAINTEST MARK YOU COULD SEE", 20, 40, 4.6, "sA", .9) + seg((thr * 100).toFixed(1) + "%", 20, 50, 40, "sA", 2.2);
-      s += chip(rk, 20, 104, 7, rf);
-      s += seg("SCORE", 20, 130, 4.2, "sA", .8) + seg(pts(S.score), 20, 138, 18, "sA", 1.4);
-      s += seg("TIME", 120, 130, 4.2, "sW", .8) + seg(S.tEnd || clock(), 120, 138, 18, "sW", 1.4);
-      s += seg("BEST STREAK", 20, 166, 4.2, "sG", .8) + seg("X" + S.best, 20, 174, 18, "sG", 1.4);
-      s += seg("CAUGHT", 120, 166, 4.2, "sR", .8) + seg(String(S.caught), 120, 174, 18, "sR", 1.4);
-      if (S.notes) s += seg("NOTEBOOK", 186, 166, 4.2, S.notes === "KEPT" ? "sG" : "sR", .8) + seg(S.notes, 186, 174, 12, S.notes === "KEPT" ? "sG" : "sR", 1.2);
-      // what the number means, and what was left out of it
-      const R = ST.reminders, rOk = R.filter(r => r.correct).length;
-      s += seg("TWO RIGHT DOORS: MORE FOG. ONE WRONG: LESS. SO THE FOG", 20, 204, 4.4, "sW", .8);
-      s += seg("SETTLED WHERE YOU'RE RIGHT ABOUT 71% OF THE TIME: YOUR THRESHOLD.", 20, 213, 4.4, "sW", .8);
-      s += seg(`${ST.reversals.length} TURNAROUNDS  ${n} LANDINGS COUNTED  2AFC 2-DOWN-1-UP (LEVITT 1971)`, 20, 228, 4.2, "sM", .8);
-      s += seg(`NOT COUNTED: ${S.events.length - R.length} EVENTS${R.length ? `, ${R.length} EASY REMINDER${R.length > 1 ? "S" : ""} (${rOk}/${R.length} RIGHT)` : ""}`, 20, 238, 4.2, "sM", .8);
-      s += seg("YOUR SCREEN, NOT A LAB SCREEN. DON'T PUT IT IN A PAPER.", 20, 252, 4.4, "sR", .8);
-      // the run, drawn as stairs
-      s += `<path class="hl sM" d="M294,114 L294,276 L616,276"/>` + seg("CONTRAST", 294, 104, 4.2, "sM", .8) + seg("LANDING", 580, 280, 4.2, "sM", .8);
-      for (const c of [0.3, 0.1, 0.03, 0.01, 0.003]) { const y = py(c); if (y > 276) continue;
-        s += `<path class="hl sD" d="M294,${y} L616,${y}"/>` + seg((c * 100 >= 1 ? Math.round(c * 100) : c * 100) + "%", 262, y - 3, 4.6, "sM", .8); }
-      s += `<path class="hl dash sA" d="M294,${py(thr)} L616,${py(thr)}"/>`;
-      let d = ""; T.forEach((t, i) => { const x0 = px(i), x1 = px(i + 1), y = py(t.c); d += (i ? ` L${x0},${y}` : `M${x0},${y}`) + ` L${x1},${y}`; });
-      s += `<path class="sW" d="${d}"/>`;
-      T.forEach((t, i) => { const x = (px(i) + px(i + 1)) / 2, y = py(t.c);
-        s += t.correct ? `<circle class="fG" cx="${x}" cy="${y - 4}" r="2"/>` : `<circle class="k sR" cx="${x}" cy="${y - 4}" r="2"/>`; });
-      s += `<g data-cont="1" style="cursor:pointer"><rect class="fW" x="548" y="14" width="76" height="22"/>${segC("CONTINUE", 586, 21, 6.5, "s0", 1.2)}</g>`;
-      return s;
-    }
+    // no results screen: the run and its threshold go to the lift cutscene (lift.js), which shows them in the game's own
+    // readout as the cage climbs, while Nell and Morris say what they mean
     async function finish() {
-      S.phase = "end"; S.tEnd = clock(); sfx("fogEscape"); draw(); score("fog", S.caught ? 3 : 5);
-      quip("NELL", "I JUST RAN A STAIRCASE IN A STAIRCASE.", "G");
-      setTimeout(() => quip("MORRIS", "IS THAT A JOKE? IT FEELS LIKE A JOKE.", "K"), 2600);
+      S.phase = "end"; S.tEnd = clock(); sfx("fogEscape"); score("fog", S.caught ? 3 : 5);
+      setTimeout(() => close(true), 500);
     }
 
     /* ---------------- input ---------------- */
@@ -1057,14 +1015,11 @@ export function stairwell(el, opts = {}) {
       const t = e.target.closest ? e.target : null; if (!t) return;
       const evb = t.closest("[data-ev]"); if (evb) { evIn(evb.dataset.ev); return; }
       const door = t.closest("[data-door]"); if (door) { if (S.phase === "event") evIn(door.dataset.door); else choose(door.dataset.door); return; }
-      if (t.closest("[data-revise]")) { reviseNow(); return; }
-      if (t.closest("[data-cont]")) { close(true); return; }
       if (S.phase === "event") evIn(S.ev && S.ev.type === "detour" ? "up" : "act");
     };
     const onKey = (e) => {
       if (e.key === "Escape") { if (S.phase === "intro") close(false); return; }
       if (S.phase === "intro" && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); begin(); return; }
-      if (S.phase === "caught" && (e.key === " " || e.key === "Enter")) { e.preventDefault(); reviseNow(); return; }
       if (S.phase === "event") {
         if (e.repeat) return;
         const k = { ArrowLeft: "L", a: "L", ArrowRight: "R", d: "R", ArrowUp: "up", w: "up", ArrowDown: "down", s: "down", " ": "act", Enter: "act" }[e.key];
@@ -1102,11 +1057,12 @@ export function stairwell(el, opts = {}) {
       svg.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey); introEl.removeEventListener("click", begin);
       if (window.STAIR && window.STAIR.S === S) delete window.STAIR;
       el.classList.remove("show"); el.innerHTML = "";
-      resolve({ escaped: !!escaped, threshold: escaped ? ST.threshold : null });
+      resolve({ escaped: !!escaped, threshold: escaped ? ST.threshold : null, rank: escaped ? rank(ST.threshold) : null,
+        trials: escaped ? ST.trials.map(t => ({ c: t.c, correct: !!t.correct })) : [], caught: S.caught });
     }
 
     // testing hook (S.evQueue forces the next event types; S.evAt is the trial count at which the next event fires)
-    window.STAIR = { S, ST, stimulus, choose, rgbFor, revise, ZONES, GEOS, EV_TYPES, DOORS, draw };
+    window.STAIR = { S, ST, stimulus, choose, rgbFor, revise, ZONES, GEOS, EV_TYPES, DOORS, draw, finish };
 
     draw();
   });

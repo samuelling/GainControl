@@ -70,7 +70,7 @@ export async function coda(api) {
   window.MUSIC && window.MUSIC.hush && window.MUSIC.hush(true, 1.4);
   const stopHum = hum();
   const shown = bigCard(`${B.frame}<g>${B.grid}</g><g id="${id}"></g><g id="${id}c" style="visibility:hidden">${segC("C. G. GROSS, AMERICAN PSYCHOLOGIST, 1977", 320, B.y1 + 24, 5.6, "sA", .9)}</g>`,
-    { auto: t.in + t.hold + t.out, hold: t.in + t.hold + t.out });
+    { auto: t.in + t.hold + t.out, hold: t.in + t.hold + t.out, mark: false });
   const set = (k) => { const g = document.getElementById(id); if (g) g.innerHTML = dots(B.lit.slice(0, Math.round(n * k))); };
   (async () => {
     await api.wait(700);

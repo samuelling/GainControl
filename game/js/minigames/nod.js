@@ -88,7 +88,7 @@ export function nod(el, { onPose = () => {}, onQuorum = () => {}, score = () => 
         <div class="nlog"><div class="lt">NELL'S NOTES</div>${shown.map((l, j) => `<div class="${l.nod ? "y" : ""}"${j === markAt ? ` style="color:var(--A)"` : ""}>${l.n}. ${esc(short(l.k))}${l.nod ? " <b>NOD</b>" : ""}${j === markAt ? " ← TWO AGO" : ""}</div>`).join("")}</div>
         <div class="ctl">${phase === "predict" || phase === "encore" ? `<button data-b="now" ${nowArmed ? "" : "disabled"}>NOW. <small>(SPACE)</small></button>` : ""}
           ${phase === "predict" ? `<span class="tally">SAME AS TWO AGO? NOW. · CALLED ${T.hits} · MISSED ${T.misses} · WRONG ${T.fa}</span>` : ""}
-          ${phase === "encore" || phase === "done" ? `<button data-b="end">ADJOURN?</button>` : ""}</div></div>`;
+          ${phase === "encore" || phase === "done" ? `<button data-b="end">ADJOURN <small>ENTER</small></button>` : ""}</div></div>`;
     }
     // play one motion: show it, nod (if it repeats the motion two ago) partway through, then log it. Targets are
     // judged against the notes on screen, so a run picks up where the last one left off.
@@ -170,7 +170,8 @@ export function nod(el, { onPose = () => {}, onQuorum = () => {}, score = () => 
     }
     const onClick = (e) => { const b = e.target.closest && e.target.closest("button[data-b]"); if (!b || b.disabled) return;
       if (b.dataset.b === "now") now(); if (b.dataset.b === "end") finish(); };
-    const onKey = (e) => { if (e.code === "Space" || e.key === "n" || e.key === "N") { e.preventDefault(); now(); } };
+    const onKey = (e) => { if ((e.key === "Enter" || e.key === "Escape") && (phase === "encore" || phase === "done")) { e.preventDefault(); finish(); return; }
+      if (e.code === "Space" || e.key === "n" || e.key === "N") { e.preventDefault(); now(); } };
     el.classList.add("show", "nodmode"); draw();
     el.addEventListener("click", onClick); window.addEventListener("keydown", onKey);
     later(() => run(WATCH, "watch", 1, WATCH_LINES, () => {

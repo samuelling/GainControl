@@ -198,7 +198,7 @@ export async function credits(api, { score = 0 } = {}) {
   const H = y + 40, end = H - 200;   // stop with the last line a little above the middle
   if (window.MUSIC) window.MUSIC.endTheme();   // the end theme: the sparse opening, then propelled into the finale
   const id = "roll" + Math.floor(Math.random() * 1e6), STEP = 3, MS = 60, steps = Math.ceil(end / STEP);
-  const done = api.bigCard(`<g id="${id}">${s}</g>`, { auto: steps * MS + 3500, hold: 800 });
+  const done = api.bigCard(`<g id="${id}">${s}</g>`, { auto: steps * MS + 3500, hold: 800, mark: false });
   (async () => { for (let i = 1; i <= steps; i++) { await api.wait(MS); const g = document.getElementById(id); if (!g) return; g.setAttribute("transform", `translate(0 ${-i * STEP})`); } })();
   await done;
   await api.mini(megazineEnd, { hint: "CLICK TO RETURN TO THE TITLE" }, "mzwrap");   // the close, as in Ashland: part of megaZINE

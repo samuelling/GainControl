@@ -53,7 +53,7 @@ export function keypad(el, code, lit = [], { hints } = {}) {
       });
       s += segC(`${WORD[lit.length] || lit.length} KEYS WORN SHINY. ${WORD[L] || L} DIGITS.`, 320, 298, 5, "sM", .9);
       s += segC("CLICK OR TYPE   * CLEARS   ESC STEPS BACK", 320, 309, 4, "sD", .8);
-      s += `<g data-key="cancel" style="cursor:pointer"><rect class="k sW" x="420" y="262" width="90" height="24"/>${segC("STEP BACK", 465, 270, 6.5, "sW", 1.1)}</g>`;
+      s += `<g data-key="cancel" style="cursor:pointer"><rect class="k sW" x="420" y="262" width="90" height="24"/>${segC("CLOSE", 459, 270, 6.5, "sW", 1.1)}${seg("ESC", 482, 272, 3.8, "sM", .7)}</g>`;
       if (wrong) s += seg(`WRONG CODES ${wrong}`, 420, 246, 4.4, "sR", .8);
       if (say) s += line(say[0], say[1], 332);
       el.innerHTML = s;

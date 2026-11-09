@@ -179,11 +179,14 @@ function maybeRemark() {
   // "codes": now and then someone lets one slip (the menu promises they're around, if you listen)
   const topics = [...activeCheats(), ...(opt("holidays") ? (h => [...h.on, ...(h.lights ? ["xmaslights"] : [])])(holidaysNow()) : []), ...(Math.random() < .35 ? ["codes"] : [])]; if (!topics.length) return;
   const room = G.room;
-  setTimeout(() => {
+  // never mid-walk: a remark waits for the character to stop (and gives up if they leave or something else starts)
+  const t0 = Date.now(), tryNow = () => {
     if (G.room !== room || G.busy || G.chooser || G.using || onTitle || $("#panel").innerHTML) return;
+    if (G.actor.walking) { if (Date.now() - t0 < 8000) setTimeout(tryNow, 300); return; }
     const present = [...new Set([...svg.querySelectorAll("#sortables [data-hs], #roomBack [data-hs]")].map(e => e.dataset.hs))];
     const line = remark({ G, topics, present, room }); if (line) say(line);
-  }, 1400);
+  };
+  setTimeout(tryNow, 1400);
 }
 const refresh = () => build();
 
@@ -268,14 +271,20 @@ function swallowNextClick() {
   const tm = setTimeout(off, 600);
   frame.addEventListener("click", eat, true);
 }
+// THE ONE WAY TO CONTINUE: a click anywhere, or Enter, or Space. advanceKey(fn) listens for the keys until it's removed.
+const isAdvance = (e) => (e.key === "Enter" || e.key === " ") && !(e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName));
+function advanceKey(fn) { const k = (e) => { if (!isAdvance(e)) return; e.preventDefault(); e.stopPropagation(); fn(e); }; window.addEventListener("keydown", k, true); return () => window.removeEventListener("keydown", k, true); }
+// the "continue" mark drawn on SVG screens (cards, clue close-ups), matching the text boxes' CLICK ▸
+const moreMark = (x = 600, y = 342) => `<g class="moremark">${seg("CLICK", x - 34, y - 3, 4.4, "sM", .7)}<path class="fM" d="M${x - 6},${y - 3.5} L${x},${y} L${x - 6},${y + 3.5} Z"/></g>`;
 function typeInto(el, html, speed, onTick) {
   return new Promise(resolve => {
     let i = 0, done = false; const tokens = html.match(/<[^>]+>|&[a-z]+;|[\s\S]/g) || [];
     el.innerHTML = "";
     const timer = setInterval(() => { if (i >= tokens.length) { finish(); return; } el.innerHTML += tokens[i++]; onTick && onTick(true); }, speed);
     function finish() { clearInterval(timer); el.innerHTML = html; done = true; onTick && onTick(false); }
-    function click(e) { e.stopPropagation(); e.preventDefault(); if (!done) { finish(); return; } frame.removeEventListener("pointerdown", click, true); swallowNextClick(); resolve(); }
+    function click(e) { e.stopPropagation(); e.preventDefault(); if (!done) { finish(); return; } frame.removeEventListener("pointerdown", click, true); offKey(); if (e.type === "pointerdown") swallowNextClick(); resolve(); }
     frame.addEventListener("pointerdown", click, true);
+    const offKey = advanceKey(click);
   });
 }
 // speaker colors for quoted one-liners ("WHO|text")
@@ -403,10 +412,11 @@ function crtOn() {
   };
   step();
 }
-function showCard(inner, { hold = 0, auto = 2600, buttons = false, crt = false } = {}) {
-  sfx.play("card");
+function showCard(inner, { hold = 0, auto = 2600, buttons = false, crt = false, mark = !buttons } = {}) {
+  sfx.play("card"); hold = Math.max(hold, 600);
   return new Promise(resolve => {
     G.busy = true;
+    if (mark) inner += moreMark();
     card.innerHTML = crt ? `<rect width="640" height="360" fill="#000"/><g id="crtg" visibility="hidden">${inner}</g><g id="crtfx"></g>` : `<rect width="640" height="360" fill="#000"/>${inner}`;
     if (crt) crtOn();
     card.classList.add("show");
@@ -415,9 +425,10 @@ function showCard(inner, { hold = 0, auto = 2600, buttons = false, crt = false }
       if (done || Date.now() - t0 < hold) return;
       let val = true;
       if (buttons) { const b = e && e.target.closest && e.target.closest("[data-btn]"); if (!b) return; val = b.dataset.btn; }
-      done = true; card.classList.remove("show"); card.removeEventListener("pointerdown", hide); G.busy = false; resolve(val);
+      done = true; card.classList.remove("show"); card.removeEventListener("pointerdown", hide); offKey(); if (e && e.type === "pointerdown") swallowNextClick(); G.busy = false; resolve(val);
     };
     card.addEventListener("pointerdown", hide); if (auto && !buttons) setTimeout(() => hide(), auto);
+    const offKey = buttons ? () => {} : advanceKey(hide);
   });
 }
 const centered = (t, y, h, cls, sw) => seg(t, 320 - segW(t, h) / 2, y, h, cls, sw);
@@ -428,8 +439,10 @@ const button = (id, label, x, y, w, primary) => `<g data-btn="${id}" class="cbtn
 // a clue close-up: wait for a click, then dim it under a caption
 async function showReadout(inner, caption) {
   G.busy = true;
-  readout.innerHTML = `<rect width="640" height="360" fill="#000" opacity=".86"/>${inner}`; readout.classList.add("show");
-  await new Promise(r => { const f = (e) => { e.stopPropagation(); frame.removeEventListener("pointerdown", f, true); r(); }; setTimeout(() => frame.addEventListener("pointerdown", f, true), 250); });
+  readout.innerHTML = `<rect width="640" height="360" fill="#000" opacity=".86"/>${inner}${moreMark(600, 282)}`; readout.classList.add("show");
+  await new Promise(r => { const t0 = Date.now();
+    const f = (e) => { e.stopPropagation(); e.preventDefault(); if (Date.now() - t0 < 300) return; frame.removeEventListener("pointerdown", f, true); offKey(); if (e.type === "pointerdown") swallowNextClick(); r(); };
+    frame.addEventListener("pointerdown", f, true); const offKey = advanceKey(f); });
   if (caption) { readout.classList.add("dim"); await say(caption); }
   readout.classList.remove("show", "dim"); G.busy = false;
 }
@@ -437,13 +450,15 @@ async function showReadout(inner, caption) {
 function chooseFrom(title, opts) {
   const w = 150, x0 = 320 - w / 2, y0 = 150 - opts.length * 17;
   let s = `<rect width="640" height="290" fill="#000" opacity=".8"/>${cchip(title, y0 - 30, 7, "fK")}`;
-  opts.forEach(([id, lbl], i) => { s += button(id, lbl, x0, y0 + i * 34, w, false); });
-  s += button("cancel", "NEVER MIND", x0, y0 + opts.length * 34 + 6, w, true);
+  opts.forEach(([id, lbl], i) => { s += button(id, lbl, x0, y0 + i * 34, w, false) + seg(String(i + 1), x0 - 12, y0 + i * 34 + 9, 7, "sM", 1); });
+  s += button("cancel", "NEVER MIND", x0, y0 + opts.length * 34 + 6, w, true) + seg("ESC", x0 + w + 8, y0 + opts.length * 34 + 15, 4.4, "sM", .7);
   return new Promise(resolve => {
     G.busy = true; readout.innerHTML = s; readout.classList.add("show", "pick");
-    const f = (e) => { const b = e.target.closest && e.target.closest("[data-btn]"); if (!b) return;
-      readout.removeEventListener("pointerdown", f); readout.classList.remove("show", "pick"); G.busy = false; resolve(b.dataset.btn === "cancel" ? null : b.dataset.btn); };
-    readout.addEventListener("pointerdown", f);
+    const end = (id) => { readout.removeEventListener("pointerdown", f); window.removeEventListener("keydown", k, true); readout.classList.remove("show", "pick"); swallowNextClick(); G.busy = false; resolve(id === "cancel" ? null : id); };
+    const f = (e) => { const b = e.target.closest && e.target.closest("[data-btn]"); if (b) end(b.dataset.btn); };
+    const k = (e) => { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); end("cancel"); return; }
+      const n = +e.key; if (n >= 1 && n <= opts.length) { e.preventDefault(); e.stopPropagation(); end(opts[n - 1][0]); } };
+    readout.addEventListener("pointerdown", f); window.addEventListener("keydown", k, true);
   });
 }
 function die(text) {
@@ -456,10 +471,11 @@ function die(text) {
       <g class="dbtn" data-b="withdraw"><rect class="k sW" x="330" y="300" width="160" height="26"/>${seg("WITHDRAW MANUSCRIPT", 410 - segW("WITHDRAW MANUSCRIPT", 7) / 2, 309, 7, "sW", 1.2)}</g>`;
     d.querySelector(".dtxt").innerHTML = esc(text);
     d.classList.add("show"); sfx.play("death");
-    d.onclick = (e) => { const b = e.target.closest(".dbtn"); if (!b) return;
-      d.classList.remove("show"); d.onclick = null; G.busy = false;
-      if (b.dataset.b === "revise") { restore(); say("Revised and resubmitted. Reviewer 2 is still out there."); } else { location.hash = ""; location.reload(); }
+    const go = (which) => { d.classList.remove("show"); d.onpointerdown = null; offKey(); swallowNextClick(); G.busy = false;
+      if (which === "revise") { restore(); say("Revised and resubmitted. Reviewer 2 is still out there."); } else { location.hash = ""; location.reload(); }
       resolve(); };
+    d.onpointerdown = (e) => { const b = e.target.closest(".dbtn"); if (b) go(b.dataset.b); };
+    const offKey = advanceKey(() => go("revise"));   // Enter or Space: REVISE & RESUBMIT (withdrawing needs the click)
   });
 }
 
@@ -508,7 +524,7 @@ async function endAct() {
   const sc = "H-INDEX " + String(G.score).padStart(2, "0");
   await showCard(`${centered(E.title, 96, 30, "sW", 1.8)}${cchip(E.chip, 148, 7, "fA")}
     ${centered(sc, 186, 12, "sA", 1.3)}${centered(E.bodies, 212, 6, "sR", 1)}
-    ${centered(E.next, 252, 6, "sM", 1)}${centered("CLICK TO CONTINUE", 300, 4.4, "sM", .8)}`, { hold: 1200, auto: 0 });
+    ${centered(E.next, 252, 6, "sM", 1)}`, { hold: 1200, auto: 0 });
   if (E.epilogue) await say(E.epilogue);
   if (ACTS[G.act + 1]) { await startAct(G.act + 1); return; }
   await coda(api);                                         // the real record, after the last act

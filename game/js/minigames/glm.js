@@ -250,7 +250,6 @@ export function glm(root, opts = {}) {
     /* ---------- the stages ---------- */
     function draw() {
       let s = header();
-      if (S.done) { s += finale(); svg.innerHTML = s; return; }
       if (S.stage <= 5) {
         s += plotFrame() + dataLine();
         const { xa, xi } = (S.stage >= 1) ? model() : { xa: null, xi: null };
@@ -367,16 +366,6 @@ export function glm(root, opts = {}) {
       if (found === 3) s += btn("finish", "WRITE IT UP", 470, 262, 140, "g");
       return s;
     }
-    function finale() {
-      let s = chip("THE REPLICATION", 20, 40, 7, "fA");
-      s += seg("ATTENTION EFFECT IN V1", 20, 70, 5, "sM", .9) + seg("REAL", 20, 80, 40, "sG", 2.2);
-      s += seg(`ATTEND ${D.fit.beta[0].toFixed(2)}   IGNORE ${D.fit.beta[1].toFixed(2)}   HOW SURE: ${sure(D.fit.p)} (T = ${D.fit.t.toFixed(1)})`, 20, 134, 6, "sA", 1);
-      s += seg("LAYERS A 3T CAN SEE", 20, 160, 5, "sM", .9) + seg("ZERO", 20, 170, 24, "sR", 1.8);
-      s += seg("TELLS IN HIS FIGURE", 220, 160, 5, "sM", .9) + seg("3/3", 220, 170, 24, "sG", 1.8);
-      s += seg(`H-INDEX +${S.total}`, 20, 214, 9, "sA", 1.2);
-      s += btn("close", "CLOSE", 520, 262, 100, "w");
-      return s;
-    }
 
     /* ---------- input ---------- */
     let drag = null;
@@ -485,11 +474,10 @@ export function glm(root, opts = {}) {
         lesson([["NELL", "The same attention effect in every layer. One voxel, one number, six times."], ["GUS", "Which is the honest answer at 3T: attention turns V1 up, and you can't say where in the depth. His U might be real. He just couldn't have seen it. So where did his layers come from?"]]);
         draw(); return; }
       if (id === "paper") { S.stage = 7; sfx("paper"); coach("GUS", "Here's his Figure 3. Real measurements wobble, drift and disagree. Find three things no real data would do."); draw(); return; }
+      // WRITE IT UP ends it: no scorecard here; the story shows the write-up as a clue close-up (act3.js, WRITEUP)
       if (id === "finish") {
-        S.done = true; add("replication", 2); sfx("chime");
-        coach("MORRIS", "So the fancy layers?");
-        setTimeout(() => coach("NELL", "Painted on."), 2200);
-        draw(); return;
+        S.done = true; add("replication", 2); sfx("chime"); cleanup();
+        resolve({ tells: S.tells, score: S.total, fit: { beta: [...D.fit.beta], t: D.fit.t, p: D.fit.p } }); return;
       }
       if (id === "close") { cleanup(); resolve({ tells: S.tells, score: S.total }); return; }
       if (id === "fork") {
@@ -530,8 +518,15 @@ export function glm(root, opts = {}) {
       const steps = Math.trunc((drag.y - e.clientY) / unit); if (steps) { drag.y -= steps * unit; nudge(drag.id, steps); } };
     const onUp = () => { drag = null; };
     const onWheel = (e) => { const k = e.target.closest && e.target.closest("[data-knob]"); if (!k || S.stage !== 3) return; e.preventDefault(); nudge(k.dataset.knob, e.deltaY < 0 ? 1 : -1); };
-    function cleanup() { svg.removeEventListener("pointerdown", onDown); window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); svg.removeEventListener("wheel", onWheel); root.innerHTML = ""; }
-    svg.addEventListener("pointerdown", onDown); window.addEventListener("pointermove", onMove); window.addEventListener("pointerup", onUp);
+    // Esc leaves, as in every minigame; this one keeps no progress, so the first Esc asks and the second leaves
+    let escAt = 0;
+    const onKey = (e) => {
+      if (e.key !== "Escape") return; e.preventDefault();
+      if (Date.now() - escAt < 3000) { cleanup(); resolve({ left: true }); return; }
+      escAt = Date.now(); coach("GUS", "Leaving? The replication starts over next time. Esc again to go.");
+    };
+    function cleanup() { svg.removeEventListener("pointerdown", onDown); window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); svg.removeEventListener("wheel", onWheel); window.removeEventListener("keydown", onKey); root.innerHTML = ""; }
+    svg.addEventListener("pointerdown", onDown); window.addEventListener("pointermove", onMove); window.addEventListener("pointerup", onUp); window.addEventListener("keydown", onKey);
     svg.addEventListener("wheel", onWheel, { passive: false });
 
     // test hook

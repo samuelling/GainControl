@@ -85,3 +85,5 @@ Still to build (corridors 1–4):
 - Act IV "The chase" now runs through THE FOG.
 - New science rows and two new deaths in STORY.md.
 - The FOG NEURO 3000 label joins the evidence that B3 exists.
+
+**Update (Nov 2026):** the standalone test page is gone. THE FOG ends without a results screen: the run (as a staircase), the threshold and the rank appear in the magnet lift's readout during the cutscene that follows (`game/js/minigames/lift.js`), with Nell and Morris saying what the number means.

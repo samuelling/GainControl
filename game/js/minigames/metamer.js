@@ -8,6 +8,7 @@
 // 4, Morris lights the card. References: 2 wrong, how to check; 4, the two fakes are marked in brass.
 // Everything here is fictional: papers, people, journals, labs. Resolves { done, wrong }.
 import { seg } from "../gfx.js";
+import { exitLabel, exitKey } from "./exit.js";
 
 // the Big Finding: Valu et al., Nurture Neuroscience (four sentences, each lifted from one back issue)
 export const SENTS = [
@@ -248,7 +249,7 @@ export function metamer(el, { score = () => {} } = {}) {
         <div class="coachline">${coach()}</div>
         <div class="bar"><span class="status">${status}</span>
           ${S.stage === 1 && allMatched() ? `<button data-b="refs">CHECK THE REFERENCES</button>` : ""}
-          <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
+          <button data-b="off" class="off">${exitLabel(S.done)}</button></div></div>`;
     }
     // the goal, drawn: a metamer is two colours that match but are mixed from different light; his sentences are the
     // same trick done with words. Six lights to put on, one per sentence unmasked.
@@ -330,7 +331,7 @@ export function metamer(el, { score = () => {} } = {}) {
       const c = t.closest("[data-c]"); if (c) { pick("c", +c.dataset.c); return; }
       const r = t.closest("[data-r]"); if (r) flag(+r.dataset.r);
     };
-    const onKey = (e) => { if (e.key === "Escape") finish(); };
+    const onKey = (e) => { exitKey(e, S.done, finish); };
     function finish() {
       timers.forEach(clearTimeout); el.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey);
       el.classList.remove("show"); el.innerHTML = ""; resolve({ done: S.done, wrong: S.wrong });

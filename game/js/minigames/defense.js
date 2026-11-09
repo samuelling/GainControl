@@ -5,6 +5,7 @@
 // defense(el, { evidence: [ids], score(key, n) }) → Promise<{ credibility (0–100), order: [ids played], answered }>
 import { seg, segC, segW, chip, star4 } from "../gfx.js";
 import { PORTRAIT } from "../portraits.js";
+import { exitLabel, exitKey } from "./exit.js";
 
 /* ---------------- the cards ---------------- */
 // t: title, s: subtitle (both stroke alphabet), d: the hover description, k: material color, ic: icon
@@ -277,7 +278,7 @@ export function defense(el, { evidence = ALL, score = () => {} } = {}) {
         </svg>
         <div class="coachline" style="font-size:${S.fs || 3}cqw;${say ? `border-color:var(--${col})` : ""}">${say ? `<span class="who" style="background:var(--${col})">${NAME[say[0]] || say[0]}</span><span class="shown" style="color:var(--${col})">${say[1].slice(0, S.shown)}</span><span class="rest">${say[1].slice(S.shown)}</span>` : ""}${S.busy && !S.typing ? `<span class="nx">CLICK ▸</span>` : ""}</div>
         <div class="bar"><span class="status">${S.hover || hint}</span>
-          ${S.end ? `<button data-b="off" class="off">CONTINUE</button>` : `<button data-b="skip" class="off" ${S.busy ? "disabled" : ""}>NO FURTHER EVIDENCE</button>`}</div></div>`;
+          ${S.end ? `<button data-b="off" class="off">${exitLabel(true)}</button>` : `<button data-b="skip" class="off" ${S.busy ? "disabled" : ""}>NO FURTHER EVIDENCE</button>`}</div></div>`;
     }
     // mouths flap in poses while someone speaks; portraits blink now and then
     function flap() {

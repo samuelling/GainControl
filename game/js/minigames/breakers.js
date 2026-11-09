@@ -5,6 +5,7 @@
 // the next breaker; after four, the next breaker lights green. Then the charge climbs. breakers(el, { score(key, n), onBreak(order) }) → Promise<{ done, tries, order }>
 // onBreak is called with the current string of thrown breakers (e.g. "ACD") after each throw, and "" after a reset.
 import { seg, segC, segW, star4, arcs, chip } from "../gfx.js";
+import { exitLabel, exitKey } from "./exit.js";
 
 export const ORDER = "ACDBEF";
 const BRK = {
@@ -164,7 +165,7 @@ export function breakers(el, { score = () => {}, onBreak = () => {} } = {}) {
         </svg>
         <div class="coachline"><span class="who" style="background:var(--${col})">${S.say[0]}</span><span style="color:var(--${col})">${S.say[1]}</span></div>
         <div class="bar"><span class="status">${S.done ? "SUPPLY CHARGED" : S.charging ? "CHARGING" : `THROW ALL SIX IN THE PENCIL ORDER (CLICK, OR KEYS A-F)   ·   UP: ${S.up || "NONE"}`}</span>
-          <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
+          <button data-b="off" class="off">${exitLabel(S.done)}</button></div></div>`;
     }
     function throwIt(L) {
       if (S.lock || S.done || S.charging || S.up.includes(L)) return;
@@ -199,7 +200,7 @@ export function breakers(el, { score = () => {}, onBreak = () => {} } = {}) {
       const k = e.target.closest && e.target.closest("[data-brk]"); if (k) throwIt(k.dataset.brk);
     };
     const onKey = (e) => {
-      if (e.key === "Escape") finish();
+      if (exitKey(e, S.done, finish)) return;
       const L = e.key.toUpperCase(); if (L.length === 1 && "ABCDEF".includes(L)) throwIt(L);
     };
     function finish() {

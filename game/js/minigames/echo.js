@@ -63,11 +63,6 @@ const R = {
     L("IRIS", "They'd have seen that. They see everything except their own data.")],
   hit: [L("IRIS", "Mm."), L("IRIS", "Correct. Don't look pleased, they hate that."), L("IRIS", "Good."), L("IRIS", "Yes. Like a man with a named chair.")],
   passA: [L("IRIS", "Fine. You'd pass for an associate professor. From the back of the room.")],
-  introC: [
-    L("IRIS", "Again. The grant panel, then the toasts. The Board ends every meeting with toasts; it's the only item anyone remembers."),
-    L("IRIS", "Same rule. Same words as two turns ago: SECONDED. Faster, this time."),
-  ],
-  goC: L("IRIS", "Grant panel. Begin."),
   passC: [
     L("IRIS", "Their founders published that the Echo makes you smarter. 1979. Nobody has ever managed it again."),
     L("NELL", "Does it? Make you smarter?"),
@@ -559,9 +554,6 @@ const DRILLS = {
   B: { name: ["DRILL 2", "THE CHAIRS"], streams: { phrase: false, seat: true }, base: .9, catches: ["canister", "misfire"], between: ["kettle"],
     legs: [{ len: 7, tempo: [1, 1, .85, .75, .7, 1.4, 1.5], cue: { 3: "fast", 5: "slow" } },
       { len: 6, tempo: [1.3, 1, .82, .72, .7, 1], cue: { 2: "fast" } }] },
-  C: { name: ["DRILL 2", "THE TOASTS"], streams: { phrase: true, seat: false }, base: 1.05, catches: ["sneeze", "phone", "kettle"], between: ["toast"],
-    legs: [{ len: 6, set: "GRANT", tempo: [1, 1, .9, .82, .78, 1.35, 1.4], cue: { 3: "fast", 5: "slow" } },
-      { len: 6, set: "TOAST", tempo: [1.2, 1, .9, .84, .8, .8, 1], cue: { 3: "fast" } }] },
 };
 // Induction readings: camera, speaking order, tempo, the catch events
 const READINGS = [
@@ -581,8 +573,8 @@ const CSS = `
 .echo .eph{font-size:3cqw;line-height:1.12;min-height:3.5cqw;letter-spacing:.015em;flex:none;white-space:nowrap;overflow:hidden}
 .echo .spk{display:inline-block;color:#000;font-weight:600;letter-spacing:.06em;font-size:1.4cqw;padding:0 .5cqw;margin-right:.8cqw;vertical-align:.55cqw;line-height:1.35}
 .echo .eco{font-size:2.05cqw;line-height:1.2;flex:1 1 0;min-height:0;overflow:hidden}
-.echo .eco.talk{font-size:2.5cqw;padding-top:.4cqw}
-.echo .eco .spk{font-size:1.15cqw;vertical-align:.3cqw}
+.echo .eco.talk{font-size:2.45cqw;padding-top:.4cqw}
+.echo .eco .spk{font-size:1.3cqw;vertical-align:.3cqw}
 .echo .ectl{display:flex;gap:1.1cqw;align-items:center;flex:none;min-height:3cqw}
 .echo .eb{font-weight:600;font-size:1.9cqw;letter-spacing:.06em;color:#000;background:var(--W);padding:.1cqw 1.4cqw;cursor:pointer;line-height:1.4}
 .echo .eb small{font-size:.6em;margin-left:.5cqw;letter-spacing:.1em}
@@ -592,8 +584,6 @@ const CSS = `
 .echo .erule{font-size:1.05cqw;color:var(--M);letter-spacing:.08em;line-height:1.15}
 .echo .etl{margin-left:auto;font-size:1.2cqw;color:var(--M);letter-spacing:.06em;white-space:nowrap}
 .echo .etl b{color:var(--W);font-weight:600}
-.echo .edead{position:absolute;inset:0;background:#000;z-index:2}
-.echo .edead .dt{position:absolute;left:14%;right:14%;top:30%;font-size:2.6cqw;line-height:1.18}
 .echo .ip0 .ap1,.echo .ip0 .ap2,.echo .ip1 .ap0,.echo .ip1 .ap2,.echo .ip2 .ap0,.echo .ip2 .ap1{display:none}
 .echo g.cz path,.echo g.cz circle,.echo g.cz rect,.echo g.cz ellipse,.echo g.cz polygon,.echo g.cz polyline{stroke-width:${(1.5 / CZ.z).toFixed(3)}}
 .echo g.cz .hl{stroke-width:${(.75 / CZ.z).toFixed(3)}}
@@ -859,12 +849,6 @@ export function echo(el, opts = {}) {
         { line: pick(R.yarn74, v), ms: 2800 },
         { line: L("IRIS", "Chairs again. My hip has opinions."), ms: 1500 },
       ],
-      toast: (v) => [
-        { line: L("NARRATOR", "A second sherry. For the toasts."), frames: [[() => S.glass = 1, 1000], [() => { S.glass = 3; sfx("bell"); }, 900]] },
-        { line: L("IRIS", "Toasts, now. The Board ends every meeting this way. It's the only item anyone remembers."), ms: 2600 },
-        { line: pick(R.yarn74, v + 1), ms: 2600 },
-        { line: L("IRIS", "Same rule. What was said, and where I sat."), set: () => S.set = "TOAST", ms: 1500, end: () => { S.glass = 0; S.set = "TOAST"; } },
-      ],
     };
     async function drill(id) {
       const D = DRILLS[id], total = D.legs.reduce((a, l) => a + l.len, 0);
@@ -897,7 +881,7 @@ export function echo(el, opts = {}) {
       await lesson("phrase");
       await interlude([card("THE REHEARSAL", "THE DRILL", "THE PHRASES")]);
       await drill("A");
-      // one drill is enough (the toasts drill, C, stays defined but unused): straight on to what Iris knows
+      // one drill, then straight on to what Iris knows
       score("echoPhrases", 2); score("echoBoth", 2); S.len = 0; await talk(R.passA);
       S.set = null; await walkTo(2); await talk(R.passC);
       await lesson("three");
@@ -906,17 +890,7 @@ export function echo(el, opts = {}) {
     }
 
     /* ---- the induction ---- */
-    async function deathCard(text) {
-      if (opts.die) return opts.die(text);
-      const d = document.createElement("div"); d.className = "edead";
-      d.innerHTML = `<svg class="t" viewBox="0 0 640 360">${segC("DESK REJECTED", 320, 40, 26, "sR", 1.8)}
-        <g data-b="revise" style="cursor:pointer"><rect class="fW" x="240" y="300" width="160" height="26"/>${segC("REVISE & RESUBMIT", 320, 309, 7, "s0", 1.2)}</g></svg>
-        <div class="dt">${esc(text)}</div>`;
-      root.appendChild(d);
-      await new Promise((res, rej) => { d.addEventListener("click", (e) => { if (e.target.closest("[data-b=revise]")) res(); });
-        const chk = () => alive ? timers.push(setTimeout(chk, 200)) : rej(CANCEL); chk(); });
-      d.remove();
-    }
+    async function deathCard(text) { if (opts.die) return opts.die(text); }
     // who gets the floor when the Echo doesn't call for a repeat: round the table, the head of the table, or anyone
     function seatOrder(pattern) {
       const pool = pattern === "cluster" ? CLUSTER : SEATS.map((_, i) => i).filter(i => S.late || i !== LATE);
@@ -1017,7 +991,8 @@ export function echo(el, opts = {}) {
     /* ---- input and cleanup ---- */
     const onClick = (e) => {
       if (S.inter && !S.paused) { S.skip = true; return; }
-      const b = e.target.closest && e.target.closest("[data-b]"); if (!b) return;
+      const b = e.target.closest && e.target.closest("[data-b]");
+      if (!b) { if (S.go && !S.paused) S.go(); return; }   // a line waiting for GO ON: a click anywhere goes on, like every text box
       const k = b.dataset.b;
       if (k === "go" && S.go) S.go(); else if (k === "s") answer("s"); else if (k === "k" || k === "knock") answer("k");
     };

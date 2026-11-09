@@ -6,6 +6,7 @@
 // nudges the wrong way (or 20 moves), Nell counts out the presses left; four (or 30 moves), Morris lines it up. In the
 // close-up a click anywhere in the hole marks the nearest unmarked layer.
 import { seg, segC } from "../gfx.js";
+import { exitLabel, exitKey } from "./exit.js";
 
 /* ---------------- the slice (one midsagittal head, facing left, in a 200 × 200 box) ---------------- */
 const CX = 108, CY = 96, RX = 64, RY = 52, FOLDS = 15;
@@ -149,7 +150,7 @@ export function retainer(el, { score = () => {} } = {}) {
           <button class="nudge" data-b="L" ${dis}>←</button><button class="nudge" data-b="R" ${dis}>→</button><button class="nudge" data-b="U" ${dis}>↑</button><button class="nudge" data-b="D" ${dis}>↓</button>
           <button data-b="S-" ${dis}>SCALE −</button><button data-b="S+" ${dis}>SCALE +</button>
           <span class="status">${S.zoom ? `${nMarked()} / 6 LAYERS` : `LINED UP ${pct}%`}</span>
-          <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
+          <button data-b="off" class="off">${exitLabel(S.done)}</button></div></div>`;
     }
     function move(b) {
       if (S.reg) return;
@@ -206,7 +207,7 @@ export function retainer(el, { score = () => {} } = {}) {
     };
     const KEYS = { ArrowLeft: "L", ArrowRight: "R", ArrowUp: "U", ArrowDown: "D", "-": "S-", "_": "S-", "+": "S+", "=": "S+" };
     const onKey = (e) => {
-      if (e.key === "Escape") { finish(); return; }
+      if (exitKey(e, S.done, finish)) return;
       if (KEYS[e.key]) { e.preventDefault(); move(KEYS[e.key]); }
     };
     function finish() {

@@ -6,6 +6,7 @@
 // if the field comes up, REVISE & RESUBMIT winds the clock back (delivered reels stay delivered); CLOSE asks once.
 // reels(el, { seconds = 90, score(key, n) }) → Promise<{ sent, wrongSends, decoys, lost, timeLeft, done }> (lost is always 0 now)
 import { seg, segC, segW, chip, arcs } from "../gfx.js";
+import { exitLabel, exitKey } from "./exit.js";
 
 export const REELS = [
   { t: ["MEMBERSHIP", "ROLLS 1974-"], good: true, look: "Membership rolls. Every hood since '74. Pal, this is the family tree." },
@@ -167,7 +168,7 @@ export function reels(el, { seconds = 90, score = () => {} } = {}) {
         <div class="coachline"><span class="who" style="background:var(--${col})">${S.say[0]}</span><span style="color:var(--${col})">${S.say[1]}</span></div>
         <div class="bar">${S.over ? `<button data-b="retry">REVISE &amp; RESUBMIT</button>` : `<button data-b="send" ${S.load >= 0 && !lock ? "" : "disabled"}>SEND</button><button data-b="out" ${S.load >= 0 && !lock ? "" : "disabled"}>UNLOAD</button>`}
           <span class="status">${S.done ? (S.sent === 4 ? "ALL FOUR DELIVERED" : S.sent + " OF 4 DELIVERED") : S.over ? `THE MAGNET IS ON. THE TAPE IS WIPED  ·  ${S.sent} OF 4 DELIVERED  ·  TRY AGAIN?` : S.load >= 0 ? "LOADED: " + REELS[S.load].t.join(" ") + "  →  " + DEST[S.dial].t + "  ·  SEND" : `PICK A REEL  ·  SEND THE 4 THAT ARE EVIDENCE TO ETHEL BORD 2F  ·  ${S.sent} OF 4`}</span>
-          <button data-b="off" class="off ${S.confirm ? "warn" : ""}">${S.done ? "DONE" : S.confirm ? "LEAVE ANYWAY" : S.over ? "LEAVE IT" : "CLOSE"}</button></div></div>`;
+          <button data-b="off" class="off ${S.confirm ? "warn" : ""}">${S.done ? exitLabel(true) : S.confirm ? exitLabel(false, "CLOSE ANYWAY") : exitLabel(false)}</button></div></div>`;
     }
 
     function load(i) {
@@ -241,9 +242,9 @@ export function reels(el, { seconds = 90, score = () => {} } = {}) {
     function leave() {
       if (S.done || S.confirm) { finish(); return; }
       S.confirm = true;
-      say(["MORRIS", `Pal. ${S.sent} of 4 are with Ethel. If we go now, the rest stay down here with the magnet. LEAVE ANYWAY, or pick a reel and keep sending.`]);
+      say(["MORRIS", `Pal. ${S.sent} of 4 are with Ethel. If we go now, the rest stay down here with the magnet. CLOSE ANYWAY, or pick a reel and keep sending.`]);
     }
-    const onKey = (e) => { if (e.key === "Escape") leave(); };
+    const onKey = (e) => { if (e.key === "Escape" || (e.key === "Enter" && S.done)) { e.preventDefault(); leave(); } };
     function finish() {
       timers.forEach(clearTimeout); clearInterval(tick); clearTimeout(qT);
       el.removeEventListener("click", onClick); window.removeEventListener("keydown", onKey);

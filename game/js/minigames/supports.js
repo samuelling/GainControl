@@ -8,6 +8,7 @@
 // supports(el, { die(text) → Promise, score(key, n), onBolts(str) }) → Promise<{ done, tries }>
 // onBolts gets the bolts still in, per post, as a 4-char string in the order NW NE SW SE (e.g. "3321"), after each change.
 import { seg, segC, segW, chip, arcs, star4 } from "../gfx.js";
+import { exitLabel, exitKey } from "./exit.js";
 
 const A = Math.SQRT1_2;
 export const POSTS = ["NW", "NE", "SW", "SE"];
@@ -303,7 +304,7 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
         <svg class="t supsvg" viewBox="0 0 640 276">${scene()}</svg>
         <div class="coachline"></div>
         <div class="bar"><span class="status">${S.done ? "ALL TWELVE OUT  ·  LEVEL" : S.dying ? "THE PAD IS COMING DOWN" : `${POSTS.map((t, p) => t + " " + (3 - S.out[p])).join("  ")}   ·   KEEP THE BUBBLE IN THE MIDDLE`}</span>
-          <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
+          <button data-b="off" class="off">${exitLabel(S.done)}</button></div></div>`;
       drawCoach();
     }
     function redrawScene() { const sv = el.querySelector(".sup svg.supsvg"); if (sv) sv.innerHTML = scene(); }
@@ -389,7 +390,7 @@ export function supports(el, { die, score = () => {}, onBolts = () => {} } = {})
       if (b) { const [p, i] = b.dataset.bolt.split("").map(Number); pull(p, i); }
     };
     const onClick = (e) => { const b = e.target.closest && e.target.closest("button[data-b]"); if (b && !S.dying) finish(); };
-    const onKey = (e) => { if (e.key === "Escape" && !S.dying) finish(); };
+    const onKey = (e) => { if (!S.dying) exitKey(e, S.done, finish); };
     function finish() {
       if (S.closed) return;
       S.closed = true;

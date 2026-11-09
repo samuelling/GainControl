@@ -15,6 +15,7 @@
 // place (G.flags.ceilProgress), and finding the sentence counts as done even if you skip the noise demo.
 // Resolves { done, wrong }.
 import { seg, segW, chip } from "../gfx.js";
+import { exitLabel, exitKey } from "./exit.js";
 
 export const N = 19;
 export const REL = { beh: .64, brain: .56 };
@@ -179,7 +180,7 @@ export function ceiling(el, { score = () => {} } = {}) {
         <div class="coachline"><span class="who" style="background:var(--${c})">${S.say[0]}</span> <span style="color:var(--${c})">${S.say[1]}</span></div>
         <div class="bar"><span class="status">${status}</span>
           ${S.phase === 3 && S.meth === "dip" && !S.noise ? `<button data-b="noise">RUN IT ON NOISE</button>` : ""}
-          <button data-b="off" class="off">${S.done ? "DONE" : "CLOSE"}</button></div></div>`;
+          <button data-b="off" class="off">${exitLabel(S.done)}</button></div></div>`;
     }
     // a miss: the step's own counter drives the hint ladder; S.wrong (the score) counts each distinct mistake once
     function missed(key, line) {
@@ -227,7 +228,7 @@ export function ceiling(el, { score = () => {} } = {}) {
       const k = t.closest("button[data-b]"); if (!k) return;
       if (k.dataset.b === "noise") runNoise(); else if (k.dataset.b === "off") finish();
     };
-    const onKey = (e) => { if (e.key === "Escape") finish(); };
+    const onKey = (e) => { exitKey(e, S.done, finish); };
     function finish() {
       // the sentence is found: the proof stands even if you skip the noise demo
       if (!S.done && S.meth === "dip") { S.done = true; score("grim", Math.max(1, 4 - S.wrong)); }

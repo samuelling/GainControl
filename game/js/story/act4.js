@@ -424,7 +424,7 @@ async function chase(api) {
   do r = await api.mini(stairwell, { score: api.score, die: dieKeep(api) }, "glmwrap"); while (!r || !r.escaped);
   G.flags.escaped = true; api.score("escaped", 3);
   // shown, not told: the fog runs out at B3, at Iris's old magnet lift, and it only goes up (minigames/lift.js)
-  await api.mini(lift, {}, "glmwrap");
+  await api.mini(lift, { fog: r }, "glmwrap");   // THE FOG's result is shown in the lift's readout, not on a results screen
   api.goRoom("iris@fromStairs");
   return "c:irisThursday";
 }

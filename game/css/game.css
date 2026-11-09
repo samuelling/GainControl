@@ -128,6 +128,8 @@
   #panel button { font: 600 1.5cqw "Saira Condensed", sans-serif; letter-spacing: .06em; background: var(--W); color: #000; border: 0; padding: .25cqw 1cqw; cursor: pointer; }
   #panel button:hover { background: var(--G); } #panel button:disabled { background: var(--D); color: #000; cursor: default; }
   #panel button.off { margin-left: auto; background: #000; color: var(--W); border: .1cqw solid var(--W); }
+  /* the key beside an exit button's word (CLOSE ESC, DONE ENTER): the same in every minigame */
+  #panel button small { font-size: .62em; letter-spacing: .1em; opacity: .65; margin-left: .45em; }
   #panel .status { font-size: 1.4cqw; color: var(--A); }
   #panel .foot { font-size: 1cqw; color: var(--M); letter-spacing: .08em; padding-bottom: .4cqw; flex: none; }
 
@@ -241,3 +243,16 @@ body.no-holidays #game .decor { display: none; }
 #frame { --ZP: #f2369b; --ZB: #7db0ff; --ZG: #e0b04a; }
 .fZP{fill:var(--ZP);stroke:none} .fZB{fill:var(--ZB);stroke:none} .fZG{fill:var(--ZG);stroke:none}
 .mis { mix-blend-mode: screen; opacity: .9; }
+
+/* ---- ONE TEXT BOX ----
+   Every spoken line inside a minigame looks like the engine's: Saira caps in the speaker's colour after a solid speaker
+   chip, at one size. Lines over a scene (THE FOG, the lift) sit in the narration box's place, at the top; lines in a
+   panel game sit in the strip above its buttons. */
+#panel .coachline, .nodbar .coachline, .glmwrap .coach { font-size: 2.05cqw; line-height: 1.2; text-transform: uppercase; letter-spacing: .015em; }
+#panel .who, .nodbar .who, .glmwrap .coach .who { font-size: 1.3cqw; letter-spacing: .06em; padding: 0 .5cqw; line-height: 1.35; margin-right: .6cqw; vertical-align: .2cqw; }
+#panel .coachline { min-height: 5.4cqw; }
+
+/* the lift cutscene's lines: the narration box itself, in its place at the top */
+.liftline { position: absolute; left: 50%; top: 4%; transform: translateX(-50%); width: 66%; background: #000; border: .16cqw solid var(--W);
+  padding: 1.1cqw 1.6cqw 1.6cqw; font-size: 2.45cqw; line-height: 1.16; text-transform: uppercase; letter-spacing: .015em; display: none; z-index: 2; }
+.liftline.show { display: block; }
