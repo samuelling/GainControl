@@ -590,7 +590,7 @@ const api = {
   wait: (ms) => new Promise(r => setTimeout(r, ms)),
   extras: (list) => { G.extras = list; drawExtras(); },
   status: (t, ms) => { G.status = t; hud(); clearTimeout(G.statusT); G.statusT = setTimeout(() => { G.status = ""; hud(); }, ms); },
-  use: (id) => { const u = HS()[G.room][id][KEY()].use; return typeof u === "function" ? u(api) : u; },
+  use: (id) => { const u = (hsNow(id) || {}).use; return typeof u === "function" ? u(api) : u; },
   hud: () => hud(),
   pose: (g, i) => poseSet(g, i),
   // a full-screen minigame in #panel: fn(el, opts) → Promise; cls adds layout classes (e.g. "glmwrap", "nodmode")
@@ -619,12 +619,30 @@ async function afterAction() {
 const chooserEl = () => $("#chooser");
 function svgPoint(e) { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
 const hsOf = (id) => (HS()[G.room] || {})[id];
-function hsFrom(t) { const el = t.closest && t.closest("[data-hs]"); if (!el) return null; const id = el.dataset.hs, h = hsOf(id);
-  return h && h[KEY()] ? id : null; }
-const hsLabel = (id) => { const h = hsOf(id); return (typeof h.label === "function" ? h.label(api) : h.label); };
+// the version of a hotspot that applies now. A safety net: if nothing in this room has a version for now (a room the
+// story never expected you in, at this hour or as this character), its exits fall back to another shift's, so nobody
+// is ever stranded with nothing to click.
+const FALLBACK = ["day", "night", "morning", "morris"];
+function stranded() { return !Object.values(HS()[G.room] || {}).some(h => h && h[KEY()]); }
+function hsNow(id) {
+  const h = hsOf(id);
+  if (h && h[KEY()]) return h[KEY()];
+  if (!stranded()) return null;
+  // this act first, then the nearest acts that know the room
+  const acts = [G.act, ...Object.keys(ACTS).map(Number).filter(n => n !== G.act).sort((a, b) => Math.abs(a - G.act) - Math.abs(b - G.act))];
+  for (const n of acts) {
+    const g = (ACTS[n].HS[G.room] || {})[id]; if (!g) continue;
+    const k = FALLBACK.find(k => g[k] && typeof g[k].go === "string" && g[k].go.includes("@"));
+    if (k) return { look: g[k].look, go: g[k].go };
+  }
+  return null;
+}
+function hsFrom(t) { const el = t.closest && t.closest("[data-hs]"); if (!el) return null; const id = el.dataset.hs;
+  return hsNow(id) ? id : null; }
+const hsLabel = (id) => { const h = hsOf(id) || Object.values(ACTS).map(A => (A.HS[G.room] || {})[id]).find(Boolean) || {}; return (typeof h.label === "function" ? h.label(api) : h.label); };
 function optionsFor(t) {
   if (t.type === "item") { const it = ITEMS[t.id]; return [["look", "LOOK"], ["use", "USE ON"], ...(it.verbs ? it.verbs(api) : [])]; }
-  const h = hsOf(t.id)[KEY()], L = (R().labels[KEY()] || R().labels[G.mode === "morning" ? "day" : G.mode] || {})[t.id] || {}, o = [];
+  const h = hsNow(t.id), L = (R().labels[KEY()] || R().labels[G.mode === "morning" ? "day" : G.mode] || {})[t.id] || {}, o = [];
   if (h.look) o.push(["look", L.look || "LOOK"]);
   if (h.talk) o.push(["talk", L.talk || "TALK"]);
   if (h.use) o.push(["use", L.use || "USE"]);
@@ -722,7 +740,7 @@ svg.addEventListener("click", (e) => {
 const face = (x) => { if (Math.abs(x - G.actor.x) > 6) { G.actor.dir = x > G.actor.x ? 1 : -1; render(); } };
 function goStand(id, fn) { const s = R().stand[id]; if (s) walkTo(s[0], s[1], fn); else fn(); }
 function act(id, v, cx) {
-  const h = hsOf(id)[KEY()], sc = h.score || {};
+  const h = hsNow(id), sc = h.score || {};
   snapshot();
   if (v === "look") { face(cx ?? R().stand[id]?.[0] ?? G.actor.x);
     (async () => { await respond(h.look); if (sc.look) addScore(...sc.look); await afterAction(); })(); return; }
