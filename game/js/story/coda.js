@@ -23,8 +23,8 @@ function letterMap() {
   const m = new Map(), { NC, text, center, textW } = LED, row = (t, r, cls) => text(m, t, center(t), r, cls);
   row("FROM THE REAL RECORD", 10, "g");
   row("IN 1977, A LETTER IN AMERICAN PSYCHOLOGIST", 24, "w"); row("DESCRIBED A REAL SECRET SOCIETY", 32, "w"); row("OF YOUNG PSYCHOLOGISTS.", 40, "w");
-  row("ITS AUTHOR, CHARLES GROSS, SUGGESTED", 50, "r"); row("SOMEONE STUDY ITS ARCHIVES: WHAT ITS", 58, "r");
-  row("MEMBERS WENT ON TO DO ON GRANT", 66, "r"); row("COMMITTEES AND EDITORIAL BOARDS.", 74, "r");
+  row("ITS AUTHOR, CHARLES GROSS, SUGGESTED", 50, "x"); row("SOMEONE STUDY ITS ARCHIVES: WHAT ITS", 58, "x");
+  row("MEMBERS WENT ON TO DO ON GRANT", 66, "x"); row("COMMITTEES AND EDITORIAL BOARDS.", 74, "x");
   row("IN THIS GAME, THAT IS NELL'S", 85, "a"); row("LAST PIECE OF EVIDENCE.", 93, "a");
   row("HE ADDED A POSTSCRIPT.", 104, "w");
   text(m, "CLICK >", NC - 6 - textW("CLICK >"), 104, "m");

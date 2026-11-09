@@ -82,7 +82,7 @@ function screen({ unlocked = 1, title = "GAIN CONTROL", titleCls = "w", menuWord
 }
 
 /* ---------------- drawing ---------------- */
-const CLS = { w: "lw", m: "lm", d: "ld", r: "lr", g: "lg", a: "la" };
+const CLS = { w: "lw", m: "lm", d: "ld", r: "lr", g: "lg", a: "la", x: "lx" };
 // shift: row → column offset (bands slipping); ghost: draw a red copy one column left; noise: stray LEDs; scan: a lit row
 function render(S, { shift = null, ghost = false, noise = 0, scan = -1 } = {}) {
   const dot = (c, r, k) => { c += shift ? (shift[r] || 0) : 0; if (c < 0 || c >= NC || r < 0 || r >= NR) return "";
@@ -102,7 +102,7 @@ function render(S, { shift = null, ghost = false, noise = 0, scan = -1 } = {}) {
   return s;
 }
 export const LED_CSS = `
-#card .lw { fill: var(--W); } #card .la { fill: var(--A); } #card .lm { fill: var(--M); } #card .ld { fill: var(--N); } #card .lr { fill: var(--R); } #card .lg { fill: var(--G); }
+#card .lw { fill: var(--W); } #card .la { fill: var(--A); } #card .lx { fill: var(--X); } #card .lm { fill: var(--M); } #card .ld { fill: var(--N); } #card .lr { fill: var(--R); } #card .lg { fill: var(--G); }
 #card .ledbtn { cursor: pointer; } #card .ledbtn .cur { display: none; }
 #card .ledbtn:hover .lw, #card .ledbtn:hover .lm { fill: var(--G); } #card .ledbtn:hover .cur { display: inline; }
 `;

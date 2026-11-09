@@ -1,6 +1,7 @@
 // ACT V — Friday: DECISION. The Defense (Laura Bow), then the Induction in B3 (Nell, Iris and Morris), the magnet, the endings.
 // Design: docs/ACT5.md.
 import { seg, segC, chip, chipW, stapler } from "../gfx.js";
+import { LED } from "../title.js";
 import { LOUNGE_HS } from "./lounge.js";
 import { realHS } from "./realrecord.js";
 import { ITEMS } from "./act1.js";
@@ -221,7 +222,21 @@ async function ending(api, which, { shown = false } = {}) {
   }
   // what happened next, shown as a montage of short animated cards rather than told
   if (which === "accepted" || which === "major") { await aftermath(api, which); END.epilogue = ""; }
+  // INDUCTED: after the epilogue, one word on the LED panel, in giant red dots
+  if (which === "inducted") { if (!shown) { await api.say(END.epilogue); END.epilogue = ""; } await sellout(api); }
   api.endAct(); return null;
+}
+async function sellout(api) {
+  LED.css();
+  const m = new Map(); LED.text(m, "SELLOUT.", LED.center("SELLOUT.", LED.BIG, 4) + 6, 42, "x", LED.BIG, 4);   // x: red in every palette (the night one turns R violet)
+  const e = [...m.entries()]; let seed = 39; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = e.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [e[i], e[j]] = [e[j], e[i]]; }
+  const at = (k) => LED.render(new Map(e.slice(0, Math.round(e.length * k))));
+  const scr = api.crt(); scr.set(at(0)); await api.wait(700);
+  for (const k of [.08, .2, .4, .65, .85, 1]) { scr.set(at(k)); api.sfx("tick"); await api.wait(100); }
+  for (const k of [0, 1, 0, 1]) { scr.set(at(k)); await api.wait(k ? 160 : 70); }
+  await scr.click(1200, 4200);
+  await scr.close(); await api.wait(500);
 }
 
 // count a failed attempt at a puzzle (stored in a flag); after a couple, the surrounding lines start giving real hints
