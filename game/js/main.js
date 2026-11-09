@@ -520,13 +520,13 @@ async function blackout(on = true) {
 async function endAct() {
   const E = ACT().END;
   await new Promise(r => setTimeout(r, 300));
-  if (!ACTS[G.act + 1]) await blackout();                  // the last act: the room switches off before the end card
+  await blackout();                                        // the room switches off; the epilogue happens somewhere else
+  if (E.epilogue) await say(E.epilogue);                   // the act's last beat, then the card that closes it (and names the next day)
   const sc = "H-INDEX " + String(G.score).padStart(2, "0");
   await showCard(`${centered(E.title, 96, 30, "sW", 1.8)}${cchip(E.chip, 148, 7, "fA")}
     ${centered(sc, 186, 12, "sA", 1.3)}${centered(E.bodies, 212, 6, "sR", 1)}
     ${centered(E.next, 252, 6, "sM", 1)}`, { hold: 1200, auto: 0 });
-  if (E.epilogue) await say(E.epilogue);
-  if (ACTS[G.act + 1]) { await startAct(G.act + 1); return; }
+  if (ACTS[G.act + 1]) { await blackout(false); await startAct(G.act + 1); return; }
   await coda(api);                                         // the real record, after the last act
   await credits(api, { score: G.score });                  // the credits roll, and close on the megaZINE masthead
   location.hash = ""; location.reload();
