@@ -4,9 +4,7 @@
 // screen) and the results worth comparing are within a run: thresholds across conditions, shapes of curves.
 // Thresholds are found with QUEST (Watson & Pelli, 1983): a Bayesian staircase over log threshold with a Weibull
 // psychometric function, each trial placed at the posterior mean.
-// Includes Lu & Dosher's equivalent-noise method (threshold vs external noise, fitted with the perceptual template model)
-// and the band-pass filtered noise textures of the Population Spatial Frequency Toolbox (Ramirez, Wang, Wiecek, Vinke &
-// Ling; Aghajari, Vinke & Ling, 2020), re-made here in JavaScript after its createTextures recipe, for one block of the scan.
+// Includes Lu & Dosher's equivalent-noise method (threshold vs external noise, fitted with the perceptual template model).
 import { mean, median, nelderMead, linFit } from "./fit.js";
 import { dichoptic, getView } from "./rivalry.js";
 
@@ -102,53 +100,6 @@ async function twoIFC(ctx, draw, { dur = 200, isi = 500, bg = .5, prompt = "Whic
   return r.key === "1" ? 0 : 1;
 }
 const fb = async (ctx, ok, bg = .5) => { ctx.clear(bg); cross(ctx, ok ? "#1a7f4b" : "#a3263a"); await ctx.wait(250); };
-// a radix-2 complex FFT, in place (re, im: Float64Array of length 2^k)
-function fft(re, im, inv = false) {
-  const n = re.length;
-  for (let i = 1, j = 0; i < n; i++) { let bit = n >> 1; for (; j & bit; bit >>= 1) j ^= bit; j ^= bit; if (i < j) { [re[i], re[j]] = [re[j], re[i]]; [im[i], im[j]] = [im[j], im[i]]; } }
-  for (let len = 2; len <= n; len <<= 1) {
-    const a = (inv ? 2 : -2) * Math.PI / len, wr = Math.cos(a), wi = Math.sin(a);
-    for (let i = 0; i < n; i += len) { let cr = 1, ci = 0;
-      for (let j = 0; j < len / 2; j++) { const ur = re[i + j], ui = im[i + j], k = i + j + len / 2, vr = re[k] * cr - im[k] * ci, vi = re[k] * ci + im[k] * cr;
-        re[i + j] = ur + vr; im[i + j] = ui + vi; re[k] = ur - vr; im[k] = ui - vi; const t = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = t; } }
-  }
-  if (inv) for (let i = 0; i < n; i++) { re[i] /= n; im[i] /= n; }
-}
-// band-pass filtering, the pSF Toolbox's recipe: image → 2D FFT → a narrow circularly symmetric band (centre ± width/2,
-// in c/deg) smoothed by a small Gaussian → inverse FFT → zero mean → normalised by its peak. → Float32Array in [-1, 1]
-export function bandpass(src, N, ppd, centre, { width = .2, smooth = 3 } = {}) {
-  const re = Float64Array.from(src), im = new Float64Array(N * N);
-  const row = (arr, y) => arr.subarray(y * N, y * N + N);
-  for (let y = 0; y < N; y++) fft(row(re, y), row(im, y));
-  const cr = new Float64Array(N), ci = new Float64Array(N);
-  for (let x = 0; x < N; x++) { for (let y = 0; y < N; y++) { cr[y] = re[y * N + x]; ci[y] = im[y * N + x]; } fft(cr, ci); for (let y = 0; y < N; y++) { re[y * N + x] = cr[y]; im[y * N + x] = ci[y]; } }
-  // the band, in cycles per degree (frequency index k ↔ k * ppd / N c/deg); at least one bin wide; then smoothed
-  const df = ppd / N, lo = centre - Math.max(width, 1.2 * df) / 2, hi = centre + Math.max(width, 1.2 * df) / 2, M = new Float64Array(N * N);
-  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const fx = (x < N / 2 ? x : x - N) * df, fy = (y < N / 2 ? y : y - N) * df, f = Math.hypot(fx, fy); M[y * N + x] = f >= lo && f <= hi ? 1 : 0; }
-  if (smooth > 0) { const k = [], r = Math.ceil(smooth * 3); for (let i = -r; i <= r; i++) k.push(Math.exp(-i * i / (2 * smooth * smooth))); const ks = k.reduce((a, b) => a + b, 0);
-    const tmp = new Float64Array(N * N);
-    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { let s = 0; for (let i = -r; i <= r; i++) s += M[y * N + ((x + i + N) % N)] * k[i + r]; tmp[y * N + x] = s / ks; }
-    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { let s = 0; for (let i = -r; i <= r; i++) s += tmp[((y + i + N) % N) * N + x] * k[i + r]; M[y * N + x] = Math.min(1, s / ks); } }
-  for (let i = 0; i < N * N; i++) { re[i] *= M[i]; im[i] *= M[i]; }
-  for (let y = 0; y < N; y++) fft(row(re, y), row(im, y), true);
-  for (let x = 0; x < N; x++) { for (let y = 0; y < N; y++) { cr[y] = re[y * N + x]; ci[y] = im[y * N + x]; } fft(cr, ci, true); for (let y = 0; y < N; y++) re[y * N + x] = cr[y]; }
-  let m = 0; for (let i = 0; i < N * N; i++) m += re[i]; m /= N * N; let mx = 0; for (let i = 0; i < N * N; i++) { re[i] -= m; mx = Math.max(mx, Math.abs(re[i])); }
-  const out = new Float32Array(N * N); for (let i = 0; i < N * N; i++) out[i] = mx ? re[i] / mx : 0;
-  return out;
-}
-// the toolbox's noise textures: uniform white noise, band-passed, scaled to contrast c
-export function bandNoise(N, ppd, centre, { width = .1, smooth = 1, c = .9 } = {}) {
-  const src = new Float64Array(N * N); for (let i = 0; i < N * N; i++) src[i] = 2 * Math.random() - 1;
-  const out = bandpass(src, N, ppd, centre, { width, smooth }); for (let i = 0; i < out.length; i++) out[i] *= c; return out;
-}
-// a texture (values around 0) in a circular aperture with a raised-cosine edge, on mid-grey, as a canvas
-function textureCanvas(tex, N, rad, { gain = 1, edge = .15 } = {}) {
-  const cv = document.createElement("canvas"); cv.width = cv.height = N; const g = cv.getContext("2d"), im = g.createImageData(N, N), o = N / 2;
-  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const d = Math.hypot(x + .5 - o, y + .5 - o) / rad; const a = d < 1 - edge ? 1 : d > 1 ? 0 : .5 + .5 * Math.cos(Math.PI * (d - 1 + edge) / edge);
-    const v = .5 * (1 + gain * a * tex[y * N + x]), i = (y * N + x) * 4, L = clamp(Math.round(255 * v + Math.random() - .5), 0, 255); im.data[i] = im.data[i + 1] = im.data[i + 2] = L; im.data[i + 3] = 255; }
-  g.putImageData(im, 0, 0); return cv;
-}
-const pow2 = (n) => 1 << Math.ceil(Math.log2(n));
 
 /* ================= THE MEASURES ================= */
 
@@ -331,109 +282,6 @@ export const EQNOISE = { id: "eqnoise", group: GROUP, tag: "LU & DOSHER 1998", t
       notes: [[`BETA ${f2(Math.exp(lb))}  GAMMA ${f2(g)}`, "sW"], [`NM ${f2(Math.exp(lnm))}  NA ${f2(Math.exp(lna), 3)}`, "sW"], ["NOMINAL CONTRAST", "sM"]] });
     ctx.say(`The flat stretch on the left is your internal noise winning; the rise on the right is the screen's. The model puts your additive internal noise at about ${f2(Math.exp(lna), 3)} in these contrast units. Attention, practice and age move different parameters (Lu & Dosher).`);
     ctx.csv("equivalent_noise.csv", ["trial", "external_noise_sd", "target_accuracy", "contrast", "tilt_deg", "correct"], rows);
-  } };
-
-// ATTENDING TO SPATIAL FREQUENCY: the task of Ramirez, Wang & Ling (2025). One hemifield holds two superimposed streams
-// of band-pass filtered Sloan letters (one at 0.5 c/deg, one at 2; 3° wide, 3.5° from fixation, a new letter every 250 ms);
-// the other holds the pSFT probe, band-pass noise whose centre frequency changes ten times a second (0.1 to 12 c/deg, 40
-// bands) through a wedge. A colour cue before each block says what to attend: the low-SF letters, the high-SF letters,
-// or the fixation dot. Letter targets are J (left button) and K (right); the fixation target is a brief brightening of
-// the dot. In the scanner, the probe hemifield's pSFT shifted toward the attended frequency.
-// Our readings of the paper: letters drawn in a heavy sans font (no Sloan font on the web), shown as the filtered
-// complement of a black letter; the wedge leaves 5° of polar angle on each side of the vertical meridian; the probe's
-// outer radius is cut to fit the screen; 20% of letters are targets, never closer than 500 ms in one stream.
-const PSF_REF = ["Ramirez, L. D., Wang, F., & Ling, S. (2025). Attention alters population spatial frequency tuning. Journal of Neuroscience, 45(25), e0251252025.",
-  "Aghajari, S., Vinke, L. N., & Ling, S. (2020). Population spatial frequency tuning in human early visual cortex. Journal of Neurophysiology, 123(2), 773–785."];
-const SLOAN13 = "ACDJKLMPSVXYZ".split("");
-export const PSFSCAN = { id: "psfscan", group: GROUP, tag: "RAMIREZ ET AL. 2025", title: "Attending to spatial frequency",
-  sub: "Two letter streams, coarse and fine, on one side; the pSFT probe on the other.",
-  ref: PSF_REF,
-  blurb: "The task from Ramirez, Wang & Ling (2025): two superimposed streams of letters, one filtered coarse (0.5 c/deg), one fine (2 c/deg), on one side of fixation; band-pass noise sweeping through spatial frequencies on the other. Attending to the coarse or the fine stream shifted spatial-frequency tuning in visual cortex, even in the ignored hemifield.",
-  instructions: { lines: ["Keep your eyes on the dot. On one side, two streams of blurry letters are superimposed: a coarse, fuzzy one and a fine, sharp one. On the other side, flickering textured noise: ignore it.",
-    "Before each block a coloured dot says what to watch. BLUE: the coarse letters. RED: the fine letters. GREEN: the dot itself.",
-    "Letters: press LEFT (or J) when you see a J and RIGHT (or K) when you see a K in the stream you're watching. Dot: press SPACE when it briefly turns grey."],
-    keys: [["LEFT / J", "SAW A J"], ["RIGHT / K", "SAW A K"], ["SPACE", "THE DOT TURNED GREY"]] },
-  async run(ctx) {
-    const P = ppdOf(ctx), quick = await ctx.choose("Three blocks, one per condition. How long?", [["q", "3 × 20 SECONDS"], ["f", "3 × 40.5 SECONDS (THE PAPER'S BLOCKS)"]]) === "q";
-    const BLOCK = quick ? 20 : 40.5, side = (await ctx.choose("Which side for the letters (the attended hemifield)?", [["r", "LETTERS RIGHT, PROBE LEFT"], ["l", "LETTERS LEFT, PROBE RIGHT"]])) === "r" ? 1 : -1;
-    ctx.say("Filtering letters and noise (the pSF Toolbox's recipe)…"); ctx.clear(.5); await ctx.frames(2);
-    // the letters: a black letter on white, complemented (white on black), band-passed at 0.5 or 2 c/deg
-    const NL = pow2(Math.ceil(5 * P.ppd)), lc = document.createElement("canvas"); lc.width = lc.height = NL; const lg = lc.getContext("2d", { willReadFrequently: true });
-    const letters = { lsf: {}, hsf: {} };
-    for (const L of SLOAN13) {
-      lg.fillStyle = "#fff"; lg.fillRect(0, 0, NL, NL); lg.fillStyle = "#000"; lg.font = `700 ${Math.round(3 * P.ppd * 1.05)}px "Helvetica Neue", Arial, sans-serif`; lg.textAlign = "center"; lg.textBaseline = "middle"; lg.fillText(L, NL / 2, NL / 2 + 3 * P.ppd * .04);
-      const d = lg.getImageData(0, 0, NL, NL).data, src = new Float64Array(NL * NL); for (let i = 0; i < NL * NL; i++) src[i] = 1 - d[i * 4] / 255;   // the complement
-      letters.lsf[L] = bandpass(src, NL, P.ppd, .5, { width: .2, smooth: 3 }); letters.hsf[L] = bandpass(src, NL, P.ppd, 2, { width: .2, smooth: 3 }); await ctx.frames(1);
-    }
-    // the probe: 40 bands, 0.1–12 c/deg (capped below the screen's Nyquist), one noise sample each, re-used flipped
-    const NP = 512, top = Math.min(12, P.ppd / 2.4), bands = Array.from({ length: 40 }, (_, i) => Math.pow(10, Math.log10(.1) + (Math.log10(top) - Math.log10(.1)) * i / 39));
-    const probe = []; for (const c of bands) { probe.push(bandNoise(NP, P.ppd, c, { width: .2, smooth: 1, c: 1 })); if (probe.length % 4 === 0) await ctx.frames(1); }
-    const Rout = Math.min(9.18 * P.ppd, NP / 2 - 2, ctx.H / 2 - 4, ctx.W / 2 - 10), Rin = .32 * P.ppd, gap = 5 * Math.PI / 180;
-    const pCv = document.createElement("canvas"); pCv.width = pCv.height = NP; const pg = pCv.getContext("2d"), pIm = pg.createImageData(NP, NP);
-    const drawProbe = (k, flip) => { const tex = probe[k], o = NP / 2;
-      for (let y = 0; y < NP; y++) for (let x = 0; x < NP; x++) { const dx = x + .5 - o, dy = y + .5 - o, r = Math.hypot(dx, dy), a = Math.atan2(dy, -side * dx);   // a = 0 on the probe's horizontal meridian
-        const inW = r <= Rout && r >= Rin && Math.abs(a) <= Math.PI / 2 - gap, i = (y * NP + x) * 4;
-        const v = inW ? .5 * (1 + tex[(flip & 1 ? NP - 1 - y : y) * NP + (flip & 2 ? NP - 1 - x : x)]) : .5, L = clamp(Math.round(255 * v), 0, 255);
-        pIm.data[i] = pIm.data[i + 1] = pIm.data[i + 2] = L; pIm.data[i + 3] = inW ? 255 : 0; }
-      pg.putImageData(pIm, 0, 0); return pCv; };
-    // the letter patch (both streams superimposed): HSF at full contrast, LSF at the balance alpha
-    const LP = document.createElement("canvas"); LP.width = LP.height = NL; const lpg = LP.getContext("2d"), lpIm = lpg.createImageData(NL, NL);
-    const drawLetters = (Ll, Lh, alphaL) => { const a = letters.lsf[Ll], b = letters.hsf[Lh], o = NL / 2, rad = 1.5 * P.ppd * 1.2;
-      for (let y = 0; y < NL; y++) for (let x = 0; x < NL; x++) { const d = Math.hypot(x + .5 - o, y + .5 - o) / rad, w = d < .85 ? 1 : d > 1 ? 0 : .5 + .5 * Math.cos(Math.PI * (d - .85) / .15);
-        const v = .5 * (1 + w * (alphaL * a[y * NL + x] + b[y * NL + x]) * .5), i = (y * NL + x) * 4, L = clamp(Math.round(255 * v), 0, 255);
-        lpIm.data[i] = lpIm.data[i + 1] = lpIm.data[i + 2] = L; lpIm.data[i + 3] = w > 0 ? 255 : 0; }
-      lpg.putImageData(lpIm, 0, 0); return LP; };
-    const lx = ctx.cx + side * 3.5 * P.ppd;
-    const dot = (col) => { const g = ctx.g; g.fillStyle = col; g.beginPath(); g.arc(ctx.cx, ctx.cy, Math.max(2, .075 * P.ppd), 0, Math.PI * 2); g.fill(); };
-    // balance: the paper's participants set the coarse stream's opacity so neither stream dominated (default 127 of 255)
-    let alphaL = 127 / 255;
-    ctx.say("Balance first: make the coarse, fuzzy letter and the fine, sharp letter about equally easy to read. < > change the fuzzy one; ENTER when balanced.");
-    for (;;) {
-      ctx.clear(.5); ctx.g.drawImage(drawLetters("S", "Z", alphaL), Math.round(lx - NL / 2), Math.round(ctx.cy - NL / 2)); dot("#000"); ctx.status(`COARSE STREAM ALPHA ${Math.round(alphaL * 255)}`);
-      const r = await ctx.key(["ArrowLeft", "ArrowRight", "Enter", "dn", "up", "ok"], { buttons: [["dn", "<"], ["up", ">"], ["ok", "BALANCED"]], quiet: true });
-      if (r.key === "Enter" || r.key === "ok") break; alphaL = clamp(alphaL + ((r.key === "ArrowRight" || r.key === "up") ? 8 : -8) / 255, 0, 1);
-    }
-    ctx.status("");
-    // the three conditions in random order, each cued by a colour at fixation for 1 s
-    const conds = shuffle([["lsf", "#3d6bff", "COARSE LETTERS"], ["hsf", "#e8384f", "FINE LETTERS"], ["fix", "#19c37d", "THE DOT"]]), rows = [], summary = [];
-    for (const [cond, col, name] of conds) {
-      ctx.clear(.5); dot("#fff"); ctx.say(`Next: watch ${name}. SPACE when ready.`); await ctx.key([" ", "go"], { buttons: [["go", "READY"]] });
-      ctx.clear(.5); dot(col); ctx.say(`Watch ${name}.`); await ctx.wait(1000); ctx.clear(.5); await ctx.wait(30);
-      // the event schedule: a letter every 250 ms per stream; 20% targets (J or K), at least 500 ms apart in a stream; fixation
-      // targets (a 250 ms step to grey) with the same probability per 250 ms slot
-      const nSlots = Math.floor(BLOCK * 4), mk = () => { const out = []; let lastT = -9, prev = "";
-        for (let i = 0; i < nSlots; i++) { let L; if (i - lastT >= 2 && Math.random() < .2) { L = Math.random() < .5 ? "J" : "K"; lastT = i; } else { do L = pick(SLOAN13.filter(x => x !== "J" && x !== "K")); while (L === prev); }
-          out.push(L); prev = L; } return out; };
-      const sL = mk(), sH = mk(); for (let i = 0; i < nSlots; i++) if (sL[i] === sH[i]) sH[i] = pick(SLOAN13.filter(x => x !== sL[i] && x !== "J" && x !== "K"));
-      const fixT = []; { let last = -9; for (let i = 0; i < nSlots; i++) if (i - last >= 2 && Math.random() < .2) { fixT.push(i); last = i; } }
-      const presses = []; let stop = false; const t0 = performance.now();
-      const listen = (async () => { while (!stop) { const r = await ctx.key(["ArrowLeft", "ArrowRight", "j", "k", " ", "J", "K", "go"], { buttons: [["ArrowLeft", "J"], ["ArrowRight", "K"], ["go", "DOT"]], quiet: true }).catch(() => null);
-        if (!r || stop) break; const k = r.key === "ArrowLeft" || r.key === "j" || r.key === "J" ? "J" : r.key === "ArrowRight" || r.key === "k" || r.key === "K" ? "K" : "DOT"; presses.push({ k, t: (performance.now() - t0) / 1000 }); } })();
-      let lastSlot = -1, lastProbe = -1, probeK = 0, flip = 0;
-      await ctx.loop((t) => {
-        const s = Math.min(nSlots - 1, Math.floor(t * 4)), p10 = Math.floor(t * 10);
-        if (p10 !== lastProbe) { lastProbe = p10; probeK = Math.floor(Math.random() * bands.length); flip = Math.floor(Math.random() * 4); drawProbe(probeK, flip); }
-        ctx.clear(.5); ctx.g.drawImage(pCv, Math.round(ctx.cx - NP / 2), Math.round(ctx.cy - NP / 2));
-        if (s !== lastSlot) { lastSlot = s; drawLetters(sL[s], sH[s], alphaL); }
-        ctx.g.drawImage(LP, Math.round(lx - NL / 2), Math.round(ctx.cy - NL / 2));
-        dot(fixT.includes(s) ? "#1e1e1e" : "#000");
-        return t < BLOCK; });
-      stop = true; ctx.clear(.5);
-      // scoring: a target counts as hit by the matching press within 1 s; other presses are false alarms
-      const stream = cond === "lsf" ? sL : cond === "hsf" ? sH : null, used = new Set();
-      const targets = cond === "fix" ? fixT.map(i => ({ t: i / 4, want: "DOT", L: "" })) : stream.map((L, i) => ({ t: i / 4, want: L, L })).filter(x => x.want === "J" || x.want === "K");
-      for (const tg of targets) { const j = presses.findIndex((p, k) => !used.has(k) && p.t >= tg.t + .1 && p.t < tg.t + 1); const hit = j >= 0 && presses[j].k === tg.want;
-        if (j >= 0) used.add(j); rows.push([cond, "target", tg.t, tg.L || "dot", j >= 0 ? presses[j].k : "", hit ? 1 : 0, j >= 0 ? presses[j].t - tg.t : ""]); }
-      const fa = presses.filter((p, k) => !used.has(k)); for (const p of fa) rows.push([cond, "false alarm", p.t, "", p.k, 0, ""]);
-      const pc = targets.length ? rows.filter(r => r[0] === cond && r[1] === "target" && r[5] === 1).length / targets.length : NaN;
-      summary.push([cond, name, pc, fa.length, targets.length]);
-    }
-    const by = (c) => summary.find(s => s[0] === c);
-    ctx.plot({ title: "PERFORMANCE BY CONDITION", x: { lo: 0, hi: 4, label: "ATTEND", ticks: [] }, y: { lo: 0, hi: 1, label: "PROPORTION CORRECT", ticks: [0, .25, .5, .75, 1] },
-      series: [{ name: "COARSE (LSF)", cls: "sB", pts: [[1, by("lsf")[2]]] }, { name: "FINE (HSF)", cls: "sR", pts: [[2, by("hsf")[2]]] }, { name: "FIXATION", cls: "sG", pts: [[3, by("fix")[2]]] }],
-      notes: [[`COARSE STREAM ALPHA ${Math.round(alphaL * 255)}`, "sM"], [`FALSE ALARMS ${summary.map(s => s[3]).join(" / ")}`, "sM"], [degNote(P), "sM"]] });
-    ctx.say(`Coarse ${Math.round(100 * by("lsf")[2])}%, fine ${Math.round(100 * by("hsf")[2])}%, fixation ${Math.round(100 * by("fix")[2])}%. In the paper, balancing kept the two letter tasks within 5 to 10% of each other; the scanner measured the noise side, where attending to coarse or fine letters shifted spatial-frequency tuning.`);
-    ctx.csv("attend_sf.csv", ["condition", "event", "time_s", "target", "response", "correct", "rt_s"], rows);
   } };
 
 // FLICKER: temporal contrast sensitivity (de Lange curve), 2IFC, at frame-locked frequencies
@@ -675,4 +523,4 @@ export const TAE = { id: "tae", group: GROUP, tag: "GIBSON & RADNER 1937", title
     ctx.csv("tilt_aftereffect.csv", ["block", "test", "tilt_deg_cw", "response"], rows);
   } };
 
-export const BASICS = [SCREEN_SIZE, ACUITY, LETTERCS, ORIDISC, SFDISC, DIPPER, EQNOISE, PSFSCAN, FLICKER, SPEED, WEBERLIGHT, STEREO, HUES, AMSLER, BISECT, TAE];
+export const BASICS = [SCREEN_SIZE, ACUITY, LETTERCS, ORIDISC, SFDISC, DIPPER, EQNOISE, FLICKER, SPEED, WEBERLIGHT, STEREO, HUES, AMSLER, BISECT, TAE];
