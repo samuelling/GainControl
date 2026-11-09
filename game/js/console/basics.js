@@ -6,7 +6,7 @@
 // psychometric function, each trial placed at the posterior mean.
 // Includes Lu & Dosher's equivalent-noise method (threshold vs external noise, fitted with the perceptual template model)
 // and the band-pass filtered noise textures of the Population Spatial Frequency Toolbox (Ramirez, Wang, Wiecek, Vinke &
-// Ling; Aghajari, Vinke & Ling, 2020), re-made here in JavaScript after its createTextures recipe.
+// Ling; Aghajari, Vinke & Ling, 2020), re-made here in JavaScript after its createTextures recipe, for one block of the scan.
 import { mean, median, nelderMead, linFit } from "./fit.js";
 import { dichoptic, getView } from "./rivalry.js";
 
@@ -329,35 +329,9 @@ export const EQNOISE = { id: "eqnoise", group: GROUP, tag: "LU & DOSHER 1998", t
     ctx.csv("equivalent_noise.csv", ["trial", "external_noise_sd", "target_accuracy", "contrast", "tilt_deg", "correct"], rows);
   } };
 
-// pSF TEXTURES: detection thresholds for band-pass noise across spatial frequency (a contrast sensitivity function
-// measured with the stimuli of the Population Spatial Frequency Toolbox)
+// the band-pass noise textures of the Population Spatial Frequency Toolbox (bandNoise above)
 const PSF_REF = ["Ramirez, L. D., Wang, F., Wiecek, E., Vinke, L. N., & Ling, S. (2026). The Population Spatial Frequency Toolbox. Journal of Open Research Software, 14(1), 5.",
   "Aghajari, S., Vinke, L. N., & Ling, S. (2020). Population spatial frequency tuning in human early visual cortex. Journal of Neurophysiology, 123(2), 773–785."];
-export const PSFNOISE = { id: "psfnoise", group: GROUP, tag: "RAMIREZ ET AL. 2026", title: "Sensitivity to filtered noise",
-  sub: "The pSF Toolbox's textures: how faint can each band of noise be?",
-  ref: PSF_REF,
-  blurb: "The Population Spatial Frequency Toolbox measures spatial-frequency tuning in visual cortex with narrow-band noise textures: white noise filtered to a thin ring in the Fourier domain. Here the same textures measure behaviour instead: the faintest detectable texture at each band, a contrast sensitivity function for noise.",
-  instructions: { lines: ["Two intervals; in one of them a faint patch of textured noise appears in the middle (fine-grained or coarse, it varies).", "Which interval had the texture: 1 or 2? It gets fainter as you get them right; bands are interleaved."], keys: [["1", "FIRST"], ["2", "SECOND"]] },
-  async run(ctx) {
-    const P = ppdOf(ctx), quick = await askLen(ctx, "Six bands, interleaved.", "90 TRIALS", "180 TRIALS"), N = quick ? 90 : 180;
-    const centres = [.5, 1, 2, 4, 8, 12].filter(c => c < P.ppd / 2.5), rad = Math.round(2.5 * P.ppd), Nf = pow2(2 * rad + 4);
-    ctx.say("Filtering the noise (the toolbox's recipe: white noise, Fourier transform, a narrow ring, back again)…"); ctx.clear(.5); await ctx.frames(2);
-    const bank = {}; for (const c of centres) { bank[c] = []; for (let k = 0; k < 4; k++) { bank[c].push(bandNoise(Nf, P.ppd, c, { c: 1 })); await ctx.frames(1); } }
-    const Q = Object.fromEntries(centres.map(c => [c, quest({ lo: -2.8, hi: 0, guess: -1.6, gam: .5, beta: 3 })])), rows = [];
-    for (let t = 0; t < N; t++) {
-      const c = centres[t % centres.length], lc = Q[c].next(), first = Math.random() < .5, tex = pick(bank[c]);
-      const cv = textureCanvas(tex, Nf, rad, { gain: Math.pow(10, lc) });
-      const ans = await twoIFC(ctx, (i) => { if ((i === 0) === first) putC(ctx, cv); }, { dur: 300, prompt: `Trial ${t + 1} of ${N}: which interval had the texture?` });
-      const ok = ans === (first ? 0 : 1); Q[c].update(lc, ok); rows.push([t + 1, c, Math.pow(10, lc), first ? 1 : 2, ans + 1, ok ? 1 : 0]); await fb(ctx, ok);
-    }
-    const res = centres.map(c => [c, 1 / Math.pow(10, Q[c].mean())]);
-    ctx.plot({ title: "SENSITIVITY TO BAND-PASS NOISE", x: { lo: .35, hi: 16, log: true, label: "BAND CENTRE (C/DEG)", ticks: centres }, y: { lo: 0, hi: Math.max(...res.map(r => r[1])) * 1.25, label: "SENSITIVITY (1 / PEAK CONTRAST)", ticks: [0, 10, 20, 50, 100, 200] },
-      series: [{ name: "SENSITIVITY", cls: "sA", pts: res, line: true }], notes: [[degNote(P), "sM"], ["TEXTURES: PSF TOOLBOX RECIPE", "sM"]] });
-    const peak = res.reduce((a, b) => b[1] > a[1] ? b : a);
-    ctx.say(`Peak sensitivity at ${peak[0]} c/deg. Like the grating CSF, an inverted U; the pSFT method measures the same tuning voxel by voxel in V1 to V3, where preferred frequency falls with eccentricity.`);
-    ctx.csv("psf_noise_sensitivity.csv", ["trial", "band_cpd", "peak_contrast", "target_interval", "response", "correct"], rows);
-  } };
-
 // INSIDE THE pSFT SCAN: the toolbox's stimulus stream (a new band each second, a new noise sample ten times a second)
 // with its fixation task (report the brief dimming of the fixation dot)
 export const PSFSCAN = { id: "psfscan", group: GROUP, tag: "AGHAJARI ET AL. 2020", title: "Inside the pSFT scan",
@@ -629,4 +603,4 @@ export const TAE = { id: "tae", group: GROUP, tag: "GIBSON & RADNER 1937", title
     ctx.csv("tilt_aftereffect.csv", ["block", "test", "tilt_deg_cw", "response"], rows);
   } };
 
-export const BASICS = [SCREEN_SIZE, ACUITY, LETTERCS, ORIDISC, SFDISC, DIPPER, EQNOISE, PSFNOISE, PSFSCAN, FLICKER, SPEED, WEBERLIGHT, STEREO, HUES, AMSLER, BISECT, TAE];
+export const BASICS = [SCREEN_SIZE, ACUITY, LETTERCS, ORIDISC, SFDISC, DIPPER, EQNOISE, PSFSCAN, FLICKER, SPEED, WEBERLIGHT, STEREO, HUES, AMSLER, BISECT, TAE];

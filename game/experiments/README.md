@@ -30,4 +30,4 @@ Each run writes `data/<id>_<participant>_<date>.csv` next to the script, one row
 
 ## Sources
 
-Every script's header gives the paper(s) it replicates, the same citations the console shows. The band-pass noise textures (`gc_psfnoise`, `gc_psfscan`) follow the recipe of the Population Spatial Frequency Toolbox (Ramirez, Wang, Wiecek, Vinke & Ling, 2026, *Journal of Open Research Software*, https://github.com/luisdramirez/pSF-Toolbox); for fMRI, use the toolbox itself.
+Every script's header gives the paper(s) it replicates, the same citations the console shows. The band-pass noise textures of `gc_psfscan` follow the recipe of the Population Spatial Frequency Toolbox (Ramirez, Wang, Wiecek, Vinke & Ling, 2026, *Journal of Open Research Software*, https://github.com/luisdramirez/pSF-Toolbox); for fMRI, use the toolbox itself.
