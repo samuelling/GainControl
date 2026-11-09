@@ -109,7 +109,7 @@ export const LED_CSS = `
 function css() { if (document.getElementById("css-led")) return; const s = document.createElement("style"); s.id = "css-led"; s.textContent = LED_CSS; document.head.appendChild(s); }
 
 // the same LED panel for other screens (the coda): write text into a dot map, render it (only lit dots are drawn)
-export const LED = { NC, NR, BIG, SMALL, text, textW, center, css: () => css(), render: (map) => render({ map, rows: [], fullRow: null }),
+export const LED = { NC, NR, BIG, SMALL, text, textW, center, css: () => css(), render: (map, fx = {}) => render({ map, rows: [], fullRow: null }, fx),
   // a menu row: its own dot map, drawn as a button (data-btn = id; hover lights it green with the > cursor)
   row: (id, str, c, r, cls = "w") => { const m = new Map(); text(m, str, c, r, cls); return { id, r, c, m, w: textW(str) }; },
   renderRows: (map, rows) => render({ map, rows, fullRow: null }),
