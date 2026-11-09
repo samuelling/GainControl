@@ -1,4 +1,4 @@
-import { megazineEnd } from "../megazine.js";
+import { megazineRoll } from "../megazine.js";
 import { CLASSICS_REFS_SORTED } from "../data/classics_refs.js";
 import * as CONSOLE from "../console/modules.js";
 // THE AFTERMATH and THE CREDITS. Show, don't tell: what happens after the climax is a montage of short animated cards
@@ -195,11 +195,19 @@ export async function credits(api, { score = 0 } = {}) {
   line(`H-INDEX ${String(score).padStart(2, "0")}  ·  BODIES 05`, 8, "sA", 30);
   line("THE MAGNET IS ALWAYS ON.", 10, "sW", 26);
   line("THANKS FOR PLAYING.", 7, "sG", 0);
-  const H = y + 40, end = H - 200;   // stop with the last line a little above the middle
+  // the credits roll up and off the top; the megaZINE masthead comes up after the last line, as part of the same roll,
+  // and stops in the middle while everything above it rolls away. A click during the roll skips to the end of it.
+  const H = y + 40, MZ = H + 90;                  // the masthead's centre: about 40 units below the last line, so it parks while the last lines are still rolling off above it
   if (window.MUSIC) window.MUSIC.endTheme();   // the end theme: the sparse opening, then propelled into the finale
-  const id = "roll" + Math.floor(Math.random() * 1e6), STEP = 3, MS = 74, steps = Math.ceil(end / STEP);   // 3 px every 74 ms: about 40 px a second
-  const done = api.bigCard(`<g id="${id}">${s}</g>`, { auto: steps * MS + 3500, hold: 800, mark: false });
-  (async () => { for (let i = 1; i <= steps; i++) { await api.wait(MS); const g = document.getElementById(id); if (!g) return; g.setAttribute("transform", `translate(0 ${-i * STEP})`); } })();
-  await done;
-  await api.mini(megazineEnd, { hint: "CLICK TO RETURN TO THE TITLE" }, "mzwrap");   // the close, as in Ashland: part of megaZINE
+  const id = "roll" + Math.floor(Math.random() * 1e6), STEP = 3, MS = 74;   // 3 px every 74 ms: about 40 px a second
+  const stepsC = Math.ceil(H / STEP), stepsM = Math.ceil((MZ - 180) / STEP), steps = Math.max(stepsC, stepsM);
+  api.bigCard(`<g id="${id}">${s}</g>`, { auto: 0, hold: 1e9, mark: false });   // stays up: the page reloads after
+  const mz = megazineRoll(document.getElementById("card").parentElement, "CLICK TO RETURN TO THE TITLE");
+  let i = 0, skip = false;
+  const place = () => { const g = document.getElementById(id); if (g) g.setAttribute("transform", `translate(0 ${-Math.min(i, stepsC) * STEP})`); mz.at(Math.max(180, MZ - i * STEP)); };
+  place();
+  mz.onSkip(() => { skip = true; });
+  while (i < steps && !skip) { await api.wait(MS); i++; place(); }
+  i = steps; place();
+  await mz.done();
 }

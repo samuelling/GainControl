@@ -98,3 +98,24 @@ export function megazineEnd(el, { hint = "CLICK TO FINISH" } = {}) {
     setTimeout(() => { root.addEventListener("pointerdown", done); window.addEventListener("keydown", key); }, 1200);
   });
 }
+
+// GAIN CONTROL's credits: the masthead as part of the roll. An overlay over the credits card (above it), centred on a
+// y in the card's 640 × 360 units, moved by the roll and parked at the middle. at(y) places it; onSkip(fn) is called by a
+// click during the roll; done() shows the hint and resolves on a click (anywhere but the masthead) / Enter / Space.
+export function megazineRoll(host, hint = "CLICK TO FINISH") {
+  const ov = document.createElement("div"); ov.className = "mzroll";
+  ov.innerHTML = `<div class="mzend"><svg class="t mzpart" viewBox="0 0 200 14">${segC("PART OF", 100, 3, 7, "sA", 1)}</svg>${MEGAZINE_HTML}</div><div class="mzhint">${hint}</div>`;
+  host.appendChild(ov);
+  const box = ov.querySelector(".mzend"), stop = mountMegazine(box), hintE = ov.querySelector(".mzhint");
+  let skipFn = null, finish = null;
+  const down = (e) => { if (e.target.closest && e.target.closest(".mz")) return; e.preventDefault();
+    if (finish) finish(); else if (skipFn) { const f = skipFn; skipFn = null; f(); } };
+  const key = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); if (finish) finish(); else if (skipFn) { const f = skipFn; skipFn = null; f(); } } };
+  ov.addEventListener("pointerdown", down); window.addEventListener("keydown", key, true);
+  return {
+    at: (y) => { box.style.top = (y / 360 * 100).toFixed(2) + "%"; },
+    onSkip: (fn) => { skipFn = fn; },
+    done: () => new Promise((resolve) => { setTimeout(() => { hintE.style.visibility = "visible";
+      finish = () => { ov.removeEventListener("pointerdown", down); window.removeEventListener("keydown", key, true); stop(); ov.remove(); resolve(); }; }, 900); }),
+  };
+}

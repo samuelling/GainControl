@@ -198,6 +198,10 @@
 @font-face { font-family:"Courier Prime"; font-weight:700; font-display:swap; src:url(../fonts/courier-prime-latin-700-normal.woff2) format("woff2"); }
 @font-face { font-family:"Spline Sans"; font-weight:600; font-display:swap; src:url(../fonts/spline-sans-latin-600-normal.woff2) format("woff2"); }
 #panel.mzwrap { background:#000; }
+/* the masthead rolling up with the credits: an overlay above the card, transparent; the masthead centred on a moving top */
+.mzroll { position:absolute; inset:0; z-index:9; cursor:pointer; }
+.mzroll .mzend { position:absolute; inset:auto; left:0; right:0; top:150%; transform:translateY(-50%); }
+.mzroll .mzhint { position:absolute; left:0; right:0; bottom:4%; text-align:center; font-size:1.1cqw; letter-spacing:.14em; color:var(--M); visibility:hidden; }
 .mzend { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; cursor:pointer; }
 .mzend .mzpart { width:22cqw; height:auto; margin-bottom:2.2cqw; }
 .mzend .mz { display:inline-block; text-decoration:none; color:#ECEBE5; }
