@@ -64,7 +64,6 @@ export async function coda(api) {
   await scr.click(1800, 6500);
   stopHum();
   await scr.close();
-  // a second of silence, then the credits
+  // a second of silence, then the credits (the score stays hushed: the end theme brings itself up from its first note)
   await wait(1200);
-  window.MUSIC && window.MUSIC.hush && window.MUSIC.hush(false, .2);
 }

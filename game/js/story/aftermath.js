@@ -197,7 +197,7 @@ export async function credits(api, { score = 0 } = {}) {
   line("THANKS FOR PLAYING.", 7, "sG", 0);
   const H = y + 40, end = H - 200;   // stop with the last line a little above the middle
   if (window.MUSIC) window.MUSIC.endTheme();   // the end theme: the sparse opening, then propelled into the finale
-  const id = "roll" + Math.floor(Math.random() * 1e6), STEP = 3, MS = 60, steps = Math.ceil(end / STEP);
+  const id = "roll" + Math.floor(Math.random() * 1e6), STEP = 3, MS = 74, steps = Math.ceil(end / STEP);   // 3 px every 74 ms: about 40 px a second
   const done = api.bigCard(`<g id="${id}">${s}</g>`, { auto: steps * MS + 3500, hold: 800, mark: false });
   (async () => { for (let i = 1; i <= steps; i++) { await api.wait(MS); const g = document.getElementById(id); if (!g) return; g.setAttribute("transform", `translate(0 ${-i * STEP})`); } })();
   await done;

@@ -547,6 +547,8 @@ function tick() {
       step = Math.ceil(step / (128 * FORM.length)) * 128 * FORM.length;      // the top of the form: section A
       S = band({ act: 1, mode: "day", room: "", arr: "day" }); pend = null; P.arr = "day"; buildStart = step; P.end.phase = "intro";
       P.climax = false; P.dread = 0; P.throb = 0; P.target = P.tempo = S.tempo; mix();
+      // whatever was playing stayed silent while we waited for the barline; the end theme comes up from its first note
+      if (bus) { bus.gain.cancelScheduledValues(nextT); bus.gain.setValueAtTime(0, nextT); bus.gain.linearRampToValueAtTime(.5, nextT + .05); }
     }
     scheduleStep(step, nextT); nextT += 60 / P.tempo / 4; step++;
     P.tempo += (P.target - P.tempo) * (P.arr === "finale" ? .08 : .035);   // glide, never lurch (about two bars)
@@ -597,7 +599,8 @@ export const music = {
   start() { if (!init() || P.on) return; P.on = true; if (pend) { S = pend; pend = null; P.arr = S.arr; } buildStart = step; P.tempo = P.target; nextT = C.currentTime + .1; timer = setInterval(tick, 25); mix(); },
   // where we are → band, dread, tempo, throb. The same scene twice changes nothing; a new band waits for the barline.
   // the credits: the sparse opening, then propelled into the finale's climax (see endThemeStep)
-  endTheme() { P.end = { phase: "wait" }; if (!P.on) { P.dread = 0; S = band({ act: 1, mode: "day", room: "", arr: "day" }); P.arr = "day"; P.target = P.tempo = S.tempo; } },
+  // the credits: silence what's playing at once (no bar of the old scene leaking in), then the end theme from the top
+  endTheme() { P.end = { phase: "wait" }; if (C && bus) { const t = C.currentTime; bus.gain.cancelScheduledValues(t); bus.gain.setValueAtTime(bus.gain.value, t); bus.gain.linearRampToValueAtTime(0, t + .08); } if (!P.on) { P.dread = 0; S = band({ act: 1, mode: "day", room: "", arr: "day" }); P.arr = "day"; P.target = P.tempo = S.tempo; } },
   scene({ act = 1, mode = "day", room = "", flags = {}, title = false, _end = false } = {}) {
     if (!_end) P.end = null;
     let d = { 1: 0, 2: .12, 3: .3, 4: .48, 5: .62 }[act] || 0, arr = mode === "day" ? "day" : mode === "morning" ? "morning" : "night";
