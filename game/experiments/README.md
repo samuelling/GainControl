@@ -24,6 +24,8 @@ Sizes in degrees are real once these are set. Luminance and contrast are not cal
 
 Escape quits any script; the data collected so far are saved.
 
+The rivalry scripts (`gc_riv*`) need each eye to get its own picture: red/green or red/cyan glasses (the default), or a mirror or prism stereoscope. Set `VIEW_MODE` / `V.view` at the top, and run `gc_rivsetup` first: it checks for crosstalk, matches the two eyes' brightness through the glasses (or lines up the halves for a stereoscope), and prints the values to copy into the others. The Psychtoolbox versions use Psychtoolbox's own stereo modes (anaglyph mode 6 with per-eye gains, side-by-side mode 4).
+
 ## Data
 
 Each run writes `data/<id>_<participant>_<date>.csv` next to the script, one row per trial (or per response), with the columns named in its first line.

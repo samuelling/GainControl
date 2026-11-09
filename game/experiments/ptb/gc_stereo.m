@@ -30,7 +30,7 @@ fid = fopen(fn, 'w'); fprintf(fid, 'trial,disparity_px,disparity_arcmin,nearer,c
 PsychDefaultSetup(2); KbName('UnifyKeyNames'); if S.skipSyncTests, Screen('Preference', 'SkipSyncTests', 1); end
 try
     [win, rect] = PsychImaging('OpenWindow', S.screenNumber, 0, [], [], [], stereoMode); HideCursor;
-    ppd = rect(3) / S.screenWidthCm * 2 * S.viewDistCm * tand(.5); if stereoMode == 4, ppd = ppd / 2; end   % side by side: each eye gets half the width
+    sr = Screen('Rect', S.screenNumber); ppd = sr(3) / S.screenWidthCm * 2 * S.viewDistCm * tand(.5);   % from the whole screen (side by side, each eye's view is half of it)
     N = 60; if quick, N = 30; end
     ES = 462; el = 3; dis = 6; run = 0; last = 0; rev = [];
     for eye = 0:1, Screen('SelectStereoDrawBuffer', win, eye); DrawFormattedText(win, 'Two squares hide in the dots; one floats NEARER.\nLEFT or RIGHT for the nearer square.\n\nSPACE to start.', 'center', 'center', 1); end

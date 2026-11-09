@@ -9,6 +9,8 @@ export const SCRIPTED = new Set([
   "necker", "rubin", "quartet", "sphere", "dancer",                         // AMBIGUOUS
   "acuity", "lettercs", "oridisc", "sfdisc", "dipper", "eqnoise", "tcsf",   // VISION BASICS
   "speed", "weberlight", "stereo", "hues", "amsler", "bisect", "tae",
+  "rivsetup", "rivbasic", "rivlevelt", "rivprobe", "rivadapt", "rivsize",   // RIVALRY
+  "rivwave", "rivgroup", "rivswap", "rivmemory", "rivflash", "rivcfs",
 ]);
 export const hasScript = (id, kind) => SCRIPTED.has(id) && kind in SCRIPT_KINDS;
 export const scriptFile = (id, kind) => kind === "ptb" ? `gc_${id}.m` : `gc_${id}.py`;

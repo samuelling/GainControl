@@ -277,7 +277,7 @@ export const RIV_ADAPT = { id: "rivadapt", group: GROUP, tag: "BLAKE & FOX 1974"
     const v = await ensure(ctx), d = dichoptic(ctx, v);
     const quick = await askLen(ctx, "Two blocks of adapting and testing.", "SHORT (30 S ADAPT, 24 TESTS)", "LONG (60 S ADAPT, 40 TESTS)");
     const AD = quick ? 30 : 60, NT = quick ? 24 : 40, TOP = 5;
-    const adapter = grating({ ori: 90 + 15, c: .9, cpd: 2 }), rows = [], out = {};
+    const adapter = grating({ ori: 15, c: .9, cpd: 2 }), rows = [], out = {};
     for (const cond of shuffle(["visible", "suppressed"])) {
       ctx.say(`${cond === "visible" ? "This block: the adapter stays visible." : "This block: a flickering pattern in the other eye hides the adapter most of the time."} Hold V while you can see the tilted grating. SPACE to start.`);
       await ctx.key([" ", "go"], { buttons: [["go", "START"]] });
@@ -303,7 +303,7 @@ export const RIV_ADAPT = { id: "rivadapt", group: GROUP, tag: "BLAKE & FOX 1974"
       for (let t = 0; t < NT; t++) {
         await ctx.loop((tt) => { d.begin(); put(d.L, adapter); if (cond === "suppressed") noise(d.R, tt); d.lock(); d.show(); return tt < TOP; });
         d.begin(); d.lock(); d.show(); await ctx.wait(250);
-        const test = grating({ ori: 90 + tilt, c: .9, cpd: 2 });
+        const test = grating({ ori: tilt, c: .9, cpd: 2 });   // ori 0: vertical stripes; positive: clockwise
         d.begin(); put(d.L, test); d.lock(); d.show(); await ctx.wait(200); d.begin(); d.lock(); d.show();
         const r = await ctx.key(["a", "l"], { buttons: [["a", "TILTED LEFT"], ["l", "TILTED RIGHT"]] });
         const right = r.key === "l"; rows.push([cond, t + 1, tilt, right ? "right" : "left"]);
