@@ -63,7 +63,8 @@ function back(G) {
   s += `<g data-hs="tube"><path class="sW mech" d="M486,56 L486,230 M494,56 L494,230"/>
         ${[70, 100, 190, 216].map(y => `<path class="sW mech" d="M483,${y} L497,${y} M483,${y + 2} L497,${y + 2}"/>`).join("")}
         <rect class="k sW" x="476" y="124" width="28" height="40"/><circle class="k sW" cx="490" cy="134" r="5"/><circle class="fW" cx="490" cy="134" r="1"/>
-        <path class="needle sR" data-cx="490" data-cy="134" d="M490,134 L493,131"/><path class="hl sM mech" d="M482,144 L498,144 L498,158 L482,158 Z"/>${hit(474, 56, 32, 174)}</g>`;
+        <path class="needle sR" data-cx="490" data-cy="134" d="M490,134 L493,131"/><path class="hl sM mech" d="M482,144 L498,144 L498,158 L482,158 Z"/>
+        ${chip("MAIN", 478.5, 115, 3.6, "fW")}<path class="sG" d="M509,130 L512,125 L515,130"/><path class="sR" d="M509,150 L512,155 L515,150"/>${hit(474, 56, 32, 174)}</g>`;
   s += `<g class="canister" data-x="490" style="display:none"><rect class="fA" x="487.4" y="-6" width="5.2" height="12" rx="2.6"/>${seg("B3", 498, -4, 6, "sA", 1)}</g>`;
   // left wall: stairs (locked) + main office; EXIT chip
   const st = sideDoor(pp, 0, .64, .78, 108), of = sideDoor(pp, 0, .86, .98, 108);

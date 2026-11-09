@@ -43,8 +43,8 @@ wrap("notebook", (api) => {
 wrap("printout", () => "The FOG NEURO printout. Gus's handwriting in the margin: 'every sentence is somebody else's.'");
 wrap("phone", (api) => { const f = api.G.flags, t = (k, s) => `- ${f[k] ? "(done) " : ""}${s}`;
   return "Texts from Nell, 23:58:\n\nNELL: they killed cody. morris saw\nNELL: preston chased me down the stairwell in FOG. actual fog\nNELL: iris says don't go to the basement\nNELL: gus\nNELL: gus please\n\nGus's list:\n"
-    + [t("gotRobe4", "A robe from that coat check. The one with the lit pin. She'll need to get in."), t("gotMap4", "The map on the rack."),
-      t("robeLeft", "Leave Nell the robe where she'll see it first: her desk, her monitor. (Lab, upstairs.)"), t("mapSent", "Send her the map. Not on her desk, where anyone walks past. The hallway tube station goes up as well as down."), "- Scan at 2:30."].join("\n"); });
+    + [t("gotRobe4", "A robe from that coat check. Nobody gets past their door without one, and Nell's going in tomorrow night."), t("gotMap4", "The map on the rack."),
+      t("robeLeft", "Leave Nell the robe where she'll see it first: her desk, her monitor. (Lab, upstairs.)"), t("mapSent", "Send her the map. Not on her desk: that's where they'd look. Every tube down here runs one way, into the brick. The main station in the hallway is the only one that sends things up."), "- Scan at 2:30."].join("\n"); });
 
 /* ---------------- readouts ---------------- */
 const REVIEW = () => {
@@ -233,7 +233,7 @@ export const HS = {
       night: look("The Rising Stars in the dark.") },
     board: { label: "bulletin board", day: look("NELL NULL, DEFENSE, FRIDAY 2 PM, 101. P. VALU, JOB TALK, FRIDAY 3 PM, 101. Somebody moved his to after yours. So he can watch."), night: look("The flyers.") },
     impact: { label: "Impact Lab 116", day: { look: "116. Locked.", use: "123456." }, morris: look("116."), night: look("116.") },
-    tube: { label: "tube station", day: look("Canisters, going down."), night: { look: (api) => "The tube station. A canister, empty, waiting in the hatch."
+    tube: { label: "main tube station", day: look("The main station, 1962. Canisters, going down."), night: { look: (api) => "The main tube station, 1962: the one place in the building where the tubes run both ways. Every other port is a drop slot, down only. A canister, empty, waiting in the hatch."
       + (api.has("map") ? " Room in it for something rolled up. The address card says: ANY ROOM. Up goes to people. Down goes to them." : "") } },
     stairs: { label: "stairwell", day: { look: "The stairwell.", go: stairs }, morris: look("Vents."), night: { look: "The stairwell.", go: "Gus has a scan at 2:30. And a feeling about the tunnels." } },
     office: { label: "main office", day: { look: "The main office.", go: "office@fromHall" }, morris: look("Vent."), night: { look: "Dark.", go: "Locked." } },
@@ -333,9 +333,9 @@ export const HS = {
           : api.has("robe") ? api.die("Gus pulls the robe over his head and puts his eye to the gap. A hooded face on the other side, very close.\n\n'Welcome, member. Your gain has been adjusted.'") : "Gus doesn't knock. Not this time." } },
     rack: { label: "coat check", night: { look: "A coat check, here, in a steam tunnel. A rack of hooded robes on numbered hooks. One has a small round pin, lit red: the robe from Gus's photo on Monday.",
         use: (api) => { if (api.has("robe") || api.flag("robeLeft")) return "One's enough."; api.sfx("cloth"); api.give("robe"); api.flag("gotRobe4", true); api.score("tookRobe", 2);
-          return "Gus takes the robe with the pin. Inside the collar, a laundry tag: 0412.\n\nThe same seed as the paper mill. The Table does its laundry and its science on the same schedule."; } } },
+          return "Gus takes the robe with the pin. Inside the collar, a laundry tag: 0412.\n\nThe same seed as the paper mill. The Table does its laundry and its science on the same schedule.\n\nGUS|Hood up, and the door lets you through. This is Nell's ticket in. Her chair, upstairs: the first thing she'll see in the morning."; } } },
     reel: { label: "reel", night: { look: "A reel-to-reel tape on a hook: PANEL SCORES 1983.", use: (api) => { api.give("reel"); api.flag("gotReel", true); api.refresh(); api.score("gotReel", 2); return "Gus takes the reel."; } } },
-    map: { label: "map", night: { look: "A hand-drawn map pinned to the rack: the steam tunnels, with a room past the bricked door. B3. Circled.", use: (api) => { api.give("map"); api.flag("gotMap4", true); api.refresh(); api.score("gotMap4", 2); return "Gus takes the map. On the back, he writes: Tomorrow. Bring the rat. —G."; } } },
+    map: { label: "map", night: { look: "A hand-drawn map pinned to the rack: the steam tunnels, with a room past the bricked door. B3. Circled.", use: (api) => { api.give("map"); api.flag("gotMap4", true); api.refresh(); api.score("gotMap4", 2); return "Gus takes the map. On the back, he writes: Tomorrow. Bring the rat. —G.\n\nGUS|Not on her desk. If they notice it's gone, her desk is the first place they'll look. The tube, then. Not down here: every line in these tunnels runs one way, through the brick, to them.\n\nGUS|The main station in the hallway. The only port in the building that sends things back up."; } } },
     tube: { label: "tube line", night: { look: "The tube line. Busy tonight.", use: (api) => { if (api.flag("canister4")) return "Quiet."; api.flag("canisterLive", true); api.refresh(); return "A rattle, coming."; } } },
     hatch: { label: "access hatch", night: { look: "The access hatch.", use: async (api) => {
       if (api.flag("canister4")) return "Empty.";
@@ -443,7 +443,8 @@ export const WITH = {
   "lab.drawer": { robe: (api) => api.G.mode === "night" ? "Gus starts folding the robe into Nell's drawer. It won't go. Ramen packets, rejection letters, a rat-shaped dent. Somewhere she'll see it first: her desk. Her monitor." : null },
   "lab.gusdesk": { robe: (api) => api.G.mode === "night" ? "GUS|My desk? She won't look at my desk. Nobody looks at a grad student's desk. Hers. By her monitor." : null,
     map: (api) => api.G.mode === "night" ? "GUS|Not here. If they come looking, they'll come looking here." : null },
-  "tunnels.hatch": { map: "Gus holds the map over the hatch. Down this line, it goes through the brick, to them. He needs a station that sends things up." },
+  "tunnels.hatch": { map: "Gus holds the map over the hatch. Down this line, it goes through the brick, to them. He needs the station that sends things up: the main one, in the hallway." },
+  "tunnels.tube": { map: "GUS|This line only goes one way. Into the brick." },
   "tunnels.bricked": { map: "Gus is not posting the map to the cult." },
   "hall.tube": { map: (api) => { if (api.G.mode !== "night") return null; api.take("map"); api.flag("mapSent", true); api.score("mapSent", 2);
     return "Gus rolls the map into a canister, addresses it by hand: N. NULL, ADLINE LAB, and drops it in. It goes up, not down. Good.\n\nGUS|Tomorrow. Bring the rat."; } },
@@ -457,6 +458,8 @@ async function nightfall(api) {
   api.shift({ mode: "night", char: "gus", room: "tunnels", entry: "fromServer", min: 72, cast: ["gus"] });
   api.G.inv.gus = ["badge", "phone", "drink"];
   await api.say("Gus Ian, 1:12 AM. Nell texted him eleven times. He read them all. Then he came down here anyway.\n\nThe bricked door has a gap in it tonight. And beside it, where there was nothing yesterday: a coat check.");
+  await api.say("Through the gap, two voices, close, talking shop.\n\nA HOOD|…Friday at midnight. The induction. And the quarry comes too.\n\nANOTHER HOOD|Robes on, hoods up. Nobody gets past the door in street clothes. Nobody ever has.");
+  await api.say("GUS|The quarry. That's Nell.\n\nGUS|And she's going in there tomorrow night whatever I say, because she's Nell. So she goes in dressed for it.\n\nGUS|A robe off that rack. And she'll need a way down. Then both of them where she'll find them in the morning.");
 }
 export const MAXSCORE = 82;
 export const TITLE = ["ACT IV", "REBUTTAL"];

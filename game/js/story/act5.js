@@ -372,14 +372,14 @@ export async function start(api, { fresh, skipCard } = {}) {
   await api.say("Gus Ian was found at 6:15 by the morning tech.\n\nHe is in the 3T. The scan is still running.");
   await api.convo("smallGus");
   // then the thing Gus left her, shown: his last text, and the morning's three errands
-  await api.readout(GUSTEXT(), "Gus's last text. 2:31 AM, from this room.\n\nNELL|My chair. And the tube. He left me something.\n\nNELL|Then Iris. Fourth floor.");
+  await api.readout(GUSTEXT(), "Gus's last text. 2:31 AM, from this room.\n\nNELL|My chair. And the tube station in the hall. He left me something.\n\nNELL|Then Iris. Fourth floor.");
   return null;
 }
 const GUSTEXT = () => {
   const x = 230, y = 40, w = 180, h = 270;
   let s = `<rect class="k sW" x="${x}" y="${y}" width="${w}" height="${h}" rx="18"/><path class="hl sW" d="M${x + 70},${y + 12} L${x + w - 70},${y + 12}"/>
     <rect class="hl sD" x="${x + 10}" y="${y + 24}" width="${w - 20}" height="${h - 50}" rx="4"/>${chip("GUS", x + 18, y + 32, 6, "fB")}${seg("02 31 AM", x + w - 66, y + 34, 5, "sM", .7)}`;
-  const bubbles = [["ROBE'S ON YOUR CHAIR."], ["CHECK THE TUBE."], ["SCANNING NOW.", "IT'S FINE."], ["IT'S ALWAYS FINE", "AT 2AM."]];
+  const bubbles = [["ROBE'S ON YOUR CHAIR."], ["CHECK THE TUBE", "STATION. HALLWAY."], ["SCANNING NOW.", "IT'S FINE."], ["IT'S ALWAYS FINE", "AT 2AM."]];
   let by = y + 56;
   for (const b of bubbles) {
     const bh = 10 + b.length * 13;
@@ -430,7 +430,7 @@ const MORNING = {
     stars: { label: "Rising Stars wall", morning: look("Gus was never on the Rising Stars wall. Nobody notices a grad student at 2 AM.") },
     board: { label: "bulletin board", morning: look("The flyers.") },
     impact: { label: "Impact Lab 116", morning: look("116.") },
-    tube: { label: "tube station", morning: { look: (api) => api.flag("gotMap") ? "Empty." : "A canister is sitting in the hatch, addressed by hand: N. NULL, ADLINE LAB.",
+    tube: { label: "main tube station", morning: { look: (api) => api.flag("gotMap") ? "Empty." : "A canister is sitting in the hatch, addressed by hand: N. NULL, ADLINE LAB.",
         use: (api) => { if (api.flag("gotMap")) return "Empty."; api.give("map"); api.flag("gotMap", true); api.score("gotMap", 1);
           return "Inside the canister: a hand-drawn map of the steam tunnels, B3 circled twice. On the back, in Gus's handwriting:\n\n'Tomorrow. Bring the rat. —G.'"; } } },
     stairs: { label: "stairwell", morning: { look: "The stairwell.", go: stairsMorning } },
