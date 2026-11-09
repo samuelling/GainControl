@@ -430,6 +430,12 @@ function crtScreen() {
       const end = () => { clearTimeout(tm); card.removeEventListener("pointerdown", f); off(); r(); };
       const f = (e) => { if (e && Date.now() - t0 < min) return; if (e && e.type === "pointerdown") swallowNextClick(); end(); };
       card.addEventListener("pointerdown", f); const off = advanceKey(f); if (ms) tm = setTimeout(end, ms); }),
+    // choose(ids): resolves with the data-btn of a clicked button on the screen, or the nth id for number key n
+    choose: (ids) => new Promise(r => {
+      const end = (v) => { card.removeEventListener("pointerdown", f); window.removeEventListener("keydown", k, true); r(v); };
+      const f = (e) => { const b = e.target.closest && e.target.closest("[data-btn]"); if (!b) return; e.preventDefault(); swallowNextClick(); end(b.dataset.btn); };
+      const k = (e) => { const n = +e.key; if (n >= 1 && n <= ids.length) { e.preventDefault(); e.stopPropagation(); end(ids[n - 1]); } };
+      card.addEventListener("pointerdown", f); window.addEventListener("keydown", k, true); }),
     close: () => new Promise(r => { const g = card.querySelector("#crtg"), fx = card.querySelector("#crtfx"); card.style.transition = "none"; sfx.play("powerdown");
       let i = 0; const step = () => { const [vis, sy, glyph, ms] = CRT_OFF[i];
         if (g) { g.setAttribute("visibility", vis ? "visible" : "hidden"); g.setAttribute("transform", `translate(0 180) scale(1 ${sy || .001}) translate(0 -180)`); }

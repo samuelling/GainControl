@@ -223,20 +223,33 @@ async function ending(api, which, { shown = false } = {}) {
   // what happened next, shown as a montage of short animated cards rather than told
   if (which === "accepted" || which === "major") { await aftermath(api, which); END.epilogue = ""; }
   // INDUCTED: after the epilogue, one word on the LED panel, in giant red dots
-  if (which === "inducted") { if (!shown) { await api.say(END.epilogue); END.epilogue = ""; } await sellout(api); }
+  if (which === "inducted" || which === "deskreject") { if (!shown) { await api.say(END.epilogue); END.epilogue = ""; } await verdict(api, which); }
   api.endAct(); return null;
 }
-async function sellout(api) {
-  LED.css();
-  const m = new Map(); LED.text(m, "SELLOUT.", LED.center("SELLOUT.", LED.BIG, 4) + 6, 42, "x", LED.BIG, 4);   // x: red in every palette (the night one turns R violet)
-  const e = [...m.entries()]; let seed = 39; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+// the verdict on the LED panel, in giant red dots, and a door out of the game: the career it sentences you to, as somebody
+// else's game. INDUCTED → ChairQuest (a lifetime in the chair); DESK REJECT → Advisor Quest. Or just roll the credits.
+const VERDICTS = {
+  inducted: { word: "SELLOUT.", sc: 4, nudge: 6, seed: 39, out: ["LIVE IT OUT IN CHAIRQUEST", "https://www.crumplab.com/ChairQuest/"] },
+  deskreject: { word: "DESK REJECT", sc: 3, nudge: 0, seed: 41, out: ["LIVE IT OUT IN ADVISOR QUEST", "https://crumplabsandbox.github.io/advisor-quest/"] },
+};
+async function verdict(api, which) {
+  const V = VERDICTS[which]; LED.css();
+  const m = new Map(), top = V.sc === 4 ? 30 : 34;
+  LED.text(m, V.word, LED.center(V.word, LED.BIG, V.sc) + V.nudge, top, "x", LED.BIG, V.sc);   // x: red in every palette (the night one turns R violet)
+  const e = [...m.entries()]; let seed = V.seed; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   for (let i = e.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [e[i], e[j]] = [e[j], e[i]]; }
-  const at = (k) => LED.render(new Map(e.slice(0, Math.round(e.length * k))));
+  const at = (k, rows = []) => LED.renderRows(new Map(e.slice(0, Math.round(e.length * k))), rows);
   const scr = api.crt(); scr.set(at(0)); await api.wait(700);
   for (const k of [.08, .2, .4, .65, .85, 1]) { scr.set(at(k)); api.sfx("tick"); await api.wait(100); }
   for (const k of [0, 1, 0, 1]) { scr.set(at(k)); await api.wait(k ? 160 : 70); }
-  await scr.click(1200, 4200);
-  await scr.close(); await api.wait(500);
+  await api.wait(1400);
+  // two ways on, in small dots: number keys or a click
+  const o1 = `1  ${V.out[0]}`, o2 = "2  ROLL THE CREDITS", c = Math.round((LED.NC - LED.textW(o1)) / 2);
+  scr.set(at(1, [LED.row("out", o1, c, 84, "w"), LED.row("credits", o2, c, 94, "w")])); api.sfx("select");
+  const pick = await scr.choose(["out", "credits"]);
+  await scr.close();
+  if (pick === "out") { api.sfx("select"); await api.wait(300); location.href = V.out[1]; await new Promise(() => {}); }   // leave the game for the other one
+  await api.wait(500);
 }
 
 // count a failed attempt at a puzzle (stored in a flag); after a couple, the surrounding lines start giving real hints
