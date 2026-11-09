@@ -23,17 +23,18 @@ function letterMap() {
   const m = new Map(), { NC, text, center, textW } = LED, row = (t, r, cls) => text(m, t, center(t), r, cls);
   row("FROM THE REAL RECORD", 10, "g");
   row("IN 1977, A LETTER IN AMERICAN PSYCHOLOGIST", 24, "w"); row("DESCRIBED A REAL SECRET SOCIETY", 32, "w"); row("OF YOUNG PSYCHOLOGISTS.", 40, "w");
-  row("ITS AUTHOR, CHARLES GROSS, SUGGESTED", 52, "m"); row("SOMEONE STUDY ITS ARCHIVES: WHAT ITS", 60, "m");
-  row("MEMBERS WENT ON TO DO ON GRANT", 68, "m"); row("COMMITTEES AND EDITORIAL BOARDS.", 76, "m");
-  row("IN THIS GAME, THAT IS NELL'S", 88, "a"); row("LAST PIECE OF EVIDENCE.", 96, "a");
-  row("HE ADDED A POSTSCRIPT.", 104, "d");
-  text(m, "CLICK >", NC - 6 - textW("CLICK >"), 104, "d");
+  row("ITS AUTHOR, CHARLES GROSS, SUGGESTED", 50, "r"); row("SOMEONE STUDY ITS ARCHIVES: WHAT ITS", 58, "r");
+  row("MEMBERS WENT ON TO DO ON GRANT", 66, "r"); row("COMMITTEES AND EDITORIAL BOARDS.", 74, "r");
+  row("IN THIS GAME, THAT IS NELL'S", 85, "a"); row("LAST PIECE OF EVIDENCE.", 93, "a");
+  row("HE ADDED A POSTSCRIPT.", 104, "w");
+  text(m, "CLICK >", NC - 6 - textW("CLICK >"), 104, "m");
   return m;
 }
 function postscriptMap() {
   const m = new Map(), { BIG, text, center } = LED, big = (t, r) => text(m, t, center(t, BIG, 2), r, "a", BIG, 2);
-  big("I ALMOST FORGOT:", 20); big("THE GAVEL WAS", 42); big("A BRASS PENIS.", 64);
-  text(m, "C. G. GROSS, AMERICAN PSYCHOLOGIST, 1977", center("C. G. GROSS, AMERICAN PSYCHOLOGIST, 1977"), 94, "m");
+  // his words, in quotes (four lines: with the quote marks, the first line wouldn't fit as three)
+  big('"I ALMOST', 10); big("FORGOT: THE", 30); big("GAVEL WAS A", 50); big('BRASS PENIS."', 70);
+  text(m, "C. G. GROSS, AMERICAN PSYCHOLOGIST, 1977", center("C. G. GROSS, AMERICAN PSYCHOLOGIST, 1977"), 96, "w");
   return m;
 }
 // a fixed shuffle of a map's dots, so they come on (and go off) scattered, like a real board
