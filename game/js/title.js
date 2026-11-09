@@ -19,7 +19,7 @@ const BIG = {
   S: "01111 10000 10000 01110 00001 00001 11110", T: "11111 00100 00100 00100 00100 00100 00100", U: "10001 10001 10001 10001 10001 10001 01110",
   V: "10001 10001 10001 10001 10001 01010 00100", W: "10001 10001 10001 10101 10101 10101 01010", X: "10001 10001 01010 00100 01010 10001 10001",
   Y: "10001 10001 01010 00100 00100 00100 00100", Z: "11111 00001 00010 00100 01000 10000 11111", "0": "01110 10001 10011 10101 11001 10001 01110",
-  "2": "01110 10001 00001 00010 00100 01000 11111", ":": "00000 01100 01100 00000 01100 01100 00000", "-": "00000 00000 00000 11111 00000 00000 00000",
+  "2": "01110 10001 00001 00010 00100 01000 11111", ":": "00000 01100 01100 00000 01100 01100 00000", ".": "00000 00000 00000 00000 00000 01100 01100", "'": "00100 00100 00000 00000 00000 00000 00000", "-": "00000 00000 00000 11111 00000 00000 00000",
   " ": "00000 00000 00000 00000 00000 00000 00000",
 };
 const SMALL = {
@@ -82,7 +82,7 @@ function screen({ unlocked = 1, title = "GAIN CONTROL", titleCls = "w", menuWord
 }
 
 /* ---------------- drawing ---------------- */
-const CLS = { w: "lw", m: "lm", d: "ld", r: "lr", g: "lg" };
+const CLS = { w: "lw", m: "lm", d: "ld", r: "lr", g: "lg", a: "la" };
 // shift: row → column offset (bands slipping); ghost: draw a red copy one column left; noise: stray LEDs; scan: a lit row
 function render(S, { shift = null, ghost = false, noise = 0, scan = -1 } = {}) {
   const dot = (c, r, k) => { c += shift ? (shift[r] || 0) : 0; if (c < 0 || c >= NC || r < 0 || r >= NR) return "";
@@ -102,12 +102,14 @@ function render(S, { shift = null, ghost = false, noise = 0, scan = -1 } = {}) {
   return s;
 }
 export const LED_CSS = `
-#card .lw { fill: var(--W); } #card .lm { fill: var(--M); } #card .ld { fill: var(--N); } #card .lr { fill: var(--R); } #card .lg { fill: var(--G); }
+#card .lw { fill: var(--W); } #card .la { fill: var(--A); } #card .lm { fill: var(--M); } #card .ld { fill: var(--N); } #card .lr { fill: var(--R); } #card .lg { fill: var(--G); }
 #card .ledbtn { cursor: pointer; } #card .ledbtn .cur { display: none; }
 #card .ledbtn:hover .lw, #card .ledbtn:hover .lm { fill: var(--G); } #card .ledbtn:hover .cur { display: inline; }
 `;
 function css() { if (document.getElementById("css-led")) return; const s = document.createElement("style"); s.id = "css-led"; s.textContent = LED_CSS; document.head.appendChild(s); }
 
+// the same LED panel for other screens (the coda): write text into a dot map, render it (only lit dots are drawn)
+export const LED = { NC, NR, BIG, SMALL, text, textW, center, css: () => css(), render: (map) => render({ map, rows: [], fullRow: null }) };
 export function titleArt(opts = {}) { css(); return `<g id="ttl">${render(screen(opts))}</g>`; }
 
 // run the glitches while the title card is up; returns stop()

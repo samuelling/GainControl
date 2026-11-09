@@ -413,6 +413,31 @@ function crtOn() {
   };
   step();
 }
+// ... and the shut-off: the picture squashes to a band, a line, a dot, and goes dark (poses, as above)
+const CRT_OFF = [[1, .8, "", 50], [1, .35, "", 50], [1, .07, "", 55], [0, 0, `<path class="sW" style="stroke-width:2" d="M0,180 L640,180"/>`, 60],
+  [0, 0, `<path class="sW" style="stroke-width:1.5" d="M200,180 L440,180"/>`, 60], [0, 0, `<circle class="fW" cx="320" cy="180" r="3"/>`, 90],
+  [0, 0, `<circle class="fW" cx="320" cy="180" r="1.6"/>`, 260], [0, 0, "", 0]];
+// a screen the story drives itself (the coda): it opens on the CRT dot, the caller sets what's on it, and it closes back
+// down to the dot. set(svg) replaces the picture; click() waits for a click / Enter / Space; close() powers it off.
+function crtScreen() {
+  G.busy = true; sfx.play("card");
+  card.innerHTML = `<rect width="640" height="360" fill="#000"/><g id="crtg" visibility="hidden"></g><g id="crtfx"></g>`;
+  card.style.transition = "none"; card.classList.add("show"); crtOn();
+  return {
+    set: (inner) => { const e = card.querySelector("#crtg"); if (e) e.innerHTML = inner; },
+    // click(min, ms): resolves on a click / Enter / Space after min ms, or by itself after ms (if given)
+    click: (min = 600, ms = 0) => new Promise(r => { const t0 = Date.now(); let tm = 0;
+      const end = () => { clearTimeout(tm); card.removeEventListener("pointerdown", f); off(); r(); };
+      const f = (e) => { if (e && Date.now() - t0 < min) return; if (e && e.type === "pointerdown") swallowNextClick(); end(); };
+      card.addEventListener("pointerdown", f); const off = advanceKey(f); if (ms) tm = setTimeout(end, ms); }),
+    close: () => new Promise(r => { const g = card.querySelector("#crtg"), fx = card.querySelector("#crtfx"); card.style.transition = "none"; sfx.play("powerdown");
+      let i = 0; const step = () => { const [vis, sy, glyph, ms] = CRT_OFF[i];
+        if (g) { g.setAttribute("visibility", vis ? "visible" : "hidden"); g.setAttribute("transform", `translate(0 180) scale(1 ${sy || .001}) translate(0 -180)`); }
+        if (fx) fx.innerHTML = glyph;
+        if (++i < CRT_OFF.length) setTimeout(step, ms); else { card.classList.remove("show"); card.innerHTML = ""; setTimeout(() => { card.style.transition = ""; }, 50); G.busy = false; r(); } };
+      step(); }),
+  };
+}
 function showCard(inner, { hold = 0, auto = 2600, buttons = false, crt = false, mark = !buttons } = {}) {
   sfx.play("card"); hold = Math.max(hold, 600);
   return new Promise(resolve => {
@@ -546,7 +571,7 @@ const api = {
   score: addScore, refresh, say, die, endAct, shift, switchTo, chooseFrom, blip, blackout,
   convo: runConvo,
   card: (t1, t2, t3, f, ms = 2800) => showCard(dayCard(t1, t2, t3, f), { auto: ms + 500, crt: true }),
-  bigCard: (inner, opts) => showCard(inner, opts), centered, cchip, button,
+  bigCard: (inner, opts) => showCard(inner, opts), centered, cchip, button, crt: () => crtScreen(),
   readout: showReadout,
   keypad: (code, lit) => { G.busy = true; return keypad(readout, code, lit).finally(() => { G.busy = false; }); },
   fogNeuro: (opts) => { G.busy = true; return fogNeuro($("#panel"), opts).finally(() => { G.busy = false; }); },
