@@ -187,8 +187,13 @@ const irisHead = () => `<g class="hd">
   <path class="sA dash" d="M143,60 C134,72 136,88 146,96"/>
   <path class="sK" d="M160,63 C157,69 160,71 163,70 M146,70 L149,72.5 M174,70 L171,72.5"/>
   <path class="sK" d="M153,75 C157,77 163,77 167,74"/></g>`;
-export function irisSeated(x, y, k) {
-  return at(x, y, k, `
+// legs: in a chair out in the room (THE REHEARSAL), not behind her desk: a tweed skirt to the knee, stockinged shins
+// (a pink line, like all skin), sensible shoes on the floor. Seat at y 142 here (sheet 176), floor at 192.
+const irisLegs = `<path class="k sM" d="M130,140 L192,140 L188,162 L132,162 Z"/><path class="hl sM" d="M160,142 L160,162"/>
+  <path class="sK" d="M144,162 L145,186 M152,162 L151,186 M168,162 L169,186 M176,162 L175,186"/>
+  <path class="k sW" d="M136,186 L152,186 C155,186 155,191 152,191 L136,191 Z M168,186 L184,186 C187,186 187,191 184,191 L168,191 Z"/>`;
+export function irisSeated(x, y, k, { legs = false } = {}) {
+  return at(x, y, k, `${legs ? irisLegs : ""}
     <path class="k sV" d="M128,98 C132,90 146,88 152,88 L160,100 L168,88 C174,88 188,90 192,98 L194,142 L126,142 Z"/>
     <path class="sV" d="M160,100 L160,142"/>${[112, 124].map(yy => `<circle class="sV" cx="165" cy="${yy}" r="1.4"/>`).join("")}
     ${[150, 155, 160, 165, 170].map((xx, i) => `<circle class="sW" cx="${xx}" cy="${96 - Math.abs(i - 2) * 1.2}" r="1.5"/>`).join("")}

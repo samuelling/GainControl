@@ -317,7 +317,7 @@ function office(S) {
     s += segC(c.name, c.x, c.y + 4, 4.2 * c.k / .7, lit ? "sV" : "sD", .6);
     if (ir) {
       const sy = c.y - 50 * c.q + 11 * c.q, q = c.q;
-      s += irisSeated(c.x, sy, c.k);
+      s += irisSeated(c.x, sy, c.k, { legs: true });
       if (S.speaking) {
         s += arcs(c.x + 22 * q, sy - 104 * q, 1, "hl sV", 3, q * 1.4);
         // the tempo, drawn: speed dashes when she hurries, three slow dots when she taunts
