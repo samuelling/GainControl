@@ -405,6 +405,13 @@ async function defenseStart(api, { skipCard } = {}) {
   if (!skipCard) await api.card("FRIDAY", "THE DEFENSE", "SEMINAR 101  14:00", "fG", 2800);
   await api.say("Friday. Two o'clock. Seminar 101.\n\nNell Null's thesis defense. The committee is seated. Preston Valu is in the front row, waiting for his job talk at three. Iris is in the back row.\n\nThe lectern is waiting.");
 }
+// #accepted / #major: straight to an ending, as if the night had just been won (the montage, the coda, the credits)
+export async function debugEnding(api, which = "accepted") {
+  Object.assign(api.G.flags, { defenseDone: true, robeOn: true, passOK: true, echoPassed: true, magnetCharged: true, supportsOut: true, climax: true,
+    reelsSent: which === "accepted", archiveSent: which === "accepted" });
+  api.shift({ mode: "night", char: "nell", room: "chamber", entry: "fromAntechamber", min: 23 * 60 + 58, cast: ["nell"] });
+  api.G.bodies = 5; await ending(api, which);
+}
 export async function debugNight(api) { for (const it of ["robe", "map", "reel"]) if (!api.has(it)) api.G.inv.nell.push(it); api.G.flags.defenseDone = true; await nightfall(api); }
 export async function debugDefense(api) { Object.assign(api.G.flags, { smallGus: true, gotRobe: true, gotMap: true, rehearsed: true }); await defenseStart(api, { skipCard: true }); }
 

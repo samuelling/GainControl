@@ -806,6 +806,10 @@ async function start() {
   if (h === "#act4morning" || h === "#act5morning") { await startAct(5, { fresh: true, skipCard: true }); return; }   // Friday morning opens Act V now
   if (h === "#act5") { await startAct(5, { fresh: true, skipCard: true }); return; }
   if (h === "#act5defense") { await startAct(5, { fresh: true, skipCard: true }); await A5.debugDefense(api); return; }
+  if (h === "#accepted" || h === "#ending" || h === "#major") {   // straight to an ending (the best one unless #major): montage, coda, credits
+    const best = h !== "#major";
+    await showCard(`${centered("GAIN CONTROL", 118, 8, "sM", .9)}${centered(best ? "ACCEPTED" : "MAJOR REVISIONS", 146, 22, "sW", 1.6)}${cchip(best ? "THE BEST ENDING  TAP TO PLAY" : "TAP TO PLAY", 206, 8, "fG")}`, { auto: 0 });
+    G.act = 5; await A5.debugEnding(api, best ? "accepted" : "major"); return; }
   if (h === "#credits") { await showCard(`${centered("GAIN CONTROL", 118, 8, "sM", .9)}${centered("THE END CREDITS", 146, 22, "sW", 1.6)}${cchip("TAP TO PLAY", 206, 8, "fG")}`, { auto: 0 });
     G.act = 5; await credits(api, { score: G.score }); location.hash = ""; location.reload(); return; }   // straight to the end credits
   if (h === "#act5night") { await startAct(5, { fresh: true, skipCard: true }); await A5.debugNight(api); return; }
