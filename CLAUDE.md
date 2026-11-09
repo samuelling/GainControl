@@ -64,3 +64,4 @@ Real neuroscience, drawn correctly and simply. Laminar fMRI is shown as a close-
 ## Repo conventions
 - Plain HTML, CSS and JS; no build step. Prototypes are single self-contained `index.html` files; the game is `game/` with ES modules.
 - Commit and push work as it's finished.
+- **Version number.** `game/js/version.js` holds a build number, shown in the title screen's lower right corner (V153, …). Bump it by one with every commit that changes the game, and tell the user the new number when reporting the change.

@@ -33,7 +33,7 @@ wrap("notebook", (api) => {
     + [t("proofGrim", "Table 1: brain scans predict behaviour at .94, nearly perfect. Gus says that's impossible. (Click Gus: TABLE 1.)"), t("proofOverlay", "Figure 3: the two participants look… familiar. (Your monitor.)"),
       t("proofLogs", "Who used the GPU cluster? Rex knows. Rex wants coffee. (Kitchen.)" + (f.proofLogs ? ""
         : f.rexLogin ? " You have his login. The terminal's in the server room, B1. (Stairwell.)"
-        : f.rexAsked ? " The machine has said DESCALE since 2012. Rex has pressed it every morning. Nobody else has tried." : "")),
+        : f.descaled ? "" : f.rexAsked ? (api.has("can") ? " Gus's can, pH 2.4, into the espresso machine's water tank." : " The machine needs descaling: ANY MILD ACID, says the sticker. Nobody here owns a lemon. Gus's energy drink is pH 2.4. (His desk.)") : "")),
       t("proofGLM", "Replicate it. Need Preston's stimulus log, which is in the Impact Lab. " + (f.proofGLM ? "" : api.has("log") ? "Morris dragged it to your drawer. Your monitor: THE REPLICATION."
         : "Nell can't get in." + (f.morrisHint3 ? " Morris can. (Click his name, then a vent.)" : "")))].join("\n")
     + (proofs(api) === 4 && !f.meetingOpen ? "\n\nAll four. Ethel Bord, Research Integrity, needs to see this." : "")
@@ -106,15 +106,17 @@ export const CONVOS = {
     ["R", "Oh, I know. I watch the job queue the way other people watch birds. I could tell you things."],
     ["R", "For a coffee. A real one. From that."],
     ["L", "That machine says DESCALE."],
-    ["R", "It has said DESCALE since 2012. I've watched three chairs and two coups. I press the button every morning. It'll say DESCALE at my funeral."],
-    ["L", "Have you let anyone else press it?"],
-    ["R", "…It's my button, Nell."],
+    ["R", "It has said DESCALE since 2012. I've watched three chairs and two coups. It'll say DESCALE at my funeral."],
+    ["L", "So descale it."],
+    ["R", "With what? Descaler needs a purchase order. The sticker says any mild acid. Vinegar. Lemon juice. Nobody in this department owns a lemon."],
+    ["L", "Acid. Something acidic. In a neuroscience department."],
+    ["R", "If you find some, don't tell me what it was."],
   ], after: (api) => api.flag("rexAsked", true) },
 
   rexCoffee: { L: "nell", R: "rex", score: ["rexCoffee", 2], lines: [
     ["R", "Is that… is that from the machine?"],
-    ["L", "I pressed it."],
-    ["R", "Nine years. Nine years, and all it wanted was somebody it hadn't already rejected."],
+    ["L", "Descaled. With an energy drink."],
+    ["R", "pH 2.4. Of course. Nine years, and the answer was in a grad student's backpack."],
     ["R", "Here. My login. Look up PVALU. Look at what runs Fridays at midnight."],
     ["R", "The terminal's on a cart in the GPU server room. B1, down the stairwell. It's thirty-one degrees down there. Don't take anything you love."],
     ["R", "And Nell? There's a secret society in this building. Under forty. I applied at thirty-nine and eleven months."],
@@ -328,7 +330,7 @@ export const HS = {
       morris: { look: "MORRIS|No." }, night: { look: "The dark booth. Gus doesn't need it to be dark. Gus is dark.", go: openConsole } },
     gusdesk: { label: "Gus's desk", day: { look: (api) => api.has("can") || api.flag("descaled") ? "Gus's desk. Four empty cans of NULL HYPOTHESIS, and a pale ring where the full one stood. The varnish never came back." : "Gus's desk. Four empty cans of NULL HYPOTHESIS and one full one, his emergency can. Under each can, a pale ring where the varnish used to be.\n\nThe small print: CITRIC ACID. PHOSPHORIC ACID. pH 2.4.",
         use: (api) => { if (api.has("can") || api.flag("descaled")) return "GUS|That's my last one. Don't make it weird.";
-          api.give("can"); api.refresh(); api.score("can", 1);
+          api.give("can"); api.flag("gotCan", true); api.refresh(); api.score("can", 1);
           return "You take Gus's emergency can.\n\nGUS|That's my emergency can.\n\nNELL|This is an emergency.\n\nGUS|…pH 2.4. Don't drink it. Nobody should drink it. I drink it."; } },
       morris: { look: "Morris sniffs the cans. His whiskers curl." }, night: { look: "His own desk. He hasn't sat at it since Monday." } },
     viv: VIV,
@@ -412,10 +414,11 @@ export const HS = {
     rex: { label: "Dr. Rex Jected", day: { look: "Dr. Rex Jected, ninth-year postdoc, leaning on the counter with an empty mug, staring at the espresso machine like it's a grant he didn't get.",
         talk: (api) => api.has("coffee") ? "c:rexCoffee" : api.flag("rexLogin") ? "REX|There's a society, Nell. Under forty. Nobody believes me." : !api.flag("rexAsked") ? "c:rexFirst"
           : api.has("can") ? "REX|Is that one of Gus's? NULL HYPOTHESIS? I've watched that stuff take the varnish off a desk.\n\nREX|Don't hand it to me. I'm not the one with fourteen years of limescale."
-          : "REX|Coffee. From the machine. Then we talk.\n\nREX|I've pressed it every morning since 2012. It knows my thumb. It hates my thumb." },
+          : "REX|Coffee. From the machine. Then we talk.\n\nREX|It wants acid. I've tried sarcasm. Not acidic enough." },
       morris: { look: "REX|Don't. Don't even, rat." } },
-    espresso: { label: "espresso machine", day: { look: (api) => api.flag("descaled") ? "The espresso machine. READY. A green light nobody in this building has ever seen." : "The espresso machine. A blinking chip: DESCALE. Rex says it's said that since 2012.\n\nThe button is worn concave in the shape of one thumb. Rex's.\n\nA sticker on the side: DESCALE WITH ANY MILD ACID. Under it, in Sharpie: WE HAVE NO ACID. —R" + (api.has("can") ? "\n\nYou're carrying something with a pH of 2.4. Just saying." : ""),
-        use: (api) => api.flag("descaled") ? "It's made one espresso this decade. Don't push it." : !api.flag("rexAsked") ? "REX|Don't touch that. That's my button." : brew(api) },
+    espresso: { label: "espresso machine", day: { look: (api) => api.flag("descaled") ? "The espresso machine. READY. A green light nobody in this building has ever seen." : "The espresso machine. A blinking chip: DESCALE. Rex says it's said that since 2012.\n\nA sticker on the side: DESCALE WITH ANY MILD ACID. Under it, in Sharpie: WE HAVE NO ACID. —R" + (api.has("can") ? "\n\nYou're carrying something with a pH of 2.4. Just saying." : ""),
+        use: (api) => api.flag("descaled") ? "It's made one espresso this decade. Don't push it." : !api.flag("rexAsked") ? "REX|Don't touch that. That's my machine."
+          : "You press the button. DESCALE. It won't make anything until it's descaled. The sticker says ANY MILD ACID." + (api.has("can") ? "\n\nYou're carrying something with a pH of 2.4." : "") },
       morris: { look: "MORRIS|There's fourteen years of limescale in there, pal. I can hear it." }, night: { look: "The espresso machine, READY in the dark." } },
     mugs: { label: "mug tree", day: { look: "The mug tree. WORLD'S OKAYEST PI. I ♥ P < .05. A mug shaped like a brain that nobody uses.",
         use: "Rex already has a mug. He's been holding it since 2012." },
@@ -505,26 +508,23 @@ export const HS = {
 function gusHint(api) {
   const f = api.G.flags;
   // a thread Nell has already started comes first, so a player who went to the kitchen (or got the log) early isn't told "Table 1 first"
-  if (!f.proofLogs && f.rexAsked && !f.rexLogin) return "GUS|Rex has pressed that button every morning for nine years. Has anyone else? You press it.";
+  if (!f.proofLogs && f.rexAsked && !f.rexLogin) return GUS_ACID(api);
   if (!f.proofLogs && f.rexLogin) return "GUS|You have Rex's login. Server room, B1.";
   if (!f.proofGLM && api.has("log")) return "GUS|You have the log. Your monitor.";
   if (!f.proofGrim) return "GUS|Table 1 first. Click me, TABLE 1. Bring your skepticism. Leave your calculator.";
   if (!f.proofOverlay) return "GUS|Figure 3. Your monitor. Make the two participants agree.";
-  if (!f.proofLogs) return f.rexLogin ? "GUS|You have Rex's login. Server room, B1." : (f.rexAsked ? "GUS|Rex has pressed that button every morning for nine years. Has anyone else? You press it." : "GUS|Rex. Kitchen. Coffee. He'll talk for a coffee.");
+  if (!f.proofLogs) return f.rexLogin ? "GUS|You have Rex's login. Server room, B1." : (f.rexAsked ? GUS_ACID(api) : "GUS|Rex. Kitchen. Coffee. He'll talk for a coffee.");
   if (!f.proofGLM) return api.has("log") ? "GUS|You have the log. Your monitor." : "GUS|The log's in 116. Your drawer has a rat. I'm just saying.";
   return "GUS|That's four. Ethel needs to see this.";
 }
-async function brew(api) {
-  api.flag("descaled", true); api.give("coffee"); api.score("brewed", 1); api.sfx("espresso"); api.refresh();
-  await api.say("You press the button. Firmly, like someone it has never met.\n\nThe machine gurgles. It fizzes. It makes a sound like a dial-up modem having a breakthrough. Fourteen years of limescale let go at once. The DESCALE light goes out.\n\nThen it makes an espresso, into the mug Rex has been holding under the spout since 2012.\n\nREX|…Oh.\n\nREX|Oh, that's beautiful.");
-  return "c:rexCoffee";
-}
-// the easter-egg fix: Gus's NULL HYPOTHESIS (pH 2.4) in the water tank. Same coffee, same trade as pressing the button.
+// the descale puzzle's last nudge, from the man with the acid
+const GUS_ACID = (api) => api.flag("descaled") ? "GUS|Rex. Coffee. Go." : api.has("can") ? "GUS|Water tank. Pour it in. pH 2.4 eats limescale. Then never tell me what it does to people."
+  : "GUS|The machine wants acid? My drink's pH 2.4. It took the varnish off my desk. Emergency can's right there. This is an emergency.";
+// the descale puzzle: Gus's NULL HYPOTHESIS (pH 2.4) in the water tank; the espresso goes to Rex, who trades his login.
 async function descale(api) {
   if (api.flag("descaled")) return "It's READY. It doesn't need any more help. Nobody does, at pH 2.4.";
-  if (!api.flag("rexAsked")) return "REX|Don't touch that. That's my machine.";
-  api.take("can"); api.flag("descaled", true); api.flag("canDescaled", true); api.give("coffee"); api.score("brewed", 1); api.score("descaledCan", 1); api.sfx("espresso"); api.refresh();
-  await api.say("You pour Gus's NULL HYPOTHESIS into the water tank.\n\nThe machine gurgles. It fizzes. It makes a sound like a dial-up modem having a breakthrough. Fourteen years of limescale let go at once. The DESCALE light goes out.\n\nThen it makes an espresso, into the mug Rex has been holding under the spout since 2012.\n\nREX|…I've been here nine years.\n\nREX|Nine years, and the answer was in a grad student's backpack.");
+  api.flag("rexAsked", true); api.take("can"); api.flag("descaled", true); api.give("coffee"); api.score("brewed", 1); api.score("descaled", 1); api.sfx("espresso"); api.refresh();
+  await api.say("You pour Gus's NULL HYPOTHESIS into the water tank.\n\nThe machine gurgles. It fizzes. It makes a sound like a dial-up modem having a breakthrough. Fourteen years of limescale let go at once. The DESCALE light goes out.\n\nThen it makes an espresso, into the mug Rex has been holding under the spout since 2012.\n\nREX|…Oh.\n\nREX|Oh, that's beautiful.");
   return "c:rexCoffee";
 }
 async function logs(api) {
@@ -625,6 +625,8 @@ export async function check(api) {
       return "The tunnels. Pipes in every direction, sweating. The leak runs along the floor and under a doorway in the left wall.\n\nThe doorway has been bricked up. Through the bricks: voices. Many voices. Together.\n\nGUS|If I put my ear to that, I'm going to hear something I can't un-hear. …I'm going to put my ear to that."; }
     return null;
   }
+  // the descale puzzle, made plain: back in the lab after Rex has said "acid", Gus says what he drinks
+  if (G.char === "nell" && G.room === "lab" && f.rexAsked && !f.descaled && !api.has("can") && !f.gusAcid && !G.busy) { f.gusAcid = true; return GUS_ACID(api); }
   if (G.char === "nell" && proofs(api) >= 2 && !f.danaGone && (G.room === "hall" || proofs(api) === 4)) {
     if (G.room !== "hall") api.goRoom("hall@fromLab");
     f.danaGone = true; G.bodies = 2; api.refresh(); api.sfx("sting");

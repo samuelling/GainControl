@@ -5,6 +5,7 @@
 // Every few seconds something tries to take the screen over: bands of rows slip sideways, a red ghost channel, stray
 // LEDs firing, a scan line, and sometimes a takeover (the title and the menu rewritten in red, the seat lamps lit).
 // Poses, not tweens: each glitch is a few fixed frames.
+import { VERSION } from "./version.js";
 const P = 3.2, NC = 200, NR = 112;                 // pitch, columns, rows
 const f = (v) => v.toFixed(1);
 
@@ -74,7 +75,9 @@ function screen({ unlocked = 1, title = "GAIN CONTROL", titleCls = "w", menuWord
     return { id, r, c, m, w: textW(label) };
   });
   if (unlocked < 2) text(map, "START WITH ACT I, OR JUMP AHEAD", 6, NR - 9, "m");   // first visit only
-  const fullRow = full ? (() => { const m = new Map(); text(m, "FULLSCREEN", NC - 6 - textW("FULLSCREEN"), NR - 9, "m"); return m; })() : null;
+  // the build number, lower right corner, so a player can say which version they're on
+  const ver = `V${VERSION}`; text(map, ver, NC - 6 - textW(ver), NR - 9, "m");
+  const fullRow = full ? (() => { const m = new Map(); text(m, "FULLSCREEN", NC - 6 - textW("FULLSCREEN"), NR - 17, "m"); return m; })() : null;
   return { map, rows, fullRow };
 }
 
@@ -93,7 +96,7 @@ function render(S, { shift = null, ghost = false, noise = 0, scan = -1 } = {}) {
       + `<g class="cur">${dot(R.c - 6, R.r, "g")}${dot(R.c - 5, R.r + 1, "g")}${dot(R.c - 4, R.r + 2, "g")}${dot(R.c - 5, R.r + 3, "g")}${dot(R.c - 6, R.r + 4, "g")}</g>`
       + `<rect x="${(R.c - 8) * P}" y="${(R.r - 1.5) * P}" width="${(R.w + 12) * P}" height="${MENU_DY * P}" fill="transparent"/></g>`;
   }
-  if (S.fullRow) s += `<g data-full class="ledbtn" style="cursor:pointer">${layer(S.fullRow)}<rect x="${(NC - 8 - textW("FULLSCREEN")) * P}" y="${(NR - 11) * P}" width="${(textW("FULLSCREEN") + 4) * P}" height="${9 * P}" fill="transparent"/></g>`;
+  if (S.fullRow) s += `<g data-full class="ledbtn" style="cursor:pointer">${layer(S.fullRow)}<rect x="${(NC - 8 - textW("FULLSCREEN")) * P}" y="${(NR - 19) * P}" width="${(textW("FULLSCREEN") + 4) * P}" height="${9 * P}" fill="transparent"/></g>`;
   if (noise) for (let i = 0; i < NC * NR * noise; i++) s += dot(Math.floor(Math.random() * NC), Math.floor(Math.random() * NR), Math.random() < .3 ? "r" : "w");
   if (scan >= 0) for (let c = 0; c < NC; c++) s += dot(c, scan, "g");
   return s;
