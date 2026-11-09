@@ -119,6 +119,8 @@ function tube(G) {
     s += `<g class="pz on" data-g="tube" data-i="0">${can(.38)}${arcs(P(TX, 18, .38)[0] + 6, P(TX, 18, .38)[1], 1, "sA", 2, .35)}</g>
       <g class="pz" data-g="tube" data-i="1">${can(.62)}${arcs(P(TX, 18, .62)[0] + 9, P(TX, 18, .62)[1], 1, "sA", 2, .5)}</g>`;
   }
+  // a loud run going past (Act III: something's coming down tonight): vibration arcs all along the line
+  if (G.flags.rattleNow && !G.flags.canisterLive) s += [.3, .5, .72].map(k => { const [x, y] = P(TX, 18, k); return arcs(x + 4, y, 1, "sA", 3, .3 + k * .4) + arcs(x - 4, y, -1, "sA", 3, .3 + k * .4); }).join("");
   const a = P(TX, TY1, .9), b = P(TX, TY2, .26);
   return s + hit(fx(b[0] - 8), fx(a[1] - 6), fx(a[0] - b[0] + 16), fx(b[1] - a[1] + 10)) + `</g>`;
 }

@@ -453,7 +453,7 @@ export const HS = {
         use: (api) => !api.flag("knockWarned")
         ? (api.flag("knockWarned", true), "Gus raises his knuckles to the brick. The chanting goes on, very close, very many.\n\nGUS|…Knock on the cult's door. At 2 AM. Alone. Gus, buddy. Think about that for a second.")
         : (api.sfx("knock"), api.die("Gus knocks.\n\nThe chanting stops.\n\nA brick slides out. A hooded face. A voice, kindly: 'The authors are invited to resubmit. In person.'\n\nGus is never seen at 2 AM again.")) } },
-    tube: { label: "tube line", night: { look: "The pneumatic tube line along the ceiling. It runs toward the bricked door and through it. Every canister this week went this way. Halfway along: an access hatch.",
+    tube: { label: "tube line", night: { look: "The pneumatic tube line along the ceiling. It runs toward the bricked door and through it. Every canister this week went this way, and tonight they're loud. Halfway along: an access hatch.",
         use: (api) => { if (api.flag("canisterLive")) return "Rattling. Closer. Get the hatch."; api.flag("canisterLive", true); api.refresh();
           return "Gus puts his ear to the tube. Silence. Then, very far away and getting closer: a rattle.\n\nSomething's coming down."; } } },
     hatch: { label: "access hatch", night: { look: "An access hatch on the tube, at shoulder height. Stenciled: 1962.",
@@ -600,10 +600,28 @@ export const END = { title: "END OF ACT III", chip: "MAJOR REVISIONS", bodies: "
   epilogue: "Nell isn't chasing a cheater anymore.\n\nShe's being hunted.\n\nDET. SGT. SMALL (TO NOBODY, IN HIS CAR): Two more bodies. Still underpowered.\n\nTo be continued.",
   thanks: "THANKS FOR PLAYING ACTS I TO III" };
 
+// Act III night, in the tunnels: until Gus listens, the tube line rattles now and then, loud, metal on metal, stopping dead
+// at the brick. The first one gets a line; after that, the sound, the arcs on the tube and a HUD chip. (The cue to LISTEN.)
+let rattleT = 0;
+function rattles(api) {
+  if (rattleT) return;
+  let next = Date.now() + 7000, first = true;
+  rattleT = setInterval(async () => {
+    const G = api.G, f = G.flags;
+    if (G.act !== 3 || G.mode === "day") { clearInterval(rattleT); rattleT = 0; return; }
+    if (G.room !== "tunnels" || f.canisterLive || f.hatchOpen || G.busy || G.actor.walking || Date.now() < next) return;
+    next = Date.now() + 12000 + Math.random() * 7000;
+    api.sfx("tubeRattle"); f.rattleNow = true; api.refresh();
+    setTimeout(() => { f.rattleNow = false; if (G.room === "tunnels") api.refresh(); }, 1300);
+    if (first) { first = false; await api.wait(1400); if (!G.busy && G.room === "tunnels")
+      await api.say("Overhead, the tube line shakes. A rattle runs along it, metal on metal, louder than any canister Gus has heard all week, and stops dead at the brick.\n\nGUS|That's not the interoffice mail. Something's going down that pipe tonight. If I put my ear to it, I'll hear the next one coming."); }
+    else api.status("((( THE TUBE )))", 2600);
+  }, 1000);
+}
 export async function check(api) {
   const { G } = api, f = G.flags;
   if (G.mode !== "day") {
-    if (G.room === "tunnels" && !f.chanting) { f.chanting = true; api.refresh(); api.sfx("chant");
+    if (G.room === "tunnels" && !f.chanting) { f.chanting = true; api.refresh(); api.sfx("chant"); rattles(api);
       return "The tunnels. Pipes in every direction, sweating. The leak runs along the floor and under a doorway in the left wall.\n\nThe doorway has been bricked up. Through the bricks: voices. Many voices. Together.\n\nGUS|If I put my ear to that, I'm going to hear something I can't un-hear. …I'm going to put my ear to that."; }
     return null;
   }
