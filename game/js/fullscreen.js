@@ -7,7 +7,8 @@
 import { seg, segW, chip } from "./gfx.js";
 
 const doc = document, root = doc.documentElement;
-export const standalone = () => matchMedia("(display-mode: standalone), (display-mode: fullscreen)").matches || navigator.standalone === true;
+// the iOS app is always edge to edge (the Mac app's window goes full screen through the Fullscreen API, as in a browser)
+export const standalone = () => window.GC_APP === "ios" || matchMedia("(display-mode: standalone), (display-mode: fullscreen)").matches || navigator.standalone === true;
 export const supported = () => !!(root.requestFullscreen || root.webkitRequestFullscreen) && (doc.fullscreenEnabled ?? doc.webkitFullscreenEnabled ?? true);
 export const isFull = () => !!(doc.fullscreenElement || doc.webkitFullscreenElement) || standalone();
 const isIOS = () => /iP(hone|od|ad)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);

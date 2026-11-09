@@ -1,4 +1,7 @@
-Fonts bundled with Ashland (latin subsets, from the Fontsource packages). All three are under the SIL Open Font License 1.1.
+Fonts bundled with Gain Control (latin subsets, from the Fontsource packages). All four are under the SIL Open Font License 1.1.
+
+===== saira-condensed =====
+Copyright 2016 The Saira Project Authors (omnibus.type@gmail.com), with Reserved Font Name "Saira"
 
 ===== bowlby-one-sc =====
 Copyright (c) 2011, vernon adams (vern@newtypography.co.uk), with Reserved Font Names "Bowlby"

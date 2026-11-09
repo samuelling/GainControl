@@ -1,0 +1,73 @@
+name: iOS build
+
+# Compile-check the iPhone/iPad app (unsigned) whenever the app or the game changes.
+on:
+  push:
+    paths: ['ios/**', 'game/**', '.github/workflows/ios.yml']
+  pull_request:
+    paths: ['ios/**']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Gain Control for iPhone and iPad
+        run: |
+          set -o pipefail
+          xcodebuild -project ios/GainControl.xcodeproj -target GainControl -sdk iphoneos \
+            -configuration Release CODE_SIGNING_ALLOWED=NO build 2>&1 | tee build.log | grep -E "error:|warning:|BUILD|Bundled" || true
+          grep -q "BUILD SUCCEEDED" build.log
+      - name: Check the game is inside the app
+        run: |
+          APP=$(find ios/build -name GainControl.app -type d | head -1)
+          ls "$APP/Web" "$APP/Web/js" | head -40
+          test -f "$APP/Web/index.html" && test -f "$APP/Web/js/main.js" && test -f "$APP/Web/fonts/saira-condensed-latin-500-normal.woff2"
+      - name: Surface warnings and errors as annotations
+        if: always()
+        run: |
+          grep -E "^/.*\.swift:[0-9]+:[0-9]+: (warning|error):" build.log | sort -u | head -40 | \
+            sed -E 's#^.*/(ios/GainControl)/([^:]+):([0-9]+):[0-9]+: (warning|error): (.*)$#::\4 file=\1/\2,line=\3::\5#' || true
+
+  simulator:
+    # Run the app in the iPhone and iPad simulators and keep screenshots, to check it actually starts.
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build for the simulator
+        run: |
+          set -o pipefail
+          xcodebuild -project ios/GainControl.xcodeproj -target GainControl -sdk iphonesimulator \
+            -configuration Debug CODE_SIGNING_ALLOWED=NO build 2>&1 | tail -3
+      - name: Launch and screenshot
+        run: |
+          APP=ios/build/Debug-iphonesimulator/GainControl.app
+          mkdir -p shots
+          pick() {
+            xcrun simctl list devices available -j | python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)['devices']
+          print(next(x['udid'] for r, l in sorted(d.items(), reverse=True) if 'iOS' in r for x in l if x['name'].startswith(sys.argv[1])))" "$1"
+          }
+          for kind in "iPhone 16 Pro" "iPad Pro"; do
+            UDID=$(pick "$kind")
+            tag=$(echo "$kind" | tr ' ' '_')
+            xcrun simctl boot "$UDID"
+            xcrun simctl bootstatus "$UDID" -b > /dev/null
+            xcrun simctl install "$UDID" "$APP"
+            xcrun simctl launch "$UDID" com.samuelling.gaincontrol
+            sleep 30
+            xcrun simctl io "$UDID" screenshot "shots/${tag}-title.png"
+            xcrun simctl terminate "$UDID" com.samuelling.gaincontrol
+            xcrun simctl launch "$UDID" com.samuelling.gaincontrol -GainControlHash act2
+            sleep 60
+            xcrun simctl io "$UDID" screenshot "shots/${tag}-game.png"
+            xcrun simctl ui "$UDID" appearance dark || true
+            xcrun simctl shutdown "$UDID"
+          done
+          ls -la shots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: simulator-screenshots
+          path: shots

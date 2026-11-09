@@ -189,11 +189,13 @@ export function darts(el, opts = {}) {
       const b = e.target.closest && e.target.closest("button[data-b]");
       if (b) { const id = b.dataset.b;
         if (id === "off") finish(); else if (id === "again") again(); else if (id === "throw") throwDart();
-        else if (id === "breath") hold(true);
+        else if (id === "breath") { breathId = e.pointerId; hold(true); }
         return; }
       if (e.target.closest && e.target.closest("svg.dsvg")) { onMove(e); throwDart(); }
     };
-    const onUp = () => { if (S.held) hold(false); };
+    // on a touch screen one finger can hold HOLD BREATH while another taps the board: only that finger lets go
+    let breathId = null;
+    const onUp = (e) => { if (S.held && (breathId === null || e.pointerId === breathId)) { breathId = null; hold(false); } };
     function hold(on) {
       if (S.done) return;
       if (on && S.tired > 0) return;

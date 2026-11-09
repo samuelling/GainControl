@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<!-- The app icon, drawn in the game's own line language: a gain knob (the dial ticks, the needle turned up),
+     GC in the stroke alphabet, GAIN CONTROL under it. ios/tools/make_icon.mjs renders it at 1024×1024 into
+     ios/GainControl/Assets.xcassets/AppIcon.appiconset/AppIcon.png and macos/AppIcon.png. Serve the repo root
+     over HTTP and open /ios/tools/icon.html to look at it. -->
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../game/css/game.css">
+<style>
+  html, body { margin: 0; background: #000; overflow: hidden; }
+  #frame { position: fixed !important; left: 0 !important; top: 0 !important; width: 1024px !important; height: 1024px !important; aspect-ratio: auto !important; }
+  svg { width: 1024px; height: 1024px; display: block; }
+</style></head>
+<body><div id="frame"><svg id="icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"></svg></div>
+<script type="module">
+import { seg, segW } from "../../game/js/gfx.js";
+const cx = 50, cy = 52, R = 38;
+let s = "";
+// the dial: eleven ticks from 7 o'clock round to 5 o'clock, the last three hot
+for (let i = 0; i <= 10; i++) {
+  const a = (-225 + i * 27) * Math.PI / 180, r0 = R - (i % 5 === 0 ? 7 : 5), r1 = R;
+  s += `<path class="${i >= 8 ? "sR" : "sN"}" style="stroke-width:${i % 5 === 0 ? 1.6 : 1.2};stroke-linecap:round" d="M${cx + r0 * Math.cos(a)},${cy + r0 * Math.sin(a)} L${cx + r1 * Math.cos(a)},${cy + r1 * Math.sin(a)}"/>`;
+}
+s += `<path class="hl sN" style="stroke-width:.5" d="M${cx + (R - 9) * Math.cos(-225 * Math.PI / 180)},${cy + (R - 9) * Math.sin(-225 * Math.PI / 180)} A${R - 9},${R - 9} 0 1 1 ${cx + (R - 9) * Math.cos(45 * Math.PI / 180)},${cy + (R - 9) * Math.sin(45 * Math.PI / 180)}"/>`;
+// GC in the stroke alphabet
+const h = 24, t = "GC";
+s += seg(t, cx - segW(t, h) / 2, cy - h / 2 - 3, h, "sW", 2.4);
+// the needle, turned up into the red, on a lit pivot
+const a = 30 * Math.PI / 180;
+s += `<path class="sR" style="stroke-width:2;stroke-linecap:round" d="M${cx - 4 * Math.cos(a)},${cy + 3 - 4 * Math.sin(a)} L${cx + 27 * Math.cos(a)},${cy + 3 + 27 * Math.sin(a)}"/>`;
+s += `<circle class="fG" cx="${cx}" cy="${cy + 3}" r="2.6" style="stroke:none"/>`;
+const l = "GAIN CONTROL";
+s += seg(l, cx - segW(l, 5.6) / 2, 83, 5.6, "sG", .6);
+document.getElementById("icon").innerHTML = s;
+document.body.dataset.ready = "1";
+</script></body></html>

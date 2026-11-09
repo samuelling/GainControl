@@ -18,6 +18,7 @@ import { keypad } from "./minigames/keypad.js";
 import { fogNeuro } from "./minigames/fogneuro.js";
 import { sfx } from "./sfx.js";
 import * as FULL from "./fullscreen.js";
+import { installNative } from "./native.js";
 import { titleArt, titleGlitch, titleExit } from "./title.js";
 import { installGuide } from "./guide.js";
 import { installNudge } from "./nudge.js";
@@ -660,7 +661,7 @@ function closeChooser() { const c = chooserEl(); if (c) c.innerHTML = ""; G.choo
 function cancelAll() { if (G.chooser || G.using) sfx.play("cancel"); closeChooser(); if (G.using) { G.using = null; hud(); } }
 
 frame.addEventListener("pointermove", (e) => {
-  if (G.busy || G.chooser) { hover.classList.remove("show"); return; }
+  if (G.busy || G.chooser || e.pointerType === "touch") { hover.classList.remove("show"); return; }   // a finger has no hover: the chooser names things
   const id = hsFrom(e.target), item = e.target.closest && e.target.closest("[data-item]"), ch = e.target.closest && e.target.closest("[data-char]");
   let label = "";
   if (G.using) label = `Use ${ITEMS[G.using].name} on ${id ? hsLabel(id) : item ? ITEMS[item.dataset.item].name : "…"}`;
@@ -679,6 +680,7 @@ for (const ev of ["pointerdown", "pointerup", "touchend", "click", "keydown"]) w
 // (after iOS suspends or interrupts the audio, e.g. coming back to the home-screen app, the next tap wakes it again)
 window.addEventListener("keydown", (e) => { if ((e.key === "m" || e.key === "M") && !e.target.closest?.("input,textarea")) { sfx.toggle(); hud(); } });
 FULL.install(() => hud());
+installNative(sfx);   // the Mac and iOS apps (js/native.js); nothing on the web
 const GUIDE = installGuide({ G });
 // stuck? after a while without progress, a glint on the next thing, then a line said in voice (js/nudge.js)
 const NUDGE = installNudge({ G, svg, say, idle: () => !onTitle && !G.busy && !G.chooser && !G.using && !G.actor.walking && !!G.room
