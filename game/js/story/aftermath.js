@@ -126,7 +126,7 @@ export async function aftermath(api, which) {
     counter("PRESTON VALU", "PAPERS RETRACTED", 31, "THE NOTICES ARE THE FIRST THING HE'S WRITTEN HIMSELF IN YEARS"),
     envelopes("FIFTY YEARS OF REVIEWER 2", "UNSEALED"),
     stamp("J. NEUROSCI. NULLS", "NULL RESULTS", "FOR GUS IAN. METHODS: FINE."),
-    frog("NELL PASSED. SHE GOT THE JOB."),
+    frog("DR. NELL NULL. THE JOB MARKET IS NEXT."),
     retire("IRIS WATCHED IT ON THE NEWS.", "PROF. IRIS CANDOR · RETIRED"),
   ]);
   if (which === "major") return montage(api, [

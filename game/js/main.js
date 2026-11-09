@@ -437,9 +437,12 @@ function crtScreen() {
       const f = (e) => { const b = e.target.closest && e.target.closest("[data-btn]"); if (!b) return; e.preventDefault(); swallowNextClick(); end(b.dataset.btn); };
       const k = (e) => { const n = +e.key; if (n >= 1 && n <= ids.length) { e.preventDefault(); e.stopPropagation(); end(ids[n - 1]); } };
       card.addEventListener("pointerdown", f); window.addEventListener("keydown", k, true); }),
-    close: () => new Promise(r => { const g = card.querySelector("#crtg"), fx = card.querySelector("#crtfx"); card.style.transition = "none"; sfx.play("powerdown");
-      let i = 0; const step = () => { const [vis, sy, glyph, ms] = CRT_OFF[i];
+    // close({ tint: "X", hold }): the line and dot drawn in another colour class (X: always red), the dot held longer
+    close: ({ tint = "W", hold = 0 } = {}) => new Promise(r => { const g = card.querySelector("#crtg"), fx = card.querySelector("#crtfx"); card.style.transition = "none"; sfx.play("powerdown");
+      let i = 0; const step = () => { let [vis, sy, glyph, ms] = CRT_OFF[i];
         if (g) { g.setAttribute("visibility", vis ? "visible" : "hidden"); g.setAttribute("transform", `translate(0 180) scale(1 ${sy || .001}) translate(0 -180)`); }
+        if (tint !== "W") glyph = glyph.replace(/\b([sf])W\b/g, `$1${tint}`);
+        if (hold && i === CRT_OFF.length - 2) ms += hold;
         if (fx) fx.innerHTML = glyph;
         if (++i < CRT_OFF.length) setTimeout(step, ms); else { card.classList.remove("show"); card.innerHTML = ""; setTimeout(() => { card.style.transition = ""; }, 50); G.busy = false; r(); } };
       step(); }),

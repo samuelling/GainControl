@@ -232,37 +232,54 @@ const VERDICTS = {
   inducted: { word: "SELLOUT.", sc: 4, nudge: 6, seed: 39, out: ["LIVE IT OUT IN CHAIRQUEST", "https://www.crumplab.com/ChairQuest/"] },
   deskreject: { word: "DESK REJECT", sc: 3, nudge: 0, seed: 41, out: ["LIVE IT OUT IN ADVISOR QUEST", "https://crumplabsandbox.github.io/advisor-quest/"] },
 };
-// INDUCTED's reward: SELLOUT. starts to glitch (bands slipping, a red ghost), then the screen fills, faster and faster,
-// with everything saying yes gets you (amber, green, white, a ding each), holds, and tears itself up.
-// SMALL font only: A-Z 0-9 : - . , > ' and space.
+// INDUCTED: the screen fills, faster and faster, with everything saying yes gets you (amber, green, white, a ding each);
+// it holds; then SELLOUT. takes it over, row by row, in giant red letters repeated edge to edge, and the tube shuts down
+// to a red dot. SMALL font only for the rewards: A-Z 0-9 : - . , > ' and space.
 const REWARDS = ["R01 FUNDED", "R01 FUNDED", "R01 RENEWED", "R01 FUNDED  1ST PERCENTILE", "NSF CAREER AWARD", "NSF FUNDED", "NIH STUDY SECTION",
   "NIH STUDY SECTION CHAIR", "NSF PANEL", "NSF PANEL", "ERC PANEL", "SFN COUNCIL", "VSS PRESIDENT", "CNS PRESIDENT", "SOCIETY FELLOW",
   "INVITED TALK  KYOTO", "INVITED TALK  OXFORD", "KEYNOTE  VIENNA", "PLENARY  BERLIN", "INVITED TALK  SYDNEY", "INVITED TALK  PARIS",
   "ENDOWED CHAIR", "DISTINGUISHED PROFESSOR", "EDITOR-IN-CHIEF", "ASSOCIATE EDITOR X3", "EDITORIAL BOARD", "NAS MEMBER",
   "AMERICAN ACADEMY", "CENTER DIRECTOR", "INSTITUTE DIRECTOR", "DEPARTMENT CHAIR", "NAMED LECTURE", "LIFETIME ACHIEVEMENT",
-  "U54 CENTER GRANT", "T32 DIRECTOR", "NEW 7T. YOURS.", "OFFICE WITH A WINDOW", "A PARKING SPACE", "A BRASS GAVEL"];
-async function rewards(api, scr, word) {
+  "U54 CENTER GRANT", "T32 DIRECTOR", "NEW 7T. YOURS.", "OFFICE WITH A WINDOW", "A PARKING SPACE", "A BRASS GAVEL",
+  "KEYNOTE  SINGAPORE", "R01 FUNDED", "NAMED CHAIR", "PROVOST'S MEDAL", "INVITED TALK  ZURICH", "STUDY SECTION, AGAIN", "BEST PAPER AWARD"];
+async function sellout(api) {
   const NC = LED.NC, NR = LED.NR, cls = ["a", "g", "w", "a", "w"];
   const bands = (n, amp) => { const s = {}; for (let k = 0; k < n; k++) { const r0 = Math.floor(Math.random() * NR), h = 2 + Math.floor(Math.random() * 8), d = (Math.random() < .5 ? -1 : 1) * (1 + Math.floor(Math.random() * amp));
     for (let r = r0; r < r0 + h; r++) s[r] = d; } return s; };
-  await api.wait(1300);
-  for (let i = 0; i < 4; i++) { api.sfx("blank"); scr.set(LED.render(word, { shift: bands(3, 4), ghost: i % 2 === 0 })); await api.wait(70); scr.set(LED.render(word)); await api.wait(220 - i * 40); }
-  const m = new Map(word), used = new Set();
+  const scr = api.crt(); scr.set(LED.render(new Map())); await api.wait(900);
+  // 1. the rewards pour in, anywhere there's room
+  const m = new Map(), used = new Set();
   const box = (c, r, w, f) => { for (let y = r - 1; y < r + 6; y++) for (let x = c - 2; x < c + w + 2; x++) if (f(`${x},${y}`)) return true; return false; };
-  for (const k of word.keys()) used.add(k);
   const pool = [...REWARDS].sort(() => Math.random() - .5);
   for (let i = 0; i < pool.length; i++) {
     const t = pool[i], w = LED.textW(t);
-    for (let tries = 0; tries < 120; tries++) { const c = 2 + Math.floor(Math.random() * (NC - w - 4)), r = 2 + Math.floor(Math.random() * (NR - 9));
+    for (let tries = 0; tries < 160; tries++) { const c = 2 + Math.floor(Math.random() * (NC - w - 4)), r = 2 + Math.floor(Math.random() * (NR - 9));
       if (!box(c, r, w, k => used.has(k))) { LED.text(m, t, c, r, cls[i % cls.length]); box(c, r, w, k => { used.add(k); }); break; } }
-    api.sfx("score"); scr.set(LED.render(m, i % 5 === 4 ? { shift: bands(2, 3) } : {}));
-    await api.wait(Math.max(60, 240 - i * 10));
+    api.sfx("score"); scr.set(LED.render(m)); await api.wait(Math.max(55, 260 - i * 11));
   }
-  scr.set(LED.render(m)); await scr.click(800, 2600);
-  for (let i = 0; i < 8; i++) { api.sfx("blank"); scr.set(LED.render(m, { shift: bands(4 + i, 3 + i), ghost: true, noise: .004 * i, scan: Math.floor(Math.random() * NR) })); await api.wait(90); }
+  await scr.click(900, 2200);
+  // 2. SELLOUT. takes over: giant red rows (BIG font ×3), each repeated across the width and staggered, slamming in one
+  //    by one over the rewards, with the picture slipping and ghosting as it goes
+  const W0 = "SELLOUT. ", sc = 3, rowH = 7 * sc + 2, wW = LED.textW(W0, LED.BIG, sc) + 2 * sc, rows = Math.ceil(NR / rowH);
+  const order = Array.from({ length: rows }, (_, i) => i).sort(() => Math.random() - .5);
+  for (let n = 0; n < order.length; n++) {
+    const i = order[n], r0 = i * rowH;
+    for (let r = r0; r < r0 + rowH; r++) for (let c = 0; c < NC; c++) m.delete(`${c},${r}`);
+    const off = -((i * 47) % wW); for (let c = off; c < NC; c += wW) LED.text(m, W0, c, r0 + 1, "x", LED.BIG, sc);
+    api.sfx("blank"); scr.set(LED.render(m, { shift: bands(3 + n, 2 + n), ghost: true })); await api.wait(70);
+    scr.set(LED.render(m)); await api.wait(Math.max(120, 300 - n * 35));
+  }
+  // nothing left but the word
+  for (const k of [...m.keys()]) if (m.get(k) !== "x") m.delete(k);
+  scr.set(LED.render(m)); await api.wait(700);
+  for (let i = 0; i < 6; i++) { api.sfx("blank"); scr.set(LED.render(m, { shift: bands(4 + i * 2, 3 + i), ghost: true, noise: .003 * i, scan: Math.floor(Math.random() * NR) })); await api.wait(80); scr.set(LED.render(m)); await api.wait(110 - i * 10); }
+  await scr.click(1200, 3000);
+  // 3. off, down to a red dot
+  await scr.close({ tint: "X", hold: 1100 }); await api.wait(500);
 }
 async function verdict(api, which) {
   const V = VERDICTS[which]; LED.css();
+  if (which === "inducted") { await sellout(api); END.out = V.out; return; }
   const m = new Map(), top = V.sc === 4 ? 30 : 34;
   LED.text(m, V.word, LED.center(V.word, LED.BIG, V.sc) + V.nudge, top, "x", LED.BIG, V.sc);   // x: red in every palette (the night one turns R violet)
   const e = [...m.entries()]; let seed = V.seed; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
@@ -271,8 +288,7 @@ async function verdict(api, which) {
   const scr = api.crt(); scr.set(at(0)); await api.wait(700);
   for (const k of [.08, .2, .4, .65, .85, 1]) { scr.set(at(k)); api.sfx("tick"); await api.wait(100); }
   for (const k of [0, 1, 0, 1]) { scr.set(at(k)); await api.wait(k ? 160 : 70); }
-  if (which === "inducted") await rewards(api, scr, m);   // SELLOUT. glitches, and the rewards pour in over it
-  else await scr.click(1200, 4200);
+  await scr.click(1200, 4200);
   await scr.close(); await api.wait(500);
   END.out = V.out;   // the credits end on the way out: your punishment, as somebody else's game
 }
