@@ -12,10 +12,11 @@ import { LIB_VISION } from "./lib_vision.js";
 import { LIB_ADJUST } from "./lib_adjust.js";
 import { LIB_ATTENTION } from "./lib_attention.js";
 import { LIB_MEMORY } from "./lib_memory.js";
-export const MODULES = [NECKER, RUBIN, QUARTET, SPHERE, DANCER_MOD, KANIZSA, GRIDS, MIB, TROXLER, LILAC, AFTER, FEET, DRIFT, EBBING, CARRASCO, CSF, POSNER, ROTATION, CROWDING, NUMBER, HV, ML, SEARCH, ADELSON, MAE, ...LIB_VISION, ...LIB_ADJUST, ...LIB_ATTENTION, ...LIB_MEMORY];
+import { RIVALRY } from "./rivalry.js";
+export const MODULES = [NECKER, RUBIN, QUARTET, SPHERE, DANCER_MOD, KANIZSA, GRIDS, MIB, TROXLER, LILAC, AFTER, FEET, DRIFT, EBBING, CARRASCO, CSF, POSNER, ROTATION, CROWDING, NUMBER, HV, ML, SEARCH, ADELSON, MAE, ...LIB_VISION, ...LIB_ADJUST, ...LIB_ATTENTION, ...LIB_MEMORY, ...RIVALRY];
 
 // the shelves, in the order the menu shows them
-export const GROUPS = ["AMBIGUOUS", "ILLUSIONS", "CLASSICS", "PS 327 LABS", "ATTENTION", "ACTION", "MEMORY", "LEARNING", "FORM", "MOTION", "NUMBER",
+export const GROUPS = ["AMBIGUOUS", "RIVALRY", "ILLUSIONS", "CLASSICS", "PS 327 LABS", "ATTENTION", "ACTION", "MEMORY", "LEARNING", "FORM", "MOTION", "NUMBER",
   "LIGHT & COLOUR", "HEARING", "TIME"];
 export const groupsOf = (mods = MODULES) => { const have = [...new Set(mods.map(m => m.group))];
   return [...GROUPS.filter(g => have.includes(g)), ...have.filter(g => !GROUPS.includes(g))]; };
