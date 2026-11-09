@@ -165,6 +165,7 @@ function loadRoom(id, entry, pos) {
   const moving = G.room && G.room !== id && entry && entry !== "start";
   const finishSwipe = moving ? swipe(G.actor && G.actor.x < 320 ? 1 : -1) : null;
   if (G.room !== id && entry && entry !== "start") sfx.play(entry === "vent" ? "ratstep" : "door");
+  if (G.room !== id) G.visit = (G.visit || 0) + 1;   // room entries (the kitchen's regulars come and go per visit)
   G.room = id; G.chooser = null;
   sfx.ambience(id, G.mode); musicScene();
   const a = G.actor, e = pos ? [pos.x, pos.y, pos.dir] : entryPos(entry);
@@ -290,7 +291,7 @@ function typeInto(el, html, speed, onTick) {
 // speaker colors for quoted one-liners ("WHO|text")
 const SPEAKER = [["MORRIS", "K"], ["PRESTON", "R"], ["BRETT", "B"], ["THE OLD WOMAN", "V"], ["GUS", "B"], ["NELL", "G"], ["TESS", "A"], ["PENNY", "B"],
   ["ETHEL", "V"], ["CODY", "R"], ["DET", "W"], ["SMALL", "W"], ["PROF. ADLINE", "W"],
-  ["THE CORRESPONDING AUTHOR", "R"], ["A HOOD", "V"], ["ANOTHER HOOD", "V"], ["A THIRD HOOD", "V"], ["A YOUNGER HOOD", "A"], ["THE REAL RECORD", "A"],
+  ["THE CORRESPONDING AUTHOR", "R"], ["A SIXTH-YEAR", "A"], ["A POSTDOC", "W"], ["A FIRST-YEAR", "K"], ["A HOOD", "V"], ["ANOTHER HOOD", "V"], ["A THIRD HOOD", "V"], ["A YOUNGER HOOD", "A"], ["THE REAL RECORD", "A"],
   ["IMPACT", PORTRAITS_4.impact.chip.slice(1)], ["REX", PORTRAITS_B.rex.chip.slice(1)], ["DANA", PORTRAITS_B.dana.chip.slice(1)], ["QUORUM", PORTRAITS_A.quorum.chip.slice(1)], ["IRIS", "V"]];
 const colorOf = (who) => (SPEAKER.find(([k]) => who.startsWith(k)) || [0, "A"])[1];
 // a response may hold several paragraphs, each optionally "WHO|…": each speaker gets their own box

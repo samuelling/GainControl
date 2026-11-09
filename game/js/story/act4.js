@@ -1,6 +1,7 @@
 // ACT IV — Thursday: REBUTTAL. Impact in the −80, Reviewer 2 and the lasagna, Cody in the maze, the chase through the fog;
 // Gus's last night at the coat check (the act ends on his last text; Friday morning and THE REHEARSAL open Act V). Design: docs/ACT4.md.
 import { seg, segC, chip, chipW } from "../gfx.js";
+import { LOUNGE_HS } from "./lounge.js";
 import { ITEMS, VIV, dendro } from "./act1.js";
 import "./act3.js";
 import { metamer } from "../minigames/metamer.js";
@@ -256,6 +257,7 @@ export const HS = {
   },
 
   kitchen: {
+    ...LOUNGE_HS,   // the regulars and the dartboard (story/lounge.js)
     rex: { label: "Dr. Rex Jected", day: { look: "Rex, with an espresso, which he now makes eleven times a day.", talk: "REX|I told you. Under forty. Nobody believes me. You believe me. That's worse, somehow." }, morris: look("REX|Rat.") },
     espresso: { label: "espresso machine", day: look("READY. It hums like it's proud of itself."), morris: look("READY.") },
     mugs: { label: "mug tree", day: look("WORLD'S OKAYEST PI is back on the tree. Rex washed it.") },

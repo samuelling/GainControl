@@ -68,6 +68,7 @@ const S = {
   // Act III's tunnels: a canister's run, loud: a metal clatter that travels along the line and stops dead
   tubeRattle: () => { noise(1.3, { f: 700, sweep: 2400, q: 2.5, g: .16, a: .08 }); for (let i = 0; i < 11; i++) metal(700 + Math.random() * 500, .09, .07, i * .1 + Math.random() * .03);
     tone(70, .25, { g: .22, glide: 45, at: 1.25 }); noise(.08, { f: 900, g: .12, at: 1.25 }); },
+  dart: () => { noise(.03, { f: 1800, q: 1.5, g: .14 }); tone(140, .09, { g: .12, glide: 90 }); },
   clang: () => metal(320, 1.2, .14),
   gavel: () => { tone(190, .12, { g: .22, glide: 120 }); noise(.03, { f: 1800, q: 2, g: .12 }); },
   knock: () => { [0, .18].forEach(at => { tone(150, .09, { g: .2, at, glide: 110 }); noise(.02, { f: 900, g: .08, at }); }); },

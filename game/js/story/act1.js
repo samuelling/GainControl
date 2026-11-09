@@ -2,6 +2,7 @@
 // A response can be: a string ("WHO|text" for a quoted line), "c:key" (a conversation),
 // or a function(api) that does things and may return either of those.
 import { seg } from "../gfx.js";
+import { LOUNGE_HS } from "./lounge.js";
 import { openConsole } from "../console/open.js";
 import { realHS } from "./realrecord.js";
 
@@ -114,6 +115,7 @@ const tubeNight = { look: "The canisters are rattling. Going down. Past the base
 export const HS = {
   // the coffee kitchen, Monday: Rex and the machine, already in their standoff (it pays off on Wednesday)
   kitchen: {
+    ...LOUNGE_HS,   // the regulars and the dartboard (story/lounge.js)
     rex: { label: "Dr. Rex Jected", day: { look: "Dr. Rex Jected, ninth-year postdoc, leaning on the counter with an empty mug, staring at the espresso machine like it's a grant he didn't get.",
         talk: "REX|It's said DESCALE since 2012. I press the button every morning. Every morning it says DESCALE.\n\nREX|Most reliable result in this building. Somebody should publish it." } },
     espresso: { label: "espresso machine", day: { look: "The espresso machine. A blinking chip: DESCALE. A sticker on the side: DESCALE WITH ANY MILD ACID. Under it, in Sharpie: WE HAVE NO ACID. —R",

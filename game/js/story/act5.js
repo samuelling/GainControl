@@ -1,6 +1,7 @@
 // ACT V — Friday: DECISION. The Defense (Laura Bow), then the Induction in B3 (Nell, Iris and Morris), the magnet, the endings.
 // Design: docs/ACT5.md.
 import { seg, segC, chip, chipW, stapler } from "../gfx.js";
+import { LOUNGE_HS } from "./lounge.js";
 import { realHS } from "./realrecord.js";
 import { ITEMS } from "./act1.js";
 import "./act4.js";
@@ -441,6 +442,7 @@ const MORNING = {
   },
   // the coffee kitchen, Friday morning: Rex has heard
   kitchen: {
+    ...LOUNGE_HS,   // the regulars and the dartboard (story/lounge.js)
     rex: { label: "Dr. Rex Jected", morning: { look: "Rex, with two espressos. He's heard about Gus. He hasn't touched the second one.",
         talk: "REX|He used to come in here at 2 AM, just to press the button. Said it was the only thing in the building that never changed its result.\n\nREX|Then you fixed it. He was annoyed for a whole day." } },
     espresso: { label: "espresso machine", morning: look("READY. It doesn't know what day it is.") },

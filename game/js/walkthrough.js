@@ -287,7 +287,7 @@ export const WALKTHROUGH = {
         hs: ["defense.lectern"], nudge: ["NELL|Was the study ever run? Tuesday answered that. Four times.", "NELL|Tuesday's paper trail. Plus Preston, on tape, at journal club.", "NELL|Any two: the calendar, the purchase orders, the protocol, the sign-in sheet, the recorder."] },
       { t: "Q2, ARE THE DATA REAL? → TABLE 1 CEILING and FIGURE 3B = 3D. (Save GPU LOGS and THE REPLICATION.)", flag: "defenseDone",
         hs: ["defense.lectern"], nudge: ["NELL|Are the data real? Wednesday was all about that.", "NELL|Gus's ceiling, and the two participants who turned out to be one brain.", "NELL|The Table 1 ceiling, and Figure 3b equals 3d. Save the logs and the replication."] },
-      { t: "Q3, WHOSE DATA ARE THEY? → THE RETAINER. Q4, WHO WROTE THE REVIEW? → REVIEWER 2 REPORT.", flag: "defenseDone",
+      { t: "Q3, WHOSE DATA ARE THEY? → THE LASAGNA. Q4, WHO WROTE THE REVIEW? → REVIEWER 2 REPORT.", flag: "defenseDone",
         hs: ["defense.lectern"], nudge: ["NELL|Whose data? My lunch, six layers of it. Who wrote the review? Someone who can't spell nueron.", "NELL|Impact's office had both. A framed figure, and a folder of reviews he didn't write.", "NELL|The lasagna for whose data. The Reviewer 2 report for who wrote it."] },
       { t: "Q5, WHY? → two of THE INVITATION, THE MISSING HOURS, THE METAMER, IMPACT'S NRT CARD, THE DARK BOOTH. Nell names Preston. DONE.", flag: "defenseDone",
         hs: ["defense.lectern"], nudge: ["NELL|Why? Because there's a table. And I can prove it exists.", "NELL|A cream invitation. Friday receipts. A stitched paper. An expired card. Lights in his ears.", "NELL|Any two: the invitation, the missing hours, the metamer, Impact's card, the dark booth."] },

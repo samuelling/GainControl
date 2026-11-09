@@ -1,6 +1,7 @@
 // ACT III — Wednesday: MAJOR REVISIONS. Four proofs (Nell + Morris, Gus at his desk), Dana, the faculty meeting
 // (THE NOD, and Quorum "dies"), Iris; then Gus in the steam tunnels. Design: docs/ACT3.md.
 import { seg, segC, chip, chipW } from "../gfx.js";
+import { LOUNGE_HS } from "./lounge.js";
 import { ITEMS, VIV, dendro, boothNap } from "./act1.js";
 import "./act2.js";   // Act II's items (printout, …) and look-wrappers
 import { ceiling } from "../minigames/ceiling.js";
@@ -411,6 +412,7 @@ export const HS = {
   },
 
   kitchen: {
+    ...LOUNGE_HS,   // the regulars and the dartboard (story/lounge.js)
     rex: { label: "Dr. Rex Jected", day: { look: "Dr. Rex Jected, ninth-year postdoc, leaning on the counter with an empty mug, staring at the espresso machine like it's a grant he didn't get.",
         talk: (api) => api.has("coffee") ? "c:rexCoffee" : api.flag("rexLogin") ? "REX|There's a society, Nell. Under forty. Nobody believes me." : !api.flag("rexAsked") ? "c:rexFirst"
           : api.has("can") ? "REX|Is that one of Gus's? NULL HYPOTHESIS? I've watched that stuff take the varnish off a desk.\n\nREX|Don't hand it to me. I'm not the one with fourteen years of limescale."

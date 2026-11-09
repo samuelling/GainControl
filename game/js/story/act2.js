@@ -1,5 +1,6 @@
 // ACT II — Tuesday: UNDER REVIEW. The paper trail (Nell + Morris), Preston's computer (Gus), and the first body.
 import { seg, segC } from "../gfx.js";
+import { LOUNGE_HS } from "./lounge.js";
 import * as FIG from "../figures.js";
 import { ITEMS, VIV, dendro, boothNap } from "./act1.js";
 import { openConsole } from "../console/open.js";
@@ -227,6 +228,7 @@ const ventHS = { label: "vent", morris: { look: "A vent. Morris's highway. It sm
 export const HS = {
   // the coffee kitchen, Tuesday
   kitchen: {
+    ...LOUNGE_HS,   // the regulars and the dartboard (story/lounge.js)
     rex: { label: "Dr. Rex Jected", day: { look: "Rex, at the counter, with the empty mug. Same spot as yesterday. Possibly the same breath.",
         talk: "REX|A physicist died in the magnet room and they still haven't fixed this machine. That tells you everything about priorities.\n\nREX|DESCALE. Day 5,000-something." },
       morning: { look: "Rex, already here. Nobody has ever arrived before Rex.", talk: "REX|Morning. It says DESCALE. I'll let you know if that changes." },

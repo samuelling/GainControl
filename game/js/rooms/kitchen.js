@@ -2,6 +2,8 @@
 // the fridge nobody should drink from, the corkboard, the sink. Act III.
 import { seg, segC, chip, chipW, perspective, shell, sideDoor, hit, arcs } from "../gfx.js";
 import { rexStanding } from "../cast/act3b.js";
+import { sixthYear, postdoc, firstYear, sleeper } from "../cast/lounge.js";
+import { regulars, SPOTS } from "../story/lounge.js";
 
 const pp = perspective(320, 130, 0.5);
 const { P, poly, kAtY, FY } = pp;
@@ -57,8 +59,18 @@ function back(G) {
   // left wall: back to the hallway
   const d = sideDoor(pp, 0, .6, .76, 108);
   s += `<g data-hs="door">${d.svg}${chip("HALL", d.a[0] + 2, d.a[1] - 14, 4.4, "fW")}${hit(...d.box)}</g>`;
-  // right wall: a window onto the parking lot (atmosphere), a coffee-rota sheet
-  const w = [P(640, 110, .62), P(640, 110, .8), P(640, 190, .8), P(640, 190, .62)];
+  // right wall, near the back: the dartboard (side-on, so an ellipse), a sign, and darts in the wall around it
+  { const [bx, by] = P(640, 128, .585), rx = 7, ry = 15;
+    s += `<g data-hs="darts"><ellipse class="k sD" cx="${bx}" cy="${by}" rx="${rx + 2}" ry="${ry + 3}"/><ellipse class="sW" cx="${bx}" cy="${by}" rx="${rx}" ry="${ry}"/>
+      <ellipse class="hl sR" cx="${bx}" cy="${by}" rx="${rx * .6}" ry="${ry * .6}"/><ellipse class="hl sG" cx="${bx}" cy="${by}" rx="${rx * .95}" ry="${ry * .95}"/>
+      <path class="hl sM" d="M${bx},${by - ry} L${bx},${by + ry} M${bx - rx},${by} L${bx + rx},${by} M${bx - rx * .7},${by - ry * .7} L${bx + rx * .7},${by + ry * .7} M${bx + rx * .7},${by - ry * .7} L${bx - rx * .7},${by + ry * .7}"/>
+      <circle class="fR" cx="${bx}" cy="${by}" r="1.2"/>
+      <path class="sW" d="M${bx - 2},${by - 4} L${bx - 7},${by - 9} M${bx + 1},${by + 6} L${bx - 4},${by + 2} M${bx + 12},${by + 20} L${bx + 7},${by + 15}"/>
+      ${seg("OCHE", bx - 9, by - ry - 12, 3.4, "sA", .6)}${hit(bx - 14, by - ry - 14, 30, ry * 2 + 30)}</g>`; }
+  // the oche: a strip of tape across the floor, out in front of the board
+  s += `<path class="hl dash sA" d="M${P(520, FY, .9)[0]},${P(520, FY, .9)[1]} L${P(640, FY, .9)[0]},${P(640, FY, .9)[1]}"/>`;
+  // right wall: a window onto the parking lot (atmosphere)
+  const w = [P(640, 110, .68), P(640, 110, .84), P(640, 190, .84), P(640, 190, .68)];
   s += `<polygon class="k sD mech" points="${poly(...w)}"/><path class="hl sD" d="M${((w[0][0] + w[1][0]) / 2).toFixed(1)},${((w[0][1] + w[1][1]) / 2).toFixed(1)} L${((w[3][0] + w[2][0]) / 2).toFixed(1)},${((w[3][1] + w[2][1]) / 2).toFixed(1)}"/>`;
   return s;
 }
@@ -92,17 +104,21 @@ export default {
   entries: { fromHall: [116, 260, 1] },
   draw(G) {
     const rex = G.mode !== "night", ry = 240, rx = 372, rk = kAtY(ry);
+    const FIG = { sixth: sixthYear, postdoc, first: firstYear, sleeper };
+    const regs = regulars(G).map(id => { const [x, y, flip] = SPOTS[id], k = kAtY(y), q = k * .72, low = id === "first" || id === "sleeper";
+      return { depth: y, svg: `<g data-hs="${id}">${FIG[id](x, y, k, flip)}${low ? hit(x - 40 * q, y - 100 * q, 80 * q, 100 * q) : hit(x - 22 * q, y - 162 * q, 44 * q, 164 * q)}</g>` }; });
     return { back: back(G) + espresso(G), sortables: [
-      { depth: ry, svg: rex ? `<g data-hs="rex">${rexStanding(rx, ry, rk)}${hit(rx - 16, ry - 124 * rk * .72, 34, 124 * rk * .72 + 2)}</g>` : "" },
+      { depth: ry, svg: rex ? `<g data-hs="rex">${rexStanding(rx, ry, rk)}${hit(rx - 16, ry - 124 * rk * .72, 34, 124 * rk * .72 + 2)}</g>` : "" }, ...regs,
     ] };
   },
   stand: { rex: [340, 252], espresso: [322, 244], mugs: [266, 244], fridge: [440, 248], board: [208, 246], sink: [212, 244],
+    sixth: [206, 258], postdoc: [528, 270], first: [430, 284], sleeper: [430, 284], darts: [560, 278],
     vent: [60, 276], door: [112, 262] },
   labels: {
     day: { espresso: { use: "BREW" }, mugs: { use: "TAKE A MUG" }, sink: { use: "RINSE" }, fridge: { use: "OPEN" }, board: { use: "READ" },
-      door: { use: "GO OUT", go: "GO OUT" }, rex: { use: "GIVE" } },
+      door: { use: "GO OUT", go: "GO OUT" }, rex: { use: "GIVE" }, darts: { use: "PLAY DARTS" } },
     night: { espresso: { use: "BREW" }, mugs: { use: "TAKE A MUG" }, sink: { use: "RINSE" }, fridge: { use: "OPEN" }, board: { use: "READ" },
-      door: { use: "GO OUT", go: "GO OUT" } },
+      door: { use: "GO OUT", go: "GO OUT" }, darts: { use: "PLAY DARTS" }, sleeper: { talk: "LISTEN" } },
     morris: { vent: { use: "CLIMB IN" }, door: { go: "SCURRY OUT" }, espresso: { use: "LICK DRIP" }, fridge: { use: "SNIFF" }, mugs: { use: "CLIMB" } },
   },
 };
