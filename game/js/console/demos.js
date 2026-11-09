@@ -1,4 +1,4 @@
-// DEMOS: four bistable figures. Each runs as a perceptual-rivalry measurement: watch, and press one key while you see
+// DEMOS: five bistable figures. Each runs as a perceptual-rivalry measurement: watch, and press one key while you see
 // one interpretation and the other key when it switches. Dominance durations come out as a histogram (they are
 // famously skewed, roughly gamma-distributed) with the mean per percept.
 import { mean, median } from "./fit.js";
@@ -80,3 +80,24 @@ export const SPHERE = { id: "sphere", group: "AMBIGUOUS", title: "Spinning spher
       draw(g, t) { ctx.clear(0); g.fillStyle = "#e9e6ff"; const R = 170, w = t * Math.PI * 2 * .2;
         for (const [r, a, z] of P) { const x = r * Math.cos(a + w); g.fillRect(ctx.cx + x * R - 2, ctx.cy + z * R - 2, 4, 4); }
         g.fillStyle = "#ff3b5c"; g.fillRect(ctx.cx - 3, ctx.cy - 3, 6, 6); } }); } };
+
+// THE SPINNING DANCER: a turning silhouette (an original figure, in the spirit of Kayahara's) with no shading, no
+// outline and orthographic projection, so nothing says which limbs are in front: the spin flips between clockwise and
+// counter-clockwise. Body as joints in 3D (x across, y up, z depth), turned about the standing leg, drawn as thick strokes.
+const DANCER = (() => { const J = { foot: [0, 0, 0], knee: [1, 44, 2], hip: [0, 88, 0], hip2: [4, 90, -2], knee2: [44, 100, 8], foot2: [88, 112, 14],
+  neck: [0, 162, 0], shL: [-17, 156, -2], shR: [17, 156, 2], elL: [-24, 192, 6], haL: [-6, 224, 10], elR: [48, 166, 14], haR: [80, 178, 26], head: [0, 184, 2] };
+  const bones = [["foot", "knee", 14], ["knee", "hip", 19], ["hip2", "knee2", 18], ["knee2", "foot2", 13], ["hip", "neck", 32], ["shL", "shR", 16],
+    ["shL", "elL", 12], ["elL", "haL", 10], ["shR", "elR", 12], ["elR", "haR", 10]];
+  return { J, bones }; })();
+export const DANCER_MOD = { id: "dancer", group: "AMBIGUOUS", tag: "KAYAHARA 2003", title: "Spinning dancer", sub: "A silhouette on one toe. Which way is she turning?",
+  ref: ["Kayahara, N. (2003). Silhouette illusion [Animated figure]. Procreo Flash Design Laboratory.",
+    "Troje, N. F., & McAdams, M. (2010). The viewing-from-above bias and the silhouette illusion. i-Perception, 1(3), 143–148."],
+  blurb: "A turning silhouette has no shading and no outline, so nothing says which leg is in front. Most people see it spin one way (often clockwise, as if seen from above), then it flips.",
+  instructions: { lines: ["A dancer spins on one toe, in silhouette. Look at her, not the edges of the screen.", "Seen from above, is she turning clockwise or counter-clockwise? Watch the leg that sticks out. The direction will flip, sometimes after a while.", "Press the key for the direction you see now, and again every time it flips. Pick 30 or 90 seconds, or JUST WATCH. A trick that sometimes helps: cover all but her feet."],
+    keys: [["A", "CLOCKWISE, FROM ABOVE"], ["L", "COUNTER-CLOCKWISE"]] },
+  run: (ctx) => rivalry(ctx, { secs: 30, intro: "Watch her spin.", keys: [["a", "CLOCKWISE"], ["l", "COUNTER-CLOCKWISE"]],
+    draw(g, t) { ctx.clear(0); const a = t * Math.PI * 2 * .42, c = Math.cos(a), s = Math.sin(a), k = 1.75, x0 = ctx.cx, y0 = ctx.cy + 210;
+      const P = (j) => { const [x, y, z] = DANCER.J[j]; return [x0 + (x * c + z * s) * k, y0 - y * k]; };   // orthographic: depth is thrown away
+      g.strokeStyle = g.fillStyle = "#e9e6ff"; g.lineCap = "round"; g.lineJoin = "round";
+      for (const [a1, b1, w] of DANCER.bones) { const [x1, y1] = P(a1), [x2, y2] = P(b1); g.lineWidth = w * k; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); }
+      const [hx, hy] = P("head"); g.beginPath(); g.arc(hx, hy, 14 * k, 0, Math.PI * 2); g.fill(); } }) };

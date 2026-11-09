@@ -1,6 +1,6 @@
 // The perception console's library, in order. Each file exports its modules; register them in MODULES and the menu
 // finds their groups by itself (GROUPS orders the shelves; a group not listed there is shelved at the end).
-import { NECKER, RUBIN, QUARTET, SPHERE } from "./demos.js";
+import { NECKER, RUBIN, QUARTET, SPHERE, DANCER_MOD } from "./demos.js";
 import { KANIZSA, GRIDS, MIB, TROXLER, LILAC, AFTER, FEET, DRIFT, EBBING } from "./demos2.js";
 import { CARRASCO } from "./carrasco.js";
 import { CSF, POSNER, ROTATION, CROWDING, NUMBER } from "./classics2.js";
@@ -12,7 +12,7 @@ import { LIB_VISION } from "./lib_vision.js";
 import { LIB_ADJUST } from "./lib_adjust.js";
 import { LIB_ATTENTION } from "./lib_attention.js";
 import { LIB_MEMORY } from "./lib_memory.js";
-export const MODULES = [NECKER, RUBIN, QUARTET, SPHERE, KANIZSA, GRIDS, MIB, TROXLER, LILAC, AFTER, FEET, DRIFT, EBBING, CARRASCO, CSF, POSNER, ROTATION, CROWDING, NUMBER, HV, ML, SEARCH, ADELSON, MAE, ...LIB_VISION, ...LIB_ADJUST, ...LIB_ATTENTION, ...LIB_MEMORY];
+export const MODULES = [NECKER, RUBIN, QUARTET, SPHERE, DANCER_MOD, KANIZSA, GRIDS, MIB, TROXLER, LILAC, AFTER, FEET, DRIFT, EBBING, CARRASCO, CSF, POSNER, ROTATION, CROWDING, NUMBER, HV, ML, SEARCH, ADELSON, MAE, ...LIB_VISION, ...LIB_ADJUST, ...LIB_ATTENTION, ...LIB_MEMORY];
 
 // the shelves, in the order the menu shows them
 export const GROUPS = ["AMBIGUOUS", "ILLUSIONS", "CLASSICS", "PS 327 LABS", "ATTENTION", "ACTION", "MEMORY", "LEARNING", "FORM", "MOTION", "NUMBER",

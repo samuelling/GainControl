@@ -19,10 +19,16 @@
 //   ctx.number(prompt)                                  typed (or keypad) number → Number
 //   ctx.frames(n) / ctx.wait(ms) / ctx.raf()            timing, in display frames
 //   ctx.loop(draw(t, dt) → bool)                        run an animation until draw returns false or the run stops
-//   ctx.plot(spec) / ctx.csv(name, header, rows)        results as a game-style chart, and a CSV download
+//   ctx.plot(spec) / ctx.csv(name, header, rows)        results as a game-style chart, and a CSV (SAVE CSV, and kept under
+//                                                       MY RESULTS on this device, results.js)
+// Modules with a PsychoPy / Psychtoolbox version (scripts.js, files in game/experiments/) get export buttons.
 //   ctx.clear(grey) / ctx.fix()                         helpers
 import { seg, segW, chip } from "../gfx.js";
 import { MODULES, groupsOf, refsOf } from "./modules.js";
+import { saveFile, stamp } from "./save.js";
+import { zip } from "./zip.js";
+import { allResults, addResult, removeResult, clearResults } from "./results.js";
+import { hasScript, scriptFile, fetchScript, SCRIPT_KINDS } from "./scripts.js";
 
 const CSS = `
 .pc { padding: 0 1.2cqw !important; }
@@ -76,6 +82,13 @@ const CSS = `
 .pc .bar button.k { background: #000; color: var(--W); border: .1cqw solid var(--W); }
 .pc .bar button.k:hover { background: var(--G); color: #000; }
 .pc .bar .kb { color: var(--M); font-size: 1.05cqw; margin-left: .3cqw; }
+.pc .reslist { flex: 1 1 0; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: .35cqw; padding-right: .4cqw; scrollbar-width: thin; scrollbar-color: var(--M) transparent; touch-action: pan-y; }
+.pc .resrow { display: flex; align-items: center; gap: .8cqw; border-bottom: .1cqw solid var(--D); padding: .2cqw 0; font-size: 1.5cqw; }
+.pc .resrow .when { color: var(--M); font-size: 1.2cqw; min-width: 11cqw; } .pc .resrow .what { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.pc .resrow .n { color: var(--M); font-size: 1.2cqw; }
+.pc .resrow button { font: 600 1.15cqw "Saira Condensed", sans-serif; letter-spacing: .06em; background: #000; color: var(--W); border: .1cqw solid var(--W); padding: 0 .6cqw; cursor: pointer; }
+.pc .resrow button:hover { background: var(--G); color: #000; border-color: var(--G); }
+.pc .resempty { color: var(--M); font-size: 1.7cqw; padding: 2cqw 1cqw; text-transform: uppercase; }
 .pc .bar .entry { font: 600 1.8cqw "Saira Condensed", sans-serif; color: var(--A); min-width: 6cqw; border-bottom: .1cqw solid var(--A); text-align: right; padding: 0 .4cqw; }
 `;
 function css() { if (document.getElementById("css-console")) return; const s = document.createElement("style"); s.id = "css-console"; s.textContent = CSS; document.head.appendChild(s); }
@@ -144,9 +157,11 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
     function menu() {
       run = null; mode(`LIBRARY ${MODULES.length}`); status.textContent = done ? `${done} RUN${done > 1 ? "S" : ""} THIS SESSION` : ""; btns.innerHTML = ""; backB.textContent = standalone ? "ABOUT" : "CLOSE";
       coach.classList.add("onmenu");
-      const groups = groupsOf(MODULES); if (!groups.includes(shelf)) shelf = groups[0];
+      const groups = shelves(); if (!groups.includes(shelf)) shelf = groups[0];
+      const shelfTabs = `<div class="shelves">${groups.map(g => `<div class="shelf${g === shelf ? " on" : ""}" data-grp="${g}">${g === RES ? "MY RESULTS" : g}<span class="n">${g === RES ? allResults().length : MODULES.filter(m => m.group === g).length}</span></div>`).join("")}</div>`;
+      if (shelf === RES) { sel = null; body.innerHTML = `<div class="lib">${shelfTabs}${resultsList()}</div>`; resultsBar(); return; }
       const mods = shelfMods(); if (sel && !mods.some(m => m.id === sel)) sel = null;
-      body.innerHTML = `<div class="lib"><div class="shelves">${groups.map(g => `<div class="shelf${g === shelf ? " on" : ""}" data-grp="${g}">${g}<span class="n">${MODULES.filter(m => m.group === g).length}</span></div>`).join("")}</div>
+      body.innerHTML = `<div class="lib">${shelfTabs}
         <div class="tiles">${mods.map((m, i) => `<div class="tile" data-mod="${m.id}"><div class="tr"><span class="tb">${creditOf(m)}</span>${i < 10 ? `<span class="no">${(i + 1) % 10}</span>` : ""}</div><div class="tt">${m.title}</div></div>`).join("")}</div></div>`;
       // pointing at a tile shows it on the console line; leaving shows the selected one again (or the greeting)
       body.querySelectorAll(".tile").forEach(t => {
@@ -174,10 +189,60 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
       say("A note from the game, before the library."); refE.textContent = "";
       btns.innerHTML = `<button data-b="notice">GO ON</button><span class="kb">ENTER</span>`;
     }
+    /* ---------------- MY RESULTS: every run's CSV, kept on this device ---------------- */
+    const RES = "__results";
+    const shelves = () => [...groupsOf(MODULES), RES];
+    const when = (iso) => { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).toUpperCase(); };
+    function resultsList() {
+      const list = allResults();
+      if (!list.length) return `<div class="resempty">Nothing yet. Finish any experiment and its results land here, to save as CSV now or later.</div>`;
+      return `<div class="reslist">${list.map((r, i) => `<div class="resrow"><span class="when">${when(r.at)}</span><span class="what">${r.title}</span>`
+        + `<span class="n">${((n) => `${n} ROW${n === 1 ? "" : "S"}`)(Math.max(0, r.text.split("\n").length - 1))}</span><button data-res="${i}">SAVE CSV</button><button data-del="${i}">DELETE</button></div>`).join("")}</div>`;
+    }
+    let clearArmed = false;
+    function resultsBar() {
+      const n = allResults().length; clearArmed = false;
+      say(n ? `${n} run${n > 1 ? "s" : ""} kept on this device. Save one, or all of them as a zip of CSVs.` : "Your results, once you have some.");
+      refE.textContent = "Each file has one row per trial (or per response), with the columns named in its first line.";
+      btns.innerHTML = (n ? `<button data-b="resall">SAVE ALL (ZIP)</button><button data-b="resclear" class="k">CLEAR ALL</button>` : "")
+        + (MODULES.some(m => hasScript(m.id, "psychopy")) ? `<button data-b="scripts:psychopy" class="k">ALL PSYCHOPY SCRIPTS</button><button data-b="scripts:ptb" class="k">ALL PSYCHTOOLBOX SCRIPTS</button>` : "");
+    }
+    function resultsClick(t) {
+      const sv = t.closest("[data-res]"); if (sv) { const r = allResults()[+sv.dataset.res]; if (r) { saveFile(r.name, r.text, "text/csv"); sfx("select"); } return true; }
+      const dl = t.closest("[data-del]"); if (dl) { removeResult(+dl.dataset.del); sfx("cancel"); menu(); return true; }
+      const b = t.closest("[data-b]"); if (!b) return false;
+      if (b.dataset.b === "resall") { const list = allResults(), seen = new Map();
+        const files = list.slice().reverse().map(r => { let n = r.name; const k = seen.get(n) || 0; seen.set(n, k + 1); if (k) n = n.replace(/\.csv$/, `_${k + 1}.csv`); return { name: n, data: r.text }; });
+        saveFile(`perception-console-results_${stamp()}.zip`, zip(files), "application/zip"); sfx("select"); return true; }
+      if (b.dataset.b === "resclear") { if (!clearArmed) { clearArmed = true; b.textContent = "SURE? CLEAR ALL"; say("This deletes every kept result on this device. Click again to clear."); return true; }
+        clearResults(); sfx("cancel"); menu(); return true; }
+      if (b.dataset.b.startsWith("scripts:")) { allScripts(b.dataset.b.split(":")[1]); return true; }
+      return false;
+    }
+    // every script of one kind, as a zip (with the README)
+    async function allScripts(kind) {
+      say("Packing the scripts…");
+      const ids = MODULES.filter(m => hasScript(m.id, kind)).map(m => m.id), files = [];
+      for (const id of ids) { const t = await fetchScript(id, kind).catch(() => null); if (t) files.push({ name: scriptFile(id, kind), data: t }); }
+      const readme = await fetchScript("README", "readme").catch(() => null); if (readme) files.unshift({ name: "README.md", data: readme });
+      saveFile(`perception-console-${kind}_${stamp()}.zip`, zip(files), "application/zip"); sfx("select");
+      say(`${ids.length} ${SCRIPT_KINDS[kind]} script${ids.length === 1 ? "" : "s"}, zipped.`);
+    }
+    // one module's script
+    async function exportScript(m, kind) {
+      const t = await fetchScript(m.id, kind).catch(() => null);
+      if (!t) { say("That script isn't in this copy of the console."); return; }
+      saveFile(scriptFile(m.id, kind), t, "text/plain"); sfx("select");
+      say(`${m.title} for ${SCRIPT_KINDS[kind]}: ${scriptFile(m.id, kind)}. Set your screen's width and viewing distance at the top, and sizes come out in real degrees.`);
+    }
+    const exportBtns = (m) => Object.keys(SCRIPT_KINDS).filter(k => hasScript(m.id, k)).map(k => `<button data-x="${k}" class="k">${SCRIPT_KINDS[k].toUpperCase()}</button>`).join("");
+    let curMod = null;
+    btns.addEventListener("click", (e) => { const x = e.target.closest?.("[data-x]"); if (x && curMod) exportScript(curMod, x.dataset.x); });
+
     function noticeOff() { if (!noticeUp) return; noticeUp = false; noticed = true; sfx("select"); menu(); }
     function toShelf(g) { if (g === shelf) return; shelf = g; sel = null; sfx("key"); menu(); }
     function menuKey(e) {
-      const k = e.key, mods = shelfMods(), groups = groupsOf(MODULES), gi = groups.indexOf(shelf), i = mods.findIndex(m => m.id === sel);
+      const k = e.key, mods = shelf === RES ? [] : shelfMods(), groups = shelves(), gi = groups.indexOf(shelf), i = mods.findIndex(m => m.id === sel);
       const grid = body.querySelector(".tiles"), cols = grid ? getComputedStyle(grid).gridTemplateColumns.split(" ").length : 4;
       const step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -cols, ArrowDown: cols }[k];
       if (k === "Tab" || k === "[" || k === "]" || k === "PageUp" || k === "PageDown") {
@@ -191,7 +256,7 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
 
     /* ---------------- running a module ---------------- */
     async function start(m) {
-      coach.classList.remove("onmenu"); refE.textContent = "";
+      curMod = m; coach.classList.remove("onmenu"); refE.textContent = "";
       mode(m.title.length > 26 ? m.tag || m.group : m.title); backB.textContent = "MENU";
       body.innerHTML = `<div class="crt"><canvas width="${W}" height="${H}"></canvas><svg class="res t" viewBox="0 0 ${W} ${H}"></svg></div>`;
       const canvas = body.querySelector("canvas"), g = canvas.getContext("2d"), crt = body.querySelector(".crt"), res = body.querySelector("svg.res");
@@ -262,20 +327,25 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
         unplot() { crt.classList.remove("showres"); },
         csv(name, header, rows) {
           const text = [header, ...rows].map(r => r.map(v => typeof v === "number" ? +v.toFixed(5) : `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
-          lastRes = { name, text };
+          const at = new Date(); lastRes = { name: `${m.id}_${stamp(at)}.csv`, text };
+          addResult({ id: m.id, title: m.title, at: at.toISOString(), name: lastRes.name, text });
         },
       };
       try {
         say("Read the instructions on the screen, then begin."); btns.innerHTML = `<button data-k="go">BEGIN</button><span class="kb">SPACE</span>`;
         ctx.clear(0); drawInstructions(g, m);
         if (document.fonts) document.fonts.load("500 30px 'Saira Condensed'").then(() => { if (run === R && !R.begun) drawInstructions(g, m); }).catch(() => {});
-        await ctx.key([" ", "go", "Enter"], { buttons: [["go", "BEGIN"]] });
+        const go = ctx.key([" ", "go", "Enter"], { buttons: [["go", "BEGIN"]] });
+        if (exportBtns(m)) { btns.insertAdjacentHTML("beforeend", `<span class="kb" style="margin-left:1.2cqw">EXPORT</span>${exportBtns(m)}`);
+          refE.textContent = "Or take it to the lab: the same experiment as a PsychoPy or Psychtoolbox script, in real degrees once you set your screen's size and distance."; }
+        await go; refE.textContent = "";
         R.begun = true;
         await m.run(ctx);
         done++; score("console", 1); sfx("chime");
-        btns.innerHTML = (lastRes ? `<button data-b="csv">SAVE CSV</button>` : "") + `<button data-b="again" class="k">RUN AGAIN</button>`;
+        btns.innerHTML = (lastRes ? `<button data-b="csv">SAVE CSV</button>` : "") + `<button data-b="again" class="k">RUN AGAIN</button>` + exportBtns(m);
+        if (lastRes) refE.textContent = "Kept under MY RESULTS on this device too, to save later.";
         btns.onclick = (e) => { const b = e.target.closest?.("[data-b]"); if (!b) return;
-          if (b.dataset.b === "csv" && lastRes) download(lastRes.name, lastRes.text);
+          if (b.dataset.b === "csv" && lastRes) saveFile(lastRes.name, lastRes.text, "text/csv");
           if (b.dataset.b === "again") { btns.onclick = null; lastRes = null; start(m); } };
       } catch (e) { if (e !== ABORT) { console.error(e); say("Something went wrong in the booth: " + e.message); } }
     }
@@ -285,6 +355,7 @@ export function perceptionConsole(el, { score = () => {}, standalone = false } =
       const t = e.target.closest ? e.target : null; if (!t) return;
       if (noticeUp) { if (t.closest("[data-b=notice]")) noticeOff(); else if (t.closest("[data-b=back]")) finish(); return; }
       const sh = t.closest("[data-grp]"); if (sh && !run) { toShelf(sh.dataset.grp); return; }
+      if (!run && shelf === RES && resultsClick(t)) return;
       // a mouse click runs (pointing already showed what it is); a tap selects first, and a second tap runs
       const m = t.closest("[data-mod]"); if (m && !run) { if (ptr === "mouse") launch(m.dataset.mod); else pick(m.dataset.mod); return; }
       if (t.closest("[data-b=start]") && !run && sel) { launch(sel); return; }
@@ -330,10 +401,6 @@ function creditOf(m) {
   const names = who.split(/,\s*/).map(x => x.trim()).filter(x => x && !/^([A-Z]\.\s*)+$/.test(x));
   const lead = names.length > 2 ? `${names[0]} ET AL.` : names.join(" & ");
   return `${lead} ${y}`.trim().toUpperCase();
-}
-function download(name, text) {
-  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "text/csv" })); a.download = name; document.body.appendChild(a); a.click();
-  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
 // THE INSTRUCTION SCREEN: what a participant reads before a run. m.instructions = { lines: [...], keys: [[cap, meaning], ...] };
 // modules without one fall back to their blurb.

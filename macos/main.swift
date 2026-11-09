@@ -163,12 +163,25 @@ final class GameView: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMess
     }
 
     func userContentController(_ ucc: WKUserContentController, didReceive message: WKScriptMessage) {
-        // game/js/native.js: log lines (haptics: nothing to buzz on a Mac)
-        if let raw = message.body as? String,
-           let msg = (try? JSONSerialization.jsonObject(with: Data(raw.utf8))) as? [String: Any],
-           msg["type"] as? String == "log" {
-            print("[GainControl] \(msg["msg"] as? String ?? "")")
+        // game/js/native.js: log lines, and files saved from the perception console (haptics: nothing to buzz on a Mac)
+        guard let raw = message.body as? String,
+              let msg = (try? JSONSerialization.jsonObject(with: Data(raw.utf8))) as? [String: Any],
+              let type = msg["type"] as? String else { return }
+        if type == "log" { print("[GainControl] \(msg["msg"] as? String ?? "")") }
+        if type == "save", let b64 = msg["b64"] as? String, let data = Data(base64Encoded: b64) { save(name: msg["name"] as? String ?? "results.csv", data: data) }
+    }
+
+    // a web view can't download on its own: ask where, with the page's file name filled in (Downloads by default)
+    private func save(name: String, data: Data) {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = name
+        panel.directoryURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
+        panel.canCreateDirectories = true
+        let write = { (r: NSApplication.ModalResponse) in
+            guard r == .OK, let url = panel.url else { return }
+            do { try data.write(to: url, options: .atomic) } catch { NSAlert(error: error).runModal() }
         }
+        if let w = webView?.window { panel.beginSheetModal(for: w, completionHandler: write) } else { write(panel.runModal()) }
     }
 
     // window.alert / confirm / prompt as Mac alerts

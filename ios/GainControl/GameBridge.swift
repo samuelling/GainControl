@@ -2,9 +2,11 @@ import SwiftUI
 import WebKit
 import UIKit
 
-/// The few things the game asks of the app (see game/js/native.js): haptics on some sound effects, and log lines.
+/// The few things the game asks of the app (see game/js/native.js): haptics on some sound effects, log lines, and
+/// saving files from the perception console (results, scripts), which a web view can't download by itself.
 final class GameBridge: ObservableObject {
     weak var webView: WKWebView?
+    @Published var shareURL: URL?
 
     func receive(_ raw: String) {
         guard let data = raw.data(using: .utf8),
@@ -13,8 +15,20 @@ final class GameBridge: ObservableObject {
         switch type {
         case "haptic": Haptics.play(msg["kind"] as? String ?? "")
         case "log": print("[GainControl] \(msg["msg"] as? String ?? "")")
+        case "save": save(name: msg["name"] as? String ?? "results.csv", b64: msg["b64"] as? String ?? "")
         default: break
         }
+    }
+
+    // write it to a temporary file named as the page asked, then offer the share sheet (Save to Files, AirDrop, Mail)
+    private func save(name: String, b64: String) {
+        guard let data = Data(base64Encoded: b64) else { return }
+        let safe = name.replacingOccurrences(of: "/", with: "-")
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("exports", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let url = dir.appendingPathComponent(safe)
+        do { try data.write(to: url, options: .atomic) } catch { print("[GainControl] save failed: \(error)"); return }
+        DispatchQueue.main.async { self.shareURL = url }
     }
 }
 
