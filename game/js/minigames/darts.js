@@ -2,6 +2,10 @@
 // board layout (20 at the top, doubles and trebles). Point to aim; your hand drifts slowly (sway) and shakes fast
 // (physiological tremor, roughly 8–12 Hz, which everyone has). Hold SPACE (or HOLD BREATH) to hold your breath: the slow
 // sway nearly stops for a couple of seconds, then the shake gets worse until you breathe again. Click (or Enter) throws.
+// On top of what you can see, each time the board is opened your release gets a hidden BIAS (a constant offset, any
+// direction, sometimes nearly none) and a hidden SPREAD (Gaussian scatter, sd unknown): you only learn them from where
+// the darts land against where you aimed (a faint × marks each aim, for the round), and the more darts, the better. After
+// each game the postdoc reports the running estimate (mean miss ± its standard error, and the spread) over all N so far.
 // The reticle moves in steps and the dart flies in four fixed poses (Game & Watch, not tweens). Best score is kept.
 // Resolves { best, total } when you leave.
 import { seg, segC } from "../gfx.js";
@@ -56,7 +60,7 @@ const dart = (x, y, c = "sW", k = 1) => `<g transform="translate(${f1(x)},${f1(y
 
 const COL = { "A POSTDOC": "W", NELL: "G", GUS: "B", IRIS: "V", MORRIS: "K" };
 const LINES = {
-  intro: ["A POSTDOC", "Three darts, three rounds. Point, then click. Your hand drifts and shakes: everybody's does. Hold SPACE to hold your breath. It stills the drift, for a bit."],
+  intro: ["A POSTDOC", "Three darts, three rounds. Point, then click. Your hand drifts and shakes: hold SPACE to hold your breath. And every throw has a bias and a spread nobody can see. Throw enough and you'll learn yours."],
   bull: ["A POSTDOC", "Bullseye. Who ARE you?"], t20: ["A POSTDOC", "Treble twenty. That's sixty. I've been here nine years and I've done that twice."],
   treble: ["A POSTDOC", "A treble. Respectable. Publishable, even."], double: ["A POSTDOC", "On the double ring. Living dangerously."],
   wall: ["A POSTDOC", "That's the wall. The wall has been hit before. The wall understands."],
@@ -64,7 +68,7 @@ const LINES = {
   breath: ["A POSTDOC", "Holding your breath stills the slow sway. The fast shake is tremor, eight to twelve times a second. Nobody gets rid of that."],
   gasp: ["A POSTDOC", "Breathe. You can only hold it so long before the shake gets worse. Same as a thesis."],
   round: (n, t) => ["A POSTDOC", `Round ${n}: ${t}. Pull them out. Again.`],
-  end: (t, best, nb) => ["A POSTDOC", nb ? `${t}. A new kitchen record. It's going on the corkboard. Nobody reads the corkboard.` : `${t}. The kitchen record's ${best}. The record is always somebody else's.`],
+  end: (t, best, nb, est) => ["A POSTDOC", (nb ? `${t}. A new kitchen record. It's going on the corkboard. Nobody reads the corkboard.` : `${t}. The kitchen record's ${best}. The record is always somebody else's.`) + " " + est],
 };
 const CSS = `
 .darts svg.dsvg { position: relative; inset: auto; width: 100%; flex: 1 1 0; min-height: 0; cursor: none; }
@@ -80,7 +84,12 @@ export function darts(el, opts = {}) {
   injectStyle("mg-darts", CSS);
   return new Promise(resolve => {
     let best = 0; try { best = +(localStorage.getItem(BEST_KEY) || 0); } catch (e) { /* no storage: no record */ }
-    const S = { round: 1, inRound: 0, total: 0, roundPts: 0, stuck: [], aim: [CX, CY + 40], sway: [0, 0], t: 0, breath: 0, held: false, tired: 0,
+    // the hidden part of your throw, for as long as the board is open: a bias (offset) and a spread (Gaussian sd), in board units (R = 112)
+    const HID = (() => { const a = Math.random() * 2 * Math.PI, m = 22 * Math.sqrt(Math.random()); return { bx: m * Math.cos(a), by: m * Math.sin(a), sd: 5 + 11 * Math.random() }; })();
+    const gauss = () => { let u = 0; while (!u) u = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random()); };
+    const errs = [];                                      // every throw this visit: where it landed minus where you aimed
+    window.DARTS_HIDDEN = HID;                            // for scripted tests only; the game never shows it
+    const S = { round: 1, aims: [], inRound: 0, total: 0, roundPts: 0, stuck: [], aim: [CX, CY + 40], sway: [0, 0], t: 0, breath: 0, held: false, tired: 0,
       flying: null, lit: null, done: false, say: LINES.intro, last: "", newBest: false, toldBreath: false };
     const ph = [Math.random() * 6, Math.random() * 6, Math.random() * 6, Math.random() * 6];
     const rnd = () => { let u = 0; for (let k = 0; k < 4; k++) u += Math.random(); return (u - 2) * 1.2; };
@@ -103,6 +112,8 @@ export function darts(el, opts = {}) {
       let s = `<rect width="640" height="290" fill="#000"/>` + board(S.lit);
       // the oche, a strip of tape at the bottom; the darts already thrown this round
       s += `<path class="hl dash sA" d="M120,284 L520,284"/>${seg("OCHE", 296, 274, 5, "sA", .7)}`;
+      // a faint × where each of this round's darts was aimed: the gap to the dart is your bias plus your spread
+      for (const [ax, ay] of S.aims) s += `<path class="hl sM" d="M${f1(ax - 3)},${f1(ay - 3)} L${f1(ax + 3)},${f1(ay + 3)} M${f1(ax + 3)},${f1(ay - 3)} L${f1(ax - 3)},${f1(ay + 3)}"/>`;
       for (const d of S.stuck) s += dart(d[0], d[1], d[2] ? "sW" : "sM");
       // in flight: four fixed poses from the hand to the board, shrinking as it goes
       if (S.flying) { const { from, to, pose } = S.flying, u = (pose + 1) / 4, x = from[0] + (to[0] - from[0]) * u, y = from[1] + (to[1] - from[1]) * u - Math.sin(u * Math.PI) * 30;
@@ -128,15 +139,16 @@ export function darts(el, opts = {}) {
       if (S.held && S.tired <= 0) { S.breath = Math.min(1, S.breath + STEP / 2600); if (S.breath >= 1) { S.held = false; S.tired = 1.6; S.say = LINES.gasp; } }
       else { S.breath = Math.max(0, S.breath - STEP / 1800); if (S.tired > 0) S.tired -= STEP / 1000; }
       const still = S.held && S.tired <= 0 ? .18 : 1, shake = S.tired > 0 ? 2.4 : 1;
-      const A = 16 * still, t = S.t;
-      S.sway = [A * (Math.sin(2 * Math.PI * .31 * t + ph[0]) + .6 * Math.sin(2 * Math.PI * .53 * t + ph[1])) + 2.2 * shake * rnd(),
-        A * (Math.sin(2 * Math.PI * .27 * t + ph[2]) + .6 * Math.sin(2 * Math.PI * .61 * t + ph[3])) + 2.2 * shake * rnd()];
+      const A = 10 * still, t = S.t;
+      S.sway = [A * (Math.sin(2 * Math.PI * .31 * t + ph[0]) + .6 * Math.sin(2 * Math.PI * .53 * t + ph[1])) + 1.6 * shake * rnd(),
+        A * (Math.sin(2 * Math.PI * .27 * t + ph[2]) + .6 * Math.sin(2 * Math.PI * .61 * t + ph[3])) + 1.6 * shake * rnd()];
       if (!S.flying) draw();
     }, STEP);
     const toView = (e) => { const m = svg.getScreenCTM(); if (!m) return null; const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse()); return [p.x, p.y]; };
     function throwDart() {
       if (S.done || S.flying) return;
-      const [rx, ry] = reticle(), to = [rx + rnd() * 1.5, ry + rnd() * 1.5];
+      const [rx, ry] = reticle(), to = [rx + HID.bx + HID.sd * gauss(), ry + HID.by + HID.sd * gauss()];
+      S.aims.push([rx, ry]); errs.push([to[0] - rx, to[1] - ry]);
       S.flying = { from: [S.aim[0] + 60, 300], to, pose: 0 }; sfx("whoosh");
       const fly = setInterval(() => {
         S.flying.pose++; draw();
@@ -151,16 +163,27 @@ export function darts(el, opts = {}) {
       if (S.inRound >= 3) {
         if (S.round >= 3) return finishGame();
         S.say = LINES.round(S.round, S.roundPts);
-        setTimeout(() => { S.round++; S.inRound = 0; S.roundPts = 0; S.stuck = []; S.lit = null; S.last = ""; sfx("cloth"); draw(); }, 1100);
+        setTimeout(() => { S.round++; S.inRound = 0; S.roundPts = 0; S.stuck = []; S.aims = []; S.lit = null; S.last = ""; sfx("cloth"); draw(); }, 1100);
       }
       draw();
     }
     function finishGame() {
       S.done = true; S.newBest = S.total > best;
       if (S.newBest) { best = S.total; try { localStorage.setItem(BEST_KEY, String(best)); } catch (e) { /* fine */ } sfx("chime"); }
-      S.say = LINES.end(S.total, best, S.newBest); draw();
+      S.say = LINES.end(S.total, best, S.newBest, estimate()); draw();
     }
-    function again() { Object.assign(S, { round: 1, inRound: 0, total: 0, roundPts: 0, stuck: [], lit: null, last: "", done: false, breath: 0, held: false, tired: 0, say: LINES.intro }); sfx("select"); draw(); }
+    // the postdoc's read on your throw so far: mean miss (± standard error), and the spread. More N, smaller error bars.
+    function estimate() {
+      // in millimetres on a real board (outer double ring: 170 mm from the centre)
+      const MM = 170 / R, n = errs.length, m = [0, 1].map(k => errs.reduce((a, e) => a + e[k], 0) / n * MM);
+      const sd = Math.sqrt(errs.reduce((a, e) => a + (e[0] * MM - m[0]) ** 2 + (e[1] * MM - m[1]) ** 2, 0) / Math.max(1, 2 * (n - 1))), se = sd / Math.sqrt(n);
+      const dir = (v, pos, neg) => Math.abs(v) < 2 ? "" : `${Math.round(Math.abs(v))} mm ${v > 0 ? pos : neg}`;
+      const off = [dir(m[0], "right", "left"), dir(m[1], "low", "high")].filter(Boolean).join(" and ");
+      const real = Math.hypot(m[0], m[1]) > 2 * se;
+      return `N = ${n}. ` + (real && off ? `You land ${off} of where you aim, give or take ${Math.max(1, Math.round(se))} mm.` : `No bias I can see yet, give or take ${Math.max(1, Math.round(se))} mm.`)
+        + ` Your spread's about ${Math.round(sd)} mm.` + (n < 18 ? " Throw more. Error bars shrink with the square root of N." : " Aim off by that much and see.");
+    }
+    function again() { Object.assign(S, { round: 1, inRound: 0, total: 0, roundPts: 0, stuck: [], aims: [], lit: null, last: "", done: false, breath: 0, held: false, tired: 0, say: LINES.intro }); sfx("select"); draw(); }
     const onMove = (e) => { const p = toView(e); if (p) S.aim = [Math.max(10, Math.min(630, p[0])), Math.max(8, Math.min(282, p[1]))]; };
     const onDown = (e) => {
       const b = e.target.closest && e.target.closest("button[data-b]");
