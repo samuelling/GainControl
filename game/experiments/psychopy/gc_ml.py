@@ -18,7 +18,7 @@ Three methods, as in the lab:
 Run in PsychoPy Coder, or `python gc_ml.py`. Escape quits (data so far are saved).
 Output: data/ml_<method>_<participant>_<date>.csv (same columns as the console's CSVs)
 """
-import os, csv, math, random, datetime
+import os, csv, math, random, datetime  # noqa: F401 (not every script uses all)
 from psychopy import visual, core, event, gui
 
 # ---- your setup ----

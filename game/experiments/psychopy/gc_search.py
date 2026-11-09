@@ -19,7 +19,7 @@ Each set size appears with the target present and absent once per block, in rand
 Run in PsychoPy Coder, or `python gc_search.py`. Escape quits (data so far are saved).
 Output: data/search_<kind>_<participant>_<date>.csv  columns: block, set_size, n_a, n_b, present, said_present, rt_ms
 """
-import os, csv, math, random, datetime
+import os, csv, math, random, datetime  # noqa: F401 (not every script uses all)
 from psychopy import visual, core, event, gui
 
 # ---- your setup ----

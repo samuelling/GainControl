@@ -19,7 +19,7 @@ or no net motion (0.5). After expansion, the test needs more outward dots to loo
 Run in PsychoPy Coder, or `python gc_mae.py`. Escape quits (data so far are saved).
 Output: data/mae_<participant>_<date>.csv  columns: adapt_corr, block, test_corr, said_outward
 """
-import os, csv, math, random, datetime
+import os, csv, math, random, datetime  # noqa: F401 (not every script uses all)
 import numpy as np
 from psychopy import visual, core, event, gui
 

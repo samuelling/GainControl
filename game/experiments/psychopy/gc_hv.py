@@ -18,7 +18,7 @@ Run in PsychoPy Coder, or `python gc_hv.py`. Escape quits (data so far are saved
 Output: data/hv_<participant>_<date>.csv  columns: block, line_length, line_angle, estimate
 Lengths are the original lab's pixel values times SCALE.
 """
-import os, csv, math, random, datetime
+import os, csv, math, random, datetime  # noqa: F401 (not every script uses all)
 from psychopy import visual, core, event, gui
 
 # ---- your setup ----

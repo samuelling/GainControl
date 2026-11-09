@@ -17,7 +17,7 @@ Output: data/posner_<participant>_<date>.csv  columns: trial, kind, cue, target_
 
 Run in PsychoPy Coder, or `python gc_posner.py`. Escape quits (data so far are saved).
 """
-import os, csv, math, random, datetime
+import os, csv, math, random, datetime  # noqa: F401 (not every script uses all)
 import numpy as np
 from psychopy import visual, core, event, gui
 
