@@ -254,12 +254,12 @@ async function doOverlay(api) {
 // THE REPLICATION, written up: a page from Nell's notebook. Big thin numbers with tiny labels (as every readout), his
 // six-layer profile struck through beside the one flat voxel a 3T can actually see.
 export const WRITEUP = (r) => {
-  const f = (r && r.fit) || { beta: [.6, .3, .1], t: 8, p: .0001 }, sure = f.p < .001 ? "VERY" : f.p < .01 ? "FAIRLY" : f.p < .05 ? "BARELY" : "NOT";
+  const f = (r && r.fit) || { beta: [1.0, .6, .1], t: 8, p: .0001 }, sure = f.p < .001 ? "VERY" : f.p < .01 ? "FAIRLY" : f.p < .05 ? "BARELY" : "NOT";
   const tells = r && r.tells ? Object.values(r.tells).filter(Boolean).length : 3;
   let s = `<g transform="rotate(-2 320 180)"><rect class="k sW" x="150" y="36" width="340" height="250"/><path class="hl sD" d="M150,58 L490,58 M176,36 L176,286"/>`;
   s += chip("THE REPLICATION", 186, 42, 6, "fA") + seg("N. NULL   WEDNESDAY   ONE VOXEL, HIS OWN DATA", 300, 45, 4, "sM", .7);
   s += seg("ATTENTION EFFECT IN V1", 186, 76, 4.4, "sM", .8) + seg("REAL", 186, 86, 34, "sG", 2.2);
-  s += seg(`ATTEND ${f.beta[0].toFixed(2)}   IGNORE ${f.beta[1].toFixed(2)}   HOW SURE: ${sure} (T = ${f.t.toFixed(1)})`, 186, 128, 5, "sA", 1);
+  s += seg(`STIM ON ${f.beta[0].toFixed(2)}   ATTEND +${f.beta[1].toFixed(2)}   HOW SURE: ${sure} (T = ${f.t.toFixed(1)})`, 186, 128, 5, "sA", 1);
   s += seg("LAYERS A 3T CAN SEE", 186, 150, 4.4, "sM", .8) + seg("ZERO", 186, 160, 24, "sR", 1.8);
   s += seg("TELLS IN HIS FIGURE", 186, 196, 4.4, "sM", .8) + seg(`${tells}/3`, 186, 206, 24, "sG", 1.8);
   // his figure 3: a tidy six-layer profile, struck through; hers: one voxel, one bar
