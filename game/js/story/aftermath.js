@@ -3,7 +3,7 @@ import { CLASSICS_REFS_SORTED } from "../data/classics_refs.js";
 import * as CONSOLE from "../console/modules.js";
 // THE AFTERMATH and THE CREDITS. Show, don't tell: what happens after the climax is a montage of short animated cards
 // (stepped poses, like everything else), not paragraphs. Then the credits roll, cast first, in portraits.
-import { seg, segC, segW, chip, chipW, arcs, star4 } from "../gfx.js";
+import { seg, segC, segW, chip, chipW, arcs, star4, stapler } from "../gfx.js";
 import { PORTRAIT } from "../portraits.js";
 
 const f = (n) => (+n).toFixed(1);
@@ -91,7 +91,7 @@ const retire = (line, chipTxt) => ({ n: 4, ms: 300, hold: 2600, sfx: (i) => i ==
   draw: (i) => {
     const y = [150, 190, 226, 246][i], rot = [-30, -16, -6, 0][i];
     return `<path class="sM" d="M140,276 L500,276"/><rect class="hl sD" x="200" y="60" width="240" height="140"/>${segC("THE NEWS", 320, 70, 5, "sD", .8)}
-      <g transform="translate(320,${y}) rotate(${rot})"><path class="k sR" d="M-60,30 L60,30 L60,14 L50,14 L46,0 L-36,0 L-48,14 Z"/><path class="sR" d="M-30,0 L4,-24 L30,0"/><circle class="k sK" cx="50" cy="26" r="7"/></g>
+      <g transform="translate(320,${y}) rotate(${rot})">${stapler(-60, 30, 120)}</g>
       ${i === 3 ? `${cc(chipTxt, 320, 296, 7, "fV")}${segC(line, 320, 24, 8, "sW", 1.1)}` : ""}`;
   } });
 // Gus's desk: the laptop still running a GLM; Dendroboard, one unread reply; a canister rattles in the wall
