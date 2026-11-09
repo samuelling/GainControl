@@ -1,6 +1,7 @@
 // ACT V — Friday: DECISION. The Defense (Laura Bow), then the Induction in B3 (Nell, Iris and Morris), the magnet, the endings.
 // Design: docs/ACT5.md.
 import { seg, segC, chip, chipW, stapler } from "../gfx.js";
+import { realHS } from "./realrecord.js";
 import { ITEMS } from "./act1.js";
 import "./act4.js";
 import { defense } from "../minigames/defense.js";
@@ -339,7 +340,7 @@ async function nightfall(api) {
   await api.say("They go down together, Gus's map in Nell's hand. At the bricked door the tunnel splits three ways, the way Iris said it would.\n\nIRIS|I take the old service corridor to the plant. You take the front door, dear. Here: my card. I fixed the year. And when the doorkeeper starts a sentence, finish it the way every review in the world ends. Never with a career.\n\nMORRIS|And I take the pipes. Obviously.\n\nIRIS|Rat. Every tube ends in the hub, and so does the Archive: send it up to Ethel. Then the riser. Gus's 3T sits right over their Table, on four posts that have stood in fifty years of leak. Loosen the bolts. When I wake the ring, it will do the rest.\n\nMORRIS|You want me to take the bolts out from under six tonnes of magnet. …Lady, I think I love you.\n\nThe antechamber is warm, and smells of incense and toner.");
   await api.say("Three of you now. Click a name, or press Tab, to switch.\n\nNELL: the front door, the doorkeeper, the Echo.  IRIS: the power plant, the magnet.  MORRIS: the tube hub, the Archive, then up the riser to the 3T.");
 }
-export const MAXSCORE = 98;
+export const MAXSCORE = 100;
 export const TITLE = ["ACT V", "DECISION"];
 export const END = { title: "THE END", chip: "DECISION", bodies: "", next: "", epilogue: "", thanks: "THANKS FOR PLAYING GAIN CONTROL" };
 
@@ -448,6 +449,7 @@ const MORNING = {
     letter: { label: "framed letter", morning: look("1977.") },
     stapler: { label: "stapler", morning: look("In her hand.") },
     kettle: { label: "kettle", morning: look("She's made tea. You don't drink it. She doesn't notice.") },
+    ap1977: realHS("ap1977", "one issue, sticking out"), rocker: realHS("rocker", "something small on the sill"),
     chair: { label: "chair", morning: look("The chair opposite her desk. For you.") },
     door: { label: "stairs down to the hallway", morning: { look: "The stairwell.", go: "hall@fromStairs" } },
   },

@@ -127,6 +127,7 @@ export const WALKTHROUGH = {
       { t: "AVOID: the fridge's OPEN, twice (the oat milk is a sample)." },
       { t: "Click the espresso machine and choose BREW. Rex has pressed it every morning for nine years; you press it. Rex trades his login for the espresso.", flag: "rexLogin",
         hs: ["kitchen.espresso", "hall.kitchen", "lab.door"], nudge: ["REX|Coffee. From the machine. Then we talk.", "NELL|Rex has pressed that button every morning since 2012. Has anyone else ever tried?", "NELL|Press the espresso machine's button myself."] },
+      { t: "OPTIONAL (easter egg): SNOOP Gus's desk for his emergency NULL HYPOTHESIS can (pH 2.4) and USE it ON the espresso machine instead: it descales and brews. +2.", flag: "canDescaled" },
       { t: "OPTIONAL: LOOK at the folded card on the corkboard: from the real record.", flag: "real_invite2018" },
       { t: "Hallway stairwell, OPEN, B1 GPU SERVER ROOM. Click the terminal and choose LOG IN.", flag: "proofLogs",
         hs: ["server.terminal", "hall.stairs", "kitchen.door", "lab.door"], nudge: ["NELL|Rex said look up PVALU. Look at what runs on Fridays at midnight.", "NELL|His login's on a sticky note. The cluster lives somewhere hot, in the basement.", "NELL|Stairwell down to the GPU server room. Log in at the terminal with Rex's login."] },

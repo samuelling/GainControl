@@ -6,6 +6,7 @@ import "./act3.js";
 import { metamer } from "../minigames/metamer.js";
 import { hours } from "../minigames/hours.js";
 import { lasagna } from "../minigames/lasagna.js";
+import { realHS } from "./realrecord.js";
 import { stairwell } from "../minigames/stairwell.js";
 import { lift } from "../minigames/lift.js";
 import { darkbooth } from "../minigames/darkbooth.js";
@@ -260,6 +261,7 @@ export const HS = {
     mugs: { label: "mug tree", day: look("WORLD'S OKAYEST PI is back on the tree. Rex washed it.") },
     fridge: { label: "fridge", day: look("DO NOT DRINK — SAMPLE.") }, board: { label: "corkboard", day: look("WHO KEEPS BOOKING THE OLD B-LEVEL ROOM ON FRIDAYS? Underneath, in Rex's writing: I KNOW.") },
     sink: { label: "sink", day: look("Clean. Rex has been busy.") },
+    invite2018: realHS("invite2018", "a folded card"),
     door: { label: "door to hallway", day: { look: "The hallway.", go: "hall@fromKitchen" }, morris: { look: "Door.", go: "hall@fromKitchen" }, night: { look: "The hallway.", go: "hall@fromKitchen" } },
     vent: ventHS,
   },
@@ -320,6 +322,7 @@ export const HS = {
     stacks: { label: "journals", day: look("1961 to now.") }, manual: { label: "magnet manual", day: look("SUPERCONDUCTING RING, 1968.") },
     photo: { label: "photograph", day: look("1968.") }, letter: { label: "framed letter", day: look("1977.") },
     stapler: { label: "stapler", day: look("Loaded.") }, kettle: { label: "kettle", day: look("Sherry, 1962.") },
+    ap1977: realHS("ap1977", "one issue, sticking out"), rocker: realHS("rocker", "something small on the sill"),
     door: { label: "door to the stairs", day: { look: "The stairwell.", go: "hall@fromStairs" } },
   },
 
@@ -455,7 +458,7 @@ async function nightfall(api) {
   api.G.inv.gus = ["badge", "phone", "drink"];
   await api.say("Gus Ian, 1:12 AM. Nell texted him eleven times. He read them all. Then he came down here anyway.\n\nThe bricked door has a gap in it tonight. And beside it, where there was nothing yesterday: a coat check.");
 }
-export const MAXSCORE = 80;
+export const MAXSCORE = 82;
 export const TITLE = ["ACT IV", "REBUTTAL"];
 // Act IV ends on Gus's last text; Friday morning (Gus found, the robe, the map, the rehearsal) opens Act V
 export const END = { title: "END OF ACT IV", chip: "REBUTTAL", bodies: "BODIES 04.", next: "NEXT: FRIDAY.  ACT V  DECISION",

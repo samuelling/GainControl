@@ -8,6 +8,7 @@ import { overlay } from "../minigames/overlay.js";
 import { nod } from "../minigames/nod.js";
 import { glm } from "../minigames/glm.js";
 import { openConsole } from "../console/open.js";
+import { realHS } from "./realrecord.js";
 
 /* ---------------- items ---------------- */
 Object.assign(ITEMS, {
@@ -73,39 +74,6 @@ async function invite(api) {
   for (const t of INVITE_TEXT) await api.say(t);
   if (!api.flag("invite")) { api.flag("invite", true); api.score("invite", 3); }
   return "MORRIS|Pal. They asked for his BIRTHDAY.\n\nMORRIS|You know who checks your age before they let you in? Bouncers. And labs that run on rats.";
-}
-
-/* ---------------- THE REAL RECORD: three hidden objects that are not fiction ---------------- */
-// Not part of the story. Factual notes on the real societies the NRT parodies, in our own words, with sources.
-// No private individuals: the 2018 invitation is shown with its sender removed.
-const REAL = {
-  ap1977: { year: "1977", title: "PSYCHOLOGICAL ROUND TABLE", glyph: (x, y) => `<rect class="sA" x="${x - 18}" y="${y - 24}" width="36" height="48"/><path class="hl sA" d="M${x - 12},${y - 14} L${x + 12},${y - 14} M${x - 12},${y - 8} L${x + 8},${y - 8}"/>`,
-    lines: [
-      "THE REAL RECORD|This one isn't part of the game. In 1977, American Psychologist printed a letter by the neuroscientist Charles Gross, \"Psychological Round Table in the 1960s,\" about a real society of young experimental psychologists.",
-      "THE REAL RECORD|It began in 1936, when young East Coast psychologists started meeting without the supervision of their elders. In the 1950s, a young psychologist could look forward to an invitation as his first important professional honor. Members were men, under forty, from Eastern universities. They met once a year over a weekend to present their research to one another, and they left at forty.",
-      "THE REAL RECORD|The Neuroscientific Round Table is invented. The Psychological Round Table is not.\n\nSources: C. G. Gross, American Psychologist (1977); J. Shanteau et al. (eds.), Decision Science and Technology (Kluwer, 1999).",
-    ] },
-  rocker: { year: "1960s", title: "GUV", glyph: (x, y) => `<path class="sA" d="M${x - 20},${y + 18} C${x - 8},${y + 26} ${x + 8},${y + 26} ${x + 20},${y + 18} M${x - 10},${y + 21} L${x - 8},${y - 2} M${x + 10},${y + 21} L${x + 8},${y - 2} M${x - 9},${y + 4} L${x + 9},${y + 4} M${x + 8},${y - 2} L${x + 10},${y - 24} M${x - 8},${y - 2} L${x - 6},${y - 24} M${x - 6},${y - 20} L${x + 10},${y - 20}"/>`,
-    lines: [
-      "THE REAL RECORD|Also real. In the early 1960s, Round Table alumni in the Midwest, among them the decision scientist Ward Edwards, founded a version of their own: GUV, the Gesellschaft für Unendliche Versuche. One account calls it \"bad German for 'Society for Endless Research.'\"",
-      "THE REAL RECORD|Unlike the East Coast original, GUV admitted women. Members still aged out at forty. One founder was given a miniature wooden rocking chair marked GUV on his fortieth birthday, and decades later was invited back once, as a golden oldie.",
-      "THE REAL RECORD|In this game, the Table's creed is endless research. That joke is sixty years old.\n\nSource: J. Shanteau et al. (eds.), Decision Science and Technology: Reflections on the Contributions of Ward Edwards (Kluwer, 1999).",
-    ] },
-  invite2018: { year: "2018", title: "AN INVITATION", glyph: (x, y) => `<rect class="sW" x="${x - 26}" y="${y - 17}" width="52" height="34"/><path class="sW" d="M${x - 26},${y - 17} L${x},${y + 3} L${x + 26},${y - 17}"/>`,
-    lines: [
-      "THE REAL RECORD|Real, with the sender's name removed. In 2018, the person who made this game got an emailed invitation to the Psychological Round Table. It still meets every year, and women attend now.",
-      "THE REAL RECORD|It explained that everyone is \"unceremoniously ushered out\" at forty, and that new members give \"Revelations\": short talks on unpublished work. No programs are printed, no minutes are kept, and membership is traditionally left off CVs. Crass images, it noted, were \"now verboten.\" A receipt could be provided for reimbursement.",
-      "THE REAL RECORD|To accept, you emailed back two things: that you wanted to come, and your date of birth, so they could make sure you weren't \"wizened and aged.\"\n\nSource: a private email, 2018. Quoted in part; sender withheld.",
-    ] },
-};
-async function realRecord(api, id) {
-  const r = REAL[id];
-  await api.readout(`<rect class="k sW" x="190" y="60" width="260" height="190"/>${chip("FROM THE REAL RECORD", 320 - chipW("FROM THE REAL RECORD", 6) / 2, 74, 6, "fW")}${r.glyph(320, 140)}
-    ${segC(r.title, 320, 196, 10, "sW", 1.4)}${segC(r.year, 320, 222, 7, "sA", 1)}`, "THE REAL RECORD|You've found something that isn't fiction.");
-  for (const t of r.lines) await api.say(t);
-  if (!api.flag("real_" + id)) { api.flag("real_" + id, true); api.score("real_" + id, 1); }
-  const n = Object.keys(REAL).filter(k => api.flag("real_" + k)).length;
-  return n === 3 ? "THE REAL RECORD|3 OF 3. That's all of it. Everything else in Fechner Hall is made up. Mostly." : `THE REAL RECORD|${n} OF 3.`;
 }
 
 /* ---------------- conversations ---------------- */
@@ -358,8 +326,10 @@ export const HS = {
       morris: { look: "Scribbling, inside." }, night: { look: "Dark. Even grant panic sleeps." } },
     booth: { label: "dark booth", day: { look: "The dark booth.", use: boothNap("You sit in the dark booth, just to think for a minute.\n\nYou wake up a ninth-year postdoc. Rex brings you a coffee. He seems pleased."), go: openConsole },
       morris: { look: "MORRIS|No." }, night: { look: "The dark booth. Gus doesn't need it to be dark. Gus is dark.", go: openConsole } },
-    gusdesk: { label: "Gus's desk", day: { look: () => "Gus's desk. Four empty cans of NULL HYPOTHESIS and one full one, his emergency can. Under each can, a pale ring where the varnish used to be.\n\nThe small print: CITRIC ACID. PHOSPHORIC ACID. pH 2.4.",
-        use: "GUS|That's my emergency can. Don't make it weird." },
+    gusdesk: { label: "Gus's desk", day: { look: (api) => api.has("can") || api.flag("descaled") ? "Gus's desk. Four empty cans of NULL HYPOTHESIS, and a pale ring where the full one stood. The varnish never came back." : "Gus's desk. Four empty cans of NULL HYPOTHESIS and one full one, his emergency can. Under each can, a pale ring where the varnish used to be.\n\nThe small print: CITRIC ACID. PHOSPHORIC ACID. pH 2.4.",
+        use: (api) => { if (api.has("can") || api.flag("descaled")) return "GUS|That's my last one. Don't make it weird.";
+          api.give("can"); api.refresh(); api.score("can", 1);
+          return "You take Gus's emergency can.\n\nGUS|That's my emergency can.\n\nNELL|This is an emergency.\n\nGUS|…pH 2.4. Don't drink it. Nobody should drink it. I drink it."; } },
       morris: { look: "Morris sniffs the cans. His whiskers curl." }, night: { look: "His own desk. He hasn't sat at it since Monday." } },
     viv: VIV,
     gus: { label: "Gus", day: { look: () => `Gus Ian. Awake since Monday. Same cardigan. On his laptop, behind the Big Finding, a second window: DENDROBOARD, the dart-frog forum. Thread: ${dendro()}\n\nHe alt-tabs to the paper the moment he sees you. Too late.`,
@@ -441,23 +411,23 @@ export const HS = {
   kitchen: {
     rex: { label: "Dr. Rex Jected", day: { look: "Dr. Rex Jected, ninth-year postdoc, leaning on the counter with an empty mug, staring at the espresso machine like it's a grant he didn't get.",
         talk: (api) => api.has("coffee") ? "c:rexCoffee" : api.flag("rexLogin") ? "REX|There's a society, Nell. Under forty. Nobody believes me." : !api.flag("rexAsked") ? "c:rexFirst"
+          : api.has("can") ? "REX|Is that one of Gus's? NULL HYPOTHESIS? I've watched that stuff take the varnish off a desk.\n\nREX|Don't hand it to me. I'm not the one with fourteen years of limescale."
           : "REX|Coffee. From the machine. Then we talk.\n\nREX|I've pressed it every morning since 2012. It knows my thumb. It hates my thumb." },
       morris: { look: "REX|Don't. Don't even, rat." } },
-    espresso: { label: "espresso machine", day: { look: (api) => api.flag("descaled") ? "The espresso machine. READY. A green light nobody in this building has ever seen." : "The espresso machine. A blinking chip: DESCALE. Rex says it's said that since 2012.\n\nThe button is worn concave in the shape of one thumb. Rex's.",
+    espresso: { label: "espresso machine", day: { look: (api) => api.flag("descaled") ? "The espresso machine. READY. A green light nobody in this building has ever seen." : "The espresso machine. A blinking chip: DESCALE. Rex says it's said that since 2012.\n\nThe button is worn concave in the shape of one thumb. Rex's.\n\nA sticker on the side: DESCALE WITH ANY MILD ACID. Under it, in Sharpie: WE HAVE NO ACID. —R" + (api.has("can") ? "\n\nYou're carrying something with a pH of 2.4. Just saying." : ""),
         use: (api) => api.flag("descaled") ? "It's made one espresso this decade. Don't push it." : !api.flag("rexAsked") ? "REX|Don't touch that. That's my button." : brew(api) },
       morris: { look: "MORRIS|There's fourteen years of limescale in there, pal. I can hear it." }, night: { look: "The espresso machine, READY in the dark." } },
     mugs: { label: "mug tree", day: { look: "The mug tree. WORLD'S OKAYEST PI. I ♥ P < .05. A mug shaped like a brain that nobody uses.",
         use: "Rex already has a mug. He's been holding it since 2012." },
       morris: { look: "Morris can't reach." } },
     fridge: { label: "fridge", day: { look: (api) => "The fridge. A note: DO NOT DRINK — SAMPLE. On a carton of oat milk."
-, use: (api) => !api.flag("fridgeWarned")
+        + (api.flag("rexAsked") && !api.flag("descaled") ? "\n\nNo lemons. No vinegar. Nobody in this department owns a lemon. Unless you count whatever Gus drinks." : ""), use: (api) => !api.flag("fridgeWarned")
         ? (api.flag("fridgeWarned", true), "You open the fridge. A carton of oat milk, with a note taped to it: DO NOT DRINK — SAMPLE.\n\nIt looks like oat milk. It smells like oat milk. You close the fridge before you can find out what else it is.")
         : api.die("You drink the oat milk. It wasn't oat milk.\n\nYou are now part of somebody's control group. Your data will be excluded.") },
       morris: { look: "MORRIS|I've been in there. Don't." } },
     board: { label: "corkboard", day: { look: "WHO TOOK MY OAT SYNERGY. CLEAN YOUR MUG (THIS MEANS YOU, P.V.). And a typed card: WHO KEEPS BOOKING THE OLD B-LEVEL ROOM ON FRIDAYS? Nobody's answered." },
       morris: { look: "Too high." } },
-    invite2018: { label: "a folded card", day: { look: (api) => realRecord(api, "invite2018") }, morris: { look: (api) => realRecord(api, "invite2018") },
-      night: { look: (api) => realRecord(api, "invite2018") } },
+    invite2018: realHS("invite2018", "a folded card"),
     sink: { label: "sink", day: { look: "The sink. A geological record of mugs." }, morris: { look: "Morris drinks from the drip. Morris is fine." } },
     door: { label: "door to hallway", day: { look: "The hallway.", go: "hall@fromKitchen" }, morris: { look: "Door.", go: "hall@fromKitchen" }, night: { look: "The hallway.", go: "hall@fromKitchen" } },
     vent: ventHS,
@@ -526,8 +496,7 @@ export const HS = {
     letter: { label: "framed letter", day: { look: (api) => "A framed letter, 1977, from a journal's correspondence section. About secret societies in science, in very careful language. Signed: I. Candor. Nobody answered it."
       + (api.flag("irisDone") ? "\n\nTucked behind the frame, yellowed: a cream-colored invitation. Reply with your date of birth." : "") } },
     stapler: { label: "stapler", day: { look: "A stapler. Loaded.", use: "IRIS|Don't." } },
-    ap1977: { label: "one issue, sticking out", day: { look: (api) => realRecord(api, "ap1977") }, morris: { look: (api) => realRecord(api, "ap1977") } },
-    rocker: { label: "something small on the sill", day: { look: (api) => realRecord(api, "rocker") }, morris: { look: (api) => realRecord(api, "rocker") } },
+    ap1977: realHS("ap1977", "one issue, sticking out"), rocker: realHS("rocker", "something small on the sill"),
     kettle: { label: "kettle and sherry", day: { look: "An electric kettle, and a sherry bottle labeled 1962." } },
     door: { label: "door to the stairs", day: { look: "The stairwell.", go: "hall@fromStairs" } },
   },
@@ -550,6 +519,14 @@ async function brew(api) {
   await api.say("You press the button. Firmly, like someone it has never met.\n\nThe machine gurgles. It fizzes. It makes a sound like a dial-up modem having a breakthrough. Fourteen years of limescale let go at once. The DESCALE light goes out.\n\nThen it makes an espresso, into the mug Rex has been holding under the spout since 2012.\n\nREX|…Oh.\n\nREX|Oh, that's beautiful.");
   return "c:rexCoffee";
 }
+// the easter-egg fix: Gus's NULL HYPOTHESIS (pH 2.4) in the water tank. Same coffee, same trade as pressing the button.
+async function descale(api) {
+  if (api.flag("descaled")) return "It's READY. It doesn't need any more help. Nobody does, at pH 2.4.";
+  if (!api.flag("rexAsked")) return "REX|Don't touch that. That's my machine.";
+  api.take("can"); api.flag("descaled", true); api.flag("canDescaled", true); api.give("coffee"); api.score("brewed", 1); api.score("descaledCan", 1); api.sfx("espresso"); api.refresh();
+  await api.say("You pour Gus's NULL HYPOTHESIS into the water tank.\n\nThe machine gurgles. It fizzes. It makes a sound like a dial-up modem having a breakthrough. Fourteen years of limescale let go at once. The DESCALE light goes out.\n\nThen it makes an espresso, into the mug Rex has been holding under the spout since 2012.\n\nREX|…I've been here nine years.\n\nREX|Nine years, and the answer was in a grad student's backpack.");
+  return "c:rexCoffee";
+}
 async function logs(api) {
   if (api.flag("proofLogs")) { await api.readout(JOBS(), "PVALU. 4,012 GPU-hours of super-resolution on one subject. And every Friday at midnight: ltm_generate.py, reading from /mnt/B3/archive."); return null; }
   if (!api.has("login")) return "LOGIN: _\n\nYou try 'admin.' You try 'password.' You try 'preston.' The cursor waits, like a reviewer.";
@@ -559,10 +536,15 @@ async function logs(api) {
 }
 
 export const WITH = {
-  "kitchen.rex": { coffee: "c:rexCoffee" },
+  "kitchen.rex": { coffee: "c:rexCoffee",
+    can: "REX|I don't drink that. I've seen what it does to Gus. And to Gus's desk.\n\nREX|…Wait. What's the pH on that? Don't give it to me. Give it to the machine." },
+  "kitchen.espresso": { can: () => descale },   // run after Nell walks over
+  "kitchen.sink": { can: "You're not wasting pH 2.4 on a sink. The sink isn't the one that's been blinking DESCALE since 2012." },
+  "kitchen.fridge": { can: "The fridge is not the problem. The fridge is a different problem." },
   "server.terminal": { login: (api) => logs(api) },
   "lab.monitor": { log: doGLM, printout: "You hold the FOG NEURO printout up to Figure 3. The same confident voice. The same perfect blob." },
-  "lab.gus": { printout: "GUS|I read it at 2 AM. It made sense at 2 AM. That's the scariest part.", log: "GUS|Your monitor. Let's replicate it.",
+  "lab.gus": { can: (api) => api.flag("rexAsked") ? "GUS|Rex's machine? Pour it in the water tank. pH 2.4 eats limescale. Then never tell me what it does to people." : "GUS|You took my emergency can. I'm choosing to believe there's an emergency.",
+    printout: "GUS|I read it at 2 AM. It made sense at 2 AM. That's the scariest part.", log: "GUS|Your monitor. Let's replicate it.",
   },
   "hall.preston": { recorder: (api) => api.flag("prestonTalked") ? "You already have it on tape." : "You hold up the recorder. Preston leans in, delighted. PRESTON: Is this for a podcast?" },
   "hall.small": { printout: "SMALL|A printout. N of one." },
@@ -612,7 +594,7 @@ async function nightfall(api) {
   api.shift({ mode: "night", char: "gus", room: "server", entry: "night", min: 111, cast: ["gus"] });
   await api.say("Gus Ian, 1:51 AM. The puddle under the equipment-room door has grown since last night. It's running the wrong way. Downhill, but toward somewhere that shouldn't be there.");
 }
-export const MAXSCORE = 57;
+export const MAXSCORE = 59;
 export const TITLE = ["ACT III", "MAJOR REVISIONS"];
 export const END = { title: "END OF ACT III", chip: "MAJOR REVISIONS", bodies: "BODIES 02.  PLUS ONE CHAIR.", next: "NEXT: THURSDAY.  ACT IV  REBUTTAL",
   epilogue: "Nell isn't chasing a cheater anymore.\n\nShe's being hunted.\n\nDET. SGT. SMALL (TO NOBODY, IN HIS CAR): Two more bodies. Still underpowered.\n\nTo be continued.",
