@@ -1,12 +1,21 @@
 name: Mac app
 
-# Build GainControl.app for the Mac and a disk image (macos/build.sh), check it starts, keep the dmg as this
-# run's artifact (gaincontrol-mac), and, on main, put it on the "Gain Control for Mac" release (tag mac-latest), whose
-# download link is: https://github.com/samuelling/GainControl/releases/download/mac-latest/GainControl.dmg Signed and notarized when the Developer ID secrets are set (see below);
-# otherwise ad-hoc signed, which opens on any Mac after a right-click › Open the first time.
+# Build GainControl.app for the Mac and its disk image (macos/build.sh), check it starts, and keep the dmg as this
+# run's artifact (gaincontrol-mac).
+#
+#  - Every push to main refreshes the "Gain Control for Mac (latest build)" pre-release (tag mac-latest), for testing:
+#    https://github.com/samuelling/GainControl/releases/download/mac-latest/GainControl.dmg
+#  - A version tag (git tag v1.0 && git push origin v1.0) makes a release, "Gain Control 1.0", marked as the latest
+#    release, so this link always gives the newest shipped version (it's the one to print):
+#    https://github.com/samuelling/GainControl/releases/latest/download/GainControl.dmg
+#    A version tag must be signed and notarized: without the Developer ID secrets (macos/setup-signing.sh) it fails.
+#
+# Signed with the Developer ID and notarized by Apple when the secrets are set; otherwise ad hoc (opens on any Mac
+# after right-click › Open the first time).
 on:
   push:
     branches: [main]
+    tags: ['v*']
     paths: ['macos/**', 'ios/GainControl/LocalServer.swift', 'game/**', '.github/workflows/macos.yml']
   workflow_dispatch:
 
@@ -14,7 +23,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: mac-app
+  group: mac-app-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -22,13 +31,24 @@ jobs:
     runs-on: macos-15
     env:
       HAS_SIGNING: ${{ secrets.MACOS_CERT_P12 != '' }}
+      SHIP: ${{ startsWith(github.ref, 'refs/tags/v') }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      # Optional: Developer ID signing. Secrets: MACOS_CERT_P12 (base64 of a .p12 with the "Developer ID
-      # Application" certificate and its key) and MACOS_CERT_PASSWORD. The signing identity and team ID are
-      # read from the certificate.
+      - name: Version
+        run: |
+          if [ "$SHIP" = "true" ]; then V=${GITHUB_REF_NAME#v}; else V=1.0; fi
+          echo "VERSION=$V" >> $GITHUB_ENV
+          if [ "$SHIP" = "true" ] && [ "$HAS_SIGNING" != "true" ]; then
+            echo "::error::A release ($GITHUB_REF_NAME) must be signed and notarized. Run macos/setup-signing.sh on your Mac first, then push the tag again."; exit 1
+          fi
+      - name: dmgbuild (lays out the disk image's window)
+        run: |
+          python3 -m venv $RUNNER_TEMP/venv && $RUNNER_TEMP/venv/bin/pip install -q dmgbuild
+          echo "DMGBUILD=$RUNNER_TEMP/venv/bin/dmgbuild" >> $GITHUB_ENV
+      # Developer ID signing. Secrets: MACOS_CERT_P12 (base64 of a .p12 with the "Developer ID Application"
+      # certificate and its key) and MACOS_CERT_PASSWORD. The signing identity and team ID are read from it.
       - name: Import the Developer ID certificate
         if: env.HAS_SIGNING == 'true'
         env:
@@ -41,18 +61,35 @@ jobs:
           security set-keychain-settings -lut 3600 "$KC"
           security unlock-keychain -p "$PW" "$KC"
           security import $RUNNER_TEMP/cert.p12 -k "$KC" -P "$P12_PASSWORD" -T /usr/bin/codesign
+          rm $RUNNER_TEMP/cert.p12
           security set-key-partition-list -S apple-tool:,apple: -s -k "$PW" "$KC"
           security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
           ID=$(security find-identity -v -p codesigning "$KC" | grep "Developer ID Application" | head -1 | sed -E 's/^[^"]*"(.*)"$/\1/')
           test -n "$ID" || { echo "::error::No Developer ID Application identity in MACOS_CERT_P12"; exit 1; }
           echo "SIGN_ID=$ID" >> $GITHUB_ENV
           echo "TEAM_ID=$(echo "$ID" | sed -E 's/.*\(([A-Z0-9]+)\)$/\1/')" >> $GITHUB_ENV
-      - name: Build the app and the disk image
-        run: macos/build.sh
-      # Notarization (Apple checks the signed app for malware and issues a ticket, stapled to the dmg so it
-      # opens without a warning even offline). Secrets: NOTARY_APPLE_ID (the developer account's Apple ID) and
-      # NOTARY_PASSWORD (an app-specific password for it, from appleid.apple.com).
-      - name: Notarize
+      - name: Build the app
+        run: macos/build.sh app
+      # Notarization: Apple checks the signed app for malware and issues a ticket. The ticket is stapled to the app
+      # itself (so it opens without a warning even offline, once dragged out of the dmg) and then to the dmg.
+      # Secrets: NOTARY_APPLE_ID (the developer account's Apple ID) and NOTARY_PASSWORD (an app-specific password).
+      - name: Notarize the app
+        if: env.HAS_SIGNING == 'true'
+        env:
+          APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          APPLE_PW: ${{ secrets.NOTARY_PASSWORD }}
+        run: |
+          notarize() {
+            xcrun notarytool submit "$1" --apple-id "$APPLE_ID" --password "$APPLE_PW" --team-id "$TEAM_ID" --wait --timeout 30m | tee notary.log
+            grep -q "status: Accepted" notary.log || { ID=$(grep -m1 "  id:" notary.log | awk '{print $2}'); xcrun notarytool log "$ID" --apple-id "$APPLE_ID" --password "$APPLE_PW" --team-id "$TEAM_ID" || true; exit 1; }
+          }
+          ditto -c -k --keepParent macos/build/GainControl.app $RUNNER_TEMP/GainControl.zip
+          notarize $RUNNER_TEMP/GainControl.zip
+          xcrun stapler staple macos/build/GainControl.app
+          spctl -a -vv macos/build/GainControl.app
+      - name: Build the disk image
+        run: macos/build.sh dmg
+      - name: Notarize the disk image
         if: env.HAS_SIGNING == 'true'
         env:
           APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
@@ -64,19 +101,25 @@ jobs:
           spctl -a -vv -t install macos/build/GainControl.dmg
       - name: Check the app starts and the game loads
         run: |
-          hdiutil attach macos/build/GainControl.dmg -mountpoint /Volumes/GainControl -nobrowse -quiet
-          cp -R /Volumes/GainControl/GainControl.app $RUNNER_TEMP/
-          hdiutil detach /Volumes/GainControl -quiet
+          mkdir -p shots
+          hdiutil attach macos/build/GainControl.dmg -mountpoint "/Volumes/Gain Control" -quiet
+          # the disk image's window, as Finder shows it (best effort: the runner's Finder may not cooperate)
+          (open "/Volumes/Gain Control" && sleep 4 && screencapture -x shots/mac-dmg-window.png) || true
+          osascript -e 'tell application "Finder" to close every window' || true
+          cp -R "/Volumes/Gain Control/GainControl.app" $RUNNER_TEMP/
+          hdiutil detach "/Volumes/Gain Control" -quiet || hdiutil detach "/Volumes/Gain Control" -force -quiet
           APP=$RUNNER_TEMP/GainControl.app
           test -f "$APP/Contents/Resources/Web/index.html" && test -f "$APP/Contents/Resources/Web/js/main.js" && test -f "$APP/Contents/Resources/Web/fonts/saira-condensed-latin-500-normal.woff2"
           lipo -archs "$APP/Contents/MacOS/GainControl"
+          /usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" -c "Print CFBundleVersion" "$APP/Contents/Info.plist"
+          codesign -dv "$APP" 2>&1 | grep -E "Authority|TeamIdentifier|flags" || true
           "$APP/Contents/MacOS/GainControl" -GainControlHash act2 > app.log 2>&1 &
           PID=$!
           sleep 8
           curl -sf http://127.0.0.1:47360/index.html | head -3
           curl -sf -o /dev/null http://127.0.0.1:47360/js/main.js && echo "server ok"
           sleep 50
-          mkdir -p shots; screencapture -x shots/mac-game.png || true
+          screencapture -x shots/mac-game.png || true
           kill $PID || true
           tail -20 app.log
       - uses: actions/upload-artifact@v4
@@ -86,17 +129,30 @@ jobs:
           path: |
             macos/build/GainControl.dmg
             shots
-      - name: Publish the dmg on the "Gain Control for Mac" release
+      - name: Publish the latest build (pre-release mac-latest)
         if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          NOTES="Gain Control for the Mac (Apple silicon and Intel, macOS 13 or later), built from $(git rev-parse --short HEAD). Open the disk image and drag Gain Control to Applications."
+          NOTES="The newest build of Gain Control for the Mac (Apple silicon and Intel, macOS 13 or later), from $(git rev-parse --short HEAD), for testing. For the shipped version, see the latest release. Open the disk image and drag Gain Control to Applications."
           if [ "$HAS_SIGNING" = "true" ]; then NOTES="$NOTES Signed and notarized by Apple."; else NOTES="$NOTES Not notarized: the first time, right-click Gain Control and choose Open."; fi
           git tag -f mac-latest && git push -f origin refs/tags/mac-latest
           if gh release view mac-latest > /dev/null 2>&1; then
-            gh release edit mac-latest --title "Gain Control for Mac" --notes "$NOTES"
+            gh release edit mac-latest --title "Gain Control for Mac (latest build)" --notes "$NOTES" --prerelease --latest=false
             gh release upload mac-latest macos/build/GainControl.dmg --clobber
           else
-            gh release create mac-latest macos/build/GainControl.dmg --title "Gain Control for Mac" --notes "$NOTES"
+            gh release create mac-latest macos/build/GainControl.dmg --title "Gain Control for Mac (latest build)" --notes "$NOTES" --prerelease --latest=false
+          fi
+      - name: Publish the release
+        if: env.SHIP == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp macos/build/GainControl.dmg "macos/build/GainControl-$VERSION.dmg"
+          NOTES="Gain Control $VERSION for the Mac (Apple silicon and Intel, macOS 13 or later). A Sierra-style point-and-click murder mystery in a university neuroscience department. Open the disk image and drag Gain Control to Applications. Signed and notarized by Apple."
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" macos/build/GainControl.dmg "macos/build/GainControl-$VERSION.dmg" --clobber
+            gh release edit "$GITHUB_REF_NAME" --title "Gain Control $VERSION" --notes "$NOTES" --latest
+          else
+            gh release create "$GITHUB_REF_NAME" macos/build/GainControl.dmg "macos/build/GainControl-$VERSION.dmg" --title "Gain Control $VERSION" --notes "$NOTES" --latest
           fi

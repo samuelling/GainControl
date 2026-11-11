@@ -25,7 +25,7 @@
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Gain Control: a point-and-click murder mystery in a university neuroscience department.</string>
+	<string>© 2026 Sam Ling. A point-and-click murder mystery in a university neuroscience department.</string>
 	<!-- the game is served from a local server on 127.0.0.1 (ios/GainControl/LocalServer.swift) -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
