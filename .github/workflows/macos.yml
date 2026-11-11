@@ -1,6 +1,6 @@
 name: Mac app
 
-# Build GainControl.app for the Mac and its disk image (macos/build.sh), check it starts, and keep the dmg as this
+# Build "Gain Control.app" for the Mac and its disk image (macos/build.sh), check it starts, and keep the dmg as this
 # run's artifact (gaincontrol-mac).
 #
 #  - Every push to main refreshes the "Gain Control for Mac (latest build)" pre-release (tag mac-latest), for testing:
@@ -83,10 +83,10 @@ jobs:
             xcrun notarytool submit "$1" --apple-id "$APPLE_ID" --password "$APPLE_PW" --team-id "$TEAM_ID" --wait --timeout 30m | tee notary.log
             grep -q "status: Accepted" notary.log || { ID=$(grep -m1 "  id:" notary.log | awk '{print $2}'); xcrun notarytool log "$ID" --apple-id "$APPLE_ID" --password "$APPLE_PW" --team-id "$TEAM_ID" || true; exit 1; }
           }
-          ditto -c -k --keepParent macos/build/GainControl.app $RUNNER_TEMP/GainControl.zip
+          ditto -c -k --keepParent "macos/build/Gain Control.app" $RUNNER_TEMP/GainControl.zip
           notarize $RUNNER_TEMP/GainControl.zip
-          xcrun stapler staple macos/build/GainControl.app
-          spctl -a -vv macos/build/GainControl.app
+          xcrun stapler staple "macos/build/Gain Control.app"
+          spctl -a -vv "macos/build/Gain Control.app"
       - name: Build the disk image
         run: macos/build.sh dmg
       - name: Notarize the disk image
@@ -106,9 +106,9 @@ jobs:
           # the disk image's window, as Finder shows it (best effort: the runner's Finder may not cooperate)
           (open "/Volumes/Gain Control" && sleep 4 && screencapture -x shots/mac-dmg-window.png) || true
           osascript -e 'tell application "Finder" to close every window' || true
-          cp -R "/Volumes/Gain Control/GainControl.app" $RUNNER_TEMP/
+          cp -R "/Volumes/Gain Control/Gain Control.app" $RUNNER_TEMP/
           hdiutil detach "/Volumes/Gain Control" -quiet || hdiutil detach "/Volumes/Gain Control" -force -quiet
-          APP=$RUNNER_TEMP/GainControl.app
+          APP="$RUNNER_TEMP/Gain Control.app"
           test -f "$APP/Contents/Resources/Web/index.html" && test -f "$APP/Contents/Resources/Web/js/main.js" && test -f "$APP/Contents/Resources/Web/fonts/saira-condensed-latin-500-normal.woff2"
           lipo -archs "$APP/Contents/MacOS/GainControl"
           /usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" -c "Print CFBundleVersion" "$APP/Contents/Info.plist"

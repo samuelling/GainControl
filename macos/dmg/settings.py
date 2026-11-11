@@ -1,5 +1,5 @@
 # dmgbuild settings for GainControl.dmg (used by macos/build.sh):
-#   dmgbuild -s macos/dmg/settings.py -D app=macos/build/GainControl.app -D bg=… -D icon=… "Gain Control" out.dmg
+#   dmgbuild -s macos/dmg/settings.py -D app="macos/build/Gain Control.app" -D bg=… -D icon=… "Gain Control" out.dmg
 # A window with the line-art background (background.png / @2x, combined into a TIFF by build.sh), the game on the
 # left, the Applications folder on the right, and the names on solid chips drawn into the background.
 import os.path
@@ -17,7 +17,7 @@ show_tab_view = False
 show_toolbar = False
 show_pathbar = False
 show_sidebar = False
-window_rect = ((200, 140), (640, 400))
+window_rect = ((200, 140), (640, 428))   # 400 of content plus the title bar
 default_view = 'icon-view'
 arrange_by = None
 icon_size = 112

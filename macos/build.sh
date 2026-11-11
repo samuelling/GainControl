@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build GainControl.app for the Mac (Apple silicon and Intel) and wrap it in a disk image: macos/build/GainControl.dmg.
+# Build "Gain Control.app" for the Mac (Apple silicon and Intel) and wrap it in a disk image: macos/build/GainControl.dmg.
 # Runs on a Mac with the Xcode command-line tools; no Xcode project needed. Used by .github/workflows/macos.yml.
 #
 #   macos/build.sh [app|dmg|all]        all (the default) builds both; the workflow builds the app, notarizes and
@@ -13,7 +13,7 @@ cd "$(dirname "$0")/.."
 ROOT=$(pwd)
 STEP=${1:-all}
 OUT=macos/build
-APP=$OUT/GainControl.app
+APP="$OUT/Gain Control.app"   # the name people see in Applications
 VERSION=${VERSION:-1.0}
 # the game's own build number (game/js/version.js, shown on the title screen) is the app's build number
 BUILD=${BUILD:-$(sed -nE 's/.*VERSION = ([0-9]+).*/\1/p' game/js/version.js)}
