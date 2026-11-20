@@ -5,9 +5,10 @@
 //   { id, t, kind, label, changes: [{ key, act, label, from, to }, …] }   a batch (revert all, import, restore…)
 // from / to are the effective text before / after; null means "the original shows, no override".
 // kind: edit | reset | delete | revert | restore | revert-all | import. Reverts carry ref: the id they undo.
-import { S, esc, actName, effVal, setText, sideSpeaker, whoChip, anchorOf, toast } from "./ui.js";
+import { S, esc, actName, effVal, setText, sideSpeaker, whoChip, anchorOf, toast, refreshLines } from "./ui.js";
 import { writeLocal } from "./overrides.js";
 import { locName } from "./analyze.js";
+import { WIKI, wikiHistory, wikiCommit, wikiState } from "./wiki.js";
 
 export const HSTORE = "gaincontrol.script.history";
 export const HFORMAT = "gaincontrol.script.history";
@@ -19,6 +20,7 @@ let cb = { goto: () => {}, changed: () => {} }, panel = null;
  *  STORE
  * ================================================================ */
 export function readHist() {
+  if (WIKI) return WREVS;
   try { const a = JSON.parse(localStorage.getItem(HSTORE) || "[]"); return Array.isArray(a) ? a.filter(valid) : []; } catch (e) { return []; }
 }
 function writeHist(a) {
@@ -34,6 +36,7 @@ const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2
 const changesOf = (h) => h.changes || [h];
 
 function append(x) {
+  if (WIKI) { const ent = { id: "…", t: new Date().toISOString(), ...x }; wikiAppend(ent); return ent; }
   const h = readHist(), ent = { id: newId(), t: new Date().toISOString(), ...x };
   h.push(ent); writeHist(h); renderPanel(); return ent;
 }
@@ -52,6 +55,54 @@ export function recordBatch(kind, label, changes, extra = {}) {
   if (!list.length) return null;
   return append({ kind, label, changes: list, ...extra });
 }
+/* ---------------- the wiki branch: the history is the server's ---------------- */
+// revisions, oldest first, in this file's entry format (plus who)
+let WREVS = [], syncing = null, inflight = 0;
+function fromServer(r) {
+  const ch = (r.changes || []).map(c => { const e = S.model && S.model.entries.get(c.key); return { key: c.key, from: c.from, to: c.to, act: e ? e.act : actOfKey(c.key), label: e ? labelOf(e) : c.key }; });
+  const base = { id: r.id, t: r.t, who: r.who, kind: r.kind, ...(r.ref ? { ref: r.ref, refT: r.refT, refKind: r.refKind } : {}) };
+  return ch.length === 1 && !r.label ? { ...base, ...ch[0] } : { ...base, label: r.label || `${ch.length} lines`, changes: ch };
+}
+// what this browser shows becomes the wiki's state; lines that changed are redrawn
+function adopt(edits, rev, locked) {
+  const before = S.local; S.local = edits; S.wikiRev = rev; S.wikiLocked = !!locked;
+  const keys = new Set([...Object.keys(before), ...Object.keys(edits)]);
+  let n = 0;
+  for (const k of keys) if (before[k] !== edits[k]) { n++; const e = S.model && S.model.entries.get(k); if (e && e.uid != null) refreshLines(e); }
+  return n;
+}
+export async function wikiLoadHistory() {
+  try { WREVS = (await wikiHistory(400)).reverse().map(fromServer); } catch (e) { /* keep what we had */ }
+  renderPanel(); cb.wiki && cb.wiki();
+}
+async function wikiAppend(x) {
+  // what this browser now has for each line, after the edit (null: the game's own text)
+  const changes = (x.changes || [x]).map(c => ({ key: c.key, to: c.key in S.local ? S.local[c.key] : null }));
+  inflight++;
+  const job = (syncing || Promise.resolve()).then(async () => {
+    try {
+      const r = await wikiCommit({ kind: x.kind, label: x.changes ? x.label : "", ref: x.ref, refT: x.refT, refKind: x.refKind, changes });
+      adopt(r.edits, r.rev, false); toast(r.unchanged ? "ALREADY LIKE THAT" : `SAVED TO THE WIKI · REVISION ${r.rev}`);
+    } catch (e) {
+      toast("NOT SAVED: " + String(e.message || e).toUpperCase());
+      try { const st = await wikiState(); adopt(st.edits, st.rev, st.locked); } catch (x) {}
+    }
+    await wikiLoadHistory(); cb.changed();
+  }).finally(() => { inflight--; });
+  syncing = job; return job;
+}
+// someone else changed the wiki: pick it up (every 12 s while the page is visible, and on coming back to it)
+export function startWikiPolling() {
+  const tick = async () => {
+    if (document.hidden || inflight || document.querySelector(".tx.editing")) return;
+    try {
+      const st = await wikiState();
+      if (st.rev !== S.wikiRev || !!st.locked !== !!S.wikiLocked) { const n = adopt(st.edits, st.rev, st.locked); await wikiLoadHistory(); cb.changed(); if (n) toast(`THE WIKI CHANGED · ${n} LINE${n > 1 ? "S" : ""}`); }
+    } catch (e) {}
+  };
+  setInterval(tick, 12000); document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(); });
+}
+
 export function mergeHistory(entries) {
   const h = readHist(), ids = new Set(h.map(x => x.id)); let n = 0;
   for (const x of entries) if (valid(x) && !ids.has(x.id)) { h.push(x); ids.add(x.id); n++; }
@@ -217,7 +268,7 @@ function entryHTML(h, newest) {
   const tm = new Date(h.t).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
   const refT = h.refT ? new Date(h.refT).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "";
   const ref = h.ref ? `<span class="href">↶ ${esc(KIND[h.refKind] || h.refKind || "")} ${esc(refT)}</span>` : "";
-  const acts = `<span class="tm">${esc(tm)}</span><span class="hk hk-${esc(h.kind)}">${esc(KIND[h.kind] || h.kind.toUpperCase())}</span>${ref}`;
+  const acts = `<span class="tm">${esc(tm)}</span><span class="hk hk-${esc(h.kind)}">${esc(KIND[h.kind] || h.kind.toUpperCase())}</span>${ref}${h.who ? `<span class="hwho">${esc(h.who)}</span>` : ""}`;
   let body;
   if (h.changes) {
     const n = h.changes.length;
@@ -241,9 +292,9 @@ export function renderPanel() {
   });
   if (day) html += `</div>`;
   const keepY = panel.querySelector(".hlist") ? panel.querySelector(".hlist").scrollTop : 0;
-  panel.innerHTML = `<div class="hist-h"><h2>HISTORY</h2><span class="n">${all.length}</span><span class="l">${all.length >= CAP ? "THE LAST " + CAP : "CHANGES"}</span>
-      <span class="sp"></span><button class="btn" data-hact="export" title="Download script-history.json to send with overrides.json">EXPORT HISTORY</button><button class="btn" data-hact="import" title="Merge a script-history.json (or load an overrides.json)">IMPORT</button><button class="btn hx" data-hact="close" title="Close">×</button></div>
-    <div class="hlist">${html || `<div class="empty">NO CHANGES YET. EDITS, REVERTS AND IMPORTS MADE IN THE SCRIPT ROOM SHOW UP HERE.</div>`}</div>`;
+  panel.innerHTML = `<div class="hist-h"><h2>${WIKI ? "WIKI HISTORY" : "HISTORY"}</h2><span class="n">${all.length}</span><span class="l">${all.length >= CAP ? "THE LAST " + CAP : "CHANGES"}</span>
+      <span class="sp"></span>${WIKI ? "" : `<button class="btn" data-hact="export" title="Download script-history.json to send with overrides.json">EXPORT HISTORY</button><button class="btn" data-hact="import" title="Merge a script-history.json (or load an overrides.json)">IMPORT</button>`}<button class="btn hx" data-hact="close" title="Close">×</button></div>
+    <div class="hlist">${html || `<div class="empty">${WIKI ? "NO CHANGES YET. EVERY CHANGE ANYONE MAKES TO THE WIKI SHOWS UP HERE, AND ANY OF THEM CAN BE UNDONE." : "NO CHANGES YET. EDITS, REVERTS AND IMPORTS MADE IN THE SCRIPT ROOM SHOW UP HERE."}</div>`}</div>`;
   panel.querySelector(".hlist").scrollTop = keepY;
 }
 export function toggleHistory(on = !document.body.classList.contains("hist")) {
@@ -265,7 +316,7 @@ export function initHistory(callbacks) {
     else if (a.dataset.hact === "export") exportHistory();
     else if (a.dataset.hact === "import") $("#importFile").click();
   });
-  window.addEventListener("storage", (e) => { if (e.key === HSTORE) renderPanel(); });
+  window.addEventListener("storage", (e) => { if (e.key === HSTORE && !WIKI) renderPanel(); });
   $("#histBtn").addEventListener("click", () => toggleHistory());
   let open = false; try { open = localStorage.getItem(OPEN) === "1"; } catch (e) {}
   toggleHistory(open);

@@ -266,3 +266,8 @@ body.no-holidays #game .decor { display: none; }
 .liftline { position: absolute; left: 50%; top: 4%; transform: translateX(-50%); width: 66%; background: #000; border: .16cqw solid var(--W);
   padding: 1.1cqw 1.6cqw 1.6cqw; font-size: 2.45cqw; line-height: 1.16; text-transform: uppercase; letter-spacing: .015em; display: none; z-index: 2; }
 .liftline.show { display: block; }
+
+/* the wiki branch (index.html?branch=wiki): a status chip in the corner, outside the scene's language on purpose */
+#wikichip { position: fixed; left: 8px; top: 8px; z-index: 9999; font-family: "Saira Condensed", sans-serif; font-weight: 600; font-size: 13px;
+  letter-spacing: .12em; color: #000; background: var(--A, #ffb000); padding: 2px 9px 1px; text-decoration: none; opacity: .85; }
+#wikichip:hover { opacity: 1; }

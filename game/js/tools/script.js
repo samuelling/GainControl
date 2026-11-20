@@ -5,7 +5,8 @@ import { readFile, writeLocal } from "./overrides.js";
 import { S, esc, actName, KEYS, current, isChanged, changedCount, allOverrides, lnHTML, startEdit, setText, effChips, playBtn, anchorOf,
   sideSpeaker, whoChip, portrait, toast } from "./ui.js";
 import { renderLogic, renderList, selectNode } from "./graph.js";
-import { initHistory, record, recordBatch, effOf, historyEntriesOf, mergeHistory } from "./history.js";
+import { initHistory, record, recordBatch, effOf, historyEntriesOf, mergeHistory, wikiLoadHistory, startWikiPolling } from "./history.js";
+import { WIKI, wikiState, whoAmI, setWho, branchQS } from "./wiki.js";
 import { renderScreenplay } from "./screenplay.js";
 import { WALKTHROUGH } from "../walkthrough.js";
 
@@ -20,6 +21,11 @@ async function boot() {
   $("#logo").innerHTML = seg("GAIN CONTROL", 0, 7, 13, "sW", 1.4) + chip("SCRIPT ROOM", 128, 5, 9.5, "fA");
   const [acts, info, file] = await Promise.all([loadActs(), loadEngineInfo(), readFile()]);
   S.acts = acts; S.info = info; S.file = file;
+  if (WIKI) {
+    try { const st = await wikiState(); S.local = st.edits; S.wikiRev = st.rev; S.wikiLocked = st.locked; if (st.locked) S.readOnly = "THE WIKI IS LOCKED FOR NOW"; }
+    catch (e) { S.local = {}; S.wikiDown = true; S.readOnly = "THE WIKI CAN'T BE REACHED RIGHT NOW"; }
+  }
+  branchUI();
   const ITEMS = (acts.find(a => a.mod && a.mod.ITEMS) || {}).mod?.ITEMS || {};
   S.model = buildModel(acts, ITEMS);
   for (const a of S.model.acts) for (const R of a.rooms) await loadRoom(R.id, info);
@@ -27,8 +33,9 @@ async function boot() {
   S.caps = localStorage.getItem("gaincontrol.script.caps") !== "0";
   document.body.classList.toggle("caps", S.caps);
   S.onChange = () => { updateCount(); renderSide(); };
-  initHistory({ goto, changed: () => { updateCount(); if (S.changedOnly) render(); else renderSide(); } });
+  initHistory({ goto, changed: () => { updateCount(); if (S.changedOnly) render(); else renderSide(); }, wiki: () => wikiBanner() });
   updateCount(); render();
+  if (WIKI && !S.wikiDown) { wikiLoadHistory(); startWikiPolling(); }
 }
 function readHash() {
   const h = /^#(\d+)?(?:\.(\w+))?/.exec(location.hash);
@@ -55,7 +62,8 @@ const actOf = (n = S.act) => S.model.acts.find(a => a.n === n);
 /* ================================================================ *
  *  RENDER
  * ================================================================ */
-function render() {
+function render() { render0(); wikiBanner(); }
+function render0() {
   document.querySelectorAll("#views button").forEach(b => b.classList.toggle("on", b.dataset.view === S.view && !S.q && !S.changedOnly));
   $("#changed").classList.toggle("on", S.changedOnly);
   main.className = ""; renderSide();
@@ -66,6 +74,31 @@ function render() {
   if (S.view === "screenplay") { main.innerHTML = renderScreenplay(a, { seg, fnBlock, convo, roomName, startKey, info: () => S.info }); return; }
   main.innerHTML = renderScript(a);
 }
+
+/* ---------------- the wiki branch ---------------- */
+// the header's branch switch: this browser's drafts, or the shared wiki
+function branchUI() {
+  document.body.classList.toggle("wiki", WIKI);
+  const a = $("#branchBtn"); if (!a) return;
+  const hash = location.hash || "";
+  a.textContent = WIKI ? "MY DRAFTS" : "WIKI"; a.href = (WIKI ? "script.html" : "script.html?branch=wiki") + hash;
+  a.title = WIKI ? "Back to the edits kept in this browser only" : "The shared wiki branch: anyone can change the script and play the result";
+  a.addEventListener("click", () => { a.href = (WIKI ? "script.html" : "script.html?branch=wiki") + location.hash; });
+}
+function wikiBanner() {
+  if (!WIKI || main.classList.contains("logic")) return;
+  let b = $("#wikibar"); if (!b) { b = document.createElement("div"); b.id = "wikibar"; }
+  if (b.parentNode !== main || main.firstChild !== b) main.prepend(b);
+  const st = S.wikiDown ? `<b class="bad">THE WIKI CAN'T BE REACHED RIGHT NOW.</b> You're seeing the real script, read-only.`
+    : `<b>WIKI BRANCH · REVISION ${S.wikiRev || 0}${S.wikiLocked ? " · LOCKED" : ""}</b> Anyone can change any line here. It's saved for everyone at once and logged in WIKI HISTORY, where any change can be undone. The real game is untouched.`;
+  b.innerHTML = `<div class="wb-t">${st}</div><div class="wb-a"><a class="play" href="index.html${branchQS()}" target="_blank" title="Play the game with the wiki's script">PLAY THE WIKI GAME</a>
+    <span class="wb-who">EDITING AS <button id="whoBtn" title="Change the name your changes are signed with">${esc(whoAmI())}</button></span></div>`;
+}
+document.addEventListener("click", (ev) => {
+  if (!ev.target.closest("#whoBtn")) return;
+  const n = prompt("Sign your wiki changes as:", whoAmI()); if (n == null) return;
+  setWho(n); wikiBanner();
+});
 
 /* ---------------- sidebar ---------------- */
 function renderSide() {
@@ -282,8 +315,8 @@ function renderResults() {
   }
   const orphans = S.changedOnly ? Object.entries(allOverrides()).filter(([k]) => !S.model.entries.has(k)) : [];
   const shown = entries.slice(0, 400);
-  main.innerHTML = `<div class="results-h"><span class="n">${entries.length}</span><span class="l">${S.changedOnly ? "CHANGED LINES" : "LINES MATCH"} ${q ? `“${esc(S.q.toUpperCase())}”` : ""}${entries.length > shown.length ? " · SHOWING 400" : ""}</span>
-    ${S.changedOnly ? `<button class="btn" id="revertAll" style="margin-left:auto">REVERT ALL LOCAL EDITS</button>` : ""}</div>
+  main.innerHTML = `<div class="results-h"><span class="n">${entries.length}</span><span class="l">${S.changedOnly ? (WIKI ? "LINES CHANGED ON THE WIKI" : "CHANGED LINES") : "LINES MATCH"} ${q ? `“${esc(S.q.toUpperCase())}”` : ""}${entries.length > shown.length ? " · SHOWING 400" : ""}</span>
+    ${S.changedOnly && !WIKI ? `<button class="btn" id="revertAll" style="margin-left:auto">REVERT ALL LOCAL EDITS</button>` : ""}</div>
     ${hits ? `<div class="reshits">${hits}</div>` : ""}
     ${shown.map(e => `<div class="res">${crumb(e)}${lnHTML(e, { color: e.kind === "line" || e.kind === "choice" ? lineColor(e) : null })}</div>`).join("") || (orphans.length ? "" : `<div class="empty">NOTHING ${S.changedOnly ? "CHANGED YET" : "FOUND"}.</div>`)}
     ${orphans.length ? `<div class="sec"><h2>ORPHANED OVERRIDES</h2></div><div class="hint" style="color:var(--M);margin-bottom:8px">These edits point at text that no longer exists in the source (the line was rewritten or removed). They do nothing in game.</div>
@@ -357,6 +390,6 @@ $("#importFile").addEventListener("change", async (e) => {
   } catch (err) { toast("THAT FILE ISN'T AN OVERRIDES.JSON"); }
   e.target.value = "";
 });
-window.addEventListener("storage", (e) => { if (e.key === "gaincontrol.overrides") { try { S.local = JSON.parse(e.newValue || "{}"); } catch (x) {} updateCount(); render(); } });
+window.addEventListener("storage", (e) => { if (e.key === "gaincontrol.overrides" && !WIKI) { try { S.local = JSON.parse(e.newValue || "{}"); } catch (x) {} updateCount(); render(); } });
 
 boot().catch(e => { main.innerHTML = `<div class="err-banner">The Script Room failed to start:\n${esc(e && e.stack || e)}</div>`; console.error(e); });

@@ -1,0 +1,14 @@
+# GAIN CONTROL — the wiki branch's server: https://gaincontrol-wiki.samuelling.workers.dev
+# One Durable Object (SQLite) holds the shared edits and every revision. Deployed by Cloudflare's Git integration
+# (Workers & Pages › Create › Import a repository › GainControl, root directory: wiki), so each push redeploys it.
+name = "gaincontrol-wiki"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+
+[[durable_objects.bindings]]
+name = "WIKI"
+class_name = "Wiki"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Wiki"]

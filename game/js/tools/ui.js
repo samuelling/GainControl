@@ -1,6 +1,7 @@
 // GAIN CONTROL — Script Room: shared state, line rendering and editing.
 import { PORTRAIT } from "../portraits.js";
 import { readLocal, writeLocal } from "./overrides.js";
+import { branchQS } from "./wiki.js";
 
 export const S = {
   acts: [], model: null, info: { speakers: [], rooms: {} }, file: {}, local: readLocal(),
@@ -114,6 +115,7 @@ export function refreshLines(e) {
 }
 export function startEdit(tx) {
   const ln = tx.closest(".ln"), e = S.byUid.get(+ln.dataset.u); if (!e || ln.classList.contains("ro") || tx.classList.contains("editing")) return;
+  if (S.readOnly) { toast(S.readOnly); return; }
   tx.classList.add("editing"); tx.textContent = current(e);
   try { tx.contentEditable = "plaintext-only"; } catch (err) { tx.contentEditable = "true"; }
   if (tx.contentEditable !== "plaintext-only") tx.contentEditable = "true";
@@ -156,7 +158,7 @@ export function effChips(eff, act, { compact = false } = {}) {
 /* ---------------- links ---------------- */
 export function playURL(act, key, room, { convo, flags } = {}) {
   const k = !key || key === "*" ? "day" : key;
-  return `index.html#jump=${act}.${k}${room ? "." + room : ""}${convo ? "&convo=" + encodeURIComponent(convo) : ""}${flags && flags.length ? "&flags=" + flags.map(encodeURIComponent).join(",") : ""}`;
+  return `index.html${branchQS()}#jump=${act}.${k}${room ? "." + room : ""}${convo ? "&convo=" + encodeURIComponent(convo) : ""}${flags && flags.length ? "&flags=" + flags.map(encodeURIComponent).join(",") : ""}`;
 }
 const PK = { day: "B", night: "G", morris: "K", morning: "R" };
 export const playBtn = (act, key, room, label, extra) => `<a class="play" data-k="${key || "day"}" style="--pk:var(--${PK[key] || "G"})" target="_blank" href="${esc(playURL(act, key, room, extra))}" title="Open the game here in a new tab">${esc(label || "PLAY " + (key || "day").toUpperCase())}</a>`;

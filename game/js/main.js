@@ -28,7 +28,8 @@ import { opt, onChange as onOptions, activeCheats, cheatOn } from "./options.js"
 import { installMenu } from "./menu.js";
 import { remark } from "./remarks.js";
 import { fxLayer, confetti, installWhimsy } from "./whimsy.js";
-import { applyOverrides, rewriteSay, jumpFromHash } from "./tools/overrides.js";
+import { applyOverrides, rewriteSay, jumpFromHash, WIKI_STATUS } from "./tools/overrides.js";
+import { WIKI, branchQS } from "./tools/wiki.js";
 import seminar from "./rooms/seminar.js";
 import hall from "./rooms/hallway.js";
 import lab from "./rooms/lab.js";
@@ -538,7 +539,7 @@ function switchTo(c) {
   sfx.play("switch");
   const t = ACT().onSwitch && ACT().onSwitch(api, c); if (t) say(t);
 }
-function saveProgress() { try { localStorage.setItem("gaincontrol.act", String(Math.max(G.act, +(localStorage.getItem("gaincontrol.act") || 1)))); } catch (e) {} }
+function saveProgress() { if (WIKI) return; try { localStorage.setItem("gaincontrol.act", String(Math.max(G.act, +(localStorage.getItem("gaincontrol.act") || 1)))); } catch (e) {} }
 async function startAct(n, { fresh = false } = {}) {
   G.act = n; saveProgress();
   await ACTS[n].start(api, { fresh });
@@ -811,9 +812,18 @@ setInterval(() => document.querySelectorAll("#game .needle").forEach(n => { cons
 /* ================================================================ *
  *  START: title and chapter select
  * ================================================================ */
+// the wiki branch: a chip in the corner says so (and leads to the wiki's Script Room); progress isn't saved, every act is open
+function wikiChip() {
+  const a = document.createElement("a"); a.id = "wikichip"; a.href = "script.html" + branchQS(); a.target = "_blank";
+  const st = WIKI_STATUS || {};
+  a.textContent = st.error ? "WIKI BRANCH · CAN'T REACH THE WIKI: PLAYING THE REAL SCRIPT" : `WIKI BRANCH · REVISION ${st.rev || 0}${st.locked ? " · LOCKED" : ""} · EDIT IT ▸`;
+  a.title = "This is the wiki's version of the game: anyone can change its script in the Script Room. The real game is untouched.";
+  document.body.appendChild(a);
+}
 window.GC = { G, api, FULL, GUIDE, MENU, render, get NUDGE() { return NUDGE; }, act, itemAct, useItemOn, loadRoom, walkTo, runConvo, switchTo, startAct };   // for testing
 async function start() {
   await applyOverrides(ACTS, ITEMS);
+  if (WIKI) wikiChip();
   // a PLAY link from the Script Room lands straight in a scene. Browsers won't make a sound until the page has been
   // tapped, so it gets the tap the title screen would have given it: a card, then the scene, with sound from the start.
   const jm = /^#jump=([^&]+)/.exec(location.hash);
@@ -855,7 +865,7 @@ async function start() {
     await showCard(`<circle class="fW" cx="320" cy="180" r="1.6"/><g id="cts">${centered("CLICK TO START", 204, 8, "sW", 1.1)}</g>`, { auto: 0 });
     clearInterval(blink);
   }
-  const tOpts = { unlocked, allActs: cheatOn("allacts"), full: !FULL.standalone(), sound: () => sfx.running && music.state.on };
+  const tOpts = { unlocked, allActs: WIKI || cheatOn("allacts"), full: !FULL.standalone(), sound: () => sfx.running && music.state.on };
   const titleP = showCard(titleArt(tOpts), { buttons: true, crt: true });
   const stopGlitch = titleGlitch(card, { sfx: () => { sfx.play("blank"); music.glitch(); }, ...tOpts });
   const choice = await titleP; stopGlitch();

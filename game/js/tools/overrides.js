@@ -4,14 +4,19 @@
 //   { "<act>|LIT|<exact original>": "…" } a string literal inside a function; applied by rewriteSay() at display time
 //
 // Sources, later wins: game/overrides.json (committed, optional) → localStorage "gaincontrol.overrides" (this browser).
+// On the wiki branch (?branch=wiki, js/tools/wiki.js) the second layer is the wiki's shared edits instead, and this
+// browser's own edits are left alone.
+import { WIKI, wikiState, safeEdits } from "./wiki.js";
 
 export const STORE = "gaincontrol.overrides";
+export let WIKI_STATUS = null;   // on the wiki branch: { rev, t, locked } once loaded, or { error }
 const FILE = new URL("../../overrides.json", import.meta.url);
 
 export function readLocal() {
+  if (WIKI) return {};
   try { const o = JSON.parse(localStorage.getItem(STORE) || "{}"); return o && typeof o === "object" ? o : {}; } catch (e) { return {}; }
 }
-export function writeLocal(o) { try { localStorage.setItem(STORE, JSON.stringify(o)); } catch (e) {} }
+export function writeLocal(o) { if (WIKI) return; try { localStorage.setItem(STORE, JSON.stringify(o)); } catch (e) {} }
 export async function readFile() {
   try {
     const r = await fetch(FILE, { cache: "no-cache" }); if (!r.ok) return {};
@@ -48,7 +53,9 @@ function rebuild() {
 // acts: { 1: A1, 2: A2 } or [A1, A2]. Returns the number of overrides applied.
 export async function applyOverrides(acts, items) {
   const byAct = Array.isArray(acts) ? Object.fromEntries(acts.map((a, i) => [String(i + 1), a])) : acts;
-  const all = { ...(await readFile()), ...readLocal() };
+  let layer = readLocal();
+  if (WIKI) { try { const w = await wikiState(); layer = w.edits; WIKI_STATUS = { rev: w.rev, t: w.t, locked: w.locked }; } catch (e) { WIKI_STATUS = { error: String(e.message || e) }; } }
+  const all = { ...(await readFile()), ...safeEdits(layer) };
   LIT.clear(); let n = 0;
   for (const [k, v] of Object.entries(all)) {
     if (typeof v !== "string") continue;

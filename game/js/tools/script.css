@@ -325,3 +325,17 @@ body.caps .sp-desc { text-transform: none; }
 .sp-resp { display: grid; grid-template-columns: 110px 1fr; gap: 10px; margin: 2px 0 6px 22px; }
 .sp-verb { font-size: 12px; letter-spacing: .1em; color: var(--B); padding-top: 4px; font-weight: 600; text-transform: uppercase; }
 .sp-resp .convo { margin: 4px 0; }
+
+/* ---------------- the wiki branch ---------------- */
+.tools a.branch { font-weight: 600; letter-spacing: .08em; font-size: 14px; padding: 3px 10px 2px; border: 1px solid var(--A); color: var(--A); line-height: 1.3; white-space: nowrap; text-decoration: none; }
+.tools a.branch:hover { background: var(--A); color: #000; }
+body.wiki #top { box-shadow: inset 0 -2px 0 var(--A); }
+body.wiki .tools a.branch { border-color: var(--M); color: var(--M); }
+#wikibar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; border: 1px solid var(--A); padding: 8px 12px; margin: 0 0 18px; font-size: 14px; color: var(--W); letter-spacing: .02em; }
+#wikibar b { color: #000; background: var(--A); padding: 1px 6px 0; margin-right: 6px; letter-spacing: .1em; font-weight: 600; }
+#wikibar b.bad { background: var(--R); }
+#wikibar .wb-t { flex: 1 1 420px; line-height: 1.45; }
+#wikibar .wb-a { display: flex; gap: 10px; align-items: center; }
+#wikibar .wb-who { font-size: 12px; letter-spacing: .12em; color: var(--M); }
+#wikibar .wb-who button { color: var(--A); border-bottom: 1px solid var(--A); letter-spacing: .08em; margin-left: 4px; }
+.hwho { font-size: 11px; letter-spacing: .1em; color: var(--A); margin-left: 6px; }
