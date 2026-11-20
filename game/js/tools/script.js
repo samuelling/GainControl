@@ -6,6 +6,8 @@ import { S, esc, actName, KEYS, current, isChanged, changedCount, allOverrides, 
   sideSpeaker, whoChip, portrait, toast } from "./ui.js";
 import { renderLogic, renderList, selectNode } from "./graph.js";
 import { initHistory, record, recordBatch, effOf, historyEntriesOf, mergeHistory } from "./history.js";
+import { renderScreenplay } from "./screenplay.js";
+import { WALKTHROUGH } from "../walkthrough.js";
 
 const $ = (s, r = document) => r.querySelector(s);
 const main = $("#main"), side = $("#side");
@@ -31,7 +33,7 @@ async function boot() {
 function readHash() {
   const h = /^#(\d+)?(?:\.(\w+))?/.exec(location.hash);
   if (h && h[1] && S.model.acts.some(a => a.n === +h[1])) S.act = +h[1];
-  if (h && h[2] && ["script", "logic", "list"].includes(h[2])) S.view = h[2];
+  if (h && h[2] && ["script", "screenplay", "logic", "list"].includes(h[2])) S.view = h[2];
 }
 window.addEventListener("hashchange", () => { if (!S.model) return; readHash(); S.q = ""; S.changedOnly = false; $("#search").value = ""; render(); window.scrollTo(0, 0); });
 async function applyPalette() {
@@ -61,6 +63,7 @@ function render() {
   const a = actOf(); if (!a) { main.innerHTML = `<div class="empty">NO ACTS FOUND.</div>`; return; }
   if (S.view === "logic") { main.className = "logic"; renderLogic(main, a); return; }
   if (S.view === "list") { main.innerHTML = renderList(a); return; }
+  if (S.view === "screenplay") { main.innerHTML = renderScreenplay(a, { seg, fnBlock, convo, roomName, startKey, info: () => S.info }); return; }
   main.innerHTML = renderScript(a);
 }
 
@@ -76,7 +79,10 @@ function renderSide() {
     const ch = (list) => list.some(e => e && isChanged(e));
     const roomEntries = (R) => R.hotspots.flatMap(H => [H.label, ...H.keys.flatMap(K => K.verbs.flatMap(V => [V.entry, ...(V.fn ? V.fn.lits : [])]))]).concat(a.withs.filter(V => V.room === R.id).flatMap(V => [V.entry, ...(V.fn ? V.fn.lits : [])]));
     const convEntries = (C) => C.lines.flatMap(l => l.choice ? l.choice.flatMap(o => [o.text, ...o.lines.map(x => x.entry)]) : [l.entry]).concat(C.after ? C.after.lits : []);
-    if (S.view === "script") {
+    if (S.view === "screenplay") {
+      const W = WALKTHROUGH[a.n];
+      toc += `<div class="toc"><h4>IN PLAYING ORDER</h4>` + (W ? W.parts.map((p, i) => `<a href="#" data-sp="sp-${a.n}-${i}">${esc(p.name)}</a>`).join("") : "") + `</div>`;
+    } else if (S.view === "script") {
       toc += `<div class="toc"><h4>THE ACT</h4><a href="#" data-goto="${a.n}|acttext-${a.n}">TITLE, OPENING, ENDING</a><a href="#" data-goto="${a.n}|gates-${a.n}">MILESTONES <small>${a.gates.length}</small></a>`;
       toc += `<h4>ROOMS</h4>` + a.rooms.map(R => `<a href="#" data-goto="${a.n}|room-${a.n}-${R.id}">${esc(roomName(R.id))}${dot(ch(roomEntries(R)))}<small>${R.hotspots.length}</small></a>`).join("");
       toc += `<h4>CONVERSATIONS</h4>` + a.convos.map(C => `<a href="#" class="sub" data-goto="${a.n}|cv-${a.n}-${C.name}">${esc(C.name)} <small>${esc(portrait(C.R).name)}</small>${dot(ch(convEntries(C)))}</a>`).join("");
@@ -312,6 +318,7 @@ document.addEventListener("click", (ev) => {
   const was = t.closest(".wasbtn"); if (was) { was.closest(".ln").classList.toggle("showwas"); return; }
   const actb = t.closest("[data-act]"); if (actb) { S.act = +actb.dataset.act; S.sel = null; S.q = ""; $("#search").value = ""; S.changedOnly = false; history.replaceState(null, "", `#${S.act}.${S.view}`); render(); main.scrollTop = 0; window.scrollTo(0, 0); return; }
   const vb = t.closest("#views button"); if (vb) { S.view = vb.dataset.view; S.q = ""; $("#search").value = ""; S.changedOnly = false; history.replaceState(null, "", `#${S.act}.${S.view}`); render(); window.scrollTo(0, 0); return; }
+  const sp = t.closest("[data-sp]"); if (sp) { ev.preventDefault(); const el = document.getElementById(sp.dataset.sp); if (el) { el.scrollIntoView({ block: "start" }); el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); } return; }
   const g = t.closest("[data-goto]"); if (g) { ev.preventDefault(); const [a, an] = splitOnce(g.dataset.goto); goto(+a, an); return; }
   const nd = t.closest("[data-node]"); if (nd) { ev.preventDefault(); const [a, id] = splitOnce(nd.dataset.node); gotoNode(+a, id); return; }
   const cv = t.closest("[data-convo]"); if (cv) { const [a, name] = splitOnce(cv.dataset.convo); const act = S.model.convoAct[name] && !actOf(+a).convos.some(c => c.name === name) ? S.model.convoAct[name] : +a; goto(act, `cv-${act}-${name}`); return; }

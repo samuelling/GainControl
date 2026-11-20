@@ -300,3 +300,28 @@ body.caps .hdiff .t { text-transform: uppercase; }
 .hrev:hover { background: var(--A); color: #000; }
 .he-a .hres { font-size: 11px; padding: 0 6px; line-height: 1.6; }
 .ln, .hent { scroll-margin-top: 110px; }
+
+/* ---------------- SCREENPLAY ---------------- */
+.sp-part { margin: 38px 0 6px; display: flex; align-items: center; gap: 10px; scroll-margin-top: calc(var(--top) + 8px); }
+.sp-part h2 { margin: 0; font-size: 13px; letter-spacing: .2em; color: #000; background: var(--W); padding: 1px 8px 0; font-weight: 600; }
+.sp-part::after { content: ""; flex: 1; border-top: 1px solid var(--D); }
+.sp-scene { margin: 18px 0 8px; scroll-margin-top: calc(var(--top) + 8px); }
+.sp-head { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; letter-spacing: .1em; color: var(--W); padding: 6px 0 4px; border-bottom: 1px solid var(--D); }
+.sp-who { font-size: 11px; letter-spacing: .12em; color: #000; background: var(--K); padding: 1px 6px 0; }
+.sp-tools { margin-left: auto; display: flex; gap: 4px; }
+.sp-desc { color: var(--M); font-size: 16px; line-height: 1.5; max-width: 74ch; margin: 8px 0 6px; font-style: italic; text-transform: none; letter-spacing: .01em; }
+body.caps .sp-desc { text-transform: none; }
+.sp-opts { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: baseline; margin: 6px 0 10px; }
+.sp-opts .lbl { font-size: 11px; letter-spacing: .14em; color: var(--M); margin-right: 4px; }
+.sp-opt { font-size: 12px; letter-spacing: .06em; border: 1px solid var(--D); padding: 0 6px; line-height: 1.6; white-space: nowrap; }
+.sp-opt b { color: var(--W); font-weight: 600; }
+.sp-opt i { font-style: normal; color: var(--B); margin-left: 6px; }
+.sp-action { margin: 12px 0 4px; padding-left: 22px; position: relative; font-size: 15px; color: var(--W); max-width: 80ch; }
+.sp-action::before { content: "▸"; position: absolute; left: 6px; color: var(--A); }
+.sp-action.opt { color: var(--M); }
+.sp-action.opt::before { color: var(--M); }
+.sp-action.avoid { color: var(--R); }
+.sp-action.avoid::before { content: "✕"; color: var(--R); }
+.sp-resp { display: grid; grid-template-columns: 110px 1fr; gap: 10px; margin: 2px 0 6px 22px; }
+.sp-verb { font-size: 12px; letter-spacing: .1em; color: var(--B); padding-top: 4px; font-weight: 600; text-transform: uppercase; }
+.sp-resp .convo { margin: 4px 0; }
