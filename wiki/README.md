@@ -9,7 +9,7 @@ A Cloudflare Worker with one Durable Object (SQLite) that holds the **wiki branc
 
 ## Deploying
 
-Once, in the Cloudflare dashboard: **Workers & Pages › Create › Import a repository › samuelling/GainControl**, and set the **root directory** to `wiki` (the name `gaincontrol-wiki` comes from `wrangler.toml`). After that, every push to `main` redeploys it. From a terminal it's `cd wiki && npx wrangler deploy`.
+Connected on 2026-11-20. Once, in the Cloudflare dashboard (already done): **Workers & Pages › Create › Import a repository › samuelling/GainControl**, and set the **root directory** to `wiki` (the name `gaincontrol-wiki` comes from `wrangler.toml`). After that, every push to `main` redeploys it. From a terminal it's `cd wiki && npx wrangler deploy`.
 
 The game expects it at `https://gaincontrol-wiki.samuelling.workers.dev` (`game/js/tools/wiki.js`). To test against a local copy: `cd wiki && npx wrangler dev`, then open `script.html?branch=wiki&wiki=http://127.0.0.1:8787`.
 
