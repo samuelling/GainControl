@@ -62,7 +62,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     @objc func actualSize(_ sender: Any?) { web?.pageZoom = 1 }
     @objc func zoomIn(_ sender: Any?) { if let w = web { w.pageZoom = min(2, w.pageZoom + 0.1) } }
     @objc func zoomOut(_ sender: Any?) { if let w = web { w.pageZoom = max(0.6, w.pageZoom - 0.1) } }
-    @objc func openWebsite(_ sender: Any?) { NSWorkspace.shared.open(URL(string: "https://samuelling.github.io/GainControl/game/")!) }
+    @objc func openWebsite(_ sender: Any?) { NSWorkspace.shared.open(URL(string: "https://linglab.org/gaincontrol/game/")!) }
 
     private func buildMenus() {
         let main = NSMenu()

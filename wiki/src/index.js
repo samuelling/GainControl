@@ -19,7 +19,7 @@ export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
     const url = new URL(request.url);
-    if (url.pathname === "/") return json({ service: "gaincontrol-wiki", see: "https://samuelling.github.io/GainControl/game/script.html?branch=wiki" });
+    if (url.pathname === "/") return json({ service: "gaincontrol-wiki", see: "https://linglab.org/gaincontrol/game/script.html?branch=wiki" });
     const stub = env.WIKI.get(env.WIKI.idFromName("main"));
     return stub.fetch(request);
   },
